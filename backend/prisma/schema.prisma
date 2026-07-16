@@ -1,0 +1,63 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum BarStatus {
+  IN_STOCK
+  EXITED
+}
+
+model Client {
+  id        String   @id @default(uuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  bars        Bar[]
+  exitDetails ExitDetail[]
+}
+
+model Bar {
+  id          String    @id @default(uuid())
+  barNumber   String    @unique
+  grossWeight Decimal   @db.Decimal(15, 4)
+  purity      Decimal   @db.Decimal(7, 4)
+  fineWeight  Decimal   @db.Decimal(15, 4)
+  status      BarStatus @default(IN_STOCK)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  clientId     String
+  client       Client       @relation(fields: [clientId], references: [id])
+  exitDetailId String?
+  exitDetail   ExitDetail?  @relation(fields: [exitDetailId], references: [id])
+}
+
+model MaterialExit {
+  id          String   @id @default(uuid())
+  destination String
+  totalWeight Decimal  @db.Decimal(15, 4)
+  createdAt   DateTime @default(now())
+
+  exitDetails ExitDetail[]
+}
+
+model ExitDetail {
+  id            String @id @default(uuid())
+  weightAported Decimal @db.Decimal(15, 4)
+
+  exitId   String
+  exit     MaterialExit @relation(fields: [exitId], references: [id])
+
+  clientId String
+  client   Client @relation(fields: [clientId], references: [id])
+
+  bars Bar[]
+
+  @@unique([exitId, clientId])
+}
