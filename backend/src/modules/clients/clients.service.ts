@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service.js';
 
 @Injectable()
@@ -15,8 +15,45 @@ export class ClientsService {
     return client;
   }
 
-  async create(data: { name: string }) {
-    return this.prisma.client.create({ data });
+  async create(data: { rif: string; name: string }) {
+    const existing = await this.prisma.client.findUnique({ where: { rif: data.rif } });
+    if (existing) throw new BadRequestException('El RIF ya existe');
+
+    return this.prisma.client.create({
+      data: { rif: data.rif, name: data.name.toUpperCase() },
+    });
+  }
+
+  async update(id: string, data: { rif?: string; name?: string }) {
+    const client = await this.findOne(id);
+
+    if (data.rif && data.rif !== client.rif) {
+      const existing = await this.prisma.client.findUnique({ where: { rif: data.rif } });
+      if (existing) throw new BadRequestException('El RIF ya existe');
+    }
+
+    return this.prisma.client.update({
+      where: { id },
+      data: {
+        ...(data.rif && { rif: data.rif }),
+        ...(data.name && { name: data.name.toUpperCase() }),
+      },
+    });
+  }
+
+  async remove(id: string) {
+    await this.findOne(id);
+
+    const barsInStock = await this.prisma.bar.count({
+      where: { clientId: id, status: 'IN_STOCK' },
+    });
+    if (barsInStock > 0) {
+      throw new BadRequestException(
+        'No se puede eliminar: el cliente tiene barras en bóveda',
+      );
+    }
+
+    return this.prisma.client.delete({ where: { id } });
   }
 
   async balance(id: string) {

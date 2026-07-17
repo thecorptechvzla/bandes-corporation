@@ -14,12 +14,38 @@ enum BarStatus {
 
 model Client {
   id        String   @id @default(uuid())
+  rif       String   @unique
   name      String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   bars        Bar[]
   exitDetails ExitDetail[]
+  processes   Process[]
+}
+
+model Process {
+  id        String   @id @default(uuid())
+  name      String
+  clientId  String
+  client    Client   @relation(fields: [clientId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  lots Lot[]
+
+  @@unique([name, clientId])
+}
+
+model Lot {
+  id        String   @id @default(uuid())
+  name      String
+  processId String
+  process   Process  @relation(fields: [processId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  bars Bar[]
 }
 
 model Bar {
@@ -36,6 +62,8 @@ model Bar {
   client       Client       @relation(fields: [clientId], references: [id])
   exitDetailId String?
   exitDetail   ExitDetail?  @relation(fields: [exitDetailId], references: [id])
+  lotId        String?
+  lot          Lot?         @relation(fields: [lotId], references: [id])
 }
 
 model MaterialExit {

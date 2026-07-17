@@ -1,6 +1,8 @@
 'use client';
 
 import { FormEvent, useEffect, useState } from 'react';
+import { DeploymentModule } from '@/components/egreso/deployment-module';
+import { parseWeight } from '@/lib/utils';
 
 const API = 'http://localhost:3001';
 
@@ -15,7 +17,6 @@ export default function EgresoPage() {
   const [contributions, setContributions] = useState<Contribution[]>([]);
   const [status, setStatus] = useState<'idle' | 'deploying' | 'success' | 'error'>('idle');
   const [message, setMessage] = useState('');
-  const [balances, setBalances] = useState<Record<string, number>>({});
 
   useEffect(() => {
     fetch(`${API}/clients`)
@@ -23,16 +24,6 @@ export default function EgresoPage() {
       .then(setClients)
       .catch(() => {});
   }, []);
-
-  async function checkBalance(clientId: string) {
-    try {
-      const res = await fetch(`${API}/clients/${clientId}/balance`);
-      if (res.ok) {
-        const data = await res.json();
-        setBalances((prev) => ({ ...prev, [clientId]: data.currentBalance }));
-      }
-    } catch {}
-  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -42,7 +33,7 @@ export default function EgresoPage() {
       destination,
       contributions: contributions.map((c) => ({
         clientId: c.clientId,
-        weightAported: parseFloat(c.weightAported),
+        weightAported: parseWeight(c.weightAported),
       })),
     };
 
@@ -76,7 +67,6 @@ export default function EgresoPage() {
     setContributions((prev) => {
       const next = [...prev];
       next[index] = { ...next[index], [field]: value };
-      if (field === 'clientId') checkBalance(value);
       return next;
     });
   }
@@ -85,12 +75,14 @@ export default function EgresoPage() {
     setContributions((prev) => prev.filter((_, i) => i !== index));
   }
 
-  const totalWeight = contributions.reduce((s, c) => s + (parseFloat(c.weightAported) || 0), 0);
+  const totalWeight = contributions.reduce((s, c) => {
+    return s + parseWeight(c.weightAported);
+  }, 0);
 
   return (
     <div className="p-6 space-y-6" style={{ animation: 'fade-in 0.6s ease-out' }}>
       <header>
-        <h2 className="text-hud-gold text-lg font-bold tracking-wider">EGRESO // DEPLOYMENT</h2>
+        <h2 className="text-hud-amber text-lg font-bold tracking-wider">EGRESO // DEPLOYMENT</h2>
         <p className="text-hud-muted text-[10px] mt-1">MULTI-CLIENTE // RETIRO DE ORO</p>
       </header>
 
@@ -99,97 +91,55 @@ export default function EgresoPage() {
           <label className="text-[10px] text-hud-muted tracking-wider">DESTINO</label>
           <input
             value={destination}
-            onChange={(e) => setDestination(e.target.value)}
+            onChange={(e) => setDestination(e.target.value.toUpperCase())}
             required
-            className="w-full bg-hud-dark border border-hud-border px-3 py-2 text-sm text-hud-text font-mono focus:border-hud-blue focus:outline-none transition-colors"
+            className="w-full bg-hud-dark border border-hud-border px-3 py-2 text-sm text-hud-text font-mono focus:border-hud-amber focus:outline-none transition-colors uppercase"
             placeholder="Nombre del destino / entidad receptora"
           />
         </div>
 
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <p className="text-[10px] text-hud-muted tracking-wider">CLIENTES APORTANTES</p>
-            <button
-              type="button"
-              onClick={addContribution}
-              className="text-[10px] text-hud-blue hover:text-hud-gold transition-colors tracking-wider"
-            >
-              [+ AÑADIR CLIENTE]
-            </button>
+            <p className="text-[10px] text-hud-muted tracking-wider">MÓDULOS DE DESPLIEGUE</p>
           </div>
 
-          {contributions.map((contribution, i) => {
-            const balance = balances[contribution.clientId] ?? null;
-            const weight = parseFloat(contribution.weightAported) || 0;
-            const sufficient = balance !== null && weight <= balance;
-
-            return (
-              <div key={i} className="bg-hud-dark border border-hud-border p-3 space-y-2">
-                <div className="flex items-center justify-between">
-                  <p className="text-[10px] text-hud-muted">APORTE #{i + 1}</p>
-                  <button
-                    type="button"
-                    onClick={() => removeContribution(i)}
-                    className="text-[10px] text-hud-danger hover:text-red-400 transition-colors"
-                  >
-                    [ELIMINAR]
-                  </button>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <label className="text-[9px] text-hud-muted">CLIENTE</label>
-                    <select
-                      value={contribution.clientId}
-                      onChange={(e) => updateContribution(i, 'clientId', e.target.value)}
-                      required
-                      className="w-full bg-hud-surface border border-hud-border px-2 py-1.5 text-xs text-hud-text font-mono focus:border-hud-blue focus:outline-none"
-                    >
-                      <option value="">SELECCIONAR...</option>
-                      {clients.map((c) => (
-                        <option key={c.id} value={c.id}>
-                          {c.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[9px] text-hud-muted">PESO (kg)</label>
-                    <input
-                      type="number"
-                      step="0.0001"
-                      value={contribution.weightAported}
-                      onChange={(e) => updateContribution(i, 'weightAported', e.target.value)}
-                      required
-                      className="w-full bg-hud-surface border border-hud-border px-2 py-1.5 text-xs text-hud-text font-mono focus:border-hud-blue focus:outline-none"
-                      placeholder="0.0000"
-                    />
-                  </div>
-                </div>
-                {balance !== null && (
-                  <p className={sufficient ? 'text-[10px] text-hud-success' : 'text-[10px] text-hud-danger'}>
-                    SALDO: {balance.toFixed(4)} kg {sufficient ? '✓' : '✗ (INSUFICIENTE)'}
-                  </p>
-                )}
-              </div>
-            );
-          })}
+          {contributions.map((contribution, i) => (
+            <DeploymentModule
+              key={i}
+              index={i}
+              clients={clients}
+              value={contribution}
+              onChange={(field, val) => updateContribution(i, field, val)}
+              onRemove={() => removeContribution(i)}
+            />
+          ))}
 
           {contributions.length === 0 && (
-            <p className="text-[10px] text-hud-muted py-4 text-center border border-dashed border-hud-border">
-              NO HAY APORTANTES — AÑADE AL MENOS UNO
+            <p className="text-[10px] text-hud-muted py-4 text-center border border-dashed border-hud-border clip-tactical">
+              NO HAY MÓDULOS DE DESPLIEGUE — AÑADE AL MENOS UNO
             </p>
           )}
+
+          <button
+            type="button"
+            onClick={addContribution}
+            className="w-full py-3 text-sm font-bold tracking-wider bg-hud-amber/10 border border-hud-amber text-hud-amber hover:bg-hud-amber/20 transition-colors clip-tactical"
+          >
+            [+ AÑADIR CLIENTE]
+          </button>
         </div>
 
         <div className="flex items-center justify-between py-2 border-t border-hud-border">
           <p className="text-xs text-hud-muted">PESO TOTAL A RETIRAR:</p>
-          <p className="text-lg text-hud-gold font-bold">{totalWeight.toFixed(4)} kg</p>
+          <p className="text-lg text-hud-amber font-bold">
+            {totalWeight.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} kg
+          </p>
         </div>
 
         <button
           type="submit"
           disabled={status === 'deploying' || contributions.length === 0}
-          className="w-full py-3 text-sm font-bold tracking-wider bg-hud-blue/10 border border-hud-blue text-hud-blue hover:bg-hud-blue/20 transition-colors disabled:opacity-50"
+          className="w-full py-3 text-sm font-bold tracking-wider bg-hud-amber/10 border border-hud-amber text-hud-amber hover:bg-hud-amber/20 transition-colors disabled:opacity-50 clip-tactical"
         >
           {status === 'deploying' ? 'DESPLEGANDO...' : 'DESPLEGAR EGRESO'}
         </button>

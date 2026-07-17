@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, HttpCode } from '@nestjs/common';
 import { BarsService } from './bars.service.js';
 
 @Controller('bars')
@@ -13,6 +13,12 @@ export class BarsController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.service.findOne(id);
+  }
+
+  @Post('auto-select')
+  @HttpCode(200)
+  autoSelect(@Body() body: { clientId: string; requiredWeight: number }) {
+    return this.service.autoSelect(body);
   }
 
   @Post()

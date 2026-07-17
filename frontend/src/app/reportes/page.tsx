@@ -40,13 +40,13 @@ export default function ReportesPage() {
   return (
     <div className="p-6 space-y-6" style={{ animation: 'fade-in 0.6s ease-out' }}>
       <header>
-        <h2 className="text-hud-gold text-lg font-bold tracking-wider">PANEL DE REPORTES</h2>
+        <h2 className="text-hud-amber text-lg font-bold tracking-wider">PANEL DE REPORTES</h2>
         <p className="text-hud-muted text-[10px] mt-1">EXTRACCIÓN DE DATOS // TRAZABILIDAD</p>
       </header>
 
       <div className="grid grid-cols-2 gap-6 max-w-2xl">
-        <div className="bg-hud-surface rounded p-5 neon-border-gold space-y-4">
-          <p className="text-xs text-hud-gold font-bold tracking-wider">
+        <div className="bg-hud-surface p-5 neon-border-amber clip-tactical space-y-4">
+          <p className="text-xs text-hud-amber font-bold tracking-wider">
             REPORTE 01 // CLIENTE
           </p>
           <p className="text-[10px] text-hud-muted">
@@ -57,7 +57,7 @@ export default function ReportesPage() {
             <select
               value={selectedClient}
               onChange={(e) => setSelectedClient(e.target.value)}
-              className="w-full bg-hud-dark border border-hud-border px-2 py-1.5 text-xs text-hud-text font-mono focus:border-hud-gold focus:outline-none"
+              className="w-full bg-hud-dark border border-hud-border px-2 py-1.5 text-xs text-hud-text font-mono focus:border-hud-amber focus:outline-none"
             >
               <option value="">SELECCIONAR...</option>
               {clients.map((c) => (
@@ -70,14 +70,14 @@ export default function ReportesPage() {
           <button
             onClick={downloadClientReport}
             disabled={!selectedClient || loading === 'client'}
-            className="w-full py-2 text-xs font-bold tracking-wider bg-hud-gold/10 border border-hud-gold text-hud-gold hover:bg-hud-gold/20 transition-colors disabled:opacity-50"
+            className="w-full py-2 text-xs font-bold tracking-wider bg-hud-amber/10 border border-hud-amber text-hud-amber hover:bg-hud-amber/20 transition-colors disabled:opacity-50 clip-tactical"
           >
             {loading === 'client' ? 'GENERANDO...' : 'DESCARGAR PDF'}
           </button>
         </div>
 
-        <div className="bg-hud-surface rounded p-5 neon-border-blue space-y-4">
-          <p className="text-xs text-hud-blue font-bold tracking-wider">
+        <div className="bg-hud-surface p-5 neon-border-amber clip-tactical space-y-4">
+          <p className="text-xs text-hud-amber font-bold tracking-wider">
             REPORTE 02 // EMPRESA
           </p>
           <p className="text-[10px] text-hud-muted">
@@ -86,7 +86,7 @@ export default function ReportesPage() {
           <button
             onClick={downloadCompanyReport}
             disabled={loading === 'company'}
-            className="w-full py-2 text-xs font-bold tracking-wider bg-hud-blue/10 border border-hud-blue text-hud-blue hover:bg-hud-blue/20 transition-colors disabled:opacity-50"
+            className="w-full py-2 text-xs font-bold tracking-wider bg-hud-amber/10 border border-hud-amber text-hud-amber hover:bg-hud-amber/20 transition-colors disabled:opacity-50 clip-tactical"
           >
             {loading === 'company' ? 'GENERANDO...' : 'DESCARGAR PDF'}
           </button>

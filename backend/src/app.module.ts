@@ -4,6 +4,8 @@ import { ClientsModule } from './modules/clients/clients.module.js';
 import { BarsModule } from './modules/bars/bars.module.js';
 import { MaterialExitsModule } from './modules/material-exits/material-exits.module.js';
 import { ReportsModule } from './modules/reports/reports.module.js';
+import { ProcessesModule } from './modules/processes/processes.module.js';
+import { LotsModule } from './modules/lots/lots.module.js';
 
 @Module({
   imports: [
@@ -12,6 +14,8 @@ import { ReportsModule } from './modules/reports/reports.module.js';
     BarsModule,
     MaterialExitsModule,
     ReportsModule,
+    ProcessesModule,
+    LotsModule,
   ],
 })
 export class AppModule {}

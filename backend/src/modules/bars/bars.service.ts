@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service.js';
 
 @Injectable()
@@ -23,6 +23,30 @@ export class BarsService {
     });
     if (!bar) throw new NotFoundException('Bar not found');
     return bar;
+  }
+
+  async autoSelect(data: { clientId: string; requiredWeight: number }) {
+    const bars = await this.prisma.bar.findMany({
+      where: { clientId: data.clientId, status: 'IN_STOCK' },
+      orderBy: { createdAt: 'asc' },
+    });
+
+    let accumulated = 0;
+    const selected: typeof bars = [];
+
+    for (const bar of bars) {
+      if (accumulated >= data.requiredWeight) break;
+      accumulated += Number(bar.fineWeight);
+      selected.push(bar);
+    }
+
+    if (accumulated < data.requiredWeight) {
+      throw new BadRequestException(
+        `Saldo insuficiente. Disponible: ${accumulated.toFixed(4)} kg, requerido: ${data.requiredWeight.toFixed(4)} kg`,
+      );
+    }
+
+    return { bars: selected, totalFineWeight: accumulated };
   }
 
   async create(data: {
