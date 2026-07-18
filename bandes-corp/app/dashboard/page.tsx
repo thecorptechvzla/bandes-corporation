@@ -5,16 +5,16 @@ import { useGoldTraceability } from '../../src/context/GoldTraceabilityContext';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Flame, 
-  ClipboardList, 
-  CheckCircle2, 
   TrendingUp, 
-  Scale, 
+  TrendingDown,
   Clock, 
+  ArrowDownLeft,
   ArrowUpRight, 
-  Sparkles,
   RefreshCw,
   Coins,
-  ArrowLeftRight
+  ArrowLeftRight,
+  ChevronDown,
+  Table2
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts';
 
@@ -101,30 +101,39 @@ export default function DashboardPage() {
   const [hoveredClient, setHoveredClient] = useState<any | null>(null);
   const [supplierLayout, setSupplierLayout] = useState<'grid' | 'bars'>('grid');
   const [clientLayout, setClientLayout] = useState<'grid' | 'bars'>('grid');
+  const [showIngresosTable, setShowIngresosTable] = useState<boolean>(false);
+  const [showEgresosTable, setShowEgresosTable] = useState<boolean>(false);
 
-  const activeLots = castingLots.filter(l => l.status === 'FUNDICION' || l.status === 'ENFRIANDO');
-  const totalCastingLotsCount = activeLots.length;
-  const currentMoltenWeight = activeLots.reduce((sum, l) => sum + l.grossWeightTotal, 0);
+  const counterOroRecibido = useMemo(() => {
+    const pesoBruto = goldBars.reduce((sum, b) => sum + b.grossWeight, 0);
+    const barras = goldBars.length;
+    const proveedores = new Set(goldBars.map(b => b.supplierId)).size;
+    return { pesoBruto, barras, proveedores };
+  }, [goldBars]);
 
-  const todayBars = goldBars.filter(b => b.status === 'INGRESADO');
-  const todayBarsCount = todayBars.length;
-  const todayBarsWeight = todayBars.reduce((sum, b) => sum + b.grossWeight, 0);
+  const counterOroRefinado = useMemo(() => {
+    const completed = goldBars.filter(b => b.status === 'COMPLETADO' || b.status === 'EGRESADO');
+    const totalRecovered = completed.reduce((sum, b) => sum + (b.recovered || 0), 0);
+    const totalExpected = completed.reduce((sum, b) => sum + b.expected, 0);
+    const eficiencia = totalExpected > 0 ? (totalRecovered / totalExpected) * 100 : 0;
+    return { totalRecovered, eficiencia };
+  }, [goldBars]);
 
-  const readyLots = castingLots.filter(l => l.status === 'COMPLETADO' && l.recovered !== null);
-  const readyLotsAvailable = readyLots.filter(l => {
-    const barsInLot = goldBars.filter(b => b.processId === l.id);
-    const totalRecovered = barsInLot.reduce((sum, b) => sum + (b.recovered || 0), 0);
-    const totalEgressed = barsInLot.reduce((sum, b) => sum + b.egresadoG, 0);
-    return totalRecovered - totalEgressed > 1;
-  });
+  const counterOroEnEspera = useMemo(() => {
+    const waiting = goldBars.filter(b => b.status === 'CONFIRMADO' || b.status === 'POR_CONFIRMAR');
+    const pesoBruto = waiting.reduce((sum, b) => sum + b.grossWeight, 0);
+    const barras = waiting.length;
+    return { pesoBruto, barras };
+  }, [goldBars]);
 
-  const readyEgressCount = readyLotsAvailable.length;
-  const readyEgressWeight = readyLotsAvailable.reduce((sum, l) => {
-    const barsInLot = goldBars.filter(b => b.processId === l.id);
-    const totalRecovered = barsInLot.reduce((sum, b) => sum + (b.recovered || 0), 0);
-    const totalEgressed = barsInLot.reduce((sum, b) => sum + b.egresadoG, 0);
-    return sum + (totalRecovered - totalEgressed);
-  }, 0);
+  const counterMerma = useMemo(() => {
+    const completed = goldBars.filter(b => b.status === 'COMPLETADO' || b.status === 'EGRESADO');
+    const totalExpected = completed.reduce((sum, b) => sum + b.expected, 0);
+    const totalRecovered = completed.reduce((sum, b) => sum + (b.recovered || 0), 0);
+    const merma = totalExpected - totalRecovered;
+    const porcentaje = totalExpected > 0 ? (merma / totalExpected) * 100 : 0;
+    return { merma, porcentaje };
+  }, [goldBars]);
 
   const supplierData = suppliers.map(sup => {
     const bars = goldBars.filter(b => b.supplierId === sup.id);
@@ -437,33 +446,31 @@ export default function DashboardPage() {
       className="space-y-8"
     >
     
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         
         <motion.div
           initial={{ opacity: 0, y: -80 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.08, duration: 0.55, ease: [0.25, 0.46, 0.45, 0.94] }}
-          className="relative group bg-[#1C1C1C] p-4.5 rounded-xl border border-neutral-800/40 shadow-[0_4px_12px_rgba(0,0,0,0.2)] overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,0,0,0.4)] hover:border-[#D5B042]/30"
+          className="relative group bg-[#1C1C1C] p-3 rounded-xl border border-neutral-800/40 shadow-[0_4px_12px_rgba(0,0,0,0.2)] overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,0,0,0.4)] hover:border-[#D5B042]/30"
         >
-          <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-[#D5B042]/5 to-transparent rounded-bl-full pointer-events-none"></div>
-          <div className="flex justify-between items-center mb-3">
-            <div className="p-2 bg-black rounded-lg border border-[#D5B042]/20">
-              <ClipboardList className="w-5 h-5 text-[#D5B042]" />
+          <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-[#D5B042]/5 to-transparent rounded-bl-full pointer-events-none"></div>
+          <div className="flex justify-between items-center mb-2">
+            <div className="p-1.5 bg-black rounded-lg border border-[#D5B042]/20">
+              <ArrowDownLeft className="w-4 h-4 text-[#D5B042]" />
             </div>
-            <span className="text-[9px] text-[#D5B042] font-mono tracking-wider flex items-center gap-1 bg-black px-1.5 py-0.5 rounded border border-[#D5B042]/20">
-              <TrendingUp className="w-2.5 h-2.5" />
-              REGISTRO
+            <span className="text-[8px] text-[#D5B042] font-mono tracking-wider bg-black px-1.5 py-0.5 rounded border border-[#D5B042]/20">
+              ORO RECIBIDO
             </span>
           </div>
           <div className="space-y-0.5">
-            <span className="text-[10.5px] text-[#8C8C8C] block font-sans">Lotes/Barras Ingresadas Hoy</span>
+            <span className="text-[10px] text-[#8C8C8C] block font-sans">Total Ingresado</span>
             <div className="flex items-baseline gap-1.5">
-              <span className="text-2xl font-mono font-bold text-[#E5E5E5] tracking-tight">{todayBarsCount}</span>
-              <span className="text-[10.5px] text-[#8C8C8C]">Unidades</span>
+              <span className="text-xl font-mono font-bold text-[#E5E5E5] tracking-tight">{(counterOroRecibido.pesoBruto / 1000).toFixed(2)}</span>
+              <span className="text-[10px] text-[#8C8C8C]">kg</span>
             </div>
-            <p className="text-[10px] text-[#8C8C8C] font-mono flex items-center gap-1 pt-1.5 border-t border-neutral-800/20">
-              <Scale className="w-3 h-3 text-[#D5B042]" />
-              Peso Total Bruto: <strong className="text-[#E5E5E5]">{(todayBarsWeight / 1000).toFixed(2)} kg</strong>
+            <p className="text-[9px] text-[#8C8C8C] font-mono flex items-center gap-1 pt-1.5 border-t border-neutral-800/20">
+              {counterOroRecibido.barras} barras · {counterOroRecibido.proveedores} proveedores
             </p>
           </div>
         </motion.div>
@@ -471,28 +478,29 @@ export default function DashboardPage() {
         <motion.div
           initial={{ opacity: 0, y: -80 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.18, duration: 0.55, ease: [0.25, 0.46, 0.45, 0.94] }}
-          className="relative group bg-[#1C1C1C] p-4.5 rounded-xl border border-neutral-800/40 shadow-[0_4px_12px_rgba(0,0,0,0.2)] overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,0,0,0.4)] hover:border-[#A65B17]/30"
+          transition={{ delay: 0.15, duration: 0.55, ease: [0.25, 0.46, 0.45, 0.94] }}
+          className="relative group bg-[#1C1C1C] p-3 rounded-xl border border-neutral-800/40 shadow-[0_4px_12px_rgba(0,0,0,0.2)] overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,0,0,0.4)] hover:border-[#A65B17]/30"
         >
-          <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-[#A65B17]/5 to-transparent rounded-bl-full pointer-events-none"></div>
-          <div className="flex justify-between items-center mb-3">
-            <div className="p-2 bg-black rounded-lg border border-[#A65B17]/20">
-              <Flame className="w-5 h-5 text-[#A65B17] animate-pulse" />
+          <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-[#A65B17]/5 to-transparent rounded-bl-full pointer-events-none"></div>
+          <div className="flex justify-between items-center mb-2">
+            <div className="p-1.5 bg-black rounded-lg border border-[#A65B17]/20">
+              <Flame className="w-4 h-4 text-[#A65B17]" />
             </div>
-            <span className="text-[9px] text-[#A65B17] font-mono tracking-wider flex items-center gap-1 bg-black px-1.5 py-0.5 rounded border border-[#A65B17]/20">
-              <Clock className="w-2.5 h-2.5 animate-spin" style={{ animationDuration: '6s' }} />
-              INCANDESCENCIA
+            <span className="text-[8px] text-[#A65B17] font-mono tracking-wider bg-black px-1.5 py-0.5 rounded border border-[#A65B17]/20">
+              ORO REFINADO
             </span>
           </div>
           <div className="space-y-0.5">
-            <span className="text-[10.5px] text-[#8C8C8C] block font-sans">Lotes en Fundición / Moldes</span>
+            <span className="text-[10px] text-[#8C8C8C] block font-sans">Total Recuperado</span>
             <div className="flex items-baseline gap-1.5">
-              <span className="text-2xl font-mono font-bold text-[#E5E5E5] tracking-tight">{totalCastingLotsCount}</span>
-              <span className="text-[10.5px] text-[#8C8C8C]">Procesos</span>
+              <span className="text-xl font-mono font-bold text-[#E5E5E5] tracking-tight">{(counterOroRefinado.totalRecovered / 1000).toFixed(3)}</span>
+              <span className="text-[10px] text-[#8C8C8C]">kg Au</span>
             </div>
-            <p className="text-[10px] text-[#8C8C8C] font-mono flex items-center gap-1 pt-1.5 border-t border-neutral-800/20">
-              <Sparkles className="w-3 h-3 text-[#A65B17]" />
-              Masa en Crisol: <strong className="text-[#E5E5E5]">{(currentMoltenWeight / 1000).toFixed(2)} kg</strong>
+            <p className="text-[9px] font-mono flex items-center gap-1 pt-1.5 border-t border-neutral-800/20">
+              <span className={`font-bold ${counterOroRefinado.eficiencia >= 99 ? 'text-emerald-400' : 'text-[#A65B17]'}`}>
+                {counterOroRefinado.eficiencia.toFixed(1)}%
+              </span>
+              <span className="text-[#8C8C8C]">eficiencia</span>
             </p>
           </div>
         </motion.div>
@@ -500,27 +508,56 @@ export default function DashboardPage() {
         <motion.div
           initial={{ opacity: 0, y: -80 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.28, duration: 0.55, ease: [0.25, 0.46, 0.45, 0.94] }}
-          className="relative group bg-[#1C1C1C] p-4.5 rounded-xl border border-neutral-800/40 shadow-[0_4px_12px_rgba(0,0,0,0.2)] overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,0,0,0.4)] hover:border-emerald-500/30"
+          transition={{ delay: 0.22, duration: 0.55, ease: [0.25, 0.46, 0.45, 0.94] }}
+          className="relative group bg-[#1C1C1C] p-3 rounded-xl border border-neutral-800/40 shadow-[0_4px_12px_rgba(0,0,0,0.2)] overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,0,0,0.4)] hover:border-blue-500/30"
         >
-          <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-emerald-500/5 to-transparent rounded-bl-full pointer-events-none"></div>
-          <div className="flex justify-between items-center mb-3">
-            <div className="p-2 bg-black rounded-lg border border-emerald-500/20">
-              <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+          <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-blue-500/5 to-transparent rounded-bl-full pointer-events-none"></div>
+          <div className="flex justify-between items-center mb-2">
+            <div className="p-1.5 bg-black rounded-lg border border-blue-500/20">
+              <Clock className="w-4 h-4 text-blue-400" />
             </div>
-            <span className="text-[9px] text-emerald-400 font-mono tracking-wider flex items-center gap-1 bg-black px-1.5 py-0.5 rounded border border-emerald-500/10">
-              ✓ BOVEDA
+            <span className="text-[8px] text-blue-400 font-mono tracking-wider bg-black px-1.5 py-0.5 rounded border border-blue-500/20">
+              EN ESPERA
             </span>
           </div>
           <div className="space-y-0.5">
-            <span className="text-[10.5px] text-[#8C8C8C] block font-sans">Fino Recuperado Disponible</span>
+            <span className="text-[10px] text-[#8C8C8C] block font-sans">Por Procesar</span>
             <div className="flex items-baseline gap-1.5">
-              <span className="text-2xl font-mono font-bold text-[#E5E5E5] tracking-tight">{(readyEgressWeight / 1000).toFixed(3)}</span>
-              <span className="text-[10.5px] text-[#8C8C8C]">kg Au</span>
+              <span className="text-xl font-mono font-bold text-[#E5E5E5] tracking-tight">{(counterOroEnEspera.pesoBruto / 1000).toFixed(2)}</span>
+              <span className="text-[10px] text-[#8C8C8C]">kg</span>
             </div>
-            <p className="text-[10px] text-[#8C8C8C] font-mono flex items-center gap-1 pt-1.5 border-t border-neutral-800/20">
-              <ArrowUpRight className="w-3 h-3 text-emerald-400" />
-              Lotes Disponibles: <strong className="text-[#E5E5E5]">{readyEgressCount} lotes</strong>
+            <p className="text-[9px] text-[#8C8C8C] font-mono flex items-center gap-1 pt-1.5 border-t border-neutral-800/20">
+              {counterOroEnEspera.barras} barras en cola
+            </p>
+          </div>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: -80 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.29, duration: 0.55, ease: [0.25, 0.46, 0.45, 0.94] }}
+          className="relative group bg-[#1C1C1C] p-3 rounded-xl border border-neutral-800/40 shadow-[0_4px_12px_rgba(0,0,0,0.2)] overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,0,0,0.4)] hover:border-red-500/30"
+        >
+          <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-red-500/5 to-transparent rounded-bl-full pointer-events-none"></div>
+          <div className="flex justify-between items-center mb-2">
+            <div className="p-1.5 bg-black rounded-lg border border-red-500/20">
+              <TrendingDown className="w-4 h-4 text-red-400" />
+            </div>
+            <span className="text-[8px] text-red-400 font-mono tracking-wider bg-black px-1.5 py-0.5 rounded border border-red-500/20">
+              MERMA
+            </span>
+          </div>
+          <div className="space-y-0.5">
+            <span className="text-[10px] text-[#8C8C8C] block font-sans">Pérdida en Fundición</span>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-xl font-mono font-bold text-[#E5E5E5] tracking-tight">{(counterMerma.merma / 1000).toFixed(3)}</span>
+              <span className="text-[10px] text-[#8C8C8C]">kg</span>
+            </div>
+            <p className="text-[9px] font-mono flex items-center gap-1 pt-1.5 border-t border-neutral-800/20">
+              <span className={`font-bold ${counterMerma.porcentaje <= 1 ? 'text-emerald-400' : 'text-red-400'}`}>
+                {counterMerma.porcentaje.toFixed(2)}%
+              </span>
+              <span className="text-[#8C8C8C]">del esperado</span>
             </p>
           </div>
         </motion.div>
@@ -537,7 +574,7 @@ export default function DashboardPage() {
         >
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-6">
             <div>
-              <h3 className="font-sans font-semibold text-[#E5E5E5] text-base">Ingresos de Clientes (Proporción de Masa)</h3>
+              <h3 className="font-sans font-semibold text-[#E5E5E5] text-base">Ingresos de Material</h3>
               <p className="text-[11px] text-[#8C8C8C] font-sans mt-0.5">Distribución de gramos brutos aportados por cada socio aurífero.</p>
             </div>
             <div className="flex bg-black border border-neutral-800/60 p-0.5 rounded-lg text-[10px] font-mono self-start md:self-auto">
@@ -576,6 +613,64 @@ export default function DashboardPage() {
               </div>
             ))}
           </div>
+
+          <button
+            type="button"
+            onClick={() => setShowIngresosTable(!showIngresosTable)}
+            className="mt-4 w-full flex items-center justify-center gap-2 py-2 bg-black border border-neutral-800/40 rounded-xl text-[10px] font-mono text-[#8C8C8C] uppercase tracking-wider hover:text-[#D5B042] hover:border-[#D5B042]/20 transition-all cursor-pointer"
+          >
+            <Table2 className="w-3.5 h-3.5" />
+            {showIngresosTable ? 'Ocultar Tabla' : 'Ver Tabla de Datos'}
+            <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showIngresosTable ? 'rotate-180' : ''}`} />
+          </button>
+
+          <AnimatePresence>
+            {showIngresosTable && (
+              <motion.div
+                key="ingresos-table"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.3, ease: 'easeInOut' }}
+                className="overflow-hidden"
+              >
+                <div className="mt-3 bg-black border border-neutral-800/40 rounded-xl overflow-hidden">
+                  <table className="w-full text-left text-xs font-sans">
+                    <thead>
+                      <tr className="border-b border-neutral-800/40">
+                        <th className="px-4 py-2.5 text-[9px] font-mono text-[#8C8C8C] uppercase tracking-wider">Socio</th>
+                        <th className="px-4 py-2.5 text-[9px] font-mono text-[#8C8C8C] uppercase tracking-wider">Código</th>
+                        <th className="px-4 py-2.5 text-[9px] font-mono text-[#8C8C8C] uppercase tracking-wider text-right">Peso Bruto (g)</th>
+                        <th className="px-4 py-2.5 text-[9px] font-mono text-[#8C8C8C] uppercase tracking-wider text-center"># Barras</th>
+                        <th className="px-4 py-2.5 text-[9px] font-mono text-[#8C8C8C] uppercase tracking-wider text-center">Ley Prom. (‰)</th>
+                        <th className="px-4 py-2.5 text-[9px] font-mono text-[#8C8C8C] uppercase tracking-wider text-right">% Total</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-neutral-800/20 text-[#E5E5E5]/90">
+                      {supplierData.map((s) => {
+                        const total = supplierData.reduce((sum, x) => sum + x.value, 0) || 1;
+                        const pct = (s.value / total * 100);
+                        return (
+                          <tr key={s.id} className="hover:bg-[#141414]/85 transition-colors">
+                            <td className="px-4 py-2.5 font-sans">{s.name}</td>
+                            <td className="px-4 py-2.5 font-mono font-bold text-[#D5B042]">{s.code}</td>
+                            <td className="px-4 py-2.5 font-mono text-right">{s.value.toLocaleString()}</td>
+                            <td className="px-4 py-2.5 font-mono text-center">{s.count}</td>
+                            <td className="px-4 py-2.5 font-mono text-center">{s.avgLey}</td>
+                            <td className="px-4 py-2.5 font-mono text-right">
+                              <span className={`font-bold ${pct >= 30 ? 'text-[#D5B042]' : 'text-[#8C8C8C]'}`}>
+                                {pct.toFixed(1)}%
+                              </span>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.div>
  
         <motion.div
@@ -586,8 +681,8 @@ export default function DashboardPage() {
         >
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-6">
             <div>
-              <h3 className="font-sans font-semibold text-[#E5E5E5] text-base">Egresos de Clientes (Pureza Recuperada)</h3>
-              <p className="text-[11px] text-[#8C8C8C] font-sans mt-0.5">Distribución proporcional de material de salida despachado por cliente.</p>
+              <h3 className="font-sans font-semibold text-[#E5E5E5] text-base">Egresos de Material</h3>
+              <p className="text-[11px] text-[#8C8C8C] font-sans mt-0.5">Distribución de material de salida despachado por cliente.</p>
             </div>
             <div className="flex bg-black border border-neutral-800/60 p-0.5 rounded-lg text-[10px] font-mono self-start md:self-auto">
               <button
@@ -625,6 +720,62 @@ export default function DashboardPage() {
               </div>
             ))}
           </div>
+
+          <button
+            type="button"
+            onClick={() => setShowEgresosTable(!showEgresosTable)}
+            className="mt-4 w-full flex items-center justify-center gap-2 py-2 bg-black border border-neutral-800/40 rounded-xl text-[10px] font-mono text-[#8C8C8C] uppercase tracking-wider hover:text-[#A65B17] hover:border-[#A65B17]/20 transition-all cursor-pointer"
+          >
+            <Table2 className="w-3.5 h-3.5" />
+            {showEgresosTable ? 'Ocultar Tabla' : 'Ver Tabla de Datos'}
+            <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showEgresosTable ? 'rotate-180' : ''}`} />
+          </button>
+
+          <AnimatePresence>
+            {showEgresosTable && (
+              <motion.div
+                key="egresos-table"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.3, ease: 'easeInOut' }}
+                className="overflow-hidden"
+              >
+                <div className="mt-3 bg-black border border-neutral-800/40 rounded-xl overflow-hidden">
+                  <table className="w-full text-left text-xs font-sans">
+                    <thead>
+                      <tr className="border-b border-neutral-800/40">
+                        <th className="px-4 py-2.5 text-[9px] font-mono text-[#8C8C8C] uppercase tracking-wider">Cliente</th>
+                        <th className="px-4 py-2.5 text-[9px] font-mono text-[#8C8C8C] uppercase tracking-wider">Código</th>
+                        <th className="px-4 py-2.5 text-[9px] font-mono text-[#8C8C8C] uppercase tracking-wider text-right">Peso Egresado (g)</th>
+                        <th className="px-4 py-2.5 text-[9px] font-mono text-[#8C8C8C] uppercase tracking-wider text-center"># Despachos</th>
+                        <th className="px-4 py-2.5 text-[9px] font-mono text-[#8C8C8C] uppercase tracking-wider text-right">% Total</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-neutral-800/20 text-[#E5E5E5]/90">
+                      {clientData.map((c) => {
+                        const total = clientData.reduce((sum, x) => sum + x.value, 0) || 1;
+                        const pct = (c.value / total * 100);
+                        return (
+                          <tr key={c.id} className="hover:bg-[#141414]/85 transition-colors">
+                            <td className="px-4 py-2.5 font-sans">{c.name}</td>
+                            <td className="px-4 py-2.5 font-mono font-bold text-[#A65B17]">{c.code}</td>
+                            <td className="px-4 py-2.5 font-mono text-right">{c.value.toLocaleString()}</td>
+                            <td className="px-4 py-2.5 font-mono text-center">{c.count}</td>
+                            <td className="px-4 py-2.5 font-mono text-right">
+                              <span className={`font-bold ${pct >= 30 ? 'text-[#A65B17]' : 'text-[#8C8C8C]'}`}>
+                                {pct.toFixed(1)}%
+                              </span>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.div>
 
       </div>
@@ -734,8 +885,41 @@ export default function DashboardPage() {
               </BarChart>
             </ResponsiveContainer>
           )}
-        </div>
-      </motion.div>
+          </div>
+
+          <div className="mt-4 bg-black border border-neutral-800/40 rounded-xl overflow-hidden">
+            <table className="w-full text-left text-xs font-sans">
+              <thead>
+                <tr className="border-b border-neutral-800/40">
+                  <th className="px-4 py-2.5 text-[9px] font-mono text-[#8C8C8C] uppercase tracking-wider">Cliente</th>
+                  <th className="px-4 py-2.5 text-[9px] font-mono text-[#8C8C8C] uppercase tracking-wider">Código</th>
+                  <th className="px-4 py-2.5 text-[9px] font-mono text-[#8C8C8C] uppercase tracking-wider text-right">Peso Egresado (g)</th>
+                  <th className="px-4 py-2.5 text-[9px] font-mono text-[#8C8C8C] uppercase tracking-wider text-center"># Despachos</th>
+                  <th className="px-4 py-2.5 text-[9px] font-mono text-[#8C8C8C] uppercase tracking-wider text-right">% Total</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-neutral-800/20 text-[#E5E5E5]/90">
+                {clientData.map((c) => {
+                  const total = clientData.reduce((sum, x) => sum + x.value, 0) || 1;
+                  const pct = (c.value / total * 100);
+                  return (
+                    <tr key={c.id} className="hover:bg-[#141414]/85 transition-colors">
+                      <td className="px-4 py-2.5 font-sans">{c.name}</td>
+                      <td className="px-4 py-2.5 font-mono font-bold text-[#A65B17]">{c.code}</td>
+                      <td className="px-4 py-2.5 font-mono text-right">{c.value.toLocaleString()}</td>
+                      <td className="px-4 py-2.5 font-mono text-center">{c.count}</td>
+                      <td className="px-4 py-2.5 font-mono text-right">
+                        <span className={`font-bold ${pct >= 30 ? 'text-[#A65B17]' : 'text-[#8C8C8C]'}`}>
+                          {pct.toFixed(1)}%
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </motion.div>
 
     </motion.div>
   );
