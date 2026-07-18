@@ -9,7 +9,14 @@ datasource db {
 
 enum BarStatus {
   IN_STOCK
+  PROCESANDO
+  COMPLETADO
   EXITED
+}
+
+enum ProcessStatus {
+  OPEN
+  CLOSED
 }
 
 model Client {
@@ -19,18 +26,18 @@ model Client {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  bars        Bar[]
-  exitDetails ExitDetail[]
-  processes   Process[]
+  bars      Bar[]
+  processes Process[]
 }
 
 model Process {
-  id        String   @id @default(uuid())
+  id        String        @id @default(uuid())
   name      String
   clientId  String
-  client    Client   @relation(fields: [clientId], references: [id])
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  status    ProcessStatus @default(OPEN)
+  client    Client        @relation(fields: [clientId], references: [id])
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
 
   lots Lot[]
 
@@ -38,14 +45,20 @@ model Process {
 }
 
 model Lot {
-  id        String   @id @default(uuid())
-  name      String
-  processId String
-  process   Process  @relation(fields: [processId], references: [id])
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String    @id @default(uuid())
+  name        String
+  processId   String
+  process     Process   @relation(fields: [processId], references: [id])
+  operator    String?
+  castingTemp Float?
+  moldCode    String?
+  recovered   Decimal?  @db.Decimal(15, 4)
+  recoveryAt  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
-  bars Bar[]
+  bars         Bar[]
+  exitDetails  ExitDetail[]
 }
 
 model Bar {
@@ -54,6 +67,8 @@ model Bar {
   grossWeight Decimal   @db.Decimal(15, 4)
   purity      Decimal   @db.Decimal(7, 4)
   fineWeight  Decimal   @db.Decimal(15, 4)
+  leyAg        Decimal?  @db.Decimal(7, 4)
+  fineWeightAg Decimal?  @db.Decimal(15, 4)
   status      BarStatus @default(IN_STOCK)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
@@ -82,10 +97,10 @@ model ExitDetail {
   exitId   String
   exit     MaterialExit @relation(fields: [exitId], references: [id])
 
-  clientId String
-  client   Client @relation(fields: [clientId], references: [id])
+  lotId String
+  lot   Lot @relation(fields: [lotId], references: [id])
 
   bars Bar[]
 
-  @@unique([exitId, clientId])
+  @@unique([exitId, lotId])
 }

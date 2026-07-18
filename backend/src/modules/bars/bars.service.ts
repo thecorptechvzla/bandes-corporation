@@ -1,15 +1,16 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service.js';
 
 @Injectable()
 export class BarsService {
   constructor(private prisma: PrismaService) {}
 
-  async findAll(filters?: { status?: string; clientId?: string }) {
+  async findAll(filters?: { status?: string; clientId?: string; lotId?: string }) {
     return this.prisma.bar.findMany({
       where: {
         ...(filters?.status && { status: filters.status as any }),
         ...(filters?.clientId && { clientId: filters.clientId }),
+        ...(filters?.lotId && { lotId: filters.lotId }),
       },
       include: { client: { select: { id: true, name: true } } },
       orderBy: { createdAt: 'asc' },
@@ -25,37 +26,17 @@ export class BarsService {
     return bar;
   }
 
-  async autoSelect(data: { clientId: string; requiredWeight: number }) {
-    const bars = await this.prisma.bar.findMany({
-      where: { clientId: data.clientId, status: 'IN_STOCK' },
-      orderBy: { createdAt: 'asc' },
-    });
-
-    let accumulated = 0;
-    const selected: typeof bars = [];
-
-    for (const bar of bars) {
-      if (accumulated >= data.requiredWeight) break;
-      accumulated += Number(bar.fineWeight);
-      selected.push(bar);
-    }
-
-    if (accumulated < data.requiredWeight) {
-      throw new BadRequestException(
-        `Saldo insuficiente. Disponible: ${accumulated.toFixed(4)} kg, requerido: ${data.requiredWeight.toFixed(4)} kg`,
-      );
-    }
-
-    return { bars: selected, totalFineWeight: accumulated };
-  }
-
   async create(data: {
     barNumber: string;
     grossWeight: number;
     purity: number;
     clientId: string;
+    leyAg?: number;
   }) {
     const fineWeight = data.grossWeight * (data.purity / 1000);
+    const fineWeightAg = data.leyAg
+      ? data.grossWeight * (data.leyAg / 1000)
+      : null;
 
     return this.prisma.bar.create({
       data: {
@@ -63,8 +44,35 @@ export class BarsService {
         grossWeight: data.grossWeight,
         purity: data.purity,
         fineWeight,
+        leyAg: data.leyAg ?? null,
+        fineWeightAg,
         clientId: data.clientId,
       },
+      include: { client: { select: { id: true, name: true } } },
+    });
+  }
+
+  async remove(id: string) {
+    const bar = await this.findOne(id);
+    if (bar.status === 'EXITED' || bar.exitDetailId) {
+      throw new BadRequestException('No se puede eliminar una barra que ya ha sido egresada');
+    }
+    return this.prisma.bar.delete({
+      where: { id },
+    });
+  }
+
+  async update(
+    id: string,
+    data: {
+      lotId?: string | null;
+      status?: 'IN_STOCK' | 'PROCESANDO' | 'COMPLETADO' | 'EXITED';
+    },
+  ) {
+    const bar = await this.findOne(id);
+    return this.prisma.bar.update({
+      where: { id },
+      data,
       include: { client: { select: { id: true, name: true } } },
     });
   }

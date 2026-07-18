@@ -59,14 +59,14 @@ export class ClientsService {
   async balance(id: string) {
     const client = await this.findOne(id);
 
-    const [barsResult, exitsResult, inStockResult] = await Promise.all([
+    const [barsResult, exitedBarsResult, inStockResult] = await Promise.all([
       this.prisma.bar.aggregate({
         where: { clientId: id },
         _sum: { fineWeight: true },
       }),
-      this.prisma.exitDetail.aggregate({
-        where: { clientId: id },
-        _sum: { weightAported: true },
+      this.prisma.bar.aggregate({
+        where: { clientId: id, status: 'EXITED' },
+        _sum: { fineWeight: true },
       }),
       this.prisma.bar.aggregate({
         where: { clientId: id, status: 'IN_STOCK' },
@@ -75,7 +75,7 @@ export class ClientsService {
     ]);
 
     const totalReceived = Number(barsResult._sum.fineWeight ?? 0);
-    const totalExited = Number(exitsResult._sum.weightAported ?? 0);
+    const totalExited = Number(exitedBarsResult._sum.fineWeight ?? 0);
     const inStock = Number(inStockResult._sum.fineWeight ?? 0);
 
     return {
