@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useGoldTraceability } from '../../src/context/GoldTraceabilityContext';
-import { CastingLot, GoldBar } from '../../src/types';
+import { CastingLot, GoldBar, Transaction } from '../../src/types';
+import { jsPDF } from 'jspdf';
 import { 
   ArrowLeftRight, 
   User, 
@@ -23,8 +24,31 @@ import {
   Users,
   ChevronDown,
   UserPlus,
-  CheckCircle2
+  CheckCircle2,
+  Download
 } from 'lucide-react';
+
+interface DispatchLotInfo {
+  lotCode: string;
+  moldCode: string;
+  assignedWeight: number;
+  expectedTotal: number;
+  castingTemp: number;
+  supplierNames: string[];
+}
+
+interface DispatchResultData {
+  transaction: Transaction;
+  clientName: string;
+  clientCode: string;
+  clientLocation: string;
+  clientId: string;
+  reference: string;
+  lots: DispatchLotInfo[];
+  requiredGrams: number | null;
+  totalDispatched: number;
+  dispatchedAt: string;
+}
 
 export default function EgresosPage() {
   const { suppliers, goldBars, castingLots, createEgreso } = useGoldTraceability();
@@ -45,6 +69,8 @@ export default function EgresosPage() {
   const [isBulkConfirmOpen, setIsBulkConfirmOpen] = useState<boolean>(false);
   const [originFilter, setOriginFilter] = useState<string>('');
   const [dispatchingState, setDispatchingState] = useState<{ message: string; status: 'dispatching' | 'success' } | null>(null);
+  const [dispatchResultData, setDispatchResultData] = useState<DispatchResultData | null>(null);
+  const [bulkDispatchResults, setBulkDispatchResults] = useState<DispatchResultData[]>([]);
 
   useEffect(() => {
     if (activeClientIds.length > 0) {
@@ -280,9 +306,42 @@ export default function EgresosPage() {
 
     const result = createEgreso(clientId, clientLotIds, ref, customWeights);
 
-    if (result.success) {
+    if (result.success && result.transaction) {
       const client = suppliers.find(s => s.id === clientId);
       
+      const dispatchLots: DispatchLotInfo[] = clientLotIds.map(lotId => {
+        const lot = lotsWithAvailableGold.find(l => l.id === lotId);
+        const assignedWeight = resolvedAssignments.lotWeights[lotId]?.[clientId] ?? lot?.availableToEgress ?? 0;
+        const supplierNames = (lot?.originSupplierIds || [])
+          .map(id => suppliers.find(s => s.id === id))
+          .filter(Boolean)
+          .map(s => `${s!.name} (${s!.code})`);
+        return {
+          lotCode: lot?.code || lotId,
+          moldCode: lot?.moldCode || 'N/A',
+          assignedWeight,
+          expectedTotal: lot?.expectedTotal || 0,
+          castingTemp: lot?.castingTemp || 0,
+          supplierNames,
+        };
+      });
+
+      const requiredStr = clientRequiredGrams[clientId];
+      const requiredGrams = requiredStr ? parseFloat(requiredStr) : null;
+
+      const resultData: DispatchResultData = {
+        transaction: result.transaction,
+        clientName: client?.name || 'Desconocido',
+        clientCode: client?.code || 'N/A',
+        clientLocation: client?.location || 'N/A',
+        clientId,
+        reference: ref,
+        lots: dispatchLots,
+        requiredGrams: requiredGrams && !isNaN(requiredGrams) ? requiredGrams : null,
+        totalDispatched: result.transaction.weight,
+        dispatchedAt: result.transaction.date,
+      };
+
       setAssignedLots(prev => {
         const updated = { ...prev };
         Object.keys(updated).forEach(id => {
@@ -308,9 +367,10 @@ export default function EgresosPage() {
       });
 
       setConfirmingClientId(null);
+      setDispatchResultData(resultData);
+      setBulkDispatchResults([]);
       setDispatchingState({ message: `Ref: ${ref} · ${client?.name}`, status: 'dispatching' });
       setTimeout(() => setDispatchingState(prev => prev ? { ...prev, status: 'success' } : null), 1000);
-      setTimeout(() => setDispatchingState(null), 3500);
     } else {
       setEgresoError(result.error || 'Ocurrió un error en la liquidación.');
     }
@@ -332,6 +392,7 @@ export default function EgresosPage() {
     let successCount = 0;
     const successes: string[] = [];
     const failures: string[] = [];
+    const bulkResults: DispatchResultData[] = [];
 
     clientsWithAssignments.forEach(clientId => {
       const clientLotIds = Object.entries(assignedLots)
@@ -361,9 +422,42 @@ export default function EgresosPage() {
 
       const result = createEgreso(clientId, clientLotIds, ref, customWeights);
 
-      if (result.success) {
+      if (result.success && result.transaction) {
         successCount++;
         successes.push(`${client?.name} (${ref})`);
+
+        const dispatchLots: DispatchLotInfo[] = clientLotIds.map(lotId => {
+          const lot = lotsWithAvailableGold.find(l => l.id === lotId);
+          const assignedWeight = resolvedAssignments.lotWeights[lotId]?.[clientId] ?? lot?.availableToEgress ?? 0;
+          const supplierNames = (lot?.originSupplierIds || [])
+            .map(id => suppliers.find(s => s.id === id))
+            .filter(Boolean)
+            .map(s => `${s!.name} (${s!.code})`);
+          return {
+            lotCode: lot?.code || lotId,
+            moldCode: lot?.moldCode || 'N/A',
+            assignedWeight,
+            expectedTotal: lot?.expectedTotal || 0,
+            castingTemp: lot?.castingTemp || 0,
+            supplierNames,
+          };
+        });
+
+        const requiredStr = clientRequiredGrams[clientId];
+        const requiredGrams = requiredStr ? parseFloat(requiredStr) : null;
+
+        bulkResults.push({
+          transaction: result.transaction,
+          clientName: client?.name || 'Desconocido',
+          clientCode: client?.code || 'N/A',
+          clientLocation: client?.location || 'N/A',
+          clientId,
+          reference: ref,
+          lots: dispatchLots,
+          requiredGrams: requiredGrams && !isNaN(requiredGrams) ? requiredGrams : null,
+          totalDispatched: result.transaction.weight,
+          dispatchedAt: result.transaction.date,
+        });
         
         setAssignedLots(prev => {
           const updated = { ...prev };
@@ -395,15 +489,199 @@ export default function EgresosPage() {
 
     if (successCount > 0) {
       setIsBulkConfirmOpen(false);
+      setDispatchResultData(null);
+      setBulkDispatchResults(bulkResults);
       setDispatchingState({ message: `Se liquidaron ${successCount} despachos simultáneos: ${successes.join(', ')}`, status: 'dispatching' });
       setTimeout(() => setDispatchingState(prev => prev ? { ...prev, status: 'success' } : null), 1000);
-      setTimeout(() => setDispatchingState(null), 3500);
     }
 
     if (failures.length > 0) {
       setEgresoError(`Ocurrieron algunos errores en los despachos: ${failures.join('; ')}`);
     }
   };
+
+  const generateDispatchPDF = useCallback((data: DispatchResultData) => {
+    const doc = new jsPDF('p', 'mm', 'a4');
+    const pageWidth = 210;
+    const margin = 15;
+    const contentWidth = pageWidth - margin * 2;
+    let y = 15;
+
+    doc.setFillColor(26, 26, 26);
+    doc.rect(0, 0, pageWidth, 45, 'F');
+
+    doc.setTextColor(213, 176, 66);
+    doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold');
+    doc.text('BANDES CORPORATION', margin, y + 8);
+
+    doc.setTextColor(200, 200, 200);
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Sistema de Trazabilidad de Oro Fine', margin, y + 15);
+
+    doc.setTextColor(213, 176, 66);
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('COMPROBANTE DE DESPACHO', pageWidth - margin, y + 8, { align: 'right' });
+
+    doc.setTextColor(160, 160, 160);
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Ref: ${data.reference}`, pageWidth - margin, y + 15, { align: 'right' });
+    doc.text(`ID Transacción: ${data.transaction.id}`, pageWidth - margin, y + 21, { align: 'right' });
+
+    y = 55;
+
+    doc.setDrawColor(213, 176, 66);
+    doc.setLineWidth(0.5);
+    doc.line(margin, y, pageWidth - margin, y);
+    y += 8;
+
+    doc.setTextColor(40, 40, 40);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text('DATOS DEL CLIENTE', margin, y);
+    y += 7;
+
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(60, 60, 60);
+
+    const clientData = [
+      [`Nombre: ${data.clientName}`, `Código: ${data.clientCode}`],
+      [`Ubicación: ${data.clientLocation || 'N/A'}`, `ID: ${data.clientId}`],
+      [`Fecha de Despacho: ${new Date(data.dispatchedAt).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`, ''],
+    ];
+
+    clientData.forEach(row => {
+      doc.text(row[0], margin, y);
+      if (row[1]) doc.text(row[1], pageWidth / 2, y);
+      y += 6;
+    });
+
+    y += 4;
+
+    doc.setDrawColor(200, 200, 200);
+    doc.setLineWidth(0.2);
+    doc.line(margin, y, pageWidth - margin, y);
+    y += 8;
+
+    doc.setTextColor(40, 40, 40);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text('DETALLE DE LOTES DESPACHADOS', margin, y);
+    y += 8;
+
+    doc.setFillColor(45, 45, 45);
+    doc.rect(margin, y - 4, contentWidth, 8, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(7.5);
+    doc.setFont('helvetica', 'bold');
+    doc.text('LOTE', margin + 2, y + 1);
+    doc.text('MOLDE', margin + 35, y + 1);
+    doc.text('ORIGEN (PROVEEDOR)', margin + 60, y + 1);
+    doc.text('ASIGNADO (g)', margin + 130, y + 1);
+    y += 8;
+
+    doc.setTextColor(60, 60, 60);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+
+    data.lots.forEach((lot, index) => {
+      if (y > 260) {
+        doc.addPage();
+        y = 20;
+      }
+
+      if (index % 2 === 0) {
+        doc.setFillColor(245, 245, 245);
+        doc.rect(margin, y - 4, contentWidth, 8, 'F');
+      }
+
+      doc.text(lot.lotCode, margin + 2, y + 1);
+      doc.text(lot.moldCode, margin + 35, y + 1);
+
+      const supplierText = lot.supplierNames.join(', ');
+      doc.setFontSize(7);
+      doc.text(supplierText.length > 28 ? supplierText.substring(0, 28) + '...' : supplierText, margin + 60, y + 1);
+
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(166, 91, 23);
+      doc.setFontSize(8);
+      doc.text(lot.assignedWeight.toLocaleString('es-ES'), margin + 133, y + 1);
+
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(60, 60, 60);
+      y += 8;
+    });
+
+    y += 4;
+    doc.setDrawColor(200, 200, 200);
+    doc.setLineWidth(0.2);
+    doc.line(margin, y, pageWidth - margin, y);
+    y += 8;
+
+    doc.setFillColor(255, 248, 220);
+    doc.rect(margin, y - 4, contentWidth, 22, 'F');
+    doc.setDrawColor(213, 176, 66);
+    doc.setLineWidth(0.3);
+    doc.rect(margin, y - 4, contentWidth, 22, 'S');
+
+    doc.setTextColor(40, 40, 40);
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'bold');
+    doc.text('RESUMEN DEL DESPACHO', margin + 3, y + 2);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8.5);
+
+    if (data.requiredGrams !== null) {
+      doc.text(`Oro Requerido: ${data.requiredGrams.toLocaleString('es-ES')} g`, margin + 3, y + 9);
+      doc.text(`Oro Entregado: ${data.totalDispatched.toLocaleString('es-ES')} g`, margin + 3, y + 15);
+      const coverage = data.requiredGrams > 0 ? ((data.totalDispatched / data.requiredGrams) * 100).toFixed(1) : '100';
+      doc.text(`Cobertura: ${coverage}%`, margin + contentWidth / 2, y + 9);
+    } else {
+      doc.text(`Total Despachado: ${data.totalDispatched.toLocaleString('es-ES')} g Au`, margin + 3, y + 9);
+    }
+
+    doc.text(`Lotes: ${data.lots.length}`, margin + contentWidth / 2, y + 15);
+    y += 28;
+
+    if (y > 240) {
+      doc.addPage();
+      y = 20;
+    }
+
+    doc.setDrawColor(180, 180, 180);
+    doc.setLineWidth(0.3);
+
+    const signatureY = y + 5;
+    doc.line(margin, signatureY, margin + 60, signatureY);
+    doc.line(pageWidth - margin - 60, signatureY, pageWidth - margin, signatureY);
+
+    doc.setTextColor(80, 80, 80);
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Firma del Despachante', margin + 30, signatureY + 5, { align: 'center' });
+    doc.text('Firma del Receptor', pageWidth - margin - 30, signatureY + 5, { align: 'center' });
+
+    y = signatureY + 18;
+
+    doc.setTextColor(160, 160, 160);
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'italic');
+    doc.text('Este documento es un comprobante generado automáticamente por el Sistema de Trazabilidad Control Mining.', pageWidth / 2, y, { align: 'center' });
+    doc.text(`Generado: ${new Date().toLocaleString('es-ES')}`, pageWidth / 2, y + 4, { align: 'center' });
+
+    doc.save(`Despacho_${data.clientCode}_${data.reference}.pdf`);
+  }, []);
+
+  const generateBulkDispatchPDFs = useCallback((results: DispatchResultData[]) => {
+    results.forEach((result) => {
+      generateDispatchPDF(result);
+    });
+  }, [generateDispatchPDF]);
 
   const focusedClient = useMemo(() => {
     return suppliers.find(s => s.id === selectedTerminalClientId);
@@ -454,14 +732,14 @@ export default function EgresosPage() {
         className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-neutral-900 pb-4"
       >
         <div>
-          <h1 className="text-lg md:text-xl font-sans font-medium text-[#E5E5E5] tracking-tight flex items-center gap-2">
-            <ArrowLeftRight className="w-5 h-5 text-[#A65B17] filter drop-shadow-[0_0_8px_rgba(166,91,23,0.3)]" />
-            Mesa de Salida <span className="text-[#D5B042] font-semibold">Despacho Multi-Cliente</span>
-          </h1>
-          <p className="text-[11px] text-[#8C8C8C] mt-0.5 max-w-xl">
-            Asigne y remita lingotes de oro fino de forma simultánea. Administre su mesa de despacho con una única tarjeta inteligente enfocada.
-          </p>
-        </div>
+                  <h1 className="text-2xl md:text-3xl font-sans font-medium text-[#E5E5E5] tracking-tight flex items-center gap-2">
+                    <ArrowLeftRight className="w-8 h-8 text-[#A65B17] filter drop-shadow-[0_0_8px_rgba(166,91,23,0.3)] animate-pulse" />
+                    Egreso <span className="text-[#D5B042] font-semibold">del Material</span>
+                  </h1>
+                  <p className="text-xs text-[#8C8C8C] mt-1">
+            Asigne lingotes de oro de forma simultánea. Administre su mesa de despacho.
+                  </p>
+                </div>
 
         <div className="relative shrink-0 self-start sm:self-auto">
           <button
@@ -759,7 +1037,7 @@ export default function EgresosPage() {
                                 <span className="font-bold text-[#E5E5E5]">{lot.code}</span>
                                 <span className="text-[8px] opacity-65 bg-neutral-900 border border-neutral-800/60 px-1 py-0.1 rounded">{lot.moldCode}</span>
                               </div>
-                              <div className="text-[8.5px] text-[#8C8C8C]/50 mt-0.5">FE: {lot.expectedTotal.toFixed(0)}g | Temp: {lot.castingTemp}°C</div>
+                              <div className="text-[8.5px] text-[#8C8C8C]/50 mt-0.5">Temp: {lot.castingTemp}°C</div>
                             </div>
                             <div className="flex items-center gap-2">
                               <div className="text-right">
@@ -916,7 +1194,7 @@ export default function EgresosPage() {
                             </span>
                           </div>
                           <div className="text-[9px] font-mono text-[#8C8C8C] mt-0.5">
-                            Masa: {(lot.grossWeightTotal / 1000).toFixed(1)}kg | FE: {lot.expectedTotal.toFixed(0)}g
+                            Masa: {(lot.grossWeightTotal / 1000).toFixed(1)}kg
                           </div>
                           {lot.originSupplierIds?.length > 0 && (
                             <div className="text-[9px] font-mono text-[#8C8C8C] mt-0.5 flex items-center gap-1">
@@ -1409,7 +1687,53 @@ export default function EgresosPage() {
                     <CheckCircle2 className="w-8 h-8 text-white" />
                   </motion.div>
                   <h3 className="text-[#D5B042] font-bold text-base mb-1 text-center">Despacho Completado</h3>
-                  <p className="text-gray-400 text-xs text-center">{dispatchingState.message}</p>
+                  <p className="text-gray-400 text-xs text-center mb-5">{dispatchingState.message}</p>
+
+                  {dispatchResultData && (
+                    <div className="w-full space-y-2.5">
+                      <button
+                        onClick={() => {
+                          generateDispatchPDF(dispatchResultData);
+                        }}
+                        className="w-full py-2.5 bg-gradient-to-r from-[#A65B17] to-[#D5B042] text-black font-bold text-xs uppercase tracking-wider rounded-xl hover:brightness-110 transition-all duration-200 cursor-pointer shadow-[0_4px_12px_rgba(166,91,23,0.3)] flex items-center justify-center gap-2"
+                      >
+                        <Download className="w-4 h-4" />
+                        Descargar Comprobante PDF
+                      </button>
+                      <button
+                        onClick={() => {
+                          setDispatchingState(null);
+                          setDispatchResultData(null);
+                        }}
+                        className="w-full py-2 bg-black hover:bg-neutral-900 border border-neutral-800/60 text-gray-300 font-semibold text-xs rounded-xl transition-colors cursor-pointer"
+                      >
+                        Cerrar
+                      </button>
+                    </div>
+                  )}
+
+                  {bulkDispatchResults.length > 0 && (
+                    <div className="w-full space-y-2.5">
+                      <button
+                        onClick={() => {
+                          generateBulkDispatchPDFs(bulkDispatchResults);
+                        }}
+                        className="w-full py-2.5 bg-gradient-to-r from-[#A65B17] to-[#D5B042] text-black font-bold text-xs uppercase tracking-wider rounded-xl hover:brightness-110 transition-all duration-200 cursor-pointer shadow-[0_4px_12px_rgba(166,91,23,0.3)] flex items-center justify-center gap-2"
+                      >
+                        <Download className="w-4 h-4" />
+                        Descargar {bulkDispatchResults.length} Comprobantes PDF
+                      </button>
+                      <button
+                        onClick={() => {
+                          setDispatchingState(null);
+                          setBulkDispatchResults([]);
+                        }}
+                        className="w-full py-2 bg-black hover:bg-neutral-900 border border-neutral-800/60 text-gray-300 font-semibold text-xs rounded-xl transition-colors cursor-pointer"
+                      >
+                        Cerrar
+                      </button>
+                    </div>
+                  )}
                 </>
               ) : (
                 <>
