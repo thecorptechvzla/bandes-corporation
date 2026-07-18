@@ -120,6 +120,11 @@ export default function ClientesPage() {
     setTimeout(() => setDeleteState(null), 3000);
   };
 
+  const formatRif = (raw: string) => {
+    if (raw.length !== 10) return raw;
+    return `${raw[0]}-${raw.slice(1, 9)}-${raw[9]}`;
+  };
+
   const isLoadingMutation = createClient.isPending || updateClient.isPending;
 
   return (
@@ -176,16 +181,20 @@ export default function ClientesPage() {
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="space-y-1">
                     <label className="text-[11px] font-mono text-[#8C8C8C] uppercase flex items-center gap-1">
-                      <Hash className="w-3 h-3" /> RIF
+                      <Hash className="w-3 h-3" /> RIF <span className="text-[#D5B042] font-bold">J-</span>
                     </label>
-                    <input
-                      type="text"
-                      placeholder="Ej: J-12345678-9"
-                      value={rif}
-                      onChange={(e) => setRif(e.target.value.toUpperCase())}
-                      className="w-full bg-black border border-neutral-800/40 rounded-lg px-3 py-2.5 text-xs font-sans text-[#E5E5E5] focus:outline-none focus:border-[#D5B042] transition-colors uppercase placeholder:text-neutral-800"
-                      required
-                    />
+                    <div className="relative">
+                      <span className="absolute left-3 top-2.5 text-xs font-mono text-[#D5B042] font-bold select-none pointer-events-none">J-</span>
+                      <input
+                        type="text"
+                        maxLength={9}
+                        placeholder="123456789"
+                        value={rif}
+                        onChange={(e) => setRif(e.target.value.replace(/\D/g, '').slice(0, 9))}
+                        className="w-full bg-black border border-neutral-800/40 rounded-lg pl-8 pr-3 py-2.5 text-xs font-sans text-[#E5E5E5] focus:outline-none focus:border-[#D5B042] transition-colors placeholder:text-neutral-800"
+                        required
+                      />
+                    </div>
                   </div>
 
                   <div className="space-y-1">
@@ -308,8 +317,8 @@ export default function ClientesPage() {
                   <tbody className="divide-y divide-neutral-800/20 text-[#E5E5E5]/90">
                     {filteredClients.map((client) => (
                       <tr key={client.id} className="hover:bg-[#141414]/85 transition-colors">
-                        <td className="py-3.5 pl-2 font-mono text-[#D5B042] font-bold text-[11px]">
-                          {client.rif}
+                        <td className="py-3.5 pl-2 font-mono text-[#D5B042] font-bold text-[11px] tracking-wider">
+                          {formatRif(client.rif)}
                         </td>
                         <td className="py-3.5 font-semibold">{client.name}</td>
                         <td className="py-3.5 text-[#8C8C8C] hidden sm:table-cell">

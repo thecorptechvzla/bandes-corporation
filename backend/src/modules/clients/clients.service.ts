@@ -5,6 +5,10 @@ import { PrismaService } from '../../prisma/prisma.service.js';
 export class ClientsService {
   constructor(private prisma: PrismaService) {}
 
+  private normalizeRif(raw: string): string {
+    return `J${raw}`;
+  }
+
   async findAll() {
     return this.prisma.client.findMany({ orderBy: { name: 'asc' } });
   }
@@ -16,20 +20,26 @@ export class ClientsService {
   }
 
   async create(data: { rif: string; name: string; contactInfo?: string }) {
-    const existing = await this.prisma.client.findUnique({ where: { rif: data.rif } });
+    const normalizedRif = this.normalizeRif(data.rif);
+
+    const existing = await this.prisma.client.findUnique({ where: { rif: normalizedRif } });
     if (existing) throw new BadRequestException('El RIF ya existe');
 
     return this.prisma.client.create({
-      data: { rif: data.rif, name: data.name.toUpperCase(), contactInfo: data.contactInfo },
+      data: { rif: normalizedRif, name: data.name.toUpperCase(), contactInfo: data.contactInfo },
     });
   }
 
   async update(id: string, data: { rif?: string; name?: string; contactInfo?: string }) {
     const client = await this.findOne(id);
 
-    if (data.rif && data.rif !== client.rif) {
-      const existing = await this.prisma.client.findUnique({ where: { rif: data.rif } });
-      if (existing) throw new BadRequestException('El RIF ya existe');
+    if (data.rif) {
+      const normalizedRif = this.normalizeRif(data.rif);
+      if (normalizedRif !== client.rif) {
+        const existing = await this.prisma.client.findUnique({ where: { rif: normalizedRif } });
+        if (existing) throw new BadRequestException('El RIF ya existe');
+      }
+      data.rif = normalizedRif;
     }
 
     return this.prisma.client.update({
