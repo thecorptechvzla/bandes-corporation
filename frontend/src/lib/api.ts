@@ -5,6 +5,13 @@ export const api = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
+export async function apiUpload<T>(path: string, formData: FormData): Promise<T> {
+  const res = await api.post(path, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return res.data;
+}
+
 api.interceptors.response.use(
   (res) => res,
   (err) => {

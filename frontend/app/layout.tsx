@@ -57,7 +57,7 @@ export default function RootLayout({
               
               <Sidebar />
 
-              <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
+              <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden lg:ml-16">
                 
                 {activeTab === 'dashboard' && (
                   <header className="h-20 border-b border-neutral-800/40 bg-[#121212]/90 backdrop-blur-md flex items-center justify-between px-6 shrink-0 z-30">

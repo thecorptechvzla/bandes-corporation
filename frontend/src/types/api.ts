@@ -141,3 +141,9 @@ export interface CreateClientRequest {
   rif: string;
   name: string;
 }
+
+export interface BulkUploadResult {
+  created: number;
+  skipped: number;
+  errors: { row: number; message: string }[];
+}

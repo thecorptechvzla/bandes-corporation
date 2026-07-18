@@ -1,13 +1,13 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useClients } from '@/hooks/useClients';
-import { useBars, useCreateBar } from '@/hooks/useBars';
+import { useBars, useCreateBar, useBulkUploadBars } from '@/hooks/useBars';
 import { api } from '@/lib/api';
 import { formatNumber } from '@/lib/format';
-import type { Bar } from '@/types/api';
+import type { Bar, BulkUploadResult } from '@/types/api';
 import {
   ChevronsUp,
   ClipboardList,
@@ -55,6 +55,10 @@ export default function IngresosPage() {
   const [formSuccess, setFormSuccess] = useState<string>('');
   const [isBulkOpen, setIsBulkOpen] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [bulkClientId, setBulkClientId] = useState<string>('');
+  const [bulkFile, setBulkFile] = useState<File | null>(null);
+  const [bulkError, setBulkError] = useState<string>('');
+  const [bulkResult, setBulkResult] = useState<BulkUploadResult | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [deletingState, setDeletingState] = useState<{ id: string; status: 'deleting' | 'success' } | null>(null);
   const [ingestingState, setIngestingState] = useState<{ barNumber: string; status: 'ingesting' | 'success' } | null>(null);
@@ -137,6 +141,69 @@ export default function IngresosPage() {
     } catch (err: any) {
       setFormError(err?.response?.data?.message || 'Error al registrar la barra.');
     }
+  };
+
+  const bulkUploadMutation = useBulkUploadBars();
+
+  const handleBulkUpload = async () => {
+    if (!bulkClientId || !bulkFile) return;
+    setBulkError('');
+    setBulkResult(null);
+
+    if (bulkFile.size > 10 * 1024 * 1024) {
+      setBulkError('El archivo excede el tamaño máximo de 10 MB');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', bulkFile);
+    formData.append('clientId', bulkClientId);
+
+    try {
+      const result = await bulkUploadMutation.mutateAsync(formData);
+      setBulkResult(result);
+      setBulkFile(null);
+      const fileInput = document.getElementById('bulk-file-input') as HTMLInputElement;
+      if (fileInput) fileInput.value = '';
+    } catch (e: any) {
+      const msg = e?.response?.data?.message || 'Error al procesar la carga masiva';
+      setBulkError(msg);
+    }
+  };
+
+  const downloadTemplate = async () => {
+    const ExcelJS = await import('exceljs');
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet('Plantilla Carga Masiva');
+
+    sheet.columns = [
+      { header: 'CÓDIGO', key: 'code', width: 22 },
+      { header: 'PESO BRUTO (g)', key: 'grossWeight', width: 18 },
+      { header: 'PUREZA (‰)', key: 'purity', width: 15 },
+      { header: 'LEY Ag (‰)', key: 'leyAg', width: 15 },
+      { header: 'LOTE N°', key: 'lot', width: 18 },
+    ];
+
+    const headerRow = sheet.getRow(1);
+    headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 };
+    headerRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1C1C1C' } };
+    headerRow.alignment = { horizontal: 'center' };
+
+    sheet.addRow(['', '', '', '', '']);
+    const noteRow = sheet.getRow(2);
+    noteRow.getCell(1).value = '* CÓDIGO, PESO BRUTO y PUREZA son obligatorios';
+    noteRow.getCell(1).font = { italic: true, color: { argb: 'FF8C8C8C' }, size: 9 };
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'plantilla-carga-masiva.xlsx';
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   const handleDeleteBar = async (id: string) => {
@@ -225,7 +292,7 @@ export default function IngresosPage() {
 
                   <div className="space-y-1">
                     <label className="text-[11px] font-mono text-[#8C8C8C] uppercase">Código de Barra Único</label>
-                    <input type="text" placeholder="Ej: BAR-IAC-9428" value={barNumber} onChange={(e) => setBarNumber(e.target.value)}
+                    <input type="text" placeholder="Ej: BAR-IAC-9428" value={barNumber} onChange={(e) => setBarNumber(e.target.value.toUpperCase())}
                       className="w-full bg-black border border-neutral-800/40 rounded-lg px-3 py-2.5 text-xs font-sans text-[#E5E5E5] focus:outline-none focus:border-[#D5B042] transition-colors uppercase placeholder:text-neutral-800" required />
                   </div>
 
@@ -332,10 +399,62 @@ export default function IngresosPage() {
                 </button>
                 {isBulkOpen && (
                   <div className="p-5 border-t border-neutral-800/20 bg-black space-y-4">
+                    <div className="space-y-1">
+                      <label className="text-[11px] font-mono text-[#8C8C8C] uppercase">Cliente</label>
+                      <select value={bulkClientId} onChange={(e) => setBulkClientId(e.target.value)}
+                        className="w-full bg-black border border-neutral-800/40 rounded-lg px-3 py-2.5 text-xs font-sans text-[#E5E5E5] focus:outline-none focus:border-[#D5B042] transition-colors cursor-pointer">
+                        <option value="">SELECCIONAR...</option>
+                        {clients.map(c => (
+                          <option key={c.id} value={c.id}>{c.name} ({c.rif})</option>
+                        ))}
+                      </select>
+                    </div>
+
                     <div className="border-2 border-dashed border-neutral-800/40 rounded-xl p-6 text-center hover:border-[#D5B042]/40 transition-colors">
                       <Upload className="w-8 h-8 text-emerald-500 mx-auto mb-2" />
-                      <span className="text-xs text-[#8C8C8C] block">Soporte para carga masiva próximamente</span>
-                      <span className="text-[10px] text-[#8C8C8C]/50 font-mono mt-1 block">Usa el formulario individual para registrar barras</span>
+                      <label className="flex flex-col items-center gap-1 cursor-pointer">
+                        <span className="text-xs text-[#E5E5E5] font-semibold">
+                          {bulkFile ? bulkFile.name : 'Seleccionar archivo Excel'}
+                        </span>
+                        <span className="text-[10px] text-[#8C8C8C] font-mono">
+                          {bulkFile ? `${(bulkFile.size / 1024).toFixed(1)} KB` : '.xlsx, .xls o .csv — máx 10 MB'}
+                        </span>
+                        <input
+                          id="bulk-file-input"
+                          type="file"
+                          accept=".xlsx,.xls,.csv"
+                          onChange={(e) => setBulkFile(e.target.files?.[0] ?? null)}
+                          className="hidden"
+                        />
+                      </label>
+                    </div>
+
+                    {bulkError && (
+                      <div className="p-3 bg-red-500/10 border border-red-500/30 text-red-400 text-xs rounded-lg">
+                        {bulkError}
+                      </div>
+                    )}
+
+                    <div className="flex gap-2">
+                      <button onClick={handleBulkUpload}
+                        disabled={!bulkClientId || !bulkFile || bulkUploadMutation.isPending}
+                        className="flex-1 py-3 px-4 rounded-xl bg-gradient-to-r from-[#B4941E] to-[#D5B042] text-black font-semibold text-xs uppercase tracking-wider hover:brightness-110 shadow-[0_4px_12px_rgba(180,148,30,0.15)] transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                        {bulkUploadMutation.isPending ? (
+                          <>PROCESANDO...</>
+                        ) : (
+                          <><Upload className="w-4 h-4" /> Subir Archivo</>
+                        )}
+                      </button>
+                      <button onClick={downloadTemplate}
+                        className="py-3 px-4 rounded-xl bg-black border border-neutral-800/40 text-[#8C8C8C] hover:text-[#E5E5E5] hover:border-neutral-700 font-semibold text-xs uppercase tracking-wider transition-all duration-200 cursor-pointer flex items-center gap-2 shrink-0">
+                        <Download className="w-4 h-4" /> Plantilla
+                      </button>
+                    </div>
+
+                    <div className="p-3 bg-black border border-neutral-800/20 rounded-lg text-[10px] text-[#8C8C8C] leading-relaxed space-y-1">
+                      <p className="font-semibold text-[#E5E5E5] uppercase text-[9px] tracking-wider">Formato esperado:</p>
+                      <p>Columnas: <span className="text-[#D5B042] font-mono">CÓDIGO</span> · <span className="text-[#D5B042] font-mono">PESO BRUTO (g)</span> · <span className="text-[#D5B042] font-mono">PUREZA (‰)</span> · <span className="text-[#8C8C8C]/60">LEY Ag (‰)</span> · <span className="text-[#8C8C8C]/60">LOTE N°</span></p>
+                      <p>Usa el botón <span className="text-emerald-400 font-mono">Plantilla</span> para descargar un archivo de ejemplo.</p>
                     </div>
                   </div>
                 )}
@@ -411,10 +530,10 @@ export default function IngresosPage() {
                             <thead>
                               <tr className="border-b border-neutral-800/20 text-[10px] font-mono text-[#8C8C8C] uppercase tracking-wider">
                                 <th className="pb-2 sticky left-0 bg-black z-10">Código</th>
-                                <th className="pb-2 text-right">Peso Bruto (g)</th>
-                                <th className="pb-2 text-center">Pureza Au / Ag</th>
-                                <th className="pb-2 text-right">FA (Fino Au)</th>
-                                <th className="pb-2 text-right">FE (Au 99%)</th>
+                                <th className="pb-2 text-right">BRUTO</th>
+                                <th className="pb-2 text-center">FA</th>
+                                <th className="pb-2 text-right">FE</th>
+                                <th className="pb-2 text-right">R</th>
                                 <th className="pb-2 text-center">Estado</th>
                                 <th className="pb-2 text-right">Acciones</th>
                               </tr>
@@ -424,12 +543,9 @@ export default function IngresosPage() {
                                 <tr key={bar.id} className="hover:bg-[#141414]/85 transition-colors">
                                   <td className="py-3 font-mono font-bold text-[#D5B042] sticky left-0 bg-black z-10">{bar.barNumber}</td>
                                   <td className="py-3 text-right font-mono">{formatNumber(Number(bar.grossWeight))} g</td>
-                                  <td className="py-3 text-center font-mono">
-                                    <span className="text-[#E5E5E5]">{bar.purity}</span>
-                                    <span className="text-[#8C8C8C]/50"> / {bar.leyAg || 0}‰</span>
-                                  </td>
                                   <td className="py-3 text-right font-mono text-[#8C8C8C]">{formatNumber(Number(bar.fineWeight))} g</td>
                                   <td className="py-3 text-right font-mono text-[#8C8C8C]">{formatNumber(Number(bar.fineWeight) * 0.99)} g</td>
+                                  <td className="py-3 text-right font-mono text-[#8C8C8C]">--</td>
                                   <td className="py-3 text-center">
                                     <span className={`inline-block px-2.5 py-0.5 rounded text-[9px] font-mono font-semibold ${STATUS_STYLES[bar.status] || ''}`}>
                                       {STATUS_LABELS[bar.status] || bar.status}
@@ -574,6 +690,69 @@ export default function IngresosPage() {
                     <p className="text-sm font-sans font-bold text-emerald-400">Barra Eliminada</p>
                   </>
                 )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {bulkResult && (
+          <motion.div key="bulk-result" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0, scale: 0.92 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.92 }}
+              className="bg-[#1C1C1C] border border-neutral-800/40 rounded-2xl w-full max-w-md overflow-hidden shadow-[0_10px_35px_rgba(0,0,0,0.8)]">
+              <div className="p-6 space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className={`p-2 rounded-lg border ${bulkResult.errors.length > 0 ? 'bg-amber-950/30 border-amber-500/20' : 'bg-emerald-950/30 border-emerald-500/20'}`}>
+                    {bulkResult.errors.length > 0
+                      ? <AlertTriangle className="w-5 h-5 text-amber-400" />
+                      : <Check className="w-5 h-5 text-emerald-400" />
+                    }
+                  </div>
+                  <div>
+                    <span className={`text-[9px] font-mono px-2 py-0.5 rounded-full uppercase tracking-wider font-bold ${bulkResult.errors.length > 0 ? 'text-amber-400 bg-amber-500/10 border border-amber-500/20' : 'text-emerald-400 bg-emerald-500/10 border border-emerald-500/20'}`}>
+                      {bulkResult.errors.length > 0 ? 'Carga Parcial' : 'Carga Exitosa'}
+                    </span>
+                    <h3 className="text-sm font-sans font-bold text-[#E5E5E5] mt-1">Resultado de Carga Masiva</h3>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-black p-3 rounded-lg border border-neutral-800/40 text-center">
+                    <span className="text-[10px] text-[#8C8C8C] font-mono uppercase block">Creadas</span>
+                    <strong className="text-lg font-bold text-emerald-400">{bulkResult.created}</strong>
+                  </div>
+                  <div className="bg-black p-3 rounded-lg border border-neutral-800/40 text-center">
+                    <span className="text-[10px] text-[#8C8C8C] font-mono uppercase block">Con Errores</span>
+                    <strong className="text-lg font-bold text-amber-400">{bulkResult.errors.length}</strong>
+                  </div>
+                </div>
+
+                {bulkResult.errors.length > 0 && (
+                  <div className="space-y-1.5 max-h-40 overflow-y-auto">
+                    <p className="text-[10px] font-semibold text-[#8C8C8C] uppercase tracking-wider">
+                      Detalle de errores ({bulkResult.errors.length})
+                    </p>
+                    {bulkResult.errors.map((err, i) => (
+                      <div key={i} className="p-2 bg-red-500/5 border border-red-500/20 rounded text-[10px] text-red-400 font-mono">
+                        Fila {err.row}: {err.message}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {bulkResult.created > 0 && (
+                  <p className="text-[11px] text-[#8C8C8C] font-sans bg-black p-3 rounded-lg border border-neutral-800/40">
+                    {bulkResult.created} barra{bulkResult.created !== 1 ? 's' : ''} registrada{bulkResult.created !== 1 ? 's' : ''} exitosamente en el inventario del cliente.
+                  </p>
+                )}
+              </div>
+              <div className="p-4 bg-black/20 border-t border-neutral-800/20 flex justify-end">
+                <button onClick={() => setBulkResult(null)}
+                  className="py-2.5 px-6 bg-gradient-to-r from-[#B4941E] to-[#D5B042] text-black font-semibold text-xs uppercase tracking-wider rounded-xl hover:brightness-110 transition-all duration-200 cursor-pointer">
+                  Aceptar
+                </button>
               </div>
             </motion.div>
           </motion.div>

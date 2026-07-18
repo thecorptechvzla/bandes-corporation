@@ -1,8 +1,8 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { api } from '@/lib/api';
-import type { Bar, CreateBarRequest, UpdateBarRequest } from '@/types/api';
+import { api, apiUpload } from '@/lib/api';
+import type { Bar, CreateBarRequest, UpdateBarRequest, BulkUploadResult } from '@/types/api';
 
 export function useBars(filters?: { status?: string; clientId?: string; lotId?: string }) {
   const params = new URLSearchParams();
@@ -42,6 +42,17 @@ export function useUpdateBar() {
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: UpdateBarRequest }) =>
       api.patch(`/bars/${id}`, data).then((r) => r.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['bars'] });
+    },
+  });
+}
+
+export function useBulkUploadBars() {
+  const queryClient = useQueryClient();
+  return useMutation<BulkUploadResult, Error, FormData>({
+    mutationFn: (formData) =>
+      apiUpload<BulkUploadResult>('/bars/bulk-upload', formData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['bars'] });
     },

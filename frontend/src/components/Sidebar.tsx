@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
@@ -9,37 +9,22 @@ import {
   Flame,
   ArrowLeftRight,
   FileText,
-  ChevronLeft,
-  ChevronRight,
-  X,
+  Menu,
   Coins,
+  LogOut,
 } from 'lucide-react';
 
 export const Sidebar: React.FC = () => {
   const pathname = usePathname();
-  const activeTab = pathname.replace('/', '') || 'dashboard';
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const activeTab = pathname.split('/')[1] || 'dashboard';
   const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const [isHovering, setIsHovering] = useState(false);
-  const leaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const showSidebar = !isCollapsed || isHovering;
-
-  const handleMouseEnter = useCallback(() => {
-    if (leaveTimer.current) clearTimeout(leaveTimer.current);
-    setIsHovering(true);
-  }, []);
-
-  const handleMouseLeave = useCallback(() => {
-    leaveTimer.current = setTimeout(() => setIsHovering(false), 200);
-  }, []);
 
   const menuItems = [
-    { id: 'dashboard', name: 'Dashboard', icon: LayoutDashboard, description: 'Resumen y KPIs' },
-    { id: 'ingresos', name: 'Ingresos de Oro', icon: ClipboardList, description: 'Registro de Barras' },
-    { id: 'procesos', name: 'Procesos de Fundición', icon: Flame, description: 'Mesa de Fundición' },
-    { id: 'egresos', name: 'Egresos / Despachos', icon: ArrowLeftRight, description: 'Salida de Fino' },
-    { id: 'reportes', name: 'Reportes y Balances', icon: FileText, description: 'Balances e Historial' },
+    { id: 'dashboard', name: 'Dashboard', icon: LayoutDashboard },
+    { id: 'ingresos', name: 'Ingresos de Oro', icon: ClipboardList },
+    { id: 'procesos', name: 'Procesos de Fundición', icon: Flame },
+    { id: 'egresos', name: 'Egresos / Despachos', icon: ArrowLeftRight },
+    { id: 'reportes', name: 'Reportes y Balances', icon: FileText },
   ];
 
   return (
@@ -58,141 +43,124 @@ export const Sidebar: React.FC = () => {
         className="lg:hidden fixed bottom-6 right-6 z-40 p-3.5 rounded-full bg-[#1C1C1C] hover:bg-[#222] border border-neutral-800/40 text-[#D5B042] shadow-[0_4px_16px_rgba(0,0,0,0.5)] transition-all active:scale-95 cursor-pointer"
         title="Abrir menú"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-menu"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
+        <Menu className="w-6 h-6" />
       </button>
 
-      {/* Desktop expand trigger — invisible strip on the left edge */}
-      {isCollapsed && (
-        <div
-          onMouseEnter={handleMouseEnter}
-          className="fixed left-0 inset-y-0 w-2 z-50 cursor-default hidden lg:block"
-        />
-      )}
-
-      {/* Sidebar */}
+      {/* Slim Sidebar */}
       <aside
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-        className={`fixed inset-y-0 left-0 z-50 flex transition-all duration-300 ease-in-out
-          ${showSidebar ? 'translate-x-0' : '-translate-x-full'}
-          ${isMobileOpen ? 'translate-x-0 w-80' : 'hidden lg:flex'}
-          bg-[#1A1D21] border-r border-[#2F353E] text-[#F1F5F9]`}
-        style={{ width: '320px' }}
+        role="navigation"
+        aria-label="Menú principal"
+        className="fixed inset-y-0 left-0 z-50 flex flex-col
+          transition-all duration-300 ease-in-out
+          w-16 lg:hover:w-64
+          group
+          bg-[#1A1D21]/80 backdrop-blur-md
+          border-r border-[#2F353E]
+          text-[#F1F5F9]
+          hidden lg:flex
+          overflow-hidden"
       >
-        {/* ICON RAIL */}
-        <div className="w-20 bg-[#121519] border-r border-[#2F353E] flex flex-col items-center py-5 justify-between shrink-0 h-full">
-          <div className="flex flex-col items-center gap-6 w-full">
-            <button
-              onClick={() => { setIsCollapsed(!isCollapsed); setIsHovering(false); }}
-              className="w-11 h-11 rounded-xl bg-[#1A1D21] border border-[#2F353E] flex items-center justify-center text-[#94A3B8] hover:text-[#F1F5F9] hover:bg-[#2D323A]/50 transition-all cursor-pointer shadow-sm mt-1"
-              title={isCollapsed ? 'Expandir menú' : 'Colapsar menú'}
-            >
-              {isCollapsed ? (
-                <ChevronRight className="w-5 h-5 text-[#D5B042]" />
-              ) : (
-                <ChevronLeft className="w-5 h-5" />
-              )}
-            </button>
-
-            <div className="w-8 h-[1px] bg-[#2F353E]" />
-
-            <div className="flex flex-col gap-3 w-full items-center px-2">
-              {menuItems.map((item) => {
-                const IconComponent = item.icon;
-                const isActive = activeTab === item.id;
-                return (
-                  <Link
-                    key={item.id}
-                    href={`/${item.id === 'dashboard' ? '' : item.id}`}
-                    onClick={() => setIsMobileOpen(false)}
-                    className={`p-3 rounded-xl transition-all duration-300 relative group cursor-pointer
-                      ${isActive
-                        ? 'bg-[#2D323A] text-[#D5B042] border border-[#D5B042]/20 shadow-[inset_0_1px_8px_rgba(213,176,66,0.05)]'
-                        : 'text-[#94A3B8] hover:text-[#F1F5F9] hover:bg-[#1A1D21]/50'
-                      }`}
-                    title={item.name}
-                  >
-                    <IconComponent className={`w-5 h-5 ${isActive ? 'scale-105' : ''}`} />
-                    {isActive && (
-                      <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-4 bg-[#D5B042] rounded-r-md"></span>
-                    )}
-                  </Link>
-                );
-              })}
-            </div>
+        {/* Logo */}
+        <div className="flex items-center justify-center h-16 shrink-0 border-b border-[#2F353E] px-3">
+          <div className="flex items-center gap-2.5 min-w-max">
+            <Coins className="w-5 h-5 text-[#D5B042] shrink-0" />
+            <span className="font-sans font-extrabold text-sm tracking-widest text-[#F1F5F9] whitespace-nowrap opacity-0 lg:group-hover:opacity-100 transition-opacity duration-200">
+              BANDES
+            </span>
           </div>
         </div>
 
-        {/* TEXT PANEL */}
-        <div className="flex-1 flex flex-col justify-between h-full py-5 px-4.5 bg-[#1A1D21] overflow-y-auto">
-          <div className="space-y-5">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="font-sans font-extrabold text-[15px] tracking-widest text-[#F1F5F9] flex items-center gap-1.5">
-                  <Coins className="w-4.5 h-4.5 text-[#D5B042]" />
-                  BANDES
+        {/* Navigation */}
+        <nav className="flex-1 flex flex-col gap-1 px-3 py-4 overflow-y-auto">
+          {menuItems.map((item) => {
+            const IconComponent = item.icon;
+            const isActive = activeTab === item.id;
+            return (
+              <Link
+                key={item.id}
+                href={`/${item.id === 'dashboard' ? '' : item.id}`}
+                onClick={() => setIsMobileOpen(false)}
+                className={`flex items-center gap-3 px-2.5 py-2.5 rounded-lg transition-all duration-200 cursor-pointer whitespace-nowrap
+                  ${isActive
+                    ? 'bg-[#2D323A] text-[#D5B042] border border-[#D5B042]/10 shadow-[inset_0_1px_6px_rgba(213,176,66,0.03)]'
+                    : 'text-[#94A3B8] hover:text-[#F1F5F9] hover:bg-[#2D323A]/50'
+                  }`}
+                title={item.name}
+              >
+                <IconComponent className="w-5 h-5 shrink-0" />
+                <span className="text-xs font-semibold tracking-wide truncate opacity-0 lg:group-hover:opacity-100 transition-opacity duration-200">
+                  {item.name}
                 </span>
-                <span className="text-[9px] font-mono font-bold bg-[#D5B042]/10 text-[#D5B042] px-1.5 py-0.2 rounded border border-[#D5B042]/20">
-                  CORP
-                </span>
-              </div>
+                {isActive && (
+                  <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-[#D5B042] rounded-r-md opacity-0 lg:group-hover:opacity-100 transition-opacity duration-200" />
+                )}
+              </Link>
+            );
+          })}
+        </nav>
 
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={() => { setIsCollapsed(true); setIsHovering(false); }}
-                  className="hidden lg:flex items-center justify-center w-7 h-7 rounded-lg hover:bg-[#2D323A] text-[#94A3B8] hover:text-[#F1F5F9] transition-colors cursor-pointer"
-                  title="Colapsar"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                </button>
-
-                <button
-                  onClick={() => setIsMobileOpen(false)}
-                  className="flex lg:hidden items-center justify-center w-7 h-7 rounded-lg hover:bg-[#2D323A] text-[#94A3B8] hover:text-[#F1F5F9] transition-colors cursor-pointer"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-
-            <div className="border-t border-[#2F353E]" />
-
-            <div className="space-y-1">
-              <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#94A3B8]/60 px-2 block mb-2">
-                Menu Principal
-              </span>
-
-              {menuItems.map((item) => {
-                const IconComponent = item.icon;
-                const isActive = activeTab === item.id;
-                return (
-                  <Link
-                    key={item.id}
-                    href={`/${item.id === 'dashboard' ? '' : item.id}`}
-                    onClick={() => setIsMobileOpen(false)}
-                    className={`w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-semibold tracking-wide transition-all duration-200 cursor-pointer
-                      ${isActive
-                        ? 'bg-[#2D323A] text-[#D5B042] border border-[#D5B042]/10 shadow-[inset_0_1px_6px_rgba(213,176,66,0.03)]'
-                        : 'hover:bg-[#121519]/50 text-[#94A3B8] hover:text-[#F1F5F9]'
-                      }`}
-                  >
-                    <span className="flex items-center gap-2.5 truncate">
-                      <IconComponent className={`w-4 h-4 shrink-0 ${isActive ? 'text-[#D5B042]' : 'text-[#94A3B8]'}`} />
-                      <span className="truncate">{item.name}</span>
-                    </span>
-                    {isActive && (
-                      <span className="w-1.5 h-1.5 bg-[#D5B042] rounded-full"></span>
-                    )}
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
+        {/* Logout */}
+        <div className="px-3 py-3 border-t border-[#2F353E] shrink-0">
+          <button
+            className="flex items-center gap-3 w-full px-2.5 py-2.5 rounded-lg text-[#94A3B8] hover:text-red-400 hover:bg-red-500/10 transition-all duration-200 cursor-pointer whitespace-nowrap"
+            title="Cerrar sesión"
+          >
+            <LogOut className="w-5 h-5 shrink-0" />
+            <span className="text-xs font-semibold tracking-wide truncate opacity-0 lg:group-hover:opacity-100 transition-opacity duration-200">
+              Cerrar Sesión
+            </span>
+          </button>
         </div>
       </aside>
 
-      {/* Spacer when sidebar is visible on desktop */}
-      {showSidebar && <div className="hidden lg:block shrink-0" style={{ width: '320px' }} />}
+      {/* Mobile sidebar */}
+      <aside
+        className={`fixed inset-y-0 left-0 z-50 flex flex-col w-72 bg-[#1A1D21] border-r border-[#2F353E] text-[#F1F5F9]
+          transition-all duration-300 ease-in-out lg:hidden
+          ${isMobileOpen ? 'translate-x-0' : '-translate-x-full'}`}
+      >
+        <div className="flex items-center justify-between h-16 px-4 border-b border-[#2F353E] shrink-0">
+          <div className="flex items-center gap-2">
+            <Coins className="w-5 h-5 text-[#D5B042]" />
+            <span className="font-sans font-extrabold text-sm tracking-widest text-[#F1F5F9]">BANDES</span>
+          </div>
+          <button
+            onClick={() => setIsMobileOpen(false)}
+            className="text-[#94A3B8] hover:text-[#F1F5F9] p-1 rounded-lg hover:bg-[#2D323A] transition-colors cursor-pointer"
+          >
+            ✕
+          </button>
+        </div>
+
+        <nav className="flex-1 flex flex-col gap-1 px-3 py-4 overflow-y-auto">
+          {menuItems.map((item) => {
+            const IconComponent = item.icon;
+            const isActive = activeTab === item.id;
+            return (
+              <Link
+                key={item.id}
+                href={`/${item.id === 'dashboard' ? '' : item.id}`}
+                onClick={() => setIsMobileOpen(false)}
+                className={`flex items-center gap-3 px-2.5 py-2.5 rounded-lg transition-all duration-200 cursor-pointer
+                  ${isActive
+                    ? 'bg-[#2D323A] text-[#D5B042] border border-[#D5B042]/10'
+                    : 'text-[#94A3B8] hover:text-[#F1F5F9] hover:bg-[#2D323A]/50'
+                  }`}
+              >
+                <IconComponent className="w-5 h-5 shrink-0" />
+                <span className="text-xs font-semibold tracking-wide truncate">{item.name}</span>
+              </Link>
+            );
+          })}
+        </nav>
+
+        <div className="px-3 py-3 border-t border-[#2F353E] shrink-0">
+          <button className="flex items-center gap-3 w-full px-2.5 py-2.5 rounded-lg text-[#94A3B8] hover:text-red-400 hover:bg-red-500/10 transition-all duration-200 cursor-pointer">
+            <LogOut className="w-5 h-5 shrink-0" />
+            <span className="text-xs font-semibold tracking-wide truncate">Cerrar Sesión</span>
+          </button>
+        </div>
+      </aside>
     </>
   );
 };

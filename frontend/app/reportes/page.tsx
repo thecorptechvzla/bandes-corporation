@@ -105,10 +105,10 @@ export default function ReportesPage() {
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, ease: 'easeOut' }}>
         <h1 className="text-2xl md:text-3xl font-sans font-medium text-[#E5E5E5] tracking-tight flex items-center gap-2">
           <FileText className="w-8 h-8 text-[#D5B042] filter drop-shadow-[0_0_8px_rgba(213,176,66,0.3)]" />
-          Reportes de <span className="text-[#D5B042] font-semibold">Trazabilidad</span>
+          Reportes de <span className="text-[#D5B042] font-semibold">Fundición</span>
         </h1>
         <p className="text-xs text-[#8C8C8C] mt-1">
-          Conciliación metalúrgica — Oro recibido, refinado, en espera y balances por cliente.
+          Conciliación metalúrgica — Oro recibido, fundido, en espera y balances por cliente.
         </p>
       </motion.div>
 
@@ -173,7 +173,7 @@ export default function ReportesPage() {
           initial={{ opacity: 0, y: 25 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.35, duration: 0.4, ease: 'easeOut' }}
-          id="report-oro-refinado"
+          id="report-oro-fundido"
           className="bg-[#1C1C1C] p-6 rounded-2xl border border-neutral-800/40 shadow-[0_4px_12px_rgba(0,0,0,0.3)] space-y-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,0,0,0.4)] hover:border-amber-500/30"
         >
           <div className="flex items-center justify-between">
@@ -182,16 +182,16 @@ export default function ReportesPage() {
                 <Flame className="w-4 h-4 text-amber-400" />
               </div>
               <div>
-                <span className="text-[10px] font-mono text-[#8C8C8C] uppercase tracking-wider font-semibold">Oro Refinado</span>
+                <span className="text-[10px] font-mono text-[#8C8C8C] uppercase tracking-wider font-semibold">            Oro Fundido</span>
                 <p className="text-[9px] text-[#8C8C8C]/50">Fundiciones completadas</p>
               </div>
             </div>
             <button
-              onClick={() => handleExportPDF('report-oro-refinado', 'Reporte_Oro_Refinado')}
-              disabled={exportingSection === 'report-oro-refinado'}
+              onClick={() => handleExportPDF('report-oro-fundido', 'Reporte_Oro_Fundido')}
+              disabled={exportingSection === 'report-oro-fundido'}
               className="flex items-center gap-1.5 px-2.5 py-1.5 bg-amber-950/30 hover:bg-amber-900/50 border border-amber-500/20 text-amber-300 text-[9px] font-mono font-bold uppercase tracking-wider rounded-lg transition-colors cursor-pointer disabled:opacity-50"
             >
-              {exportingSection === 'report-oro-refinado' ? (
+              {exportingSection === 'report-oro-fundido' ? (
                 <RefreshCw className="w-3 h-3 animate-spin" />
               ) : (
                 <Download className="w-3 h-3" />
