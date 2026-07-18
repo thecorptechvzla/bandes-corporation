@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard,
+  Users,
   ClipboardList,
   Flame,
   ArrowLeftRight,
@@ -21,6 +22,7 @@ export const Sidebar: React.FC = () => {
 
   const menuItems = [
     { id: 'dashboard', name: 'Dashboard', icon: LayoutDashboard },
+    { id: 'clientes', name: 'Clientes', icon: Users },
     { id: 'ingresos', name: 'Ingresos de Oro', icon: ClipboardList },
     { id: 'procesos', name: 'Procesos de Fundición', icon: Flame },
     { id: 'egresos', name: 'Egresos / Despachos', icon: ArrowLeftRight },

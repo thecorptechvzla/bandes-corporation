@@ -2,6 +2,7 @@ export interface Client {
   id: string;
   rif: string;
   name: string;
+  contactInfo?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -140,6 +141,7 @@ export interface UpdateLotRequest {
 export interface CreateClientRequest {
   rif: string;
   name: string;
+  contactInfo?: string;
 }
 
 export interface BulkUploadResult {

@@ -16,12 +16,12 @@ export class ClientsController {
   }
 
   @Post()
-  create(@Body() body: { rif: string; name: string }) {
+  create(@Body() body: { rif: string; name: string; contactInfo?: string }) {
     return this.service.create(body);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() body: { rif?: string; name?: string }) {
+  update(@Param('id') id: string, @Body() body: { rif?: string; name?: string; contactInfo?: string }) {
     return this.service.update(id, body);
   }
 

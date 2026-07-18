@@ -38,6 +38,16 @@ export function useCreateClient() {
   });
 }
 
+export function useDeleteClient() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api.delete(`/clients/${id}`).then((r) => r.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['clients'] });
+    },
+  });
+}
+
 export function useUpdateClient() {
   const queryClient = useQueryClient();
   return useMutation({

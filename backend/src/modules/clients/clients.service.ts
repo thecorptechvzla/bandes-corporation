@@ -15,16 +15,16 @@ export class ClientsService {
     return client;
   }
 
-  async create(data: { rif: string; name: string }) {
+  async create(data: { rif: string; name: string; contactInfo?: string }) {
     const existing = await this.prisma.client.findUnique({ where: { rif: data.rif } });
     if (existing) throw new BadRequestException('El RIF ya existe');
 
     return this.prisma.client.create({
-      data: { rif: data.rif, name: data.name.toUpperCase() },
+      data: { rif: data.rif, name: data.name.toUpperCase(), contactInfo: data.contactInfo },
     });
   }
 
-  async update(id: string, data: { rif?: string; name?: string }) {
+  async update(id: string, data: { rif?: string; name?: string; contactInfo?: string }) {
     const client = await this.findOne(id);
 
     if (data.rif && data.rif !== client.rif) {
@@ -37,6 +37,7 @@ export class ClientsService {
       data: {
         ...(data.rif && { rif: data.rif }),
         ...(data.name && { name: data.name.toUpperCase() }),
+        ...(data.contactInfo !== undefined && { contactInfo: data.contactInfo }),
       },
     });
   }
@@ -44,12 +45,12 @@ export class ClientsService {
   async remove(id: string) {
     await this.findOne(id);
 
-    const barsInStock = await this.prisma.bar.count({
-      where: { clientId: id, status: 'IN_STOCK' },
+    const barsCount = await this.prisma.bar.count({
+      where: { clientId: id },
     });
-    if (barsInStock > 0) {
+    if (barsCount > 0) {
       throw new BadRequestException(
-        'No se puede eliminar: el cliente tiene barras en bóveda',
+        'No se puede eliminar: el cliente tiene barras registradas en el historial',
       );
     }
 
