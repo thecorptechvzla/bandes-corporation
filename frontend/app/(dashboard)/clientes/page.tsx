@@ -307,32 +307,32 @@ export default function ClientesPage() {
                 <table className="w-full text-left text-xs font-sans">
                   <thead>
                     <tr className="border-b border-neutral-800/20 text-[10px] font-mono text-[#8C8C8C] uppercase tracking-wider">
-                      <th className="pb-3 pl-2">RIF</th>
-                      <th className="pb-3">Nombre</th>
-                      <th className="pb-3 hidden sm:table-cell">Contacto</th>
-                      <th className="pb-3 hidden md:table-cell">Creado</th>
-                      <th className="pb-3 text-right pr-2">Acciones</th>
+                      <th className="py-3 bg-black/50 text-center">RIF</th>
+                      <th className="py-3 bg-black/50 text-center">Nombre</th>
+                      <th className="py-3 bg-black/50 text-center hidden sm:table-cell">Contacto</th>
+                      <th className="py-3 bg-black/50 text-center hidden md:table-cell">Creado</th>
+                      <th className="py-3 bg-black/50 text-center">Acciones</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-neutral-800/20 text-[#E5E5E5]/90">
                     {filteredClients.map((client) => (
                       <tr key={client.id} className="hover:bg-[#141414]/85 transition-colors">
-                        <td className="py-3.5 pl-2 font-mono text-[#D5B042] font-bold text-[11px] tracking-wider">
+                        <td className="py-3.5 font-mono text-[#D5B042] font-bold text-[11px] tracking-wider text-center">
                           {formatRif(client.rif)}
                         </td>
-                        <td className="py-3.5 font-semibold">{client.name}</td>
-                        <td className="py-3.5 text-[#8C8C8C] hidden sm:table-cell">
+                        <td className="py-3.5 font-semibold text-center">{client.name}</td>
+                        <td className="py-3.5 text-[#8C8C8C] hidden sm:table-cell text-center">
                           {client.contactInfo || <span className="text-[#8C8C8C]/40">—</span>}
                         </td>
-                        <td className="py-3.5 text-[#8C8C8C] font-mono text-[10px] hidden md:table-cell">
+                        <td className="py-3.5 text-[#8C8C8C] font-mono text-[10px] hidden md:table-cell text-center">
                           {new Date(client.createdAt).toLocaleDateString('es-ES', {
                             day: '2-digit',
                             month: 'short',
                             year: 'numeric',
                           })}
                         </td>
-                        <td className="py-3.5 text-right pr-2">
-                          <div className="flex items-center justify-end gap-1">
+                        <td className="py-3.5 text-center">
+                          <div className="flex items-center justify-center gap-1">
                             <button
                               onClick={() => openEditForm(client)}
                               className="p-1.5 rounded hover:bg-[#D5B042]/10 text-[#8C8C8C] hover:text-[#D5B042] transition-colors cursor-pointer"
