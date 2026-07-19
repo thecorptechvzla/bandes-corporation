@@ -154,28 +154,30 @@ export default function ReportesPage() {
         </p>
       </motion.div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* Contenedor Grid con gap reducido de gap-6 a gap-4 */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Oro Recibido - Modificado a p-4 y space-y-2.5 */}
         <motion.div
           initial={{ opacity: 0, y: 25 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.4, ease: 'easeOut' }}
           id="report-oro-recibido"
-          className="bg-[#1C1C1C] p-6 rounded-2xl border border-neutral-800/40 shadow-[0_4px_12px_rgba(0,0,0,0.3)] space-y-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,0,0,0.4)] hover:border-emerald-500/30"
+          className="bg-[#1C1C1C] p-4 rounded-2xl border border-neutral-800/40 shadow-[0_4px_12px_rgba(0,0,0,0.3)] space-y-2.5 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,0,0,0.4)] hover:border-emerald-500/30 min-w-0 overflow-hidden"
         >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="p-2 bg-emerald-950/30 rounded-lg border border-emerald-500/15">
-                <ArrowDownLeft className="w-4 h-4 text-emerald-400" />
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="p-1.5 bg-emerald-950/30 rounded-lg border border-emerald-500/15 shrink-0">
+                <ArrowDownLeft className="w-3.5 h-3.5 text-emerald-400" />
               </div>
-              <div>
-                <span className="text-[10px] font-mono text-[#8C8C8C] uppercase tracking-wider font-semibold">Oro Recibido</span>
-                <p className="text-[9px] text-[#8C8C8C]/50">Total histórico ingresado</p>
+              <div className="min-w-0">
+                <span className="text-[10px] font-mono text-[#8C8C8C] uppercase tracking-wider font-semibold block truncate">Oro Recibido</span>
+                <p className="text-[9px] text-[#8C8C8C]/50 block truncate">Total histórico ingresado</p>
               </div>
             </div>
             <button
               onClick={() => openFilterModal('report-oro-recibido')}
               disabled={exportingSection === 'report-oro-recibido'}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 bg-emerald-950/30 hover:bg-emerald-900/50 border border-emerald-500/20 text-emerald-300 text-[9px] font-mono font-bold uppercase tracking-wider rounded-lg transition-colors cursor-pointer disabled:opacity-50"
+              className="flex items-center gap-1 px-2 py-1 bg-emerald-950/30 hover:bg-emerald-900/50 border border-emerald-500/20 text-emerald-300 text-[9px] font-mono font-bold uppercase tracking-wider rounded-lg transition-colors cursor-pointer disabled:opacity-50 shrink-0"
             >
               {exportingSection === 'report-oro-recibido' ? (
                 <RefreshCw className="w-3 h-3 animate-spin" />
@@ -186,52 +188,59 @@ export default function ReportesPage() {
             </button>
           </div>
 
-          <div className="space-y-0.5">
-            <strong className="text-3xl font-mono font-bold text-[#E5E5E5]">
-              {(oroRecibido.pesoBruto / 1000).toFixed(3)}
+          <div className="space-y-0.5 min-w-0">
+            <strong 
+              className="text-2xl sm:text-3xl font-mono font-bold text-[#E5E5E5] block truncate"
+              title={(oroRecibido.pesoBruto / 1000).toFixed(4)}
+            >
+              {(oroRecibido.pesoBruto / 1000).toFixed(4)}
             </strong>
-            <span className="text-[11px] font-mono text-[#8C8C8C] block">kg Peso Bruto Total</span>
+            <span className="text-[10px] font-mono text-[#8C8C8C] block truncate">kg Peso Bruto Total</span>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 pt-3 border-t border-neutral-800/20">
-            <div>
-              <span className="text-xs font-mono font-bold text-[#D5B042]">{oroRecibido.totalBarras}</span>
-              <span className="text-[9px] text-[#8C8C8C]/50 block">Barras</span>
+          <div className="grid grid-cols-2 gap-2 pt-2.5 border-t border-neutral-800/20">
+            <div className="min-w-0">
+              <span className="text-xs font-mono font-bold text-[#D5B042] block truncate">{oroRecibido.totalBarras}</span>
+              <span className="text-[9px] text-[#8C8C8C]/50 block truncate">Barras</span>
             </div>
-            <div>
-              <span className="text-xs font-mono font-bold text-[#D5B042]">{oroRecibido.clientes}</span>
-              <span className="text-[9px] text-[#8C8C8C]/50 block">Clientes</span>
+            <div className="min-w-0">
+              <span className="text-xs font-mono font-bold text-[#D5B042] block truncate">{oroRecibido.clientes}</span>
+              <span className="text-[9px] text-[#8C8C8C]/50 block truncate">Clientes</span>
             </div>
-            <div className="col-span-2">
-              <span className="text-[10px] font-mono text-[#8C8C8C]">
+            <div className="col-span-2 min-w-0">
+              <span 
+                className="text-[9px] font-mono text-[#8C8C8C] block truncate"
+                title={`Fino total: ${(oroRecibido.finoTotal / 1000).toFixed(4)} kg Au`}
+              >
                 Fino total:{' '}
-                <strong className="text-[#E5E5E5]">{(oroRecibido.finoTotal / 1000).toFixed(3)} kg Au</strong>
+                <strong className="text-[#E5E5E5]">{(oroRecibido.finoTotal / 1000).toFixed(4)} kg Au</strong>
               </span>
             </div>
           </div>
         </motion.div>
 
+        {/* Oro Fundido - Modificado a p-4 y space-y-2.5 */}
         <motion.div
           initial={{ opacity: 0, y: 25 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.35, duration: 0.4, ease: 'easeOut' }}
           id="report-oro-fundido"
-          className="bg-[#1C1C1C] p-6 rounded-2xl border border-neutral-800/40 shadow-[0_4px_12px_rgba(0,0,0,0.3)] space-y-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,0,0,0.4)] hover:border-amber-500/30"
+          className="bg-[#1C1C1C] p-4 rounded-2xl border border-neutral-800/40 shadow-[0_4px_12px_rgba(0,0,0,0.3)] space-y-2.5 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,0,0,0.4)] hover:border-amber-500/30 min-w-0 overflow-hidden"
         >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="p-2 bg-amber-950/30 rounded-lg border border-amber-500/15">
-                <Flame className="w-4 h-4 text-amber-400" />
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="p-1.5 bg-amber-950/30 rounded-lg border border-amber-500/15 shrink-0">
+                <Flame className="w-3.5 h-3.5 text-amber-400" />
               </div>
-              <div>
-                <span className="text-[10px] font-mono text-[#8C8C8C] uppercase tracking-wider font-semibold">            Oro Fundido</span>
-                <p className="text-[9px] text-[#8C8C8C]/50">Fundiciones completadas</p>
+              <div className="min-w-0">
+                <span className="text-[10px] font-mono text-[#8C8C8C] uppercase tracking-wider font-semibold block truncate">Oro Fundido</span>
+                <p className="text-[9px] text-[#8C8C8C]/50 block truncate">Fundiciones completadas</p>
               </div>
             </div>
             <button
               onClick={() => openFilterModal('report-oro-fundido')}
               disabled={exportingSection === 'report-oro-fundido'}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 bg-amber-950/30 hover:bg-amber-900/50 border border-amber-500/20 text-amber-300 text-[9px] font-mono font-bold uppercase tracking-wider rounded-lg transition-colors cursor-pointer disabled:opacity-50"
+              className="flex items-center gap-1 px-2 py-1 bg-amber-950/30 hover:bg-amber-900/50 border border-amber-500/20 text-amber-300 text-[9px] font-mono font-bold uppercase tracking-wider rounded-lg transition-colors cursor-pointer disabled:opacity-50 shrink-0"
             >
               {exportingSection === 'report-oro-fundido' ? (
                 <RefreshCw className="w-3 h-3 animate-spin" />
@@ -242,59 +251,63 @@ export default function ReportesPage() {
             </button>
           </div>
 
-          <div className="space-y-0.5">
-            <strong className="text-3xl font-mono font-bold text-[#E5E5E5]">
-              {(oroRefinado.totalRecovered / 1000).toFixed(3)}
+          <div className="space-y-0.5 min-w-0">
+            <strong 
+              className="text-2xl sm:text-3xl font-mono font-bold text-[#E5E5E5] block truncate"
+              title={(oroRefinado.totalRecovered / 1000).toFixed(4)}
+            >
+              {(oroRefinado.totalRecovered / 1000).toFixed(4)}
             </strong>
-            <span className="text-[11px] font-mono text-[#8C8C8C] block">kg Au Recuperado</span>
+            <span className="text-[10px] font-mono text-[#8C8C8C] block truncate">kg Au Recuperado</span>
           </div>
 
-          <div className="grid grid-cols-3 gap-3 pt-3 border-t border-neutral-800/20">
-            <div>
-              <span className="text-xs font-mono font-bold text-[#D5B042]">{oroRefinado.lotsCount}</span>
-              <span className="text-[9px] text-[#8C8C8C]/50 block">Lotes</span>
+          <div className="grid grid-cols-3 gap-2 pt-2.5 border-t border-neutral-800/20">
+            <div className="min-w-0">
+              <span className="text-xs font-mono font-bold text-[#D5B042] block truncate">{oroRefinado.lotsCount}</span>
+              <span className="text-[9px] text-[#8C8C8C]/50 block truncate">Lotes</span>
             </div>
-            <div>
-              <span className="text-xs font-mono font-bold text-[#D5B042]">{oroRefinado.barrasCount}</span>
-              <span className="text-[9px] text-[#8C8C8C]/50 block">Barras</span>
+            <div className="min-w-0">
+              <span className="text-xs font-mono font-bold text-[#D5B042] block truncate">{oroRefinado.barrasCount}</span>
+              <span className="text-[9px] text-[#8C8C8C]/50 block truncate">Barras</span>
             </div>
-            <div>
-              <span className={`text-xs font-mono font-bold ${oroRefinado.eficiencia >= 99 ? 'text-emerald-400' : 'text-amber-400'}`}>
+            <div className="min-w-0">
+              <span className={`text-xs font-mono font-bold block truncate ${oroRefinado.eficiencia >= 99 ? 'text-emerald-400' : 'text-amber-400'}`}>
                 {oroRefinado.eficiencia.toFixed(1)}%
               </span>
-              <span className="text-[9px] text-[#8C8C8C]/50 block">Eficiencia</span>
+              <span className="text-[9px] text-[#8C8C8C]/50 block truncate">Eficiencia</span>
             </div>
           </div>
 
           {oroRefinado.enProcesoCount > 0 && (
-            <div className="flex items-center gap-1.5 text-[10px] font-mono text-amber-500 bg-amber-950/20 px-2.5 py-1 rounded-lg border border-amber-500/10">
-              <RefreshCw className="w-3 h-3 animate-spin" />
-              {oroRefinado.enProcesoCount} proceso(s) en fundición activa
+            <div className="flex items-center gap-1 text-[9px] font-mono text-amber-500 bg-amber-950/20 px-2 py-0.5 rounded border border-amber-500/10 min-w-0">
+              <RefreshCw className="w-2.5 h-2.5 animate-spin shrink-0" />
+              <span className="block truncate">{oroRefinado.enProcesoCount} activo(s)</span>
             </div>
           )}
         </motion.div>
 
+        {/* Oro en Espera - Modificado a p-4 y space-y-2.5 */}
         <motion.div
           initial={{ opacity: 0, y: 25 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5, duration: 0.4, ease: 'easeOut' }}
           id="report-oro-espera"
-          className="bg-[#1C1C1C] p-6 rounded-2xl border border-neutral-800/40 shadow-[0_4px_12px_rgba(0,0,0,0.3)] space-y-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,0,0,0.4)] hover:border-blue-500/30"
+          className="bg-[#1C1C1C] p-4 rounded-2xl border border-neutral-800/40 shadow-[0_4px_12px_rgba(0,0,0,0.3)] space-y-2.5 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,0,0,0.4)] hover:border-blue-500/30 min-w-0 overflow-hidden"
         >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="p-2 bg-blue-950/30 rounded-lg border border-blue-500/15">
-                <Clock className="w-4 h-4 text-blue-400" />
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="p-1.5 bg-blue-950/30 rounded-lg border border-blue-500/15 shrink-0">
+                <Clock className="w-3.5 h-3.5 text-blue-400" />
               </div>
-              <div>
-                <span className="text-[10px] font-mono text-[#8C8C8C] uppercase tracking-wider font-semibold">Oro en Espera</span>
-                <p className="text-[9px] text-[#8C8C8C]/50">Pendiente por procesar</p>
+              <div className="min-w-0">
+                <span className="text-[10px] font-mono text-[#8C8C8C] uppercase tracking-wider font-semibold block truncate">Oro en Espera</span>
+                <p className="text-[9px] text-[#8C8C8C]/50 block truncate">Pendiente por procesar</p>
               </div>
             </div>
             <button
               onClick={() => openFilterModal('report-oro-espera')}
               disabled={exportingSection === 'report-oro-espera'}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 bg-blue-950/30 hover:bg-blue-900/50 border border-blue-500/20 text-blue-300 text-[9px] font-mono font-bold uppercase tracking-wider rounded-lg transition-colors cursor-pointer disabled:opacity-50"
+              className="flex items-center gap-1 px-2 py-1 bg-blue-950/30 hover:bg-blue-900/50 border border-blue-500/20 text-blue-300 text-[9px] font-mono font-bold uppercase tracking-wider rounded-lg transition-colors cursor-pointer disabled:opacity-50 shrink-0"
             >
               {exportingSection === 'report-oro-espera' ? (
                 <RefreshCw className="w-3 h-3 animate-spin" />
@@ -305,32 +318,39 @@ export default function ReportesPage() {
             </button>
           </div>
 
-          <div className="space-y-0.5">
-            <strong className="text-3xl font-mono font-bold text-[#E5E5E5]">
-              {(oroEnEspera.pesoBruto / 1000).toFixed(3)}
+          <div className="space-y-0.5 min-w-0">
+            <strong 
+              className="text-2xl sm:text-3xl font-mono font-bold text-[#E5E5E5] block truncate"
+              title={(oroEnEspera.pesoBruto / 1000).toFixed(4)}
+            >
+              {(oroEnEspera.pesoBruto / 1000).toFixed(4)}
             </strong>
-            <span className="text-[11px] font-mono text-[#8C8C8C] block">kg Peso Bruto en Bóveda</span>
+            <span className="text-[10px] font-mono text-[#8C8C8C] block truncate">kg Peso Bruto en Bóveda</span>
           </div>
 
-          <div className="grid grid-cols-3 gap-3 pt-3 border-t border-neutral-800/20">
-            <div>
-              <span className="text-xs font-mono font-bold text-[#D5B042]">{oroEnEspera.count}</span>
-              <span className="text-[9px] text-[#8C8C8C]/50 block">Barras</span>
+          <div className="grid grid-cols-3 gap-2 pt-2.5 border-t border-neutral-800/20">
+            <div className="min-w-0">
+              <span className="text-xs font-mono font-bold text-[#D5B042] block truncate">{oroEnEspera.count}</span>
+              <span className="text-[9px] text-[#8C8C8C]/50 block truncate">Barras</span>
             </div>
-            <div>
-              <span className="text-xs font-mono font-bold text-[#D5B042]">{oroEnEspera.clientes}</span>
-              <span className="text-[9px] text-[#8C8C8C]/50 block">Clientes</span>
+            <div className="min-w-0">
+              <span className="text-xs font-mono font-bold text-[#D5B042] block truncate">{oroEnEspera.clientes}</span>
+              <span className="text-[9px] text-[#8C8C8C]/50 block truncate">Clientes</span>
             </div>
-            <div>
-              <span className="text-xs font-mono font-bold text-[#E5E5E5]">
-                {(oroEnEspera.finoTotal / 1000).toFixed(2)}
+            <div className="min-w-0">
+              <span 
+                className="text-xs font-mono font-bold text-[#E5E5E5] block truncate"
+                title={(oroEnEspera.finoTotal / 1000).toFixed(4)}
+              >
+                {(oroEnEspera.finoTotal / 1000).toFixed(4)}
               </span>
-              <span className="text-[9px] text-[#8C8C8C]/50 block">kg Au Fino</span>
+              <span className="text-[9px] text-[#8C8C8C]/50 block truncate">kg Au Fino</span>
             </div>
           </div>
         </motion.div>
       </div>
 
+      {/* Balance Section (Sigue igual) */}
       <motion.div
         initial={{ opacity: 0, y: 25 }}
         animate={{ opacity: 1, y: 0 }}
@@ -406,6 +426,7 @@ export default function ReportesPage() {
           </div>
         )}
       </motion.div>
+
       <AnimatePresence>
         {filterModalFor && (
           <motion.div key="filter-modal" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
