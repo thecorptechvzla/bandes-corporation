@@ -15,10 +15,12 @@ import { useProcesses } from '@/hooks/useProcesses';
 import { useLots } from '@/hooks/useLots';
 import { useMaterialExits } from '@/hooks/useExits';
 import { formatNumber, formatWeight } from '@/lib/format';
+import { useGoldTraceability } from '@/context/GoldTraceabilityContext';
 
 export default function ReportesPage() {
   const { data: bars = [] } = useBars();
   const { data: clients = [] } = useClients();
+  const { weightUnit } = useGoldTraceability();
   const { data: processes = [] } = useProcesses();
   const { data: lots = [] } = useLots();
   const { data: exits = [] } = useMaterialExits();
@@ -191,11 +193,11 @@ export default function ReportesPage() {
           <div className="space-y-0.5 min-w-0">
             <strong 
               className="text-2xl sm:text-3xl font-mono font-bold text-[#E5E5E5] block truncate"
-              title={formatNumber(oroRecibido.pesoBruto / 1000, 4)}
+              title={formatWeight(oroRecibido.pesoBruto, weightUnit)}
             >
-              {formatNumber(oroRecibido.pesoBruto / 1000, 4)}
+              {formatWeight(oroRecibido.pesoBruto, weightUnit)}
             </strong>
-            <span className="text-[10px] font-mono text-[#8C8C8C] block truncate">kg Peso Bruto Total</span>
+            <span className="text-[10px] font-mono text-[#8C8C8C] block truncate">Peso Bruto Total</span>
           </div>
 
           <div className="grid grid-cols-2 gap-2 pt-2.5 border-t border-neutral-800/20">
@@ -210,10 +212,10 @@ export default function ReportesPage() {
             <div className="col-span-2 min-w-0">
               <span 
                 className="text-[9px] font-mono text-[#8C8C8C] block truncate"
-                title={`FA (Fino Analítico): ${formatWeight(oroRecibido.finoTotal / 1000, 4)}`}
+                title={`FA (Fino Analítico): ${formatWeight(oroRecibido.finoTotal, weightUnit)}`}
               >
                 FA (Fino Analítico):{' '}
-                <strong className="text-[#E5E5E5]">{formatWeight(oroRecibido.finoTotal / 1000, 4)}</strong>
+                <strong className="text-[#E5E5E5]">{formatWeight(oroRecibido.finoTotal, weightUnit)}</strong>
               </span>
             </div>
           </div>
@@ -254,9 +256,9 @@ export default function ReportesPage() {
           <div className="space-y-0.5 min-w-0">
             <strong 
               className="text-2xl sm:text-3xl font-mono font-bold text-[#E5E5E5] block truncate"
-              title={formatNumber(oroRefinado.totalRecovered / 1000, 4)}
+              title={formatWeight(oroRefinado.totalRecovered, weightUnit)}
             >
-              {formatNumber(oroRefinado.totalRecovered / 1000, 4)}
+              {formatWeight(oroRefinado.totalRecovered, weightUnit)}
             </strong>
             <span className="text-[10px] font-mono text-[#8C8C8C] block truncate">R (Recuperado)</span>
           </div>
@@ -279,7 +281,7 @@ export default function ReportesPage() {
           </div>
 
           <div className="flex items-center justify-between text-[9px] font-mono text-[#8C8C8C] bg-neutral-900/50 px-2 py-1 rounded border border-neutral-800/20">
-            <span>FE (Fino Esperado): <strong className="text-[#D5B042]">{formatWeight(oroRefinado.totalExpected * 0.99 / 1000, 4)}</strong></span>
+            <span>FE (Fino Esperado): <strong className="text-[#D5B042]">{formatWeight(oroRefinado.totalExpected * 0.99, weightUnit)}</strong></span>
             <span className="text-[7px] text-[#8C8C8C]/50">FA × 0,99</span>
           </div>
           {oroRefinado.enProcesoCount > 0 && (
@@ -325,11 +327,11 @@ export default function ReportesPage() {
           <div className="space-y-0.5 min-w-0">
             <strong 
               className="text-2xl sm:text-3xl font-mono font-bold text-[#E5E5E5] block truncate"
-              title={formatNumber(oroEnEspera.pesoBruto / 1000, 4)}
+              title={formatWeight(oroEnEspera.pesoBruto, weightUnit)}
             >
-              {formatNumber(oroEnEspera.pesoBruto / 1000, 4)}
+              {formatWeight(oroEnEspera.pesoBruto, weightUnit)}
             </strong>
-            <span className="text-[10px] font-mono text-[#8C8C8C] block truncate">kg Peso Bruto en Bóveda</span>
+            <span className="text-[10px] font-mono text-[#8C8C8C] block truncate">Peso Bruto en Bóveda</span>
           </div>
 
           <div className="grid grid-cols-3 gap-2 pt-2.5 border-t border-neutral-800/20">
@@ -344,9 +346,9 @@ export default function ReportesPage() {
             <div className="min-w-0">
               <span 
                 className="text-xs font-mono font-bold text-[#E5E5E5] block truncate"
-                title={formatWeight(oroEnEspera.finoTotal / 1000, 4)}
+                title={formatWeight(oroEnEspera.finoTotal, weightUnit)}
               >
-                {formatWeight(oroEnEspera.finoTotal / 1000, 4)}
+                {formatWeight(oroEnEspera.finoTotal, weightUnit)}
               </span>
               <span className="text-[9px] text-[#8C8C8C]/50 block truncate">FA (Fino Analítico)</span>
             </div>
@@ -392,41 +394,41 @@ export default function ReportesPage() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-neutral-800/40 text-[10px] font-mono text-[#8C8C8C] uppercase tracking-wider">
-                  <th className="py-3 px-4">Cliente</th>
-                  <th className="py-3 px-4 text-right">FA (kg)</th>
-                  <th className="py-3 px-4 text-right">Entregado (kg)</th>
-                  <th className="py-3 px-4 text-right">Balance (kg)</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-neutral-800/20 text-xs font-sans text-[#E5E5E5]">
-                {clientesReport.map((cliente) => {
-                  const balance = cliente.received - cliente.delivered;
-                  return (
-                    <tr key={cliente.name} className="hover:bg-black/40 transition-colors">
-                      <td className="py-3.5 px-4 font-medium text-[#E5E5E5] flex items-center gap-2">
-                        <Coins className="w-3.5 h-3.5 text-[#D5B042]" />
-                        {cliente.name}
-                      </td>
-                      <td className="py-3.5 px-4 text-right font-mono font-bold text-emerald-400">
-                        {formatNumber(cliente.received / 1000, 3)}
-                      </td>
-                      <td className="py-3.5 px-4 text-right font-mono font-bold text-amber-400">
-                        {formatNumber(cliente.delivered / 1000, 3)}
-                      </td>
-                      <td className="py-3.5 px-4 text-right">
-                        <span className={`inline-flex items-center gap-1 font-mono font-bold text-sm ${balance >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                          <ArrowUpRight className={`w-3 h-3 ${balance >= 0 ? '' : 'rotate-180'}`} />
-                          {balance >= 0 ? '+' : ''}{formatNumber(balance / 1000, 3)}
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-neutral-800/40 text-[10px] font-mono text-[#8C8C8C] uppercase tracking-wider">
+                    <th className="py-3 px-4">Cliente</th>
+                    <th className="py-3 px-4 text-right">FA ({weightUnit})</th>
+                    <th className="py-3 px-4 text-right">Entregado ({weightUnit})</th>
+                    <th className="py-3 px-4 text-right">Balance ({weightUnit})</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-neutral-800/20 text-xs font-sans text-[#E5E5E5]">
+                  {clientesReport.map((cliente) => {
+                    const balance = cliente.received - cliente.delivered;
+                    return (
+                      <tr key={cliente.name} className="hover:bg-black/40 transition-colors">
+                        <td className="py-3.5 px-4 font-medium text-[#E5E5E5] flex items-center gap-2">
+                          <Coins className="w-3.5 h-3.5 text-[#D5B042]" />
+                          {cliente.name}
+                        </td>
+                        <td className="py-3.5 px-4 text-right font-mono font-bold text-emerald-400">
+                          {formatWeight(cliente.received, weightUnit)}
+                        </td>
+                        <td className="py-3.5 px-4 text-right font-mono font-bold text-amber-400">
+                          {formatWeight(cliente.delivered, weightUnit)}
+                        </td>
+                        <td className="py-3.5 px-4 text-right">
+                          <span className={`inline-flex items-center gap-1 font-mono font-bold text-sm ${balance >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                            <ArrowUpRight className={`w-3 h-3 ${balance >= 0 ? '' : 'rotate-180'}`} />
+                            {balance >= 0 ? '+' : ''}{formatWeight(balance, weightUnit)}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
           </div>
         )}
       </motion.div>

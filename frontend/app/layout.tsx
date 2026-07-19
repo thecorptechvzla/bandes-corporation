@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { GoldTraceabilityProvider } from '../src/context/GoldTraceabilityContext';
 import { Sidebar } from '../src/components/Sidebar';
+import { WeightToggle } from '../src/components/WeightToggle';
 import { Calendar } from 'lucide-react';
 import './globals.css';
 
@@ -79,6 +80,8 @@ export default function RootLayout({
                         <Calendar className="w-3.5 h-3.5 text-[#D5B042]" />
                         <span>2026-07-16</span>
                       </div>
+
+                      <WeightToggle />
 
                       <div className="flex items-center gap-2.5 bg-black border border-neutral-800/40 pl-2.5 pr-4 py-1 rounded-full shadow-inner">
                         <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-[#8C6D1F] to-[#D5B042] flex items-center justify-center text-black font-bold text-xs">

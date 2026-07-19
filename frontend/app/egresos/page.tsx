@@ -7,7 +7,8 @@ import { useClients } from '@/hooks/useClients';
 import { useProcesses } from '@/hooks/useProcesses';
 import { useCreateMaterialExit } from '@/hooks/useExits';
 import { useBars } from '@/hooks/useBars';
-import { formatNumber } from '@/lib/format';
+import { formatNumber, formatWeight } from '@/lib/format';
+import { useGoldTraceability } from '@/context/GoldTraceabilityContext';
 import {
   ArrowLeftRight, User, Sparkles, AlertTriangle, Check, Send, Search,
   Grid, List, Coins, Download, X, RefreshCw, Plus, ChevronDown, Trash2,
@@ -29,6 +30,7 @@ export default function EgresosPage() {
   const { data: bars = [] } = useBars();
   const { data: processes = [] } = useProcesses();
   const createExit = useCreateMaterialExit();
+  const { weightUnit } = useGoldTraceability();
 
   const [activeClientIds, setActiveClientIds] = useState<string[]>([]);
   const [selectedTerminalClientId, setSelectedTerminalClientId] = useState<string>('');
@@ -234,7 +236,7 @@ export default function EgresosPage() {
     doc.setFontSize(7.5);
     doc.setFont('helvetica', 'bold');
     doc.text('LOTE', margin + 2, y + 1);
-    doc.text('PESO ASIGNADO (g)', margin + 100, y + 1);
+    doc.text(`PESO ASIGNADO (${weightUnit.toUpperCase()})`, margin + 100, y + 1);
     y += 8;
 
     doc.setTextColor(60, 60, 60);
@@ -249,7 +251,8 @@ export default function EgresosPage() {
       }
       doc.text(lot.name, margin + 2, y + 1);
       doc.setFont('helvetica', 'bold');
-      doc.text(`${lot.weight.toFixed(2)} g`, margin + 100, y + 1);
+      const lotDisplay = weightUnit === 'kg' ? `${(lot.weight / 1000).toFixed(4)} kg` : `${lot.weight.toFixed(2)} g`;
+      doc.text(lotDisplay, margin + 100, y + 1);
       doc.setFont('helvetica', 'normal');
       y += 8;
     });
@@ -263,7 +266,8 @@ export default function EgresosPage() {
     doc.setTextColor(40, 40, 40);
     doc.setFontSize(10);
     doc.setFont('helvetica', 'bold');
-    doc.text(`PESO TOTAL DESPACHADO: ${data.totalWeight.toFixed(2)} g (${(data.totalWeight / 1000).toFixed(4)} kg)`, margin, y);
+    const totalDisplay = weightUnit === 'kg' ? `${(data.totalWeight / 1000).toFixed(4)} kg` : `${data.totalWeight.toFixed(2)} g`;
+    doc.text(`PESO TOTAL DESPACHADO: ${totalDisplay}`, margin, y);
     y += 8;
     doc.text(`LOTES DESPACHADOS: ${data.lotCount}`, margin, y);
     y += 16;
@@ -282,7 +286,7 @@ export default function EgresosPage() {
     doc.text('Sello Receptor', pageWidth - margin - 40, y);
 
     doc.save(`Comprobante_Despacho_${data.reference.replace(/[/\\?%*:|"<>]/g, '_')}.pdf`);
-  }, []);
+  }, [weightUnit]);
 
   const handleDispatch = async () => {
     if (focusedClientLots.length === 0 || !destination) return;
@@ -309,7 +313,7 @@ export default function EgresosPage() {
       });
 
       setStatus('success');
-      setMessage(`EGRESO DESPLEGADO — ${result.destination} — ${formatNumber(result.totalWeight)} kg`);
+      setMessage(`EGRESO DESPLEGADO — ${result.destination} — ${formatWeight(result.totalWeight, weightUnit)}`);
 
       setAssignedLots(prev => {
         const updated = { ...prev };
@@ -378,7 +382,7 @@ export default function EgresosPage() {
                           </div>
                         </div>
                         {totals.count > 0 && (
-                          <span className="text-[8px] font-mono bg-[#D5B042]/10 text-[#D5B042] px-1.5 py-0.2 rounded-full font-bold shrink-0">{totals.grams}g</span>
+                          <span className="text-[8px] font-mono bg-[#D5B042]/10 text-[#D5B042] px-1.5 py-0.2 rounded-full font-bold shrink-0">{formatWeight(totals.grams, weightUnit)}</span>
                         )}
                       </label>
                     );
@@ -414,7 +418,7 @@ export default function EgresosPage() {
                       ${isActive ? 'bg-[#D5B042]/10 border-[#D5B042] text-white shadow-[0_2px_8px_rgba(213,176,66,0.12)] font-bold' : 'bg-[#1C1C1C] border-neutral-800/50 text-neutral-400 hover:text-white'}`}
                     onClick={() => setSelectedTerminalClientId(cid)}>
                     <span className="truncate max-w-[100px]">{client.rif.slice(0, 8)}</span>
-                    <span className={`text-[9px] font-bold ${isActive ? 'text-[#D5B042]' : 'text-neutral-500'}`}>{totals.grams}g</span>
+                     <span className={`text-[9px] font-bold ${isActive ? 'text-[#D5B042]' : 'text-neutral-500'}`}>{formatWeight(totals.grams, weightUnit)}</span>
                     <button type="button" onClick={(e) => { e.stopPropagation(); handleToggleClient(cid); }}
                       className="p-0.5 rounded-full hover:bg-black/35 text-neutral-500 hover:text-red-400 transition-colors">
                       <X className="w-2.5 h-2.5" />
@@ -481,7 +485,7 @@ export default function EgresosPage() {
                         <div className="text-[8.5px] text-[#8C8C8C]/50">{lot.processName}</div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="font-bold text-[#D5B042]">{formatNumber(lot.availableWeight)} g</span>
+                        <span className="font-bold text-[#D5B042]">{formatWeight(lot.availableWeight, weightUnit)}</span>
                         <button type="button" onClick={() => handleRemoveLot(lot.id)}
                           className="text-neutral-700 hover:text-red-400 p-0.5 transition-colors cursor-pointer"
                           title="Quitar asignaci&oacute;n">
@@ -497,7 +501,7 @@ export default function EgresosPage() {
                 <div className="font-mono text-[11px]">
                   <span className="text-[#8C8C8C] block uppercase text-[8px]">Masa Acumulada</span>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-[#D5B042] font-bold text-xs">{formatNumber(focusedClientGrams)} g Au</span>
+                    <span className="text-[#D5B042] font-bold text-xs">{formatWeight(focusedClientGrams, weightUnit)}</span>
                     {requiredGramsVal > 0 && (
                       <span className="text-[9px] text-[#8C8C8C] font-semibold">
                         / {formatNumber(requiredGramsVal)} g req
@@ -587,7 +591,7 @@ export default function EgresosPage() {
                       <th className="py-3 pl-5 w-20 text-center">Asignar</th>
                       <th className="py-3">Proceso</th>
                       <th className="py-3">Lote</th>
-                      <th className="py-3 text-right pr-5">Peso Disponible (g)</th>
+                      <th className="py-3 text-right pr-5">Peso Disponible ({weightUnit.toUpperCase()})</th>
                       <th className="py-3 text-center">Barras</th>
                     </tr>
                   </thead>
@@ -603,7 +607,7 @@ export default function EgresosPage() {
                         <td className="py-3 font-mono text-[#E5E5E5]">{lot.processName}</td>
                         <td className="py-3 font-mono text-[#D5B042] font-bold">{lot.name}</td>
                         <td className="py-3 text-right font-mono text-[#E5E5E5] pr-5">
-                          {formatNumber(lot.availableWeight)} g
+                          {formatWeight(lot.availableWeight, weightUnit)}
                         </td>
                         <td className="py-3 text-center">
                           <span className="text-[10px] font-mono text-[#8C8C8C] bg-black border border-neutral-800/20 px-2 py-0.5 rounded-full">
@@ -628,7 +632,7 @@ export default function EgresosPage() {
                     </div>
                     <p className="text-[10px] font-mono text-[#8C8C8C]">{lot.processName}</p>
                     <div className="mt-2 flex justify-between items-center">
-                      <span className="text-xs font-mono font-bold text-[#E5E5E5]">{formatNumber(lot.availableWeight)} g</span>
+                      <span className="text-xs font-mono font-bold text-[#E5E5E5]">{formatWeight(lot.availableWeight, weightUnit)}</span>
                       <span className="text-[9px] font-mono text-[#8C8C8C] bg-black border border-neutral-800/20 px-1.5 py-0.5 rounded-full">
                         {lot.barCount} barras
                       </span>
@@ -692,7 +696,7 @@ export default function EgresosPage() {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-[#8C8C8C]">Peso Total:</span>
-                    <span className="text-[#E5E5E5] font-bold">{formatNumber(dispatchResult.totalWeight)} g</span>
+                    <span className="text-[#E5E5E5] font-bold">{formatWeight(dispatchResult.totalWeight, weightUnit)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-[#8C8C8C]">Lotes:</span>

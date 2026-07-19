@@ -11,7 +11,8 @@ import {
   ChevronDown, ChevronUp, Table2, Warehouse
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { formatNumber } from '@/lib/format';
+import { formatNumber, formatWeight } from '@/lib/format';
+import { useGoldTraceability } from '@/context/GoldTraceabilityContext';
 
 interface TreemapRect {
   id: string; x: number; y: number; w: number; h: number;
@@ -66,7 +67,9 @@ const CustomTooltip = ({ active, payload, label }: any) => {
                   {labelText}
                 </span>
                 <span className="text-[#E5E5E5] font-mono">
-                  {entry.value.toLocaleString(undefined, { minimumFractionDigits: 1 })} g
+                  {entry.payload.weightUnit === 'kg'
+                    ? `${(entry.value / 1000).toLocaleString(undefined, { minimumFractionDigits: 4 })} kg`
+                    : `${entry.value.toLocaleString(undefined, { minimumFractionDigits: 1 })} g`}
                 </span>
               </div>
             );
@@ -83,6 +86,7 @@ export default function DashboardPage() {
   const { data: clients = [] } = useClients();
   const { data: exits = [] } = useMaterialExits();
   const { data: metrics, isLoading } = useDashboardMetrics();
+  const { weightUnit } = useGoldTraceability();
   const [hoveredSupplier, setHoveredSupplier] = useState<any | null>(null);
   const [hoveredClient, setHoveredClient] = useState<any | null>(null);
   const [supplierLayout, setSupplierLayout] = useState<'grid' | 'bars'>('grid');
@@ -105,23 +109,23 @@ export default function DashboardPage() {
   }).filter(c => c.value > 0).sort((a, b) => b.value - a.value);
 
   const flowData = useMemo(() => {
-    const days: Record<string, { date: string; dateShort: string; in: number; out: number }> = {};
+    const days: Record<string, { date: string; dateShort: string; in: number; out: number; weightUnit: string }> = {};
     bars.forEach(b => {
       const d = new Date(b.createdAt);
       const key = d.toISOString().split('T')[0];
       const short = d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' });
-      if (!days[key]) days[key] = { date: key, dateShort: short, in: 0, out: 0 };
+      if (!days[key]) days[key] = { date: key, dateShort: short, in: 0, out: 0, weightUnit: weightUnit };
       days[key].in += Number(b.fineWeight);
     });
     exits.forEach(e => {
       const d = new Date(e.createdAt);
       const key = d.toISOString().split('T')[0];
       const short = d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' });
-      if (!days[key]) days[key] = { date: key, dateShort: short, in: 0, out: 0 };
+      if (!days[key]) days[key] = { date: key, dateShort: short, in: 0, out: 0, weightUnit: weightUnit };
       days[key].out += Number(e.totalWeight);
     });
     return Object.values(days).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()).slice(-7);
-  }, [bars, exits]);
+  }, [bars, exits, weightUnit]);
 
   const colors = [
     { s1: '#B4941E', s2: '#7E6611' }, { s1: '#A65B17', s2: '#733D0D' },
@@ -170,7 +174,11 @@ export default function DashboardPage() {
                   textAnchor="middle" fill="#E5E5E5"
                   className="font-sans font-bold text-xs uppercase tracking-wider fill-current select-none pointer-events-none">{item.code}</text>}
                 {hasGrams && <text x={tx} y={hasLey ? ty + 6 : ty + 10} textAnchor="middle" fill="#D5B042"
-                  className="font-mono text-[10px] font-bold select-none pointer-events-none">{Math.round(item.value).toLocaleString()} g</text>}
+                  className="font-mono text-[10px] font-bold select-none pointer-events-none">
+                  {weightUnit === 'kg'
+                    ? `${(item.value / 1000).toLocaleString(undefined, { minimumFractionDigits: 4 })} kg`
+                    : `${Math.round(item.value).toLocaleString()} g`}
+                </text>}
                 {hasLey && isSupplier && <text x={tx} y={ty + 22} textAnchor="middle" fill="#E5E5E5" fillOpacity={0.8}
                   className="font-mono text-[9px] select-none pointer-events-none">Pureza {item.avgPurity}‰</text>}
               </g>
@@ -183,7 +191,11 @@ export default function DashboardPage() {
             <h4 className="text-xs font-bold text-[#E5E5E5] tracking-wide uppercase">{hovered.name}</h4>
             <div className="grid grid-cols-2 gap-x-4 gap-y-1 mt-2 text-[11px] font-mono">
               <span className="text-[#8C8C8C]">{isSupplier ? 'Total Ingresado:' : 'Total Despachado:'}</span>
-              <span className="text-[#D5B042] font-bold text-right">{Math.round(hovered.value).toLocaleString()} g</span>
+              <span className="text-[#D5B042] font-bold text-right">
+                {weightUnit === 'kg'
+                  ? `${(hovered.value / 1000).toLocaleString(undefined, { minimumFractionDigits: 4 })} kg`
+                  : `${Math.round(hovered.value).toLocaleString()} g`}
+              </span>
               <span className="text-[#8C8C8C]">{isSupplier ? 'Barras:' : 'Operaciones:'}</span>
               <span className="text-[#E5E5E5] text-right">{hovered.count} {isSupplier ? 'u' : 'envíos'}</span>
             </div>
@@ -206,16 +218,15 @@ export default function DashboardPage() {
             <div className="p-2 bg-black rounded-lg border border-[#D5B042]/20"><ClipboardList className="w-5 h-5 text-[#D5B042]" /></div>
             <span className="text-[9px] text-[#D5B042] font-mono tracking-wider flex items-center gap-1 bg-black px-1.5 py-0.5 rounded border border-[#D5B042]/20">REGISTRO</span>
           </div>
-          <div className="space-y-0.5 min-w-0">
+            <div className="space-y-0.5 min-w-0">
             <span className="text-[10.5px] text-[#8C8C8C] block font-sans truncate">Oro recibido</span>
             <div className="flex items-baseline gap-1.5 overflow-hidden">
-              <span className="text-xl lg:text-2xl font-mono font-bold text-[#E5E5E5] tracking-tight truncate" title={formatNumber(metrics?.oroRecibido.fineWeight ?? 0, 4)}>
-                {formatNumber((metrics?.oroRecibido.fineWeight ?? 0) / 1000, 4)}
+              <span className="text-xl lg:text-2xl font-mono font-bold text-[#E5E5E5] tracking-tight truncate">
+                {formatWeight(metrics?.oroRecibido.fineWeight ?? 0, weightUnit)}
               </span>
-              <span className="text-[10.5px] text-[#8C8C8C] shrink-0">kg</span>
             </div>
             <p className="text-[10px] text-[#8C8C8C] font-mono flex items-center gap-1 pt-1.5 border-t border-neutral-800/20 truncate">
-              <Scale className="w-3 h-3 text-[#D5B042] shrink-0" />FA total: <strong className="text-[#E5E5E5] truncate">{formatNumber(metrics?.oroRecibido.fineWeight ?? 0, 2)} g</strong>
+              <Scale className="w-3 h-3 text-[#D5B042] shrink-0" />FA total: <strong className="text-[#E5E5E5] truncate">{formatWeight(metrics?.oroRecibido.fineWeight ?? 0, weightUnit)}</strong>
             </p>
           </div>
         </motion.div>
@@ -231,10 +242,9 @@ export default function DashboardPage() {
           <div className="space-y-0.5 min-w-0">
             <span className="text-[10.5px] text-[#8C8C8C] block font-sans truncate">Oro en proceso</span>
             <div className="flex items-baseline gap-1.5 overflow-hidden">
-              <span className="text-xl lg:text-2xl font-mono font-bold text-[#E5E5E5] tracking-tight truncate" title={formatNumber(metrics?.oroEnProceso.fineWeight ?? 0, 4)}>
-                {formatNumber((metrics?.oroEnProceso.fineWeight ?? 0) / 1000, 4)}
+              <span className="text-xl lg:text-2xl font-mono font-bold text-[#E5E5E5] tracking-tight truncate">
+                {formatWeight(metrics?.oroEnProceso.fineWeight ?? 0, weightUnit)}
               </span>
-              <span className="text-[10.5px] text-[#8C8C8C] shrink-0">kg</span>
             </div>
             <p className="text-[10px] text-[#8C8C8C] font-mono flex items-center gap-1 pt-1.5 border-t border-neutral-800/20 truncate">
               <Flame className="w-3 h-3 text-[#A65B17] shrink-0" />Barras en horno: <strong className="text-[#E5E5E5] truncate">{metrics?.oroEnProceso.barCount ?? 0} u</strong>
@@ -253,13 +263,12 @@ export default function DashboardPage() {
           <div className="space-y-0.5 min-w-0">
             <span className="text-[10.5px] text-[#8C8C8C] block font-sans truncate">Oro en bóveda</span>
             <div className="flex items-baseline gap-1.5 overflow-hidden">
-              <span className="text-xl lg:text-2xl font-mono font-bold text-[#E5E5E5] tracking-tight truncate" title={formatNumber(metrics?.oroEnBoveda.fineWeight ?? 0, 4)}>
-                {formatNumber((metrics?.oroEnBoveda.fineWeight ?? 0) / 1000, 4)}
+              <span className="text-xl lg:text-2xl font-mono font-bold text-[#E5E5E5] tracking-tight truncate">
+                {formatWeight(metrics?.oroEnBoveda.fineWeight ?? 0, weightUnit)}
               </span>
-              <span className="text-[10.5px] text-[#8C8C8C] shrink-0">kg</span>
             </div>
             <p className="text-[10px] text-[#8C8C8C] font-mono flex items-center gap-1 pt-1.5 border-t border-neutral-800/20 truncate">
-              <Warehouse className="w-3 h-3 text-emerald-400 shrink-0" />R neto disponible: <strong className="text-[#E5E5E5] truncate">{formatNumber(metrics?.oroEnBoveda.fineWeight ?? 0, 2)} g</strong>
+              <Warehouse className="w-3 h-3 text-emerald-400 shrink-0" />R neto disponible: <strong className="text-[#E5E5E5] truncate">{formatWeight(metrics?.oroEnBoveda.fineWeight ?? 0, weightUnit)}</strong>
             </p>
           </div>
         </motion.div>
@@ -281,7 +290,7 @@ export default function DashboardPage() {
               <span className="text-[10.5px] text-[#8C8C8C] shrink-0">Merma</span>
             </div>
             <p className="text-[10px] text-[#8C8C8C] font-mono flex items-center gap-1 pt-1.5 border-t border-neutral-800/20 truncate">
-              <Scale className="w-3 h-3 text-red-400 shrink-0" />Pérdida Total: <strong className="text-[#E5E5E5] truncate">{formatNumber((metrics?.merma.gramos ?? 0) / 1000, 4)} kg Au</strong>
+              <Scale className="w-3 h-3 text-red-400 shrink-0" />Pérdida Total: <strong className="text-[#E5E5E5] truncate">{formatWeight(metrics?.merma.gramos ?? 0, weightUnit)} Au</strong>
             </p>
           </div>
         </motion.div>
@@ -309,7 +318,7 @@ export default function DashboardPage() {
             {supplierData.map((s, idx) => (
               <div key={s.id} className="flex items-center gap-1.5 text-[10px] font-mono text-[#8C8C8C]">
                 <span className="w-2.5 h-2.5 rounded" style={{ backgroundColor: colors[idx % colors.length].s1 }}></span>
-                <span>{s.code}: {Math.round(s.value / 1000)}kg ({Math.round((s.value / (supplierData.reduce((x, y) => x + y.value, 0) || 1)) * 100)}%)</span>
+                <span>{s.code}: {weightUnit === 'kg' ? `${(s.value / 1000).toFixed(4)} kg` : `${Math.round(s.value).toLocaleString()} g`} ({Math.round((s.value / (supplierData.reduce((x, y) => x + y.value, 0) || 1)) * 100)}%)</span>
               </div>
             ))}
           </div>
@@ -326,8 +335,8 @@ export default function DashboardPage() {
                 <thead>
                   <tr className="border-b border-neutral-800/40 text-[10px] font-mono text-[#8C8C8C] uppercase tracking-wider">
                     <th className="py-2">Cliente</th>
-                    <th className="py-2 text-right">Bruto (kg)</th>
-                    <th className="py-2 text-right">FA (g)</th>
+                    <th className="py-2 text-right">Bruto ({weightUnit})</th>
+                    <th className="py-2 text-right">FA ({weightUnit})</th>
                     <th className="py-2 text-right">Barras</th>
                     <th className="py-2 text-right">Pureza</th>
                   </tr>
@@ -336,8 +345,12 @@ export default function DashboardPage() {
                   {supplierData.map(s => (
                     <tr key={s.id} className="hover:bg-black/40 transition-colors">
                       <td className="py-2 font-medium text-[#E5E5E5]">{s.name}</td>
-                      <td className="py-2 text-right font-mono text-[#8C8C8C]">{(s.value / 1000).toFixed(3)}</td>
-                      <td className="py-2 text-right font-mono text-[#D5B042]">{Math.round(s.value).toLocaleString()}</td>
+                      <td className="py-2 text-right font-mono text-[#8C8C8C]">
+                        {weightUnit === 'kg' ? (s.value / 1000).toFixed(4) : Math.round(s.value).toLocaleString()}
+                      </td>
+                      <td className="py-2 text-right font-mono text-[#D5B042]">
+                        {weightUnit === 'kg' ? (s.value / 1000).toFixed(4) : Math.round(s.value).toLocaleString()}
+                      </td>
                       <td className="py-2 text-right font-mono text-[#8C8C8C]">{s.count} u</td>
                       <td className="py-2 text-right font-mono text-[#8C8C8C]">{s.avgPurity}‰</td>
                     </tr>
@@ -369,7 +382,7 @@ export default function DashboardPage() {
             {clientData.map((c, idx) => (
               <div key={c.id} className="flex items-center gap-1.5 text-[10px] font-mono text-[#8C8C8C]">
                 <span className="w-2.5 h-2.5 rounded" style={{ backgroundColor: colors[(idx + 3) % colors.length].s1 }}></span>
-                <span>{c.code}: {Math.round(c.value / 1000)}kg ({Math.round((c.value / (clientData.reduce((x, y) => x + y.value, 0) || 1)) * 100)}%)</span>
+                <span>{c.code}: {weightUnit === 'kg' ? `${(c.value / 1000).toFixed(4)} kg` : `${Math.round(c.value).toLocaleString()} g`} ({Math.round((c.value / (clientData.reduce((x, y) => x + y.value, 0) || 1)) * 100)}%)</span>
               </div>
             ))}
           </div>
@@ -386,7 +399,7 @@ export default function DashboardPage() {
                 <thead>
                   <tr className="border-b border-neutral-800/40 text-[10px] font-mono text-[#8C8C8C] uppercase tracking-wider">
                     <th className="py-2">Cliente</th>
-                    <th className="py-2 text-right">Despachado (kg)</th>
+                    <th className="py-2 text-right">Despachado ({weightUnit})</th>
                     <th className="py-2 text-right">Envíos</th>
                   </tr>
                 </thead>
@@ -394,7 +407,9 @@ export default function DashboardPage() {
                   {clientData.map(c => (
                     <tr key={c.id} className="hover:bg-black/40 transition-colors">
                       <td className="py-2 font-medium text-[#E5E5E5]">{c.name}</td>
-                      <td className="py-2 text-right font-mono text-[#D5B042]">{(c.value / 1000).toFixed(3)}</td>
+                      <td className="py-2 text-right font-mono text-[#D5B042]">
+                        {weightUnit === 'kg' ? (c.value / 1000).toFixed(4) : Math.round(c.value).toLocaleString()}
+                      </td>
                       <td className="py-2 text-right font-mono text-[#8C8C8C]">{c.count} envíos</td>
                     </tr>
                   ))}
@@ -435,7 +450,7 @@ export default function DashboardPage() {
                 <CartesianGrid strokeDasharray="3 3" stroke="#2A2A2A" vertical={false} />
                 <XAxis dataKey="dateShort" stroke="#525151" tick={{ fontSize: 10, fill: '#8C8C8C' }} axisLine={{ stroke: '#2A2A2A' }} tickLine={false} />
                 <YAxis stroke="#8C8C8C" tick={{ fontSize: 10, fill: '#8C8C8C' }} axisLine={{ stroke: '#2A2A2A' }} tickLine={false}
-                  tickFormatter={(v: number) => v >= 1000 ? `${(v / 1000).toFixed(1)}kg` : `${v}g`} />
+                  tickFormatter={(v: number) => weightUnit === 'kg' ? `${(v / 1000).toFixed(2)} kg` : `${v.toFixed(0)} g`} />
                 
                 <Tooltip 
                   cursor={{ fill: 'rgba(213, 176, 66, 0.04)' }} 
