@@ -112,15 +112,16 @@ export default function PackingPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs font-sans">
               <thead>
-                <tr className="border-b border-neutral-800/20 text-[10px] font-mono text-[#8C8C8C] uppercase tracking-wider bg-black/50">
-                  <th className="py-3 pl-5">Archivo</th>
-                  <th className="py-3">Cliente</th>
-                  <th className="py-3">Fecha</th>
-                  <th className="py-3 text-center">Filas</th>
-                  <th className="py-3 text-center">Creados</th>
-                  <th className="py-3 text-center">Errores</th>
-                  <th className="py-3 text-center">Estado</th>
-                  <th className="py-3 text-center pr-5">Descargar</th>
+                <tr className="border-b border-neutral-800/20 text-[10px] font-mono text-[#8C8C8C] uppercase tracking-wider">
+                  <th className="py-3 bg-black/50 text-center w-10"></th>
+                  <th className="py-3 bg-black/50 text-center">Archivo</th>
+                  <th className="py-3 bg-black/50 text-center">Cliente</th>
+                  <th className="py-3 bg-black/50 text-center">Fecha</th>
+                  <th className="py-3 bg-black/50 text-center">Filas</th>
+                  <th className="py-3 bg-black/50 text-center">Creados</th>
+                  <th className="py-3 bg-black/50 text-center">Errores</th>
+                  <th className="py-3 bg-black/50 text-center">Estado</th>
+                  <th className="py-3 bg-black/50 text-center">Descargar</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-neutral-800/20">
@@ -132,16 +133,14 @@ export default function PackingPage() {
                   return (
                     <React.Fragment key={record.id}>
                       <tr className="hover:bg-[#141414]/80 transition-colors">
-                        <td className="py-3 pl-5">
-                          <div className="flex items-center gap-2">
-                            <FileSpreadsheet className="w-4 h-4 text-[#D5B042]/60 shrink-0" />
-                            <span className="font-mono text-[#E5E5E5] text-[11px] truncate max-w-[180px] block" title={record.fileName}>
-                              {record.fileName}
-                            </span>
-                          </div>
+                        <td className="py-3 text-center">
+                          <FileSpreadsheet className="w-4 h-4 text-[#D5B042]/60 mx-auto" />
                         </td>
-                        <td className="py-3 font-mono text-[#8C8C8C]">{clientName(record.clientId)}</td>
-                        <td className="py-3 font-mono text-[#8C8C8C] text-[10px]">
+                        <td className="py-3 font-mono text-[#E5E5E5] text-[11px] text-center truncate max-w-[180px]" title={record.fileName}>
+                          {record.fileName}
+                        </td>
+                        <td className="py-3 font-mono text-[#8C8C8C] text-center">{clientName(record.clientId)}</td>
+                        <td className="py-3 font-mono text-[#8C8C8C] text-[10px] text-center">
                           {new Date(record.createdAt).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                         </td>
                         <td className="py-3 text-center font-mono text-[#E5E5E5]">{record.totalRows}</td>
@@ -163,7 +162,7 @@ export default function PackingPage() {
                             {cfg.label}
                           </span>
                         </td>
-                        <td className="py-3 text-center pr-5">
+                        <td className="py-3 text-center">
                           <a href={`http://localhost:3001/bulk-uploads/${record.id}/download`}
                             className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-black border border-neutral-800/40 text-[#D5B042] hover:bg-[#D5B042]/10 hover:border-[#D5B042]/30 transition-all text-[9px] font-mono font-bold uppercase tracking-wider">
                             <Download className="w-3 h-3" />
@@ -175,7 +174,7 @@ export default function PackingPage() {
                         {isExpanded && hasErrors && (
                           <motion.tr key={`errors-${record.id}`}
                             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                            <td colSpan={8} className="p-0">
+                            <td colSpan={9} className="p-0">
                               <div className="bg-black/60 border-t border-neutral-800/20 px-5 py-3 space-y-1.5">
                                 <p className="text-[9px] font-mono text-red-400 uppercase tracking-wider font-bold flex items-center gap-1">
                                   <AlertTriangle className="w-3 h-3" />
