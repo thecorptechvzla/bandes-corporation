@@ -46,7 +46,7 @@ const STATUS_STYLES: Record<string, string> = {
 
 export default function IngresosPage() {
   const queryClient = useQueryClient();
-  const { data: clients = [] } = useClients();
+  const { data: clients = [] } = useClients({ role: 'PROVEEDOR' });
   const { data: bars = [] } = useBars();
   const createBar = useCreateBar();
 

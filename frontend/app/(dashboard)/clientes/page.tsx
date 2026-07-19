@@ -19,6 +19,7 @@ import {
   Building2,
   Phone,
   Hash,
+  Tags,
 } from 'lucide-react';
 import type { Client } from '@/types/api';
 
@@ -33,6 +34,7 @@ export default function ClientesPage() {
   const [rif, setRif] = useState('');
   const [name, setName] = useState('');
   const [contactInfo, setContactInfo] = useState('');
+  const [role, setRole] = useState<string>('AMBOS');
   const [formError, setFormError] = useState('');
   const [formSuccess, setFormSuccess] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
@@ -49,6 +51,7 @@ export default function ClientesPage() {
     setRif('');
     setName('');
     setContactInfo('');
+    setRole('AMBOS');
     setFormError('');
     setFormSuccess('');
     setShowForm(true);
@@ -59,6 +62,7 @@ export default function ClientesPage() {
     setRif(client.rif);
     setName(client.name);
     setContactInfo(client.contactInfo || '');
+    setRole(client.role);
     setFormError('');
     setFormSuccess('');
     setShowForm(true);
@@ -70,6 +74,7 @@ export default function ClientesPage() {
     setRif('');
     setName('');
     setContactInfo('');
+    setRole('AMBOS');
     setFormError('');
     setFormSuccess('');
   };
@@ -88,7 +93,7 @@ export default function ClientesPage() {
       if (editingClient) {
         await updateClient.mutateAsync({
           id: editingClient.id,
-          data: { rif: rif.trim(), name: name.trim(), contactInfo: contactInfo.trim() || undefined },
+          data: { rif: rif.trim(), name: name.trim(), contactInfo: contactInfo.trim() || undefined, role: role as any },
         });
         setFormSuccess('Cliente actualizado correctamente.');
       } else {
@@ -96,6 +101,7 @@ export default function ClientesPage() {
           rif: rif.trim(),
           name: name.trim(),
           contactInfo: contactInfo.trim() || undefined,
+          role: role as any,
         });
         setFormSuccess('Cliente creado correctamente.');
         setRif('');
@@ -118,6 +124,18 @@ export default function ClientesPage() {
       setDeleteState(null);
     }
     setTimeout(() => setDeleteState(null), 3000);
+  };
+
+  const ROLE_STYLES: Record<string, string> = {
+    PROVEEDOR: 'bg-blue-900/20 text-blue-400 border border-blue-500/20',
+    CLIENTE: 'bg-emerald-900/20 text-emerald-400 border border-emerald-500/20',
+    AMBOS: 'bg-purple-900/20 text-purple-400 border border-purple-500/20',
+  };
+
+  const ROLE_LABELS: Record<string, string> = {
+    PROVEEDOR: 'Proveedor',
+    CLIENTE: 'Cliente',
+    AMBOS: 'Ambos',
   };
 
   const formatRif = (raw: string) => {
@@ -224,6 +242,21 @@ export default function ClientesPage() {
                     />
                   </div>
 
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-mono text-[#8C8C8C] uppercase flex items-center gap-1">
+                      <Tags className="w-3 h-3" /> Tipo / Rol
+                    </label>
+                    <select
+                      value={role}
+                      onChange={(e) => setRole(e.target.value)}
+                      className="w-full bg-black border border-neutral-800/40 rounded-lg px-3 py-2.5 text-xs font-sans text-[#E5E5E5] focus:outline-none focus:border-[#D5B042] transition-colors cursor-pointer"
+                    >
+                      <option value="PROVEEDOR">Proveedor (Envía material)</option>
+                      <option value="CLIENTE">Cliente (Recibe material)</option>
+                      <option value="AMBOS">Ambos (Ambas funciones)</option>
+                    </select>
+                  </div>
+
                   {formError && (
                     <div className="p-3 bg-red-500/10 border border-red-500/30 text-red-400 text-xs rounded-lg">{formError}</div>
                   )}
@@ -310,7 +343,8 @@ export default function ClientesPage() {
                       <th className="py-3 bg-black/50 text-center">RIF</th>
                       <th className="py-3 bg-black/50 text-center">Nombre</th>
                       <th className="py-3 bg-black/50 text-center hidden sm:table-cell">Contacto</th>
-                      <th className="py-3 bg-black/50 text-center hidden md:table-cell">Creado</th>
+                      <th className="py-3 bg-black/50 text-center hidden md:table-cell">Tipo</th>
+                      <th className="py-3 bg-black/50 text-center hidden lg:table-cell">Creado</th>
                       <th className="py-3 bg-black/50 text-center">Acciones</th>
                     </tr>
                   </thead>
@@ -324,7 +358,12 @@ export default function ClientesPage() {
                         <td className="py-3.5 text-[#8C8C8C] hidden sm:table-cell text-center">
                           {client.contactInfo || <span className="text-[#8C8C8C]/40">—</span>}
                         </td>
-                        <td className="py-3.5 text-[#8C8C8C] font-mono text-[10px] hidden md:table-cell text-center">
+                        <td className="py-3.5 hidden md:table-cell text-center">
+                          <span className={`inline-block px-2 py-0.5 rounded text-[9px] font-mono font-semibold ${ROLE_STYLES[client.role] || ''}`}>
+                            {ROLE_LABELS[client.role] || client.role}
+                          </span>
+                        </td>
+                        <td className="py-3.5 text-[#8C8C8C] font-mono text-[10px] hidden lg:table-cell text-center">
                           {new Date(client.createdAt).toLocaleDateString('es-ES', {
                             day: '2-digit',
                             month: 'short',

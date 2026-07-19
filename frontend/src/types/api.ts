@@ -1,8 +1,11 @@
+export type ClientRole = 'PROVEEDOR' | 'CLIENTE' | 'AMBOS';
+
 export interface Client {
   id: string;
   rif: string;
   name: string;
   contactInfo?: string;
+  role: ClientRole;
   createdAt: string;
   updatedAt: string;
 }
@@ -145,6 +148,25 @@ export interface CreateClientRequest {
   rif: string;
   name: string;
   contactInfo?: string;
+  role?: ClientRole;
+}
+
+export interface DashboardMetrics {
+  oroRecibido: {
+    fineWeight: number;
+    barCount: number;
+  };
+  oroEnProceso: {
+    fineWeight: number;
+    barCount: number;
+  };
+  oroEnBoveda: {
+    fineWeight: number;
+  };
+  merma: {
+    gramos: number;
+    porcentaje: number;
+  };
 }
 
 export interface BulkUploadResult {

@@ -25,7 +25,7 @@ interface DispatchResultData {
 }
 
 export default function EgresosPage() {
-  const { data: clients = [] } = useClients();
+  const { data: clients = [] } = useClients({ role: 'CLIENTE' });
   const { data: bars = [] } = useBars();
   const { data: processes = [] } = useProcesses();
   const createExit = useCreateMaterialExit();
