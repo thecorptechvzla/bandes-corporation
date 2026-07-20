@@ -204,7 +204,7 @@ export default function V2ClientesPage() {
         <div>
           <h1 className="text-xl font-semibold text-[var(--pm-text-primary)] font-sans flex items-center gap-2.5">
             <Building2 className="w-6 h-6 text-[var(--pm-accent-gold)]" />
-            Directorio <span className="text-[var(--pm-accent-gold)]">Comercial</span>
+             <span className="text-[var(--pm-accent-gold)]">Proveedores</span>
           </h1>
           <p className="text-xs text-[var(--pm-text-dim)] mt-1">
             Gestión centralizada de entidades y balances.
