@@ -169,6 +169,18 @@ export interface DashboardMetrics {
   };
 }
 
+export interface BulkUploadRecord {
+  id: string;
+  fileName: string;
+  clientId: string;
+  totalRows: number;
+  created: number;
+  skipped: number;
+  errors: { row: number; message: string }[];
+  status: 'COMPLETED' | 'PARTIAL' | 'FAILED';
+  createdAt: string;
+}
+
 export interface BulkUploadResult {
   created: number;
   skipped: number;
