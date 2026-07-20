@@ -9,7 +9,7 @@ export function formatNumber(value: number, decimals: number = 2): string {
   });
 }
 
-export function formatWeight(value: number, unit: WeightUnit = 'kg', decimals?: number): string {
+export function formatWeight(value: number, unit: WeightUnit = 'g', decimals?: number): string {
   if (unit === 'g') {
     const dec = decimals ?? 2;
     return `${formatNumber(value, dec)} g`;

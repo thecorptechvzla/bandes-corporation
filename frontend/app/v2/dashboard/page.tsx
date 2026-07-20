@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { useBars } from '@/hooks/useBars';
 import { useClients } from '@/hooks/useClients';
@@ -13,7 +13,6 @@ import {
 } from 'lucide-react';
 import { AreaChart, Area, ResponsiveContainer, Treemap, Tooltip } from 'recharts';
 import { formatNumber } from '@/lib/format';
-import { useGoldTraceability } from '@/context/GoldTraceabilityContext';
 
 function SparklineArea({ data, color, id }: { data: number[]; color: string; id: string }) {
   const chartData = data.map((v, i) => ({ i, v }));
@@ -80,14 +79,12 @@ function darkenHsl(hsl: string): string {
 }
 
 function TreemapTooltip({
-  active, payload, accent, scaleLabel, weightUnit,
+  active, payload, accent, scaleLabel,
 }: {
-  active?: boolean; payload?: any[]; accent: string; scaleLabel: string; weightUnit: string;
+  active?: boolean; payload?: any[];   accent: string; scaleLabel: string;
 }) {
   if (!active || !payload?.[0]) return null;
   const data = payload[0].payload;
-  const divisor = weightUnit === 'kg' ? 1000 : 1;
-  const dec = weightUnit === 'kg' ? 4 : 2;
   return (
     <div
       className="rounded-lg border px-3.5 py-2.5 text-[10px] font-mono space-y-1 min-w-[170px]"
@@ -108,7 +105,7 @@ function TreemapTooltip({
         <p className="flex justify-between items-center">
           <span className="text-[var(--pm-text-dim)] text-[10px]">MASA TOTAL</span>
           <span className="font-semibold text-[12px]" style={{ color: accent }}>
-            {formatNumber(data.value / divisor, dec)} {weightUnit}
+            {formatNumber(data.value, 2)} g
           </span>
         </p>
         <p className="flex justify-between items-center">
@@ -134,14 +131,13 @@ interface CustomBlockProps {
   accent?: string;
   glowColor?: string;
   index?: number;
-  weightUnit?: string;
 }
 
 function CustomTreemapBlock(props: CustomBlockProps) {
   const {
     x = 0, y = 0, width = 0, height = 0,
     name = '', value = 0, pct = 0, fill = '#0D1520',
-    accent = '#00E5FF', glowColor = '#00E5FF', weightUnit = 'g',
+    accent = '#00E5FF', glowColor = '#00E5FF',
   } = props;
   const [hovered, setHovered] = useState(false);
 
@@ -149,9 +145,7 @@ function CustomTreemapBlock(props: CustomBlockProps) {
 
   const uid = name.replace(/[^a-zA-Z0-9]/g, '');
   const darkFill = darkenHsl(fill);
-  const divisor = weightUnit === 'kg' ? 1000 : 1;
-  const dec = weightUnit === 'kg' ? 4 : 2;
-  const weightLabel = `${formatNumber(value / divisor, dec)} ${weightUnit}`;
+  const weightLabel = `${formatNumber(value, 2)} g`;
 
   const showName = width > 50 && height > 40;
   const showWeight = width > 60 && height > 60;
@@ -280,13 +274,10 @@ function CustomTreemapBlock(props: CustomBlockProps) {
 }
 
 function TreemapLegend({
-  data, weightUnit,
+  data,
 }: {
   data: { name: string; value: number; pct: number; fill: string }[];
-  weightUnit: string;
 }) {
-  const divisor = weightUnit === 'kg' ? 1000 : 1;
-  const dec = weightUnit === 'kg' ? 4 : 2;
   return (
     <div className="flex flex-wrap gap-x-5 gap-y-1 px-4 pb-3 pt-2.5 border-t border-[var(--pm-border)]/30 text-[9px] font-mono">
       {data.map(item => (
@@ -294,7 +285,7 @@ function TreemapLegend({
           <span className="w-2 h-2 rounded-full shrink-0" style={{ background: item.fill }} />
           <span className="text-[var(--pm-text-primary)] font-semibold">{item.name}:</span>
           <span className="text-[var(--pm-text-dim)]">
-            {formatNumber(item.value / divisor, dec)} {weightUnit}
+            {formatNumber(item.value, 2)} g
           </span>
           <span className="text-[var(--pm-text-dim)] opacity-60">
             ({formatNumber(item.pct, 1)}%)
@@ -311,7 +302,9 @@ export default function V2DashboardPage() {
   const { data: exits = [] } = useMaterialExits();
   const { data: processes = [] } = useProcesses();
   const { data: metrics, isLoading } = useDashboardMetrics();
-  const { weightUnit } = useGoldTraceability();
+
+  const [isMounted, setIsMounted] = useState(false);
+  useEffect(() => { setIsMounted(true); }, []);
 
   const [showTableIngresos, setShowTableIngresos] = useState(false);
   const [showTableEgresos, setShowTableEgresos] = useState(false);
@@ -404,7 +397,7 @@ export default function V2DashboardPage() {
     {
       label: 'Oro Recibido',
       value: metrics?.oroRecibido.fineWeight ?? 0,
-      sublabel: `FA total: ${formatNumber((metrics?.oroRecibido.fineWeight ?? 0) / (weightUnit === 'kg' ? 1000 : 1), weightUnit === 'kg' ? 4 : 2)} ${weightUnit === 'kg' ? 'kg' : 'g'}`,
+      sublabel: `FA total: ${formatNumber(metrics?.oroRecibido.fineWeight ?? 0, 2)} g`,
       subicon: Scale,
       accent: KPI_COLORS[0].accent,
       tag: KPI_COLORS[0].label,
@@ -424,7 +417,7 @@ export default function V2DashboardPage() {
     {
       label: 'Oro en Bóveda',
       value: metrics?.oroEnBoveda.fineWeight ?? 0,
-      sublabel: `R neto disponible: ${formatNumber((metrics?.oroEnBoveda.fineWeight ?? 0) / (weightUnit === 'kg' ? 1000 : 1), weightUnit === 'kg' ? 4 : 2)} ${weightUnit === 'kg' ? 'kg' : 'g'}`,
+      sublabel: `R neto disponible: ${formatNumber(metrics?.oroEnBoveda.fineWeight ?? 0, 2)} g`,
       subicon: Pickaxe,
       accent: KPI_COLORS[2].accent,
       tag: KPI_COLORS[2].label,
@@ -434,7 +427,7 @@ export default function V2DashboardPage() {
     {
       label: 'Por Refundir',
       value: metrics?.porRefundir.fineWeight ?? 0,
-      sublabel: `Barras en stock: ${formatNumber((metrics?.porRefundir.fineWeight ?? 0) / (weightUnit === 'kg' ? 1000 : 1), weightUnit === 'kg' ? 4 : 2)} ${weightUnit === 'kg' ? 'kg' : 'g'} en espera`,
+      sublabel: `Barras en stock: ${formatNumber(metrics?.porRefundir.fineWeight ?? 0, 2)} g en espera`,
       subicon: Inbox,
       accent: KPI_COLORS[3].accent,
       tag: KPI_COLORS[3].label,
@@ -444,9 +437,9 @@ export default function V2DashboardPage() {
   ];
 
   const formatWeightCell = (val: number) =>
-    `${formatNumber(val / (weightUnit === 'kg' ? 1000 : 1), weightUnit === 'kg' ? 4 : 2)} ${weightUnit === 'kg' ? 'kg' : 'g'}`;
+    `${formatNumber(val, 2)} g`;
 
-  const fmtKg = (val: number) => formatNumber(val / 1000, 4);
+  const fmtG = (val: number) => formatNumber(val, 2);
 
   const renderTreemap = (
     data: { name: string; value: number; pct: number; fill: string }[],
@@ -462,14 +455,14 @@ export default function V2DashboardPage() {
           aspectRatio={4 / 3}
           stroke="transparent"
           isAnimationActive={true}
-          content={<CustomTreemapBlock accent={accent} glowColor={glowColor} weightUnit={weightUnit} />}
+          content={<CustomTreemapBlock accent={accent} glowColor={glowColor} />}
         >
           <Tooltip
-            content={<TreemapTooltip accent={accent} scaleLabel={scaleLabel} weightUnit={weightUnit} />}
+            content={<TreemapTooltip accent={accent} scaleLabel={scaleLabel} />}
           />
         </Treemap>
       </ResponsiveContainer>
-      {data.length > 1 && <TreemapLegend data={data} weightUnit={weightUnit} />}
+      {data.length > 1 && <TreemapLegend data={data} />}
     </>
   );
 
@@ -551,12 +544,14 @@ export default function V2DashboardPage() {
                 <span className="text-[11px] text-[var(--pm-text-dim)] font-sans block mb-1">{kpi.label}</span>
                 <div className="flex items-baseline gap-1.5 mb-3">
                   <span className="text-2xl font-mono font-bold text-[var(--pm-text-primary)] tracking-tight">
-                    {kpi.postfix === '%'
-                      ? `${formatNumber(kpi.value, 1)}`
-                      : formatNumber(kpi.value / (weightUnit === 'kg' ? 1000 : 1), weightUnit === 'kg' ? 4 : 2)}
+                    {!isMounted
+                      ? '0,00'
+                      : kpi.postfix === '%'
+                        ? `${formatNumber(kpi.value, 1)}`
+                        : formatNumber(kpi.value, 2)}
                   </span>
                   <span className="text-[11px] text-[var(--pm-text-dim)] font-mono">
-                    {kpi.postfix || (weightUnit === 'kg' ? 'kg' : 'g')}
+                    {kpi.postfix || 'g'}
                   </span>
                 </div>
 
@@ -694,11 +689,11 @@ export default function V2DashboardPage() {
             <div className="min-w-[1000px]">
               <div className="grid grid-cols-[180px_repeat(5,120px)_100px_80px] px-6 py-3 border-b border-[var(--pm-border)] text-[10px] font-mono font-bold tracking-[0.1em] uppercase text-[var(--pm-text-dim)]">
                 <div className="text-left">Cliente</div>
-                <div className="text-right">Ingreso Bruto (KG)</div>
-                <div className="text-right">FA (KG)</div>
-                <div className="text-right">R (KG)</div>
-                <div className="text-right">Egresos (KG)</div>
-                <div className="text-right">Balance (KG)</div>
+                <div className="text-right">Ingreso Bruto (G)</div>
+                <div className="text-right">FA (G)</div>
+                <div className="text-right">R (G)</div>
+                <div className="text-right">Egresos (G)</div>
+                <div className="text-right">Balance (G)</div>
                 <div className="text-right">MERMA (G)</div>
                 <div className="text-right">MERMA (%)</div>
               </div>
@@ -715,19 +710,19 @@ export default function V2DashboardPage() {
                     {c.name}
                   </div>
                   <div className="text-right text-[var(--pm-text-dim)]">
-                    {fmtKg(c.ingresoBruto)}
+                    {fmtG(c.ingresoBruto)}
                   </div>
                   <div className="text-right text-[var(--pm-accent-gold)]">
-                    {fmtKg(c.fa)}
+                    {fmtG(c.fa)}
                   </div>
                   <div className="text-right text-[var(--pm-accent-amber)]">
-                    {fmtKg(c.r)}
+                    {fmtG(c.r)}
                   </div>
                   <div className="text-right text-[var(--pm-accent-red)]">
-                    {fmtKg(c.egresos)}
+                    {fmtG(c.egresos)}
                   </div>
                   <div className={`text-right font-bold ${c.balance >= 0 ? 'text-[var(--pm-accent-emerald)]' : 'text-[var(--pm-accent-red)]'}`}>
-                    {fmtKg(Math.abs(c.balance))}
+                    {fmtG(Math.abs(c.balance))}
                     {c.balance < 0 ? ' −' : ''}
                   </div>
                   <div className="text-right text-[var(--pm-accent-red)]">

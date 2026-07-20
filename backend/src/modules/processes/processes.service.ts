@@ -57,7 +57,7 @@ export class ProcessesService {
         lots: {
           include: {
             bars: {
-              where: { status: 'IN_STOCK' },
+              where: { status: { in: ['IN_STOCK', 'COMPLETADO'] } },
               select: { fineWeight: true, leyAg: true, fineWeightAg: true },
             },
           },
@@ -92,7 +92,7 @@ export class ProcessesService {
         lots: {
           include: {
             bars: {
-              where: { status: 'IN_STOCK' },
+              where: { status: { in: ['IN_STOCK', 'COMPLETADO'] } },
               select: { fineWeight: true, leyAg: true, fineWeightAg: true },
             },
           },

@@ -7,7 +7,7 @@ import { useClients } from '@/hooks/useClients';
 import { useProcesses } from '@/hooks/useProcesses';
 import { useBars } from '@/hooks/useBars';
 import { useCreateMaterialExit } from '@/hooks/useExits';
-import { formatNumber } from '@/lib/format';
+import { formatNumber, formatWeight } from '@/lib/format';
 import { useGoldTraceability } from '@/context/GoldTraceabilityContext';
 import type { WeightUnit } from '@/lib/format';
 import {
@@ -45,7 +45,9 @@ export default function V2EgresosPage() {
   const { weightUnit } = useGoldTraceability();
 
   const [selectedLotIds, setSelectedLotIds] = useState<Set<string>>(new Set());
-  const [destination, setDestination] = useState('');
+  const [destinationClient, setDestinationClient] = useState<{ id: string; name: string; rif: string; contactInfo?: string } | null>(null);
+  const [clientSelectOpen, setClientSelectOpen] = useState(false);
+  const [clientSearch, setClientSearch] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [status, setStatus] = useState<'idle' | 'processing' | 'success' | 'error'>('idle');
   const [dispatchResult, setDispatchResult] = useState<DispatchResult | null>(null);
@@ -59,6 +61,10 @@ export default function V2EgresosPage() {
         .filter(l => l.recovered !== null && Number(l.recovered) > 0)
         .map(l => {
           const client = clients.find(c => c.id === p.clientId);
+          const eligibleBars = bars.filter(
+            b => b.lotId === l.id && (b.status === 'IN_STOCK' || b.status === 'COMPLETADO'),
+          );
+          if (eligibleBars.length === 0) return null;
           return {
             id: l.id,
             name: l.name,
@@ -66,12 +72,27 @@ export default function V2EgresosPage() {
             clientId: p.clientId,
             clientName: client?.name || 'DESCONOCIDO',
             clientRif: client?.rif || '—',
-            availableWeight: Number(l.recovered),
-            barCount: bars.filter(b => b.lotId === l.id && b.status !== 'EXITED').length,
+            availableWeight: Number(
+              eligibleBars.reduce((s, b) => s + Number(b.fineWeight), 0),
+            ),
+            barCount: eligibleBars.length,
           };
-        })
-      );
+        }),
+      )
+      .filter((l): l is AvailableLot => l !== null && l.availableWeight > 0);
   }, [processes, bars, clients]);
+
+  const buyerClients = useMemo(() =>
+    clients.filter(c => c.role === 'CLIENTE' || c.role === 'AMBOS'),
+  [clients]);
+
+  const filteredBuyers = useMemo(() => {
+    if (!clientSearch) return buyerClients;
+    const q = clientSearch.toLowerCase();
+    return buyerClients.filter(c =>
+      c.name.toLowerCase().includes(q) || c.rif.toLowerCase().includes(q),
+    );
+  }, [buyerClients, clientSearch]);
 
   const filteredLots = useMemo(() => {
     if (!searchQuery) return allAvailableLots;
@@ -157,15 +178,17 @@ export default function V2EgresosPage() {
     doc.setTextColor(40, 40, 40);
     doc.setFontSize(10);
     doc.setFont('helvetica', 'bold');
-    doc.text('DATOS DEL DESPACHO', m, y); y += 8;
+    doc.text('DATOS DEL DESTINATARIO', m, y); y += 8;
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(80, 80, 80);
-    doc.text(`Destinatario: ${data.destination}`, m, y); y += 6;
+    doc.text(`Nombre/Razón Social: ${data.destination}`, m, y); y += 5;
+    if (destinationClient?.rif) { doc.text(`RIF: ${destinationClient.rif}`, m, y); y += 5; }
+    if (destinationClient?.contactInfo) { doc.text(`Contacto: ${destinationClient.contactInfo}`, m, y); y += 5; }
+    y += 2;
     doc.text(`Proveedores: ${data.providerCount}`, m, y); y += 6;
     doc.text(`Lotes: ${data.lotCount}`, m, y); y += 6;
-    const totalDisp = weightUnit === 'kg' ? `${(data.totalWeight / 1000).toFixed(4)} kg` : `${data.totalWeight.toFixed(2)} g`;
-    doc.text(`Peso Total: ${totalDisp}`, m, y); y += 6;
+    doc.text(`Peso Total: ${formatWeight(Number(data.totalWeight), weightUnit)}`, m, y); y += 6;
     doc.text(`Fecha: ${new Date(data.createdAt).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`, m, y);
     y += 10;
 
@@ -186,7 +209,7 @@ export default function V2EgresosPage() {
       doc.setTextColor(212, 175, 55);
       doc.setFontSize(8);
       doc.setFont('helvetica', 'bold');
-      doc.text(`${pv.name} — ${pv.lots} lote(s) — ${weightUnit === 'kg' ? `${(pv.weight / 1000).toFixed(4)} kg` : `${pv.weight.toFixed(2)} g`}`, m + 2, y + 1);
+      doc.text(`${pv.name} — ${pv.lots} lote(s) — ${formatWeight(Number(pv.weight), weightUnit)}`, m + 2, y + 1);
       y += 10;
 
       const providerLots = data.lots.filter(l => l.provider === pv.name);
@@ -200,8 +223,7 @@ export default function V2EgresosPage() {
         doc.setFontSize(7);
         doc.setFont('helvetica', 'normal');
         doc.text(lot.name, m + 4, y + 1);
-        const ld = weightUnit === 'kg' ? `${(lot.weight / 1000).toFixed(4)} kg` : `${lot.weight.toFixed(2)} g`;
-        doc.text(ld, pw - m - 2, y + 1, { align: 'right' });
+        doc.text(formatWeight(Number(lot.weight), weightUnit), pw - m - 2, y + 1, { align: 'right' });
         y += 7;
       });
       y += 4;
@@ -215,7 +237,9 @@ export default function V2EgresosPage() {
     doc.setTextColor(40, 40, 40);
     doc.setFontSize(11);
     doc.setFont('helvetica', 'bold');
-    doc.text(`PESO TOTAL: ${totalDisp}`, m, y); y += 7;
+    doc.text(`FA: ${formatWeight(Number(data.totalWeight), weightUnit)}`, m, y); y += 7;
+    const fe = Number(data.totalWeight) * 0.99;
+    doc.text(`FE (FA × 0.99): ${formatWeight(fe, weightUnit)}`, m, y); y += 7;
     doc.text(`LOTES: ${data.lotCount}`, m, y); y += 7;
     doc.text(`PROVEEDORES: ${data.providerCount}`, m, y); y += 20;
 
@@ -226,27 +250,27 @@ export default function V2EgresosPage() {
     doc.setFontSize(8);
     doc.setTextColor(100, 100, 100);
     doc.text('_________________________', m, y); y += 5;
-    doc.text('Firma Autorizada', m, y);
+    doc.text('FA', m, y);
     doc.text('_________________________', pw - m - 40, y - 5);
-    doc.text('Sello Receptor', pw - m - 40, y);
+    doc.text('R', pw - m - 40, y);
 
     doc.save(`Comprobante_${data.reference.replace(/[/\\?%*:|"<>]/g, '_')}.pdf`);
   }, [weightUnit]);
 
   const handleOpenConfirm = () => {
-    if (selectedLots.length === 0 || !destination.trim()) return;
+    if (selectedLots.length === 0 || !destinationClient) return;
     setShowConfirmModal(true);
   };
 
   const handleDispatch = async () => {
-    if (selectedLots.length === 0 || !destination) return;
+    if (selectedLots.length === 0 || !destinationClient) return;
     setShowConfirmModal(false);
     setStatus('processing');
     setMessage('');
 
     try {
       const result = await createExit.mutateAsync({
-        destination: destination.toUpperCase(),
+        destination: destinationClient.name.toUpperCase(),
         lotIds: selectedLots.map(l => l.id),
       });
 
@@ -259,7 +283,7 @@ export default function V2EgresosPage() {
       setDispatchResult({
         reference: `DESP-${Date.now().toString(36).toUpperCase()}`,
         destination: result.destination,
-        totalWeight: result.totalWeight,
+        totalWeight: Number(result.totalWeight),
         lotCount: selectedLots.length,
         providerCount: clientCount,
         lots: selectedLots.map(l => ({ name: l.name, weight: l.availableWeight, provider: l.clientName })),
@@ -268,12 +292,18 @@ export default function V2EgresosPage() {
       });
 
       setStatus('success');
-      setMessage(`Despacho completado — ${result.destination}`);
+      setMessage(`Despacho completado — ${destinationClient.name}`);
       setSelectedLotIds(new Set());
-      setDestination('');
+      setDestinationClient(null);
     } catch (err: any) {
       setStatus('error');
-      setMessage(err?.response?.data?.message || 'Error en el despacho');
+      const msg = err?.response?.data?.message || 'Error en el despacho';
+      const lotMatch = msg.match(/El lote (.+?) no tiene barras disponibles/);
+      setMessage(
+        lotMatch
+          ? `El lote ${lotMatch[1]} ya no tiene barras disponibles (fueron egresadas o están en proceso). Desmarque ese lote e intente de nuevo.`
+          : msg,
+      );
     }
   };
 
@@ -370,7 +400,7 @@ export default function V2EgresosPage() {
 
         {/* RIGHT: Checkout Summary */}
         <motion.div initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.15, duration: 0.4 }}
-          className="xl:col-span-2 glass-panel rounded-2xl border border-[var(--pm-border)]/40 overflow-hidden">
+          className="xl:col-span-2 glass-panel rounded-2xl border border-[var(--pm-border)]/40">
           <div className="px-5 py-3.5 border-b border-[var(--pm-border)]/20">
             <div className="flex items-center gap-2">
               <ShoppingCart className="w-4 h-4 text-[var(--pm-accent-gold)]" />
@@ -430,26 +460,60 @@ export default function V2EgresosPage() {
                   })}
                 </div>
 
-                {/* Buyer / Destination field */}
-                <div className="space-y-1.5">
+                {/* Buyer / Destination selector */}
+                <div className="space-y-1.5 relative">
                   <label className="text-[10px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider flex items-center gap-1">
                     <ShoppingCart className="w-3 h-3" /> ¿A quién se le vende? (Destinatario Final)
                   </label>
-                  <input type="text" placeholder="Ej: REFINERÍA ORO PURO S.A." value={destination}
-                    onChange={e => setDestination(e.target.value.toUpperCase())}
-                    className="w-full bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] rounded-lg px-3 py-2.5 text-xs font-mono text-[var(--pm-text-primary)] focus:outline-none focus:border-[var(--pm-accent-gold)] transition-colors uppercase placeholder:text-[var(--pm-text-dim)]/30"
-                    required />
+                  <div
+                    onClick={() => { setClientSelectOpen(!clientSelectOpen); setClientSearch(''); }}
+                    className="w-full bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] rounded-lg px-3 py-2.5 text-xs font-mono text-[var(--pm-text-primary)] focus:outline-none cursor-pointer transition-colors flex items-center justify-between uppercase"
+                    style={{ borderColor: destinationClient ? 'rgba(212,175,55,0.3)' : 'var(--pm-border)' }}>
+                    <span className={destinationClient ? '' : 'text-[var(--pm-text-dim)]/30'}>
+                      {destinationClient ? destinationClient.name : 'Seleccione un cliente...'}
+                    </span>
+                    <span className="text-[var(--pm-text-dim)] text-[9px]">{clientSelectOpen ? '▲' : '▼'}</span>
+                  </div>
+                  {destinationClient && (
+                    <div className="text-[9px] font-mono text-[var(--pm-text-dim)] mt-0.5 px-1">
+                      RIF: {destinationClient.rif}{destinationClient.contactInfo ? ` · ${destinationClient.contactInfo}` : ''}
+                    </div>
+                  )}
+                  {clientSelectOpen && (
+                    <>
+                      <div className="fixed inset-0 z-10" onClick={() => setClientSelectOpen(false)} />
+                      <div className="absolute z-20 top-full mt-1 left-0 right-0 max-h-[250px] overflow-y-auto rounded-xl border border-[var(--pm-border)] bg-[var(--pm-bg-deepest)] shadow-xl v2-scroll">
+                        <div className="sticky top-0 bg-[var(--pm-bg-deepest)] p-2 border-b border-[var(--pm-border)]/20 z-10">
+                          <input type="text" placeholder="Buscar cliente o RIF..." value={clientSearch}
+                            onChange={e => setClientSearch(e.target.value)}
+                            onClick={e => e.stopPropagation()}
+                            className="w-full bg-[var(--pm-bg-base)]/50 border border-[var(--pm-border)] rounded-lg px-3 py-1.5 text-[10px] font-mono text-[var(--pm-text-primary)] focus:outline-none focus:border-[var(--pm-accent-gold)] placeholder:text-[var(--pm-text-dim)]/30" />
+                        </div>
+                        {filteredBuyers.length === 0 ? (
+                          <div className="p-4 text-center text-[10px] font-mono text-[var(--pm-text-dim)]">Sin resultados</div>
+                        ) : (
+                          filteredBuyers.map(c => (
+                            <div key={c.id} onClick={() => { setDestinationClient(c); setClientSelectOpen(false); }}
+                              className={`px-4 py-3 cursor-pointer transition-all hover:bg-[var(--pm-accent-gold)]/12 text-[12px] font-sans border-b border-[var(--pm-border)]/15 last:border-0 ${destinationClient?.id === c.id ? 'bg-[var(--pm-accent-gold)]/12 text-[var(--pm-accent-gold)]' : 'text-[var(--pm-text-primary)]'}`}>
+                              <div className="font-semibold">{c.name}</div>
+                              <div className="text-[9px] font-mono text-[var(--pm-text-dim)] mt-0.5">RIF: {c.rif}</div>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </>
+                  )}
                 </div>
 
                 <button type="button" onClick={handleOpenConfirm}
-                  disabled={selectedLots.length === 0 || !destination.trim() || status === 'processing'}
+                  disabled={selectedLots.length === 0 || !destinationClient || status === 'processing'}
                   className="w-full py-3 rounded-lg text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer disabled:opacity-40 flex items-center justify-center gap-2"
                   style={{
-                    background: selectedLots.length > 0 && destination.trim()
+                    background: selectedLots.length > 0 && destinationClient
                       ? 'linear-gradient(135deg, rgba(212,175,55,0.2), rgba(212,175,55,0.1))'
                       : 'transparent',
-                    color: selectedLots.length > 0 && destination.trim() ? 'var(--pm-accent-gold)' : 'var(--pm-text-dim)',
-                    border: `1px solid ${selectedLots.length > 0 && destination.trim() ? 'rgba(212,175,55,0.3)' : 'var(--pm-border)'}`,
+                    color: selectedLots.length > 0 && destinationClient ? 'var(--pm-accent-gold)' : 'var(--pm-text-dim)',
+                    border: `1px solid ${selectedLots.length > 0 && destinationClient ? 'rgba(212,175,55,0.3)' : 'var(--pm-border)'}`,
                   }}>
                   <Send className="w-4 h-4" />
                   Ejecutar Despacho ({clientCount} proveedor{clientCount !== 1 ? 'es' : ''}, {selectedLots.length} lote{selectedLots.length !== 1 ? 's' : ''})
@@ -483,7 +547,11 @@ export default function V2EgresosPage() {
                 <div className="p-4 rounded-xl border border-[var(--pm-border)] bg-[var(--pm-bg-deepest)]/50 space-y-2 text-[11px] font-mono">
                   <div className="flex justify-between">
                     <span className="text-[var(--pm-text-dim)]">Destinatario:</span>
-                    <span className="text-[var(--pm-accent-gold)] font-bold">{destination.toUpperCase()}</span>
+                    <span className="text-[var(--pm-accent-gold)] font-bold text-right">{destinationClient?.name?.toUpperCase()}</span>
+                  </div>
+                  <div className="flex justify-between text-[9px]">
+                    <span className="text-[var(--pm-text-dim)]">RIF:</span>
+                    <span className="text-[var(--pm-text-primary)]">{destinationClient?.rif || '—'}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-[var(--pm-text-dim)]">Proveedores:</span>
@@ -498,7 +566,7 @@ export default function V2EgresosPage() {
                     <span className="text-lg font-bold text-[var(--pm-accent-gold)]">{fmtWeightDisplay(totalWeight)}</span>
                   </div>
                   <div className="pt-1 text-[9px] text-[var(--pm-text-dim)]">
-                    Se entregarán {selectedLots.length} lote{selectedLots.length !== 1 ? 's' : ''} de {clientCount} proveedor{clientCount !== 1 ? 'es' : ''} con un peso total de {fmtWeightDisplay(totalWeight)} a <strong className="text-[var(--pm-text-primary)]">{destination.toUpperCase()}</strong>.
+                    Se entregarán {selectedLots.length} lote{selectedLots.length !== 1 ? 's' : ''} de {clientCount} proveedor{clientCount !== 1 ? 'es' : ''} con un peso total de {fmtWeightDisplay(totalWeight)} a <strong className="text-[var(--pm-text-primary)]">{destinationClient?.name?.toUpperCase()}</strong>.
                   </div>
                 </div>
                 <div className="flex gap-3 pt-1">
