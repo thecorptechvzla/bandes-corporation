@@ -440,7 +440,7 @@ export default function V2DashboardPage() {
   const formatWeightCell = (val: number) =>
     `${formatNumber(val / (weightUnit === 'kg' ? 1000 : 1), weightUnit === 'kg' ? 4 : 2)} ${weightUnit === 'kg' ? 'kg' : 'g'}`;
 
-  const fmtKg = (val: number) => formatNumber(val / 1000, 4);
+  const fmtKg = (val: number) => formatNumber(val / 1000, 2);
 
   const renderTreemap = (
     data: { name: string; value: number; pct: number; fill: string }[],
@@ -686,7 +686,7 @@ export default function V2DashboardPage() {
         ) : (
           <div className="overflow-x-auto">
             <div className="min-w-[700px]">
-              <div className="grid grid-cols-[1.5fr_1fr_1fr_1fr_1fr_1fr] px-6 py-3 border-b border-[var(--pm-border)] text-[10px] font-mono font-bold tracking-[0.1em] uppercase text-[var(--pm-text-dim)]">
+              <div className="grid grid-cols-[180px_repeat(5,1fr)] px-6 py-3 border-b border-[var(--pm-border)] text-[10px] font-mono font-bold tracking-[0.1em] uppercase text-[var(--pm-text-dim)]">
                 <div className="text-left">Cliente</div>
                 <div className="text-right">Ingreso Bruto (KG)</div>
                 <div className="text-right">FA (KG)</div>
@@ -700,7 +700,7 @@ export default function V2DashboardPage() {
                   initial={{ opacity: 0, x: -8 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.45 + idx * 0.04, duration: 0.3 }}
-                  className="grid grid-cols-[1.5fr_1fr_1fr_1fr_1fr_1fr] px-6 py-3 border-b border-[rgba(30,42,69,0.15)] text-[12px] font-mono transition-colors duration-100 hover:bg-[rgba(21,28,45,0.5)]"
+                  className="grid grid-cols-[180px_repeat(5,1fr)] px-6 py-3 border-b border-[rgba(30,42,69,0.15)] text-[12px] font-mono transition-colors duration-100 hover:bg-[rgba(21,28,45,0.5)]"
                   style={{ background: idx % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.015)' }}
                 >
                   <div className="text-left font-sans font-semibold text-[var(--pm-text-primary)] truncate">
