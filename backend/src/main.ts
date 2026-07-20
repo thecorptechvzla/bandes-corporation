@@ -8,6 +8,7 @@ async function bootstrap() {
 
   const allowedOrigins = [
     'http://localhost:3000',
+    'https://controlmining.vercel.app',
     process.env.FRONTEND_URL,
   ].filter(Boolean);
 
