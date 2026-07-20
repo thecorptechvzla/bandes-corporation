@@ -11,7 +11,7 @@ import {
 
 const menuItems = [
   { id: 'dashboard', name: 'Dashboard', icon: LayoutDashboard },
-  { id: 'clientes', name: 'Clientes', icon: Users },
+  { id: 'clientes', name: 'Proveedores', icon: Users },
   { id: 'packing', name: 'Packing', icon: FolderUp },
   { id: 'procesos', name: 'Procesos', icon: Flame },
   { id: 'egresos', name: 'Egresos', icon: ArrowLeftRight },
