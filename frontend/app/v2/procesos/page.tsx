@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import {
   Flame, Thermometer, User, Weight, Plus, CheckCircle2, Play,
   ChevronRight, ChevronDown, Lock, AlertTriangle, Microscope,
-  Layers, Sparkles, X, Zap,
+  Layers, Sparkles, X, Zap, Eye,
 } from 'lucide-react';
 import { useClients } from '@/hooks/useClients';
 import { useBars, useUpdateBar } from '@/hooks/useBars';
@@ -96,6 +96,18 @@ export default function V2ProcesosPage() {
     });
     return map;
   }, [lots]);
+
+  const [selectedProcessId, setSelectedProcessId] = useState<string | null>(null);
+  const handleViewDetail = (id: string) => setSelectedProcessId(id);
+
+  const selectedProcess = useMemo(
+    () => selectedProcessId ? processes.find(p => p.id === selectedProcessId) ?? null : null,
+    [selectedProcessId, processes],
+  );
+  const selectedProcessLots = useMemo(
+    () => selectedProcessId ? (processLotsMap[selectedProcessId] || []) : [],
+    [selectedProcessId, processLotsMap],
+  );
 
   const clientFilteredBars = useMemo(() => {
     if (!selectedClientId) return availableBars;
@@ -534,10 +546,15 @@ export default function V2ProcesosPage() {
                       {procs.map(proc => {
                         const pLots = processLotsMap[proc.id] || [];
                         return (
-                          <div key={proc.id} className="flex items-center justify-between py-1 text-[10px] font-mono">
+                          <div key={proc.id} onClick={() => handleViewDetail(proc.id)}
+                            className="flex items-center justify-between py-1.5 px-1 text-[10px] font-mono cursor-pointer active:scale-[0.99] transition-all rounded-lg hover:bg-[var(--pm-bg-tertiary)]/40 group"
+                          >
                             <span className="text-[var(--pm-text-dim)]">{proc.name}</span>
-                            <span className="text-[var(--pm-accent-emerald)]">
-                              {pLots.filter(l => l.recovered).reduce((s, l) => s + Number(l.recovered), 0).toFixed(2)} g recuperados
+                            <span className="flex items-center gap-2">
+                              <span className="text-[var(--pm-accent-emerald)]">
+                                {pLots.filter(l => l.recovered).reduce((s, l) => s + Number(l.recovered), 0).toFixed(2)} g recuperados
+                              </span>
+                              <Eye className="w-3.5 h-3.5 text-[var(--pm-text-dim)]/40 group-hover:text-[var(--pm-accent-gold)] transition-colors" />
                             </span>
                           </div>
                         );
@@ -706,6 +723,123 @@ export default function V2ProcesosPage() {
               <span className="text-[10px] font-mono text-[var(--pm-text-dim)] text-center">
                 Oro recuperado y registrado correctamente.
               </span>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Process Detail Modal */}
+      <AnimatePresence>
+        {selectedProcess && (
+          <motion.div key="process-detail" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          >
+            <motion.div initial={{ opacity: 0, scale: 0.92, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.92, y: 10 }} transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              className="w-full max-w-3xl glass-panel rounded-2xl overflow-hidden"
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-[var(--pm-border)]">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)' }}>
+                    <CheckCircle2 className="w-4 h-4 text-[var(--pm-accent-emerald)]" />
+                  </div>
+                  <div>
+                    <span className="text-[9px] font-mono font-bold text-[var(--pm-accent-emerald)] uppercase tracking-wider">Recibo Digital de Fundición</span>
+                    <h3 className="text-sm font-sans font-semibold text-[var(--pm-text-primary)] mt-0.5">
+                      {selectedProcess.name} — {clients.find(c => c.id === selectedProcess.clientId)?.name || '—'}
+                    </h3>
+                  </div>
+                </div>
+                <button type="button" onClick={() => setSelectedProcessId(null)}
+                  className="p-1.5 rounded-lg hover:bg-[var(--pm-bg-tertiary)] text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] active:scale-90 transition-all cursor-pointer"
+                ><X className="w-4 h-4" /></button>
+              </div>
+
+              {/* Body */}
+              <div className="p-6 space-y-4">
+                {/* Summary cards */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <div className="p-3 rounded-xl border border-[var(--pm-border)] bg-[var(--pm-bg-deepest)]/50 text-center">
+                    <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block">Lotes</span>
+                    <span className="text-lg font-mono font-bold text-[var(--pm-text-primary)]">{selectedProcessLots.length}</span>
+                  </div>
+                  <div className="p-3 rounded-xl border border-[var(--pm-border)] bg-[var(--pm-bg-deepest)]/50 text-center">
+                    <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block">FA</span>
+                    <span className="text-sm font-mono font-bold text-[var(--pm-accent-gold)]">
+                      {formatNumber(selectedProcessLots.reduce((s, l) => {
+                        const lb = lotBarsMap[l.id] || [];
+                        return s + lb.reduce((sb, b) => sb + Number(b.fineWeight), 0);
+                      }, 0), 4)} g
+                    </span>
+                  </div>
+                  <div className="p-3 rounded-xl border border-[var(--pm-border)] bg-[var(--pm-bg-deepest)]/50 text-center">
+                    <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block">FE (FA × 0.99)</span>
+                    <span className="text-sm font-mono font-bold text-[var(--pm-accent-cyan)]">
+                      {formatNumber(selectedProcessLots.reduce((s, l) => {
+                        const lb = lotBarsMap[l.id] || [];
+                        return s + lb.reduce((sb, b) => sb + Number(b.fineWeight), 0);
+                      }, 0) * 0.99, 4)} g
+                    </span>
+                  </div>
+                  <div className="p-3 rounded-xl border border-[var(--pm-border)] bg-[var(--pm-bg-deepest)]/50 text-center">
+                    <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block">R (Recuperado)</span>
+                    <span className="text-sm font-mono font-bold text-[var(--pm-accent-emerald)]">
+                      {formatNumber(selectedProcessLots.reduce((s, l) => s + Number(l.recovered ?? 0), 0), 4)} g
+                    </span>
+                  </div>
+                </div>
+
+                {/* Lots table */}
+                <div className="overflow-x-auto rounded-xl border border-[var(--pm-border)] v2-scroll">
+                  <table className="premium-table w-full text-[11px] font-mono">
+                    <thead>
+                      <tr>
+                        <th className="sticky left-0 bg-[var(--pm-bg-primary)] z-10" style={{ minWidth: 140 }}>Lote</th>
+                        <th className="text-right">FA (g)</th>
+                        <th className="text-right">FE (g)</th>
+                        <th className="text-right">R (g)</th>
+                        <th className="text-right">DIF (g)</th>
+                        <th className="text-right">% RECUP</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {selectedProcessLots.map((lot, idx) => {
+                        const lb = lotBarsMap[lot.id] || [];
+                        const fa = lb.reduce((s, b) => s + Number(b.fineWeight), 0);
+                        const fe = fa * 0.99;
+                        const r = Number(lot.recovered ?? 0);
+                        const dif = fa - r;
+                        const pctRecup = fa > 0 ? (r / fa) * 100 : 0;
+                        return (
+                          <tr key={lot.id} className={`${idx % 2 === 1 ? 'bg-[var(--pm-bg-deepest)]/30' : ''}`}>
+                            <td className="sticky left-0 bg-[var(--pm-bg-primary)] font-semibold text-[var(--pm-text-primary)]" style={{ minWidth: 140 }}>
+                              <div>
+                                <span>{lot.name}</span>
+                                {lot.moldCode && <span className="text-[9px] text-[var(--pm-text-dim)] ml-1">({lot.moldCode})</span>}
+                              </div>
+                            </td>
+                            <td className="text-right text-[var(--pm-accent-gold)]">{formatNumber(fa, 4)}</td>
+                            <td className="text-right text-[var(--pm-accent-cyan)]">{formatNumber(fe, 4)}</td>
+                            <td className="text-right text-[var(--pm-accent-emerald)]">{formatNumber(r, 4)}</td>
+                            <td className={`text-right ${dif >= 0 ? 'text-[var(--pm-accent-emerald)]' : 'text-[var(--pm-accent-red)]'}`}>
+                              {dif >= 0 ? '+' : ''}{formatNumber(dif, 4)}
+                            </td>
+                            <td className="text-right">
+                              <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${Math.abs(pctRecup - 100) <= 5 ? 'text-[var(--pm-accent-emerald)]' : 'text-[var(--pm-accent-red)]'}`}>
+                                {formatNumber(pctRecup, 2)}%
+                              </span>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                      {selectedProcessLots.length === 0 && (
+                        <tr><td colSpan={6} className="text-center py-8 text-[10px] text-[var(--pm-text-dim)] font-mono italic">Sin lotes registrados</td></tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </motion.div>
           </motion.div>
         )}
