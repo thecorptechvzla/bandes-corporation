@@ -8,7 +8,7 @@ import { useMaterialExits } from '@/hooks/useExits';
 import { useProcesses } from '@/hooks/useProcesses';
 import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
 import {
-  ClipboardList, Flame, Warehouse, TrendingDown,
+  ClipboardList, Flame, Warehouse, Inbox, TrendingDown,
   Coins, Scale, Pickaxe, LayoutGrid, Table2,
 } from 'lucide-react';
 import { AreaChart, Area, ResponsiveContainer, Treemap, Tooltip } from 'recharts';
@@ -45,10 +45,10 @@ const KPI_COLORS = [
   { accent: '#D4AF37', label: 'FA' },
   { accent: '#0EA5E9', label: 'FE' },
   { accent: '#10B981', label: 'R' },
-  { accent: '#EF4444', label: '%' },
+  { accent: '#8B5CF6', label: 'PR' },
 ];
 
-const KPI_ICONS = [ClipboardList, Flame, Warehouse, TrendingDown];
+const KPI_ICONS = [ClipboardList, Flame, Warehouse, Inbox];
 
 function hashStr(s: string): number {
   let h = 0;
@@ -335,6 +335,7 @@ export default function V2DashboardPage() {
   const sparkOut = useMemo(() => flowData.map(d => d.out).slice(-14), [flowData]);
   const sparkNet = useMemo(() => flowData.map(d => d.in - d.out).slice(-14), [flowData]);
   const sparkMerma = useMemo(() => flowData.map(d => Math.abs(d.in - d.out) * 0.02).slice(-14), [flowData]);
+  const sparkPorRefundir = useMemo(() => flowData.map(d => d.in).slice(-14), [flowData]);
 
   const clientBalances = useMemo(() => {
     if (!clients || !bars) return [];
@@ -349,7 +350,12 @@ export default function V2DashboardPage() {
         e.exitDetails.some(d => d.lot?.process?.client?.id === client.id));
       const egresos = clientExits.reduce((s, e) => s + Number(e.totalWeight), 0);
       const balance = fa + r - egresos;
-      return { id: client.id, name: client.name, ingresoBruto, fa, r, egresos, balance };
+      const faProcesado = clientBars
+        .filter(b => b.status === 'COMPLETADO' || b.status === 'EXITED')
+        .reduce((s, b) => s + Number(b.fineWeight), 0);
+      const mermaG = Math.max(0, faProcesado - r);
+      const mermaPct = faProcesado > 0 ? (mermaG / faProcesado) * 100 : 0;
+      return { id: client.id, name: client.name, ingresoBruto, fa, r, egresos, balance, mermaG, mermaPct };
     })
       .filter(c => c.ingresoBruto > 0 || c.fa > 0 || c.egresos > 0)
       .sort((a, b) => b.ingresoBruto - a.ingresoBruto);
@@ -398,7 +404,7 @@ export default function V2DashboardPage() {
     {
       label: 'Oro Recibido',
       value: metrics?.oroRecibido.fineWeight ?? 0,
-      sublabel: `FA total: ${formatNumber((metrics?.oroRecibido.fineWeight ?? 0) / (weightUnit === 'kg' ? 1000 : 1), 2)} ${weightUnit === 'kg' ? 'kg' : 'g'}`,
+      sublabel: `FA total: ${formatNumber((metrics?.oroRecibido.fineWeight ?? 0) / (weightUnit === 'kg' ? 1000 : 1), weightUnit === 'kg' ? 4 : 2)} ${weightUnit === 'kg' ? 'kg' : 'g'}`,
       subicon: Scale,
       accent: KPI_COLORS[0].accent,
       tag: KPI_COLORS[0].label,
@@ -418,7 +424,7 @@ export default function V2DashboardPage() {
     {
       label: 'Oro en Bóveda',
       value: metrics?.oroEnBoveda.fineWeight ?? 0,
-      sublabel: `R neto disponible: ${formatNumber((metrics?.oroEnBoveda.fineWeight ?? 0) / (weightUnit === 'kg' ? 1000 : 1), 2)} ${weightUnit === 'kg' ? 'kg' : 'g'}`,
+      sublabel: `R neto disponible: ${formatNumber((metrics?.oroEnBoveda.fineWeight ?? 0) / (weightUnit === 'kg' ? 1000 : 1), weightUnit === 'kg' ? 4 : 2)} ${weightUnit === 'kg' ? 'kg' : 'g'}`,
       subicon: Pickaxe,
       accent: KPI_COLORS[2].accent,
       tag: KPI_COLORS[2].label,
@@ -426,21 +432,21 @@ export default function V2DashboardPage() {
       spark: sparkNet,
     },
     {
-      label: 'Merma',
-      value: metrics?.merma.porcentaje ?? 0,
-      sublabel: `Pérdida total: ${formatNumber((metrics?.merma.gramos ?? 0) / (weightUnit === 'kg' ? 1000 : 1), 2)} ${weightUnit === 'kg' ? 'kg' : 'g'} Au`,
-      subicon: Scale,
+      label: 'Por Refundir',
+      value: metrics?.porRefundir.fineWeight ?? 0,
+      sublabel: `Barras en stock: ${formatNumber((metrics?.porRefundir.fineWeight ?? 0) / (weightUnit === 'kg' ? 1000 : 1), weightUnit === 'kg' ? 4 : 2)} ${weightUnit === 'kg' ? 'kg' : 'g'} en espera`,
+      subicon: Inbox,
       accent: KPI_COLORS[3].accent,
       tag: KPI_COLORS[3].label,
-      postfix: '%',
-      spark: sparkMerma,
+      postfix: '',
+      spark: sparkPorRefundir,
     },
   ];
 
   const formatWeightCell = (val: number) =>
-    `${formatNumber(val / (weightUnit === 'kg' ? 1000 : 1), 2)} ${weightUnit === 'kg' ? 'kg' : 'g'}`;
+    `${formatNumber(val / (weightUnit === 'kg' ? 1000 : 1), weightUnit === 'kg' ? 4 : 2)} ${weightUnit === 'kg' ? 'kg' : 'g'}`;
 
-  const fmtKg = (val: number) => formatNumber(val / 1000, 2);
+  const fmtKg = (val: number) => formatNumber(val / 1000, 4);
 
   const renderTreemap = (
     data: { name: string; value: number; pct: number; fill: string }[],
@@ -547,7 +553,7 @@ export default function V2DashboardPage() {
                   <span className="text-2xl font-mono font-bold text-[var(--pm-text-primary)] tracking-tight">
                     {kpi.postfix === '%'
                       ? `${formatNumber(kpi.value, 1)}`
-                      : formatNumber(kpi.value / (weightUnit === 'kg' ? 1000 : 1), 2)}
+                      : formatNumber(kpi.value / (weightUnit === 'kg' ? 1000 : 1), weightUnit === 'kg' ? 4 : 2)}
                   </span>
                   <span className="text-[11px] text-[var(--pm-text-dim)] font-mono">
                     {kpi.postfix || (weightUnit === 'kg' ? 'kg' : 'g')}
@@ -685,14 +691,16 @@ export default function V2DashboardPage() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <div className="min-w-[800px]">
-              <div className="grid grid-cols-[180px_repeat(5,120px)] px-6 py-3 border-b border-[var(--pm-border)] text-[10px] font-mono font-bold tracking-[0.1em] uppercase text-[var(--pm-text-dim)]">
+            <div className="min-w-[1000px]">
+              <div className="grid grid-cols-[180px_repeat(5,120px)_100px_80px] px-6 py-3 border-b border-[var(--pm-border)] text-[10px] font-mono font-bold tracking-[0.1em] uppercase text-[var(--pm-text-dim)]">
                 <div className="text-left">Cliente</div>
                 <div className="text-right">Ingreso Bruto (KG)</div>
                 <div className="text-right">FA (KG)</div>
                 <div className="text-right">R (KG)</div>
                 <div className="text-right">Egresos (KG)</div>
                 <div className="text-right">Balance (KG)</div>
+                <div className="text-right">MERMA (G)</div>
+                <div className="text-right">MERMA (%)</div>
               </div>
               {clientBalances.map((c, idx) => (
                 <motion.div
@@ -700,7 +708,7 @@ export default function V2DashboardPage() {
                   initial={{ opacity: 0, x: -8 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.45 + idx * 0.04, duration: 0.3 }}
-                  className="grid grid-cols-[180px_repeat(5,120px)] px-6 py-3 border-b border-[rgba(30,42,69,0.15)] text-[12px] font-mono transition-colors duration-100 hover:bg-[rgba(21,28,45,0.5)]"
+                  className="grid grid-cols-[180px_repeat(5,120px)_100px_80px] px-6 py-3 border-b border-[rgba(30,42,69,0.15)] text-[12px] font-mono transition-colors duration-100 hover:bg-[rgba(21,28,45,0.5)]"
                   style={{ background: idx % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.015)' }}
                 >
                   <div className="text-left font-sans font-semibold text-[var(--pm-text-primary)] truncate">
@@ -721,6 +729,12 @@ export default function V2DashboardPage() {
                   <div className={`text-right font-bold ${c.balance >= 0 ? 'text-[var(--pm-accent-emerald)]' : 'text-[var(--pm-accent-red)]'}`}>
                     {fmtKg(Math.abs(c.balance))}
                     {c.balance < 0 ? ' −' : ''}
+                  </div>
+                  <div className="text-right text-[var(--pm-accent-red)]">
+                    {formatNumber(c.mermaG, 2)}
+                  </div>
+                  <div className="text-right text-[var(--pm-accent-rose)]">
+                    {formatNumber(c.mermaPct, 1)}%
                   </div>
                 </motion.div>
               ))}

@@ -164,6 +164,9 @@ export interface DashboardMetrics {
   oroEnBoveda: {
     fineWeight: number;
   };
+  porRefundir: {
+    fineWeight: number;
+  };
   merma: {
     gramos: number;
     porcentaje: number;

@@ -6,7 +6,7 @@ export class DashboardService {
   constructor(private prisma: PrismaService) {}
 
   async getMetrics() {
-    const [recibidoAgg, procesoAgg, recoveredAgg, exitedAgg, mermaFAAgg] =
+    const [recibidoAgg, procesoAgg, recoveredAgg, exitedAgg, mermaFAAgg, porRefundirAgg] =
       await Promise.all([
         // 1. ORO RECIBIDO: fineWeight de barras validadas (excluye POR_VALIDAR)
         this.prisma.bar.aggregate({
@@ -42,6 +42,12 @@ export class DashboardService {
           where: { status: { in: ['COMPLETADO', 'EXITED'] } },
           _sum: { fineWeight: true },
         }),
+
+        // 6. POR REFUNDIR: barras validadas en espera de proceso
+        this.prisma.bar.aggregate({
+          where: { status: 'IN_STOCK' },
+          _sum: { fineWeight: true },
+        }),
       ]);
 
     const oroRecibidoFA = Number(recibidoAgg._sum.fineWeight ?? 0);
@@ -50,6 +56,7 @@ export class DashboardService {
     const recoveredTotal = Number(recoveredAgg._sum.recovered ?? 0);
     const exitedFA = Number(exitedAgg._sum.fineWeight ?? 0);
     const mermaFA = Number(mermaFAAgg._sum.fineWeight ?? 0);
+    const porRefundirFA = Number(porRefundirAgg._sum.fineWeight ?? 0);
 
     const oroEnBovedaFA = Math.max(0, recoveredTotal - exitedFA);
 
@@ -67,6 +74,9 @@ export class DashboardService {
       },
       oroEnBoveda: {
         fineWeight: oroEnBovedaFA,
+      },
+      porRefundir: {
+        fineWeight: porRefundirFA,
       },
       merma: {
         gramos: mermaG,
