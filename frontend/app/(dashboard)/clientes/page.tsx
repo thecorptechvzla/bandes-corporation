@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   useClients,
@@ -37,14 +37,26 @@ export default function ClientesPage() {
   const [role, setRole] = useState<string>('AMBOS');
   const [formError, setFormError] = useState('');
   const [formSuccess, setFormSuccess] = useState('');
+  const [filterTab, setFilterTab] = useState<'TODOS' | 'CLIENTES' | 'PROVEEDORES'>('TODOS');
   const [searchQuery, setSearchQuery] = useState('');
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [deleteState, setDeleteState] = useState<{ id: string; status: 'deleting' | 'success' } | null>(null);
 
-  const filteredClients = clients.filter((c) =>
-    c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    c.rif.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
+  const visibleClients = useMemo(() => {
+    let result = clients;
+    if (filterTab === 'CLIENTES') {
+      result = result.filter(c => c.role === 'CLIENTE' || c.role === 'AMBOS');
+    } else if (filterTab === 'PROVEEDORES') {
+      result = result.filter(c => c.role === 'PROVEEDOR' || c.role === 'AMBOS');
+    }
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(c =>
+        c.name.toLowerCase().includes(q) || c.rif.toLowerCase().includes(q),
+      );
+    }
+    return result;
+  }, [clients, filterTab, searchQuery]);
 
   const openCreateForm = () => {
     setEditingClient(null);
@@ -156,10 +168,10 @@ export default function ClientesPage() {
         <div>
           <h1 className="text-2xl md:text-3xl font-sans font-medium text-[#E5E5E5] tracking-tight flex items-center gap-2">
             <Building2 className="w-8 h-8 text-[#D5B042] filter drop-shadow-[0_0_8px_rgba(213,176,66,0.3)]" />
-            Clientes <span className="text-[#D5B042] font-semibold">Proveedores</span>
+            Directorio <span className="text-[#D5B042] font-semibold">Comercial</span>
           </h1>
           <p className="text-xs text-[#8C8C8C] mt-1">
-            Registro y administración de clientes proveedores de material.
+            Administración de clientes y proveedores de material.
           </p>
         </div>
         <button
@@ -171,7 +183,7 @@ export default function ClientesPage() {
           }`}
         >
           <Plus className={`w-4 h-4 transition-transform duration-200 ${showForm && !editingClient ? 'rotate-45 text-[#8C8C8C]' : 'text-[#D5B042]'}`} />
-          {showForm && !editingClient ? 'Cerrar Formulario' : 'Nuevo Cliente'}
+          {showForm && !editingClient ? 'Cerrar Formulario' : 'REGISTRAR'}
         </button>
       </motion.div>
 
@@ -275,7 +287,7 @@ export default function ClientesPage() {
                       ? 'GUARDANDO...'
                       : editingClient
                         ? 'Actualizar Cliente'
-                        : 'Registrar Cliente'}
+                        : 'Registrar'}
                   </button>
                 </form>
               </div>
@@ -292,9 +304,9 @@ export default function ClientesPage() {
           <div className="bg-[#1C1C1C] p-6 rounded-2xl border border-neutral-800/40 shadow-[0_4px_12px_rgba(0,0,0,0.3)]">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
               <div>
-                <h3 className="font-sans font-semibold text-[#E5E5E5] text-base">Listado de Clientes</h3>
+                <h3 className="font-sans font-semibold text-[#E5E5E5] text-base">Entidades Registradas</h3>
                 <p className="text-xs text-[#8C8C8C]">
-                  {clients.length} cliente{clients.length !== 1 ? 's' : ''} registrado{clients.length !== 1 ? 's' : ''}.
+                  {visibleClients.length} entidad{visibleClients.length !== 1 ? 'es' : ''} registrada{visibleClients.length !== 1 ? 's' : ''}.
                 </p>
               </div>
               <div className="relative">
@@ -309,29 +321,48 @@ export default function ClientesPage() {
               </div>
             </div>
 
+            <div className="flex gap-1 bg-black border border-neutral-800/40 p-0.5 rounded-lg self-start mb-4">
+              {(['TODOS', 'CLIENTES', 'PROVEEDORES'] as const).map(tab => (
+                <button key={tab} onClick={() => setFilterTab(tab)}
+                  className={`px-3 py-1.5 rounded-md text-[10px] font-mono uppercase tracking-wider font-bold transition-all active:scale-95 cursor-pointer ${
+                    filterTab === tab
+                      ? 'bg-[#D5B042]/10 text-[#D5B042] border border-[#D5B042]/20'
+                      : 'text-[#8C8C8C] hover:text-[#E5E5E5]'
+                  }`}>
+                  {tab === 'TODOS' ? 'Todos' : tab === 'CLIENTES' ? 'Clientes' : 'Proveedores'}
+                </button>
+              ))}
+            </div>
+
             {isLoading ? (
               <div className="flex flex-col items-center justify-center py-16 text-[#8C8C8C]">
                 <div className="w-8 h-8 border-2 border-[#D5B042] border-t-transparent rounded-full animate-spin mb-3" />
-                <span className="text-sm font-sans">Cargando clientes...</span>
+                <span className="text-sm font-sans">Cargando directorio...</span>
               </div>
             ) : isError ? (
               <div className="flex flex-col items-center justify-center py-16 text-red-400">
                 <AlertTriangle className="w-8 h-8 mb-3" />
-                <span className="text-sm font-sans">Error al cargar clientes</span>
+                <span className="text-sm font-sans">Error al cargar el directorio</span>
                 <span className="text-xs text-[#8C8C8C] mt-1">{(error as any)?.message || 'Error de conexión'}</span>
               </div>
-            ) : filteredClients.length === 0 ? (
+            ) : visibleClients.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-[#8C8C8C] border border-dashed border-neutral-800/40 rounded-lg">
                 <Users className="w-8 h-8 text-[#D5B042]/30 mb-2 animate-pulse" />
                 <span className="text-sm font-sans">
-                  {searchQuery ? 'No se encontraron clientes' : 'No hay clientes registrados'}
+                  {searchQuery
+                    ? 'No se encontraron resultados'
+                    : filterTab === 'PROVEEDORES'
+                      ? 'No hay proveedores registrados todavía'
+                      : filterTab === 'CLIENTES'
+                        ? 'No hay clientes registrados todavía'
+                        : 'No hay entidades registradas'}
                 </span>
                 {!searchQuery && (
                   <button
                     onClick={openCreateForm}
                     className="mt-3 px-4 py-2 rounded-lg bg-[#A65B17]/20 text-[#D5B042] border border-[#A65B17]/30 hover:bg-[#A65B17]/30 text-xs font-mono uppercase tracking-wider transition-all cursor-pointer"
                   >
-                    <Plus className="w-3 h-3 inline mr-1" /> Registrar Primer Cliente
+                    <Plus className="w-3 h-3 inline mr-1" /> Registrar Primera Entidad
                   </button>
                 )}
               </div>
@@ -349,7 +380,7 @@ export default function ClientesPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-neutral-800/20 text-[#E5E5E5]/90">
-                    {filteredClients.map((client) => (
+                    {visibleClients.map((client) => (
                       <tr key={client.id} className="hover:bg-[#141414]/85 transition-colors">
                         <td className="py-3.5 font-mono text-[#D5B042] font-bold text-[11px] tracking-wider text-center">
                           {formatRif(client.rif)}
