@@ -11,7 +11,7 @@ import { useUIMode } from '@/context/UIModeContext';
 
 const menuItems = [
   { id: 'dashboard', name: 'DASHBOARD', icon: LayoutDashboard },
-  { id: 'clientes', name: 'CLIENTES', icon: Users },
+  { id: 'clientes', name: 'PROVEEDORES', icon: Users },
   { id: 'ingresos', name: 'INGRESOS', icon: ClipboardList },
   { id: 'procesos', name: 'PROCESOS', icon: Flame },
   { id: 'egresos', name: 'EGRESOS', icon: ArrowLeftRight },
