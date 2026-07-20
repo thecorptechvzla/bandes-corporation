@@ -10,7 +10,7 @@ import { formatNumber } from '@/lib/format';
 import type { WeightUnit } from '@/lib/format';
 import type { Bar, BulkUploadResult } from '@/types/api';
 import {
-  FolderUp, FileSpreadsheet, Plus, Upload, Download, ChevronDown, ChevronUp,
+  Camera, Scale, FolderUp, FileSpreadsheet, Plus, Upload, Download, ChevronDown, ChevronUp,
   Search, Trash2, AlertTriangle, Check, Weight, Microscope, X, Package, Zap,
   ClipboardCheck, HardDrive, Edit3,
 } from 'lucide-react';
@@ -72,6 +72,13 @@ export default function PackingPage() {
   const [validationEdits, setValidationEdits] = useState<Record<string, { barNumber: string; grossWeight: string; purity: string; leyAg: string }>>({});
   const [validating, setValidating] = useState(false);
   const [validationResult, setValidationResult] = useState<{ total: number; success: number; error: number } | null>(null);
+  const [selectedBarId, setSelectedBarId] = useState<string | null>(null);
+  const [confirmModal, setConfirmModal] = useState<{
+    barId: string;
+    basculaWeight: string;
+    leyAu: string;
+    leyAg: string;
+  } | null>(null);
 
   useEffect(() => {
     if (clients.length > 0) {
@@ -262,6 +269,55 @@ export default function PackingPage() {
     if (isNaN(phys)) return 0;
     return phys - orig;
   };
+
+  const handleRowSelect = (barId: string, status: string) => {
+    if (status !== 'POR_VALIDAR') return;
+    setSelectedBarId(prev => prev === barId ? null : barId);
+  };
+
+  const handleConfirmBar = () => {
+    if (!selectedBarId || !selectedPacking?.bars) return;
+    const bar = selectedPacking.bars.find(b => b.id === selectedBarId);
+    if (!bar) return;
+    setConfirmModal({
+      barId: selectedBarId,
+      basculaWeight: String(Number(bar.grossWeight)),
+      leyAu: String(Number(bar.purity)),
+      leyAg: bar.leyAg != null ? String(Number(bar.leyAg)) : '',
+    });
+  };
+
+  const handleSyncValidate = async () => {
+    if (!confirmModal || !selectedPacking) return;
+    const { barId, basculaWeight, leyAu, leyAg } = confirmModal;
+    const bw = parseFloat(basculaWeight);
+    const la = parseFloat(leyAu);
+    const lag = parseFloat(leyAg) || 0;
+    if (isNaN(bw) || isNaN(la)) return;
+
+    handleEditChange(barId, 'grossWeight', basculaWeight);
+    handleEditChange(barId, 'purity', leyAu);
+    if (leyAg) handleEditChange(barId, 'leyAg', leyAg);
+
+    try {
+      await validatePacking.mutateAsync({
+        id: selectedPacking.id,
+        bars: [{ barId, grossWeight: bw, purity: la, leyAg: lag > 0 ? lag : undefined }],
+      });
+      setConfirmModal(null);
+      setSelectedBarId(null);
+    } catch (err) {
+      console.error('Sync error:', err);
+    }
+  };
+
+  const modalLiveFA = useMemo(() => {
+    if (!confirmModal) return 0;
+    const w = parseFloat(confirmModal.basculaWeight);
+    const p = parseFloat(confirmModal.leyAu);
+    if (isNaN(w) || isNaN(p)) return 0;
+    return w * (p / 1000);
+  }, [confirmModal]);
 
   const pendingPackings = useMemo(() =>
     packings.filter(p => p.status === 'PENDING'),
@@ -707,16 +763,37 @@ export default function PackingPage() {
                   </button>
                 </div>
 
+                {/* Confirm Bar — shown when a row is selected */}
+                <AnimatePresence>
+                  {selectedBarId && (
+                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
+                      className="overflow-hidden border-b border-[var(--pm-border)]/20">
+                      <div className="px-4 py-3 flex items-center justify-between bg-[var(--pm-accent-gold)]/5">
+                        <span className="text-[10px] font-mono text-[var(--pm-text-dim)]">
+                          Barra seleccionada: <strong className="text-[var(--pm-accent-gold)]">
+                            {selectedPacking?.bars?.find(b => b.id === selectedBarId)?.barNumber ?? ''}
+                          </strong>
+                        </span>
+                        <button onClick={handleConfirmBar}
+                          className="px-5 py-2 rounded-lg text-[10px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer flex items-center gap-2"
+                          style={{ background: 'linear-gradient(135deg, rgba(212,175,55,0.25), rgba(212,175,55,0.1))', color: 'var(--pm-accent-gold)', border: '1px solid rgba(212,175,55,0.4)', boxShadow: '0 0 16px rgba(212,175,55,0.15)' }}>
+                          <Zap className="w-3.5 h-3.5" /> CONFIRMAR BARRA
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
                 {/* Editable Bars Table */}
                 <div className="overflow-x-auto premium-table">
                   <table className="w-full text-left text-[10px] font-mono">
                     <thead>
                       <tr className="border-b border-[var(--pm-border)]/20 text-[9px] text-[var(--pm-text-dim)] uppercase tracking-wider">
-                        <th className="py-2.5 px-3 text-center">#</th>
+                        <th className="py-2.5 px-3 text-center w-8"></th>
                         <th className="py-2.5 px-3 text-center min-w-[120px]">Código <span className="text-[var(--pm-accent-gold)]">✎</span></th>
-                        <th className="py-2.5 px-3 text-right">Peso Excel (g)</th>
+                        <th className="py-2.5 px-3 text-right">Según Packing (SP)</th>
                         <th className="py-2.5 px-3 text-right min-w-[110px]">Peso Físico (g) <span className="text-[var(--pm-accent-gold)]">✎</span></th>
-                        <th className="py-2.5 px-3 text-right">Ley Excel (‰)</th>
+                        <th className="py-2.5 px-3 text-right">Ley SP (‰)</th>
                         <th className="py-2.5 px-3 text-right min-w-[100px]">Ley Física (‰) <span className="text-[var(--pm-accent-gold)]">✎</span></th>
                         <th className="py-2.5 px-3 text-center">Delta (g)</th>
                         <th className="py-2.5 px-3 text-center">Estado</th>
@@ -727,16 +804,22 @@ export default function PackingPage() {
                         const edit = validationEdits[bar.id];
                         const delta = computeDelta(bar);
                         const isPorValidar = bar.status === 'POR_VALIDAR';
+                        const isSelected = selectedBarId === bar.id;
                         const origGross = Number(bar.grossWeight);
                         const origPurity = Number(bar.purity);
                         return (
-                          <tr key={bar.id}
-                            className={`${idx % 2 === 0 ? 'bg-transparent' : 'bg-[var(--pm-bg-base)]/20'} hover:bg-[var(--pm-bg-hover)]/40 transition-all ${!isPorValidar ? 'opacity-50' : ''}`}>
-                            <td className="py-2.5 px-3 text-center text-[var(--pm-text-dim)]">{idx + 1}</td>
+                          <tr key={bar.id} onClick={() => handleRowSelect(bar.id, bar.status)}
+                            className={`${idx % 2 === 0 ? 'bg-transparent' : 'bg-[var(--pm-bg-base)]/20'} hover:bg-[var(--pm-bg-hover)]/40 transition-all cursor-pointer ${!isPorValidar ? 'opacity-50' : ''} ${isSelected ? 'ring-1 ring-[var(--pm-accent-gold)] bg-[var(--pm-accent-gold)]/5' : ''}`}>
+                            <td className="py-2.5 px-3 text-center">
+                              {isPorValidar && (
+                                <div className={`w-3.5 h-3.5 rounded-full border-2 transition-all ${isSelected ? 'border-[var(--pm-accent-gold)] bg-[var(--pm-accent-gold)] shadow-[0_0_6px_rgba(212,175,55,0.4)]' : 'border-[var(--pm-text-dim)]/30'}`} />
+                              )}
+                            </td>
                             <td className="py-2.5 px-3 text-center">
                               {isPorValidar ? (
                                 <input type="text" value={edit?.barNumber ?? ''}
                                   onChange={e => handleEditChange(bar.id, 'barNumber', e.target.value.toUpperCase())}
+                                  onClick={e => e.stopPropagation()}
                                   className="w-full bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] rounded px-2 py-1 text-[10px] font-mono text-[var(--pm-text-primary)] text-center focus:outline-none focus:border-[var(--pm-accent-gold)] uppercase" />
                               ) : (
                                 <span className="text-[var(--pm-text-dim)]">{bar.barNumber}</span>
@@ -747,6 +830,7 @@ export default function PackingPage() {
                               {isPorValidar ? (
                                 <input type="number" step="any" value={edit?.grossWeight ?? ''}
                                   onChange={e => handleEditChange(bar.id, 'grossWeight', e.target.value)}
+                                  onClick={e => e.stopPropagation()}
                                   className="w-full bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] rounded px-2 py-1 text-[10px] font-mono text-[var(--pm-text-primary)] text-right focus:outline-none focus:border-[var(--pm-accent-gold)]" />
                               ) : (
                                 <span className="text-[var(--pm-text-dim)]">{formatNumber(origGross, 2)}</span>
@@ -757,6 +841,7 @@ export default function PackingPage() {
                               {isPorValidar ? (
                                 <input type="number" step="any" min="0" max="1000" value={edit?.purity ?? ''}
                                   onChange={e => handleEditChange(bar.id, 'purity', e.target.value)}
+                                  onClick={e => e.stopPropagation()}
                                   className="w-full bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] rounded px-2 py-1 text-[10px] font-mono text-[var(--pm-text-primary)] text-right focus:outline-none focus:border-[var(--pm-accent-gold)]" />
                               ) : (
                                 <span className="text-[var(--pm-text-dim)]">{formatNumber(origPurity, 1)}</span>
@@ -782,6 +867,99 @@ export default function PackingPage() {
                     </tbody>
                   </table>
                 </div>
+
+                {/* Device Simulation Modal */}
+                <AnimatePresence>
+                  {confirmModal && selectedPacking && (() => {
+                    const targetBar = selectedPacking.bars?.find(b => b.id === confirmModal.barId);
+                    const origGross = targetBar ? Number(targetBar.grossWeight) : 0;
+                    const newDelta = modalLiveFA - origGross;
+                    return (
+                      <motion.div key="dev-modal" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                        className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                        <motion.div initial={{ opacity: 0, scale: 0.92, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }}
+                          exit={{ opacity: 0, scale: 0.92, y: 10 }} transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+                          className="w-full max-w-lg glass-panel rounded-2xl overflow-hidden p-6 space-y-5 border border-[var(--pm-border)]/40">
+                          {/* Decorative icons */}
+                          <div className="flex items-center justify-center gap-4 opacity-20 mb-2">
+                            <Camera className="w-5 h-5 text-[var(--pm-text-dim)]" />
+                            <Scale className="w-5 h-5 text-[var(--pm-text-dim)]" />
+                            <Microscope className="w-5 h-5 text-[var(--pm-text-dim)]" />
+                          </div>
+
+                          {/* Title */}
+                          <div className="text-center">
+                            <h2 className="text-lg font-mono font-bold text-[var(--pm-accent-gold)] tracking-wider">PROXIMAMENTE</h2>
+                            <p className="text-[10px] font-mono text-[var(--pm-text-dim)] mt-1 uppercase tracking-wider">
+                              Lectura de dispositivos externos (Báscula / Espectrómetro)
+                            </p>
+                          </div>
+
+                          <div className="h-px bg-[var(--pm-border)]/30" />
+
+                          {/* Báscula */}
+                          <div className="space-y-1.5">
+                            <label className="text-[9px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider flex items-center gap-1.5">
+                              <Scale className="w-3 h-3 text-[var(--pm-accent-gold)]" /> PESO BÁSCULA (g)
+                            </label>
+                            <input type="number" step="any" value={confirmModal.basculaWeight}
+                              onChange={e => setConfirmModal(prev => prev ? { ...prev, basculaWeight: e.target.value } : null)}
+                              className="w-full bg-[var(--pm-bg-deepest)] border-2 border-[var(--pm-accent-gold)]/30 rounded-xl px-4 py-3 text-lg font-mono font-bold text-[var(--pm-text-primary)] text-right focus:outline-none focus:border-[var(--pm-accent-gold)] transition-all" />
+                          </div>
+
+                          {/* Espectrómetro */}
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-1.5">
+                              <label className="text-[9px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider flex items-center gap-1.5">
+                                <Microscope className="w-3 h-3 text-[var(--pm-accent-gold)]" /> LEY AU (‰)
+                              </label>
+                              <input type="number" step="0.1" min="0" max="1000" value={confirmModal.leyAu}
+                                onChange={e => setConfirmModal(prev => prev ? { ...prev, leyAu: e.target.value } : null)}
+                                className="w-full bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] rounded-lg px-3 py-2.5 text-sm font-mono text-[var(--pm-text-primary)] text-right focus:outline-none focus:border-[var(--pm-accent-gold)] transition-all" />
+                            </div>
+                            <div className="space-y-1.5">
+                              <label className="text-[9px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider">LEY AG (‰)</label>
+                              <input type="number" step="0.1" min="0" max="1000" value={confirmModal.leyAg}
+                                onChange={e => setConfirmModal(prev => prev ? { ...prev, leyAg: e.target.value } : null)}
+                                className="w-full bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] rounded-lg px-3 py-2.5 text-sm font-mono text-[var(--pm-text-primary)] text-right focus:outline-none focus:border-[var(--pm-accent-gold)] transition-all" />
+                            </div>
+                          </div>
+
+                          {/* Live FA + Delta */}
+                          <div className="grid grid-cols-2 gap-3">
+                            <div className="p-3 rounded-xl" style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)' }}>
+                              <span className="text-[8px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider block text-center">FINO CALCULADO (FA)</span>
+                              <span className="text-sm font-mono font-bold text-[var(--pm-accent-gold)] block text-center">{formatNumber(modalLiveFA, 2)} g</span>
+                            </div>
+                            <div className="p-3 rounded-xl" style={{ background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.2)' }}>
+                              <span className="text-[8px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider block text-center">DELTA vs SP</span>
+                              <span className={`text-sm font-mono font-bold block text-center ${newDelta >= 0 ? 'text-[var(--pm-accent-emerald)]' : 'text-[var(--pm-accent-red)]'}`}>
+                                {newDelta >= 0 ? '+' : ''}{formatNumber(newDelta, 2)} g
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Buttons */}
+                          <div className="flex gap-3 pt-1">
+                            <button type="button" onClick={() => { setConfirmModal(null); setSelectedBarId(null); }}
+                              className="flex-1 py-2.5 rounded-lg border border-[var(--pm-border)] text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] hover:bg-[var(--pm-bg-tertiary)] text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer">
+                              Cancelar
+                            </button>
+                            <button type="button" onClick={handleSyncValidate} disabled={validatePacking.isPending}
+                              className="flex-[2] py-2.5 rounded-lg text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
+                              style={{ background: 'linear-gradient(135deg, rgba(212,175,55,0.2), rgba(212,175,55,0.1))', color: 'var(--pm-accent-gold)', border: '1px solid rgba(212,175,55,0.3)' }}>
+                              {validatePacking.isPending ? (
+                                <><div className="w-3.5 h-3.5 border-2 border-[var(--pm-accent-gold)] border-t-transparent rounded-full animate-spin" /> SINCRONIZANDO...</>
+                              ) : (
+                                <><Zap className="w-3.5 h-3.5" /> SINCRONIZAR Y VALIDAR</>
+                              )}
+                            </button>
+                          </div>
+                        </motion.div>
+                      </motion.div>
+                    );
+                  })()}
+                </AnimatePresence>
               </div>
             )}
           </motion.div>

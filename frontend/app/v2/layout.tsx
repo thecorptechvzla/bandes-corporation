@@ -46,7 +46,7 @@ export default function V2Layout({ children }: { children: React.ReactNode }) {
             <Coins className="w-4 h-4 text-[var(--pm-bg-deepest)]" />
           </div>
           <span className="text-sm font-mono font-bold text-[var(--pm-accent-gold)] tracking-widest">
-            BANDES
+            CONTROL MINING
           </span>
         </div>
 
