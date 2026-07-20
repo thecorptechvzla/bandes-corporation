@@ -58,6 +58,75 @@
   --mineral-text-secondary: #8D9BAF;
 }
 
+:root {
+  --tac-bg-primary:    #0A0C0E;
+  --tac-bg-secondary:  #111315;
+  --tac-bg-tertiary:   #181B1E;
+  --tac-bg-elevated:   #1E2226;
+  --tac-border:        #262A2E;
+  --tac-border-light:  #32363A;
+  --tac-accent-cyan:   #00E5FF;
+  --tac-accent-green:  #39FF14;
+  --tac-accent-amber:  #FFB000;
+  --tac-accent-red:    #FF3355;
+  --tac-text-primary:  #D0D4DA;
+  --tac-text-dim:      #6B7280;
+  --tac-font-mono:     'JetBrains Mono', 'Fira Code', monospace;
+  --tac-font-sans:     'Inter', system-ui, sans-serif;
+}
+
+@keyframes scanline {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(1000%); }
+}
+
+@keyframes pulse-led {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+@keyframes breathe-border {
+  0%, 100% { border-color: var(--tac-border); }
+  50% { border-color: var(--tac-accent-cyan); }
+}
+
+@keyframes health-pulse {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.tac-scanline::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(transparent 0%, rgba(0,229,255,0.03) 50%, transparent 100%);
+  background-size: 100% 200%;
+  animation: scanline 8s linear infinite;
+  pointer-events: none;
+}
+
+.tac-led {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  animation: pulse-led 2s ease-in-out infinite;
+}
+
+.tac-bracket::before {
+  content: '[';
+  color: var(--tac-accent-cyan);
+  font-family: var(--tac-font-mono);
+  margin-right: 4px;
+}
+
+.tac-bracket::after {
+  content: ']';
+  color: var(--tac-accent-cyan);
+  font-family: var(--tac-font-mono);
+  margin-left: 4px;
+}
+
 body, 
 #app-root, 
 main,

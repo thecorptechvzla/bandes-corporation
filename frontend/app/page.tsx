@@ -7,7 +7,8 @@ export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
-    router.replace('/dashboard');
+    const mode = typeof window !== 'undefined' ? localStorage.getItem('bandes_ui_mode') : null;
+    router.replace(mode === 'classic' ? '/dashboard' : '/v2/dashboard');
   }, [router]);
 
   return null;

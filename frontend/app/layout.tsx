@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { GoldTraceabilityProvider } from '../src/context/GoldTraceabilityContext';
 import { Sidebar } from '../src/components/Sidebar';
@@ -25,10 +25,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const activeTab = pathname.replace('/', '') || 'dashboard';
+  const router = useRouter();
+  const isV2 = pathname.startsWith('/v2');
+  const activeTab = pathname.replace('/', '').replace('v2/', '') || 'dashboard';
   const [systemTime, setSystemTime] = useState<string>('');
 
-  // Nombre del usuario (puedes cambiarlo aquí o conectarlo a tu estado de autenticación más adelante)
   const userName = 'Administrador';
 
   useEffect(() => {
@@ -48,11 +49,33 @@ export default function RootLayout({
     return () => clearInterval(interval);
   }, []);
 
+  // If v2, render minimal wrapper — v2/layout.tsx handles its own chrome
+  if (isV2) {
+    return (
+      <html lang="es">
+        <head>
+          <title>Bandes — Tactical UI</title>
+          <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        </head>
+        <body>
+          <QueryClientProvider client={queryClient}>
+            <GoldTraceabilityProvider>
+              {children}
+            </GoldTraceabilityProvider>
+          </QueryClientProvider>
+        </body>
+      </html>
+    );
+  }
+
   return (
     <html lang="es">
       <head>
-        <title>Control Mining</title>
+        <title>Bandes</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
       </head>
       <body>
         <QueryClientProvider client={queryClient}>
@@ -76,6 +99,16 @@ export default function RootLayout({
                     </div>
 
                     <div className="flex items-center gap-4">
+                      <button
+                        onClick={() => {
+                          localStorage.setItem('bandes_ui_mode', 'tactical');
+                          router.push('/v2/dashboard');
+                        }}
+                        className="px-3 py-1.5 text-[10px] font-mono font-bold uppercase tracking-wider border border-[#00E5FF]/40 text-[#00E5FF] bg-black hover:bg-[#00E5FF]/10 active:scale-95 transition-all cursor-pointer"
+                      >
+                        {'>'} MODO TÁCTICO
+                      </button>
+
                       <div className="hidden lg:flex items-center gap-2 bg-black border border-neutral-800/40 px-3 py-1.5 rounded-full font-mono text-[11px] text-[#8C8C8C]">
                         <Calendar className="w-3.5 h-3.5 text-[#D5B042]" />
                         <span>2026-07-16</span>
