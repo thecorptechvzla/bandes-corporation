@@ -12,6 +12,7 @@ async function bootstrap() {
     process.env.FRONTEND_URL,
   ].filter(Boolean);
 
+  app.setGlobalPrefix('api');
   app.enableCors({
     origin: allowedOrigins,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
