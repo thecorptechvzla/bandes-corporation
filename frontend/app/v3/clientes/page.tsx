@@ -286,7 +286,7 @@ export default function TacticalClientesPage() {
       >
         <div>
           <span className="text-[9px] font-mono font-bold text-[var(--tac-accent-cyan)] uppercase tracking-[0.2em]">
-            {'>'} DIRECTORIO COMERCIAL — INTEL TERMINAL
+            {'>'} Proveedores— INTEL TERMINAL
           </span>
           <p className="text-[10px] font-mono text-[var(--tac-text-dim)] mt-1">
             GESTIÓN DE EXPEDIENTES DE CLIENTES Y PROVEEDORES

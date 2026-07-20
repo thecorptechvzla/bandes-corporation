@@ -23,7 +23,7 @@ export const Sidebar: React.FC = () => {
 
   const menuItems = [
     { id: 'dashboard', name: 'Dashboard', icon: LayoutDashboard },
-    { id: 'clientes', name: 'Clientes', icon: Users },
+    { id: 'clientes', name: 'Proveedores', icon: Users },
     { id: 'packing', name: 'Packing', icon: FolderUp },
     { id: 'ingresos', name: 'Ingresos de Material', icon: ClipboardList },
     { id: 'procesos', name: 'Procesos de Fundición', icon: Flame },
