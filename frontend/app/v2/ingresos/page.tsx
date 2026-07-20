@@ -3,89 +3,51 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useClients } from '@/hooks/useClients';
-import {
-  useBars,
-  useCreateBar,
-  useBulkUploadBars,
-  useUpdateBar,
-} from '@/hooks/useBars';
+import { useBars, useCreateBar, useBulkUploadBars } from '@/hooks/useBars';
 import { api } from '@/lib/api';
-import { useRole } from '@/context/RoleContext';
-import { formatWeight } from '@/lib/format';
+import { formatNumber } from '@/lib/format';
 import type { WeightUnit } from '@/lib/format';
 import type { Bar, BulkUploadResult } from '@/types/api';
-import { TacticalCard } from '@/components/tactical/TacticalCard';
-import { ScannerTable, type ColumnDef } from '@/components/tactical/ScannerTable';
-import { TerminalPanel } from '@/components/tactical/TerminalPanel';
-import { HudButton } from '@/components/tactical/HudButton';
-import { MetricsHUD } from '@/components/tactical/MetricsHUD';
 import {
-  Pencil,
-  Trash2,
-  Check,
-  Upload,
-  Download,
-  ChevronDown,
-  ChevronUp,
-  AlertTriangle,
-  Plus,
-  Weight,
-  Microscope,
+  ClipboardList, Plus, Upload, Download, ChevronDown, ChevronUp,
+  FileSpreadsheet, Search, Trash2, AlertTriangle, Check, Weight,
+  Microscope, X, Package, Zap,
 } from 'lucide-react';
 
-type IngestStep = 'CLIENTE' | 'CODIGO' | 'PESO' | 'PUREZA' | 'LEY_AG' | 'CONFIRMAR';
-
-const STEPS: IngestStep[] = ['CLIENTE', 'CODIGO', 'PESO', 'PUREZA', 'LEY_AG', 'CONFIRMAR'];
-
 const STATUS_LABELS: Record<string, string> = {
-  IN_STOCK: 'EN BÓVEDA',
-  PROCESANDO: 'PROCESANDO',
-  COMPLETADO: 'COMPLETADO',
-  EXITED: 'EGRESADO',
+  IN_STOCK: 'En Bóveda',
+  PROCESANDO: 'Procesando',
+  COMPLETADO: 'Completado',
+  EXITED: 'Egresado',
 };
 
-function formatRif(raw: string) {
-  if (raw.length !== 10) return raw;
-  return `${raw[0]}-${raw.slice(1, 9)}-${raw[9]}`;
-}
+const STATUS_STYLES: Record<string, string> = {
+  IN_STOCK: 'text-emerald-400 border-emerald-500/25 bg-emerald-500/10',
+  PROCESANDO: 'text-[var(--pm-accent-amber)] border-[var(--pm-accent-amber)]/25 bg-[var(--pm-accent-amber)]/10',
+  COMPLETADO: 'text-[var(--pm-accent-gold)] border-[var(--pm-accent-gold)]/25 bg-[var(--pm-accent-gold)]/10',
+  EXITED: 'text-[var(--pm-text-dim)] border-[var(--pm-border)] bg-[var(--pm-bg-tertiary)]',
+};
 
-function statusBadge(status: string) {
-  const map: Record<string, string> = {
-    IN_STOCK: 'text-[var(--tac-accent-green)] border-[var(--tac-accent-green)]/30 bg-[var(--tac-accent-green)]/10',
-    PROCESANDO: 'text-[var(--tac-accent-amber)] border-[var(--tac-accent-amber)]/30 bg-[var(--tac-accent-amber)]/10',
-    COMPLETADO: 'text-[var(--tac-accent-cyan)] border-[var(--tac-accent-cyan)]/30 bg-[var(--tac-accent-cyan)]/10',
-    EXITED: 'text-[var(--tac-text-dim)] border-[var(--tac-border)] bg-[var(--tac-bg-tertiary)]',
-  };
-  return map[status] || map.IN_STOCK;
-}
+const PAGE_SIZE = 10;
 
-export default function IngresosPage() {
+export default function V2IngresosPage() {
   const { data: clients = [] } = useClients({ role: 'PROVEEDOR' });
-  const { data: bars = [], isLoading: barsLoading } = useBars();
+  const { data: bars = [] } = useBars();
   const createBar = useCreateBar();
-  const updateBar = useUpdateBar();
   const bulkUploadMutation = useBulkUploadBars();
 
-  const { hasRole } = useRole();
-  const canAdminister = hasRole('ADMIN', 'OWNER', 'SUPERADMIN');
-  const canDelete = hasRole('OWNER', 'SUPERADMIN');
-
-  const [showTerminal, setShowTerminal] = useState(false);
-  const [editingBar, setEditingBar] = useState<Bar | null>(null);
-  const [step, setStep] = useState<IngestStep>('CLIENTE');
+  const [formWeightUnit, setFormWeightUnit] = useState<WeightUnit>('g');
   const [clientId, setClientId] = useState('');
   const [barNumber, setBarNumber] = useState('');
   const [grossWeight, setGrossWeight] = useState('');
-  const [weightUnit, setWeightUnit] = useState<WeightUnit>('g');
   const [purity, setPurity] = useState('');
   const [leyAg, setLeyAg] = useState('');
   const [formError, setFormError] = useState('');
   const [formSuccess, setFormSuccess] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [ingestSuccess, setIngestSuccess] = useState<{ barNumber: string } | null>(null);
 
-  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
-  const [deleteStatus, setDeleteStatus] = useState<'idle' | 'deleting' | 'success' | 'error'>('idle');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [openAccordions, setOpenAccordions] = useState<Record<string, boolean>>({});
+  const [accordionPages, setAccordionPages] = useState<Record<string, number>>({});
 
   const [isBulkOpen, setIsBulkOpen] = useState(false);
   const [bulkClientId, setBulkClientId] = useState('');
@@ -93,18 +55,17 @@ export default function IngresosPage() {
   const [bulkError, setBulkError] = useState('');
   const [bulkResult, setBulkResult] = useState<BulkUploadResult | null>(null);
 
-  const [openAccordions, setOpenAccordions] = useState<Record<string, boolean>>({});
-  const [searchQuery, setSearchQuery] = useState('');
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [deleteStatus, setDeleteStatus] = useState<'idle' | 'deleting' | 'success'>('idle');
+  const [ingestStatus, setIngestStatus] = useState<{ barNumber: string; status: 'ingesting' | 'success' } | null>(null);
 
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (showTerminal && inputRef.current) inputRef.current.focus();
-  }, [showTerminal, step]);
+  const dropRef = useRef<HTMLDivElement>(null);
+  const [dragOver, setDragOver] = useState(false);
 
   useEffect(() => {
     if (clients.length > 0) {
       if (!clientId) setClientId(clients[0].id);
+      if (!bulkClientId) setBulkClientId(clients[0].id);
       const acc: Record<string, boolean> = {};
       clients.forEach(c => { acc[c.id] = true; });
       setOpenAccordions(prev => {
@@ -115,199 +76,33 @@ export default function IngresosPage() {
   }, [clients]);
 
   const liveFA = useMemo(() => {
-    const wRaw = parseFloat(grossWeight);
-    if (isNaN(wRaw)) return 0;
-    const w = weightUnit === 'kg' ? wRaw * 1000 : wRaw;
+    const w = parseFloat(grossWeight);
+    if (isNaN(w)) return 0;
+    const g = formWeightUnit === 'kg' ? w * 1000 : w;
     const p = parseFloat(purity);
     if (isNaN(p)) return 0;
-    return w * (p / 1000);
-  }, [grossWeight, purity, weightUnit]);
+    return g * (p / 1000);
+  }, [grossWeight, purity, formWeightUnit]);
 
   const liveFE = useMemo(() => liveFA * 0.99, [liveFA]);
+
   const liveFAkg = useMemo(() => liveFA / 1000, [liveFA]);
 
-  const openTerminal = (bar?: Bar) => {
-    if (bar) {
-      setEditingBar(bar);
-      setClientId(bar.clientId);
-      setBarNumber(bar.barNumber);
-      setGrossWeight(bar.grossWeight.toString());
-      setWeightUnit('g');
-      setPurity(bar.purity.toString());
-      setLeyAg((bar.leyAg || '').toString());
-      setStep('CONFIRMAR');
-    } else {
-      setEditingBar(null);
-      setClientId(clients[0]?.id || '');
-      setBarNumber('');
-      setGrossWeight('');
-      setWeightUnit('g');
-      setPurity('');
-      setLeyAg('');
-      setStep('CLIENTE');
-    }
-    setFormError('');
-    setFormSuccess('');
-    setShowTerminal(true);
-  };
+  const liveAg = useMemo(() => {
+    const w = parseFloat(grossWeight);
+    if (isNaN(w)) return 0;
+    const g = formWeightUnit === 'kg' ? w * 1000 : w;
+    const la = parseFloat(leyAg);
+    if (isNaN(la)) return 0;
+    return g * (la / 1000);
+  }, [grossWeight, leyAg, formWeightUnit]);
 
-  const closeTerminal = () => {
-    setShowTerminal(false);
-    setEditingBar(null);
-    setStep('CLIENTE');
-    setBarNumber('');
-    setGrossWeight('');
-    setPurity('');
-    setLeyAg('');
-    setFormError('');
-    setFormSuccess('');
-  };
-
-  const advanceStep = () => {
-    setFormError('');
-    if (step === 'CLIENTE') {
-      if (!clientId) { setFormError('SELECCIONE UN PROVEEDOR'); return; }
-      setStep('CODIGO');
-    } else if (step === 'CODIGO') {
-      if (!barNumber.trim()) { setFormError('INGRESE UN CÓDIGO DE BARRA'); return; }
-      const code = barNumber.toUpperCase().trim();
-      const existing = bars.find(b => b.clientId === clientId && b.barNumber.toUpperCase() === code);
-      if (existing) { setFormError(`CÓDIGO DUPLICADO — ${code} YA EXISTE PARA ESTE CLIENTE`); return; }
-      setStep('PESO');
-    } else if (step === 'PESO') {
-      const w = parseFloat(grossWeight);
-      if (isNaN(w) || w <= 0) { setFormError('INGRESE UN PESO VÁLIDO'); return; }
-      setStep('PUREZA');
-    } else if (step === 'PUREZA') {
-      const p = parseFloat(purity);
-      if (isNaN(p) || p < 0 || p > 1000) { setFormError('PUREZA DEBE SER 0–1000‰'); return; }
-      setStep('LEY_AG');
-    } else if (step === 'LEY_AG') {
-      const ag = parseFloat(leyAg) || 0;
-      if (ag < 0 || ag > 1000) { setFormError('LEY AG DEBE SER 0–1000‰'); return; }
-      setStep('CONFIRMAR');
-    }
-  };
-
-  const prevStep = () => {
-    const idx = STEPS.indexOf(step);
-    if (idx > 0) setStep(STEPS[idx - 1]);
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && step !== 'CONFIRMAR') advanceStep();
-    if (e.key === 'Escape') closeTerminal();
-  };
-
-  const handleSubmit = async () => {
-    setFormError('');
-    setIsSubmitting(true);
-    const wRaw = parseFloat(grossWeight);
-    const w = weightUnit === 'kg' ? wRaw * 1000 : wRaw;
-    const p = parseFloat(purity);
-    const ag = parseFloat(leyAg) || 0;
-    const code = barNumber.toUpperCase().trim();
-
-    try {
-      if (editingBar) {
-        await updateBar.mutateAsync({
-          id: editingBar.id,
-          data: { grossWeight: w, purity: p, leyAg: ag || undefined },
-        });
-        setFormSuccess('BARRA ACTUALIZADA');
-      } else {
-        await createBar.mutateAsync({
-          barNumber: code,
-          grossWeight: w,
-          purity: p,
-          clientId,
-          leyAg: ag || undefined,
-        });
-        setIngestSuccess({ barNumber: code });
-        setTimeout(() => setIngestSuccess(null), 1500);
-      }
-      setIsSubmitting(false);
-      if (editingBar) {
-        setTimeout(() => { closeTerminal(); setFormSuccess(''); }, 1200);
-      } else {
-        setBarNumber('');
-        setGrossWeight('');
-        setPurity('');
-        setLeyAg('');
-        setStep('CLIENTE');
-      }
-    } catch (err: any) {
-      setFormError(err?.response?.data?.message || 'ERROR AL PROCESAR INGESTA');
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleBulkUpload = async () => {
-    if (!bulkClientId || !bulkFile) return;
-    setBulkError('');
-    setBulkResult(null);
-    if (bulkFile.size > 10 * 1024 * 1024) {
-      setBulkError('EL ARCHIVO EXCEDE 10 MB');
-      return;
-    }
-    const formData = new FormData();
-    formData.append('file', bulkFile);
-    formData.append('clientId', bulkClientId);
-    try {
-      const result = await bulkUploadMutation.mutateAsync(formData);
-      setBulkResult(result);
-      setBulkFile(null);
-      const fi = document.getElementById('bulk-file-input') as HTMLInputElement;
-      if (fi) fi.value = '';
-    } catch (e: any) {
-      setBulkError(e?.response?.data?.message || 'ERROR EN CARGA MASIVA');
-    }
-  };
-
-  const downloadTemplate = async () => {
-    const ExcelJS = await import('exceljs');
-    const workbook = new ExcelJS.Workbook();
-    const sheet = workbook.addWorksheet('Plantilla Carga Masiva');
-    sheet.columns = [
-      { header: 'CÓDIGO', key: 'code', width: 22 },
-      { header: 'PESO BRUTO (g)', key: 'grossWeight', width: 18 },
-      { header: 'PUREZA (‰)', key: 'purity', width: 15 },
-      { header: 'LEY Ag (‰)', key: 'leyAg', width: 15 },
-    ];
-    const hr = sheet.getRow(1);
-    hr.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 };
-    hr.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1C1C1C' } };
-    hr.alignment = { horizontal: 'center' };
-    sheet.addRow(['', '', '', '']);
-    const nr = sheet.getRow(2);
-    nr.getCell(1).value = '* CÓDIGO, PESO BRUTO y PUREZA son obligatorios';
-    nr.getCell(1).font = { italic: true, color: { argb: 'FF8C8C8C' }, size: 9 };
-    const buffer = await workbook.xlsx.writeBuffer();
-    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'plantilla-carga-masiva.xlsx';
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
-  const handleDeleteBar = async (id: string) => {
-    setConfirmDeleteId(null);
-    setDeleteStatus('deleting');
-    try {
-      await api.delete(`/bars/${id}`);
-      setDeleteStatus('success');
-      setTimeout(() => setDeleteStatus('idle'), 2000);
-    } catch {
-      setDeleteStatus('error');
-      setTimeout(() => setDeleteStatus('idle'), 2000);
-    }
-  };
-
-  const toggleAccordion = (id: string) => {
-    setOpenAccordions(prev => ({ ...prev, [id]: !prev[id] }));
-  };
+  const weightWarning = useMemo(() => {
+    const w = parseFloat(grossWeight);
+    if (isNaN(w)) return false;
+    const g = formWeightUnit === 'kg' ? w * 1000 : w;
+    return g > 24900;
+  }, [grossWeight, formWeightUnit]);
 
   const filteredBars = useMemo(() => {
     if (!searchQuery) return bars;
@@ -326,755 +121,530 @@ export default function IngresosPage() {
   }, [filteredBars, clients]);
 
   const totalBars = bars.length;
-  const totalGrossWeight = bars.reduce((s, b) => s + Number(b.grossWeight), 0);
   const totalFineWeight = bars.reduce((s, b) => s + Number(b.fineWeight), 0);
 
-  const columns: ColumnDef<Bar>[] = [
-    {
-      key: 'barNumber',
-      label: 'CÓDIGO',
-      align: 'center',
-      width: '140px',
-      render: r => (
-        <span className="font-mono font-bold text-[var(--tac-accent-cyan)] tracking-wider">
-          {r.barNumber}
-        </span>
-      ),
-    },
-    {
-      key: 'grossWeight',
-      label: 'BRUTO (KG)',
-      align: 'right',
-      render: r => (
-        <span className="font-mono text-[var(--tac-text-primary)]">
-          {formatWeight(Number(r.grossWeight), 'kg')}
-        </span>
-      ),
-    },
-    {
-      key: 'fineWeight',
-      label: 'FA (KG)',
-      align: 'right',
-      render: r => (
-        <span className="font-mono text-[var(--tac-accent-amber)]">
-          {formatWeight(Number(r.fineWeight), 'kg')}
-        </span>
-      ),
-    },
-    {
-      key: 'purity',
-      label: 'LEY',
-      align: 'center',
-      width: '80px',
-      render: r => (
-        <span className="font-mono text-[var(--tac-text-dim)]">
-          {r.purity}‰
-        </span>
-      ),
-    },
-    {
-      key: 'status',
-      label: 'STATUS',
-      align: 'center',
-      width: '120px',
-      render: r => (
-        <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-[9px] font-mono font-bold border ${statusBadge(r.status)}`}>
-          <span className={`w-1 h-1 rounded-full ${r.status === 'IN_STOCK' ? 'bg-[var(--tac-accent-green)]' : r.status === 'PROCESANDO' ? 'bg-[var(--tac-accent-amber)]' : r.status === 'COMPLETADO' ? 'bg-[var(--tac-accent-cyan)]' : 'bg-[var(--tac-text-dim)]'}`} />
-          {STATUS_LABELS[r.status] || r.status}
-        </span>
-      ),
-    },
-    {
-      key: 'actions',
-      label: 'ACCIONES',
-      align: 'center',
-      width: '90px',
-      render: r => (
-        <div className="flex items-center justify-center gap-0.5">
-          <button
-            onClick={(e) => { e.stopPropagation(); openTerminal(r); }}
-            disabled={r.status !== 'IN_STOCK' || !canAdminister}
-            className={`p-1 transition-all ${r.status !== 'IN_STOCK' || !canAdminister ? 'opacity-30 cursor-not-allowed' : 'text-[var(--tac-text-dim)] hover:text-[var(--tac-accent-cyan)] active:scale-90'}`}
-            title="Editar barra"
-          >
-            <Pencil className="w-3.5 h-3.5" />
-          </button>
-          <button
-            onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(r.id); }}
-            disabled={r.status !== 'IN_STOCK' || !canDelete}
-            className={`p-1 transition-all ${r.status !== 'IN_STOCK' || !canDelete ? 'opacity-30 cursor-not-allowed' : 'text-[var(--tac-text-dim)] hover:text-[var(--tac-accent-red)] active:scale-90'}`}
-            title="Eliminar barra"
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-          </button>
-        </div>
-      ),
-    },
-  ];
-
-  const stepLabel = (s: IngestStep) => {
-    const labels: Record<IngestStep, string> = {
-      CLIENTE: 'SELECCIONAR PROVEEDOR',
-      CODIGO: 'CÓDIGO DE BARRA',
-      PESO: 'PESO BRUTO',
-      PUREZA: 'PUREZA AU (‰)',
-      LEY_AG: 'LEY AG (‰)',
-      CONFIRMAR: 'CONFIRMAR INGESTA',
-    };
-    return labels[s];
+  const toggleAccordion = (id: string) => {
+    setOpenAccordions(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
-  const stepIndex = STEPS.indexOf(step);
+  const setAccordionPage = (clientId: string, page: number) => {
+    setAccordionPages(prev => ({ ...prev, [clientId]: page }));
+  };
+
+  const handleSubmitBar = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormError('');
+    setFormSuccess('');
+
+    if (!barNumber.trim() || !grossWeight || !purity || !clientId) {
+      setFormError('Complete todos los campos obligatorios.');
+      return;
+    }
+
+    const g = formWeightUnit === 'kg' ? parseFloat(grossWeight) * 1000 : parseFloat(grossWeight);
+    if (isNaN(g) || g <= 0) { setFormError('Peso bruto debe ser un número positivo.'); return; }
+    const p = parseFloat(purity);
+    if (isNaN(p) || p < 0 || p > 1000) { setFormError('Pureza Au debe estar entre 0 y 1000‰.'); return; }
+    const ag = parseFloat(leyAg) || 0;
+    if (ag < 0 || ag > 1000) { setFormError('Ley Ag debe estar entre 0 y 1000‰.'); return; }
+
+    const code = barNumber.toUpperCase().trim();
+    const existing = bars.find(b => b.clientId === clientId && b.barNumber.toUpperCase() === code);
+    if (existing) {
+      setFormError(`Código duplicado: "${code}" ya existe para este cliente.`);
+      return;
+    }
+
+    try {
+      await createBar.mutateAsync({ barNumber: code, grossWeight: g, purity: p, clientId, leyAg: ag || undefined });
+      setIngestStatus({ barNumber: code, status: 'ingesting' });
+      setBarNumber(''); setGrossWeight(''); setPurity(''); setLeyAg('');
+      setTimeout(() => setIngestStatus({ barNumber: code, status: 'success' }), 800);
+      setTimeout(() => setIngestStatus(null), 2800);
+    } catch (err: any) {
+      setFormError(err?.response?.data?.message || 'Error al registrar la barra.');
+    }
+  };
+
+  const handleBulkUpload = async () => {
+    if (!bulkClientId || !bulkFile) return;
+    setBulkError(''); setBulkResult(null);
+    if (bulkFile.size > 10 * 1024 * 1024) { setBulkError('Archivo excede 10 MB.'); return; }
+    const fd = new FormData();
+    fd.append('file', bulkFile); fd.append('clientId', bulkClientId);
+    try {
+      const result = await bulkUploadMutation.mutateAsync(fd);
+      setBulkResult(result); setBulkFile(null);
+      const fi = document.getElementById('bulk-file-input') as HTMLInputElement;
+      if (fi) fi.value = '';
+    } catch (e: any) {
+      setBulkError(e?.response?.data?.message || 'Error en carga masiva.');
+    }
+  };
+
+  const downloadTemplate = async () => {
+    const ExcelJS = await import('exceljs');
+    const wb = new ExcelJS.Workbook();
+    const ws = wb.addWorksheet('Plantilla Carga Masiva');
+    ws.columns = [
+      { header: 'CÓDIGO', key: 'code', width: 22 },
+      { header: 'PESO BRUTO (g)', key: 'grossWeight', width: 18 },
+      { header: 'PUREZA (‰)', key: 'purity', width: 15 },
+      { header: 'LEY Ag (‰)', key: 'leyAg', width: 15 },
+    ];
+    const hr = ws.getRow(1);
+    hr.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 };
+    hr.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1C1C1C' } };
+    hr.alignment = { horizontal: 'center' };
+    ws.addRow(['', '', '', '']);
+    const nr = ws.getRow(2);
+    nr.getCell(1).value = '* CÓDIGO, PESO BRUTO y PUREZA son obligatorios';
+    nr.getCell(1).font = { italic: true, color: { argb: 'FF8C8C8C' }, size: 9 };
+    const buf = await wb.xlsx.writeBuffer();
+    const blob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = 'plantilla-carga-masiva.xlsx';
+    a.click(); URL.revokeObjectURL(url);
+  };
+
+  const handleDeleteBar = async (id: string) => {
+    setConfirmDeleteId(null); setDeleteStatus('deleting');
+    try {
+      await api.delete(`/bars/${id}`);
+      setDeleteStatus('success');
+      setTimeout(() => setDeleteStatus('idle'), 2000);
+    } catch { setDeleteStatus('idle'); }
+  };
+
+  const resetForm = () => {
+    setBarNumber(''); setGrossWeight(''); setPurity(''); setLeyAg('');
+    setFormError(''); setFormSuccess('');
+  };
+
+  const formatWeightInput = (val: number) => formatNumber(val / (formWeightUnit === 'kg' ? 1000 : 1), 2);
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }} className="space-y-6">
       {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-        className="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}
+        className="flex flex-col sm:flex-row sm:items-center justify-between gap-3"
       >
         <div>
-          <span className="text-[9px] font-mono font-bold text-[var(--tac-accent-cyan)] uppercase tracking-[0.2em]">
-            {'>'} LOGÍSTICA DE MATERIAL — INGEST TERMINAL
-          </span>
-          <p className="text-[10px] font-mono text-[var(--tac-text-dim)] mt-1">
-            REGISTRO FÍSICO DE BARRAS DE ORO
-          </p>
+          <h1 className="text-xl font-semibold text-[var(--pm-text-primary)] font-sans flex items-center gap-2.5">
+            <ClipboardList className="w-6 h-6 text-[var(--pm-accent-gold)]" />
+            Ingreso de <span className="text-[var(--pm-accent-gold)]">Material</span>
+          </h1>
+          <p className="text-xs text-[var(--pm-text-dim)] mt-0.5">Recepción y registro de barras en bóveda.</p>
         </div>
-        <HudButton
-          variant="primary"
-          prefix=">"
-          onClick={() => showTerminal ? closeTerminal() : openTerminal()}
-          className="shrink-0 self-start sm:self-center"
-        >
-          <Plus className="w-3.5 h-3.5" />
-          {showTerminal ? 'CERRAR TERMINAL' : 'NUEVA INGESTA'}
-        </HudButton>
+        <div className="flex items-center gap-3 text-[10px] font-mono text-[var(--pm-text-dim)]">
+          <span className="flex items-center gap-1"><Package className="w-3 h-3 text-[var(--pm-accent-gold)]" />{totalBars} barras</span>
+          <span className="hidden sm:inline">FA total: {formatNumber(totalFineWeight, 2)} g</span>
+        </div>
       </motion.div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 items-start">
-        {/* Terminal Panel */}
-        <AnimatePresence>
-          {showTerminal && (
-            <motion.div
-              key="terminal-panel"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.25, ease: 'easeOut' }}
-              className="lg:col-span-2 space-y-4"
-            >
-              <TerminalPanel
-                title={editingBar ? `EDITAR: ${editingBar.barNumber}` : 'INGESTA DE BARRAS'}
-                accent={formError ? 'red' : 'cyan'}
-              >
-                <div className="space-y-3" onKeyDown={handleKeyDown}>
-                  {/* Step progress */}
-                  <div className="flex items-center gap-1 text-[8px] font-mono text-[var(--tac-text-dim)] mb-2">
-                    {STEPS.map((s, i) => (
-                      <React.Fragment key={s}>
-                        <span className={`${i <= stepIndex ? 'text-[var(--tac-accent-cyan)]' : ''}`}>
-                          [{i + 1}]
-                        </span>
-                        {i < STEPS.length - 1 && (
-                          <span className="text-[var(--tac-border)]">-</span>
-                        )}
-                      </React.Fragment>
-                    ))}
-                  </div>
-
-                  {/* Step 1: CLIENTE */}
-                  <div className={`transition-opacity ${stepIndex >= 0 ? step === 'CLIENTE' ? 'opacity-100' : 'opacity-40' : 'opacity-30'}`}>
-                    <div className="flex items-start gap-2 text-[11px] font-mono">
-                      <span className="text-[var(--tac-text-dim)] shrink-0">CLIENTE</span>
-                      <span className="text-[var(--tac-accent-cyan)] shrink-0">&gt;</span>
-                      {step === 'CLIENTE' ? (
-                        <select
-                          ref={inputRef as any}
-                          value={clientId}
-                          onChange={(e) => setClientId(e.target.value)}
-                          className="flex-1 bg-transparent border-b border-[var(--tac-accent-cyan)]/40 text-[var(--tac-text-primary)] font-mono text-[11px] focus:outline-none focus:border-[var(--tac-accent-cyan)] pb-0.5 cursor-pointer"
-                          autoFocus
-                        >
-                          <option value="" className="bg-[var(--tac-bg-primary)]">SELECCIONAR...</option>
-                          {clients.map(c => (
-                            <option key={c.id} value={c.id} className="bg-[var(--tac-bg-primary)]">
-                              {formatRif(c.rif)} — {c.name}
-                            </option>
-                          ))}
-                        </select>
-                      ) : (
-                        <span className="text-[var(--tac-text-primary)] font-bold">
-                          {clients.find(c => c.id === clientId)?.name || '—'}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Step 2: CÓDIGO */}
-                  {stepIndex >= 1 && (
-                    <div className={`transition-opacity ${step === 'CODIGO' ? 'opacity-100' : 'opacity-40'}`}>
-                      <div className="flex items-center gap-2 text-[11px] font-mono">
-                        <span className="text-[var(--tac-text-dim)] shrink-0">CÓDIGO_BARRA</span>
-                        <span className="text-[var(--tac-accent-cyan)] shrink-0">&gt;</span>
-                        {step === 'CODIGO' ? (
-                          <input
-                            ref={inputRef}
-                            type="text"
-                            value={barNumber}
-                            onChange={(e) => setBarNumber(e.target.value.toUpperCase())}
-                            className="flex-1 bg-transparent border-b border-[var(--tac-accent-cyan)]/40 text-[var(--tac-text-primary)] font-mono text-[11px] focus:outline-none focus:border-[var(--tac-accent-cyan)] px-1 pb-0.5 uppercase"
-                            placeholder="BAR-XXXX-0000"
-                            autoFocus
-                          />
-                        ) : (
-                          <span className="text-[var(--tac-accent-cyan)] font-bold">{barNumber || '—'}</span>
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Step 3: PESO */}
-                  {stepIndex >= 2 && (
-                    <div className={`transition-opacity ${step === 'PESO' ? 'opacity-100' : 'opacity-40'}`}>
-                      <div className="flex items-center gap-2 text-[11px] font-mono">
-                        <span className="text-[var(--tac-text-dim)] shrink-0">PESO_BRUTO</span>
-                        <span className="text-[var(--tac-accent-cyan)] shrink-0">&gt;</span>
-                        {step === 'PESO' ? (
-                          <div className="flex-1 flex items-center gap-1">
-                            <input
-                              ref={inputRef}
-                              type="number"
-                              step="0.01"
-                              value={grossWeight}
-                              onChange={(e) => setGrossWeight(e.target.value)}
-                              className="w-20 bg-transparent border-b border-[var(--tac-accent-cyan)]/40 text-[var(--tac-text-primary)] font-mono text-[11px] focus:outline-none focus:border-[var(--tac-accent-cyan)] px-1 pb-0.5"
-                              placeholder="0.00"
-                              autoFocus
-                            />
-                            <button
-                              onClick={() => setWeightUnit(prev => prev === 'kg' ? 'g' : 'kg')}
-                              className="text-[9px] font-mono font-bold px-1.5 py-0.5 border border-[var(--tac-border)] text-[var(--tac-text-dim)] hover:text-[var(--tac-accent-cyan)] hover:border-[var(--tac-accent-cyan)]/40 active:scale-95 transition-all"
-                            >
-                              {weightUnit}
-                            </button>
-                          </div>
-                        ) : (
-                          <span className="text-[var(--tac-text-primary)] font-bold">
-                            {grossWeight ? formatWeight(parseFloat(grossWeight), weightUnit) : '—'}
-                          </span>
-                        )}
-                      </div>
-                      {step === 'PESO' && grossWeight && purity && (
-                        <div className="mt-1 ml-[100px] text-[9px] font-mono text-[var(--tac-accent-amber)]">
-                          FA (kg): {formatWeight(liveFA, 'kg')}
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Step 4: PUREZA */}
-                  {stepIndex >= 3 && (
-                    <div className={`transition-opacity ${step === 'PUREZA' ? 'opacity-100' : 'opacity-40'}`}>
-                      <div className="flex items-center gap-2 text-[11px] font-mono">
-                        <span className="text-[var(--tac-text-dim)] shrink-0">PUREZA</span>
-                        <span className="text-[var(--tac-accent-cyan)] shrink-0">&gt;</span>
-                        {step === 'PUREZA' ? (
-                          <div className="flex-1 flex items-center gap-1">
-                            <input
-                              ref={inputRef}
-                              type="number"
-                              step="1"
-                              min="0"
-                              max="1000"
-                              value={purity}
-                              onChange={(e) => setPurity(e.target.value)}
-                              className="w-20 bg-transparent border-b border-[var(--tac-accent-cyan)]/40 text-[var(--tac-text-primary)] font-mono text-[11px] focus:outline-none focus:border-[var(--tac-accent-cyan)] px-1 pb-0.5"
-                              placeholder="900"
-                              autoFocus
-                            />
-                            <span className="text-[9px] text-[var(--tac-text-dim)]">‰</span>
-                          </div>
-                        ) : (
-                          <span className="text-[var(--tac-text-primary)] font-bold">
-                            {purity ? `${purity}‰` : '—'}
-                          </span>
-                        )}
-                      </div>
-                      {step === 'PUREZA' && liveFA > 0 && (
-                        <div className="mt-1 ml-[100px] text-[9px] font-mono text-[var(--tac-accent-amber)]">
-                          FA: {formatWeight(liveFA, 'kg')} | FE: {formatWeight(liveFE, 'kg')}
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Step 5: LEY_AG */}
-                  {stepIndex >= 4 && (
-                    <div className={`transition-opacity ${step === 'LEY_AG' ? 'opacity-100' : 'opacity-40'}`}>
-                      <div className="flex items-center gap-2 text-[11px] font-mono">
-                        <span className="text-[var(--tac-text-dim)] shrink-0">LEY_AG</span>
-                        <span className="text-[var(--tac-text-dim)]/50 shrink-0">(OPCIONAL)</span>
-                        <span className="text-[var(--tac-accent-cyan)] shrink-0">&gt;</span>
-                        {step === 'LEY_AG' ? (
-                          <div className="flex-1 flex items-center gap-1">
-                            <input
-                              ref={inputRef}
-                              type="number"
-                              step="1"
-                              min="0"
-                              max="1000"
-                              value={leyAg}
-                              onChange={(e) => setLeyAg(e.target.value)}
-                              className="w-20 bg-transparent border-b border-[var(--tac-accent-cyan)]/40 text-[var(--tac-text-primary)] font-mono text-[11px] focus:outline-none focus:border-[var(--tac-accent-cyan)] px-1 pb-0.5"
-                              placeholder="40"
-                              autoFocus
-                            />
-                            <span className="text-[9px] text-[var(--tac-text-dim)]">‰</span>
-                          </div>
-                        ) : (
-                          <span className="text-[var(--tac-text-primary)] font-bold">
-                            {leyAg ? `${leyAg}‰` : '—'}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Step 6: CONFIRMAR */}
-                  {step === 'CONFIRMAR' && (
-                    <div className="space-y-3 pt-2 border-t border-[var(--tac-border)]">
-                      <div className="text-[9px] font-mono text-[var(--tac-text-dim)] uppercase tracking-[0.12em]">
-                        RESUMEN DE INGESTA
-                      </div>
-                      <div className="space-y-1 text-[11px] font-mono">
-                        <div className="flex justify-between">
-                          <span className="text-[var(--tac-text-dim)]">CLIENTE:</span>
-                          <span className="text-[var(--tac-text-primary)] font-bold">
-                            {clients.find(c => c.id === clientId)?.name || '—'}
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-[var(--tac-text-dim)]">BARRA:</span>
-                          <span className="text-[var(--tac-accent-cyan)] font-bold">{barNumber.toUpperCase()}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-[var(--tac-text-dim)]">BRUTO:</span>
-                          <span className="text-[var(--tac-text-primary)] font-bold">
-                            {grossWeight ? formatWeight(parseFloat(grossWeight), weightUnit) : '—'}
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-[var(--tac-text-dim)]">PUREZA:</span>
-                          <span className="text-[var(--tac-text-primary)] font-bold">{purity}‰</span>
-                        </div>
-                        {leyAg && (
-                          <div className="flex justify-between">
-                            <span className="text-[var(--tac-text-dim)]">LEY AG:</span>
-                            <span className="text-[var(--tac-text-primary)] font-bold">{leyAg}‰</span>
-                          </div>
-                        )}
-                        <div className="flex justify-between border-t border-[var(--tac-border)] pt-1 mt-1">
-                          <span className="text-[var(--tac-text-dim)]">FA ESTIMADO:</span>
-                          <span className="text-[var(--tac-accent-amber)] font-bold">
-                            {formatWeight(liveFA, 'kg')}
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-[var(--tac-text-dim)]">FE (×0.99):</span>
-                          <span className="text-[var(--tac-accent-cyan)] font-bold">
-                            {formatWeight(liveFE, 'kg')}
-                          </span>
-                        </div>
-                        {liveFA > 0 && (
-                          <div className="flex justify-between">
-                            <span className="text-[var(--tac-text-dim)]">MERMA ESPERADA (1%):</span>
-                            <span className="text-[var(--tac-accent-green)] font-bold">
-                              {formatWeight(liveFA - liveFE, 'kg')}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-
-                      {formError && (
-                        <div className="p-2 border border-[var(--tac-accent-red)]/40 text-[var(--tac-accent-red)] text-[9px] font-mono">
-                          ! {formError}
-                        </div>
-                      )}
-
-                      {formSuccess && (
-                        <div className="p-2 border border-[var(--tac-accent-green)]/40 text-[var(--tac-accent-green)] text-[9px] font-mono flex items-center gap-1">
-                          <Check className="w-3 h-3" /> {formSuccess}
-                        </div>
-                      )}
-
-                      <div className="flex gap-2 pt-1">
-                        <HudButton variant="ghost" onClick={closeTerminal} className="flex-1">
-                          CANCELAR
-                        </HudButton>
-                        <HudButton
-                          variant="primary"
-                          prefix=">"
-                          loading={isSubmitting}
-                          onClick={handleSubmit}
-                          className="flex-1"
-                        >
-                          {editingBar ? 'ACTUALIZAR' : 'EJECUTAR INGESTA'}
-                        </HudButton>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Navigation for non-confirm steps */}
-                  {step !== 'CONFIRMAR' && (
-                    <div className="flex items-center justify-between pt-1">
-                      {step !== 'CLIENTE' ? (
-                        <HudButton variant="ghost" onClick={prevStep} className="text-[9px]">
-                          &lt;&lt; ANTERIOR
-                        </HudButton>
-                      ) : (
-                        <div />
-                      )}
-                      <HudButton variant="primary" onClick={advanceStep} className="text-[9px]">
-                        SIGUIENTE &gt;&gt;
-                      </HudButton>
-                    </div>
-                  )}
+      {/* Split pane */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
+        {/* ═══════ LEFT PANEL: Form ═══════ */}
+        <div className="space-y-5">
+          <motion.div initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1, duration: 0.4 }}
+            className="premium-card overflow-hidden"
+          >
+            <div className="px-5 pt-5 pb-2 border-b border-[var(--pm-border)]">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.2)' }}>
+                  <Plus className="w-3.5 h-3.5 text-[var(--pm-accent-gold)]" />
                 </div>
-              </TerminalPanel>
-
-              {/* Edit tools (matching v2 style) */}
-              {step === 'CONFIRMAR' && editingBar && (
-                <TerminalPanel title="HERRAMIENTAS" accent="amber">
-                  <div className="grid grid-cols-2 gap-2">
-                    <label className="flex flex-col items-center gap-1 py-2 bg-[var(--tac-bg-primary)] border border-[var(--tac-border)] hover:border-[var(--tac-accent-cyan)]/30 active:scale-95 transition-all cursor-pointer">
-                      <Weight className="w-4 h-4 text-[var(--tac-accent-cyan)]" />
-                      <span className="text-[8px] font-mono text-[var(--tac-text-dim)] uppercase">Peso</span>
-                      <input type="file" accept="image/*" className="hidden" />
-                    </label>
-                    <label className="flex flex-col items-center gap-1 py-2 bg-[var(--tac-bg-primary)] border border-[var(--tac-border)] hover:border-[var(--tac-accent-cyan)]/30 active:scale-95 transition-all cursor-pointer">
-                      <Microscope className="w-4 h-4 text-[var(--tac-accent-cyan)]" />
-                      <span className="text-[8px] font-mono text-[var(--tac-text-dim)] uppercase">Leyes</span>
-                      <input type="file" accept="image/*" className="hidden" />
-                    </label>
-                  </div>
-                </TerminalPanel>
-              )}
-
-              {/* Bulk Import */}
-              <TacticalCard
-                title="DATA_IMPORT"
-                accent="green"
-                onClick={() => setIsBulkOpen(!isBulkOpen)}
-                hoverable
-              >
-                <div className="space-y-3">
-                  {!isBulkOpen && (
-                    <div className="flex items-center justify-between text-[10px] font-mono text-[var(--tac-text-dim)]">
-                      <span>CARGA MASIVA XLSX/CSV</span>
-                      <ChevronDown className="w-3 h-3" />
-                    </div>
-                  )}
-                  {isBulkOpen && (
-                    <div className="space-y-3" onClick={(e) => e.stopPropagation()}>
-                      <div className="text-[10px] font-mono text-[var(--tac-text-dim)] flex items-center justify-between">
-                        <span>CARGA MASIVA XLSX/CSV</span>
-                        <ChevronUp className="w-3 h-3" />
-                      </div>
-
-                      <div className="space-y-1">
-                        <span className="text-[9px] font-mono text-[var(--tac-text-dim)] uppercase">CLIENTE</span>
-                        <select
-                          value={bulkClientId}
-                          onChange={(e) => setBulkClientId(e.target.value)}
-                          className="w-full bg-[var(--tac-bg-primary)] border border-[var(--tac-border)] px-2 py-1.5 text-[10px] font-mono text-[var(--tac-text-primary)] focus:outline-none focus:border-[var(--tac-accent-cyan)] cursor-pointer"
-                        >
-                          <option value="" className="bg-[var(--tac-bg-primary)]">SELECCIONAR...</option>
-                          {clients.map(c => (
-                            <option key={c.id} value={c.id} className="bg-[var(--tac-bg-primary)]">{c.name}</option>
-                          ))}
-                        </select>
-                      </div>
-
-                      <div className="border-2 border-dashed border-[var(--tac-border)] p-4 text-center hover:border-[var(--tac-accent-cyan)]/40 transition-colors">
-                        <Upload className="w-6 h-6 text-[var(--tac-accent-green)] mx-auto mb-1" />
-                        <label className="flex flex-col items-center gap-1 cursor-pointer">
-                          <span className="text-[10px] font-mono text-[var(--tac-text-primary)]">
-                            {bulkFile ? bulkFile.name : 'SELECCIONAR ARCHIVO'}
-                          </span>
-                          <span className="text-[8px] font-mono text-[var(--tac-text-dim)]">
-                            {bulkFile ? `${(bulkFile.size / 1024).toFixed(1)} KB` : '.xlsx, .csv — máx 10 MB'}
-                          </span>
-                          <input
-                            id="bulk-file-input"
-                            type="file"
-                            accept=".xlsx,.csv"
-                            onChange={(e) => setBulkFile(e.target.files?.[0] ?? null)}
-                            className="hidden"
-                          />
-                        </label>
-                      </div>
-
-                      {bulkError && (
-                        <div className="p-2 border border-[var(--tac-accent-red)]/40 text-[var(--tac-accent-red)] text-[9px] font-mono">
-                          ! {bulkError}
-                        </div>
-                      )}
-
-                      <div className="flex gap-2">
-                        <HudButton
-                          variant="primary"
-                          onClick={handleBulkUpload}
-                          disabled={!bulkClientId || !bulkFile}
-                          loading={bulkUploadMutation.isPending}
-                          className="flex-1 text-[9px]"
-                        >
-                          <Upload className="w-3 h-3" />
-                          SUBIR ARCHIVO
-                        </HudButton>
-                        <HudButton variant="ghost" onClick={downloadTemplate} className="text-[9px]">
-                          <Download className="w-3 h-3" />
-                          PLANTILLA
-                        </HudButton>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </TacticalCard>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Inventory Table */}
-        <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.4 }}
-          className={`${showTerminal ? 'lg:col-span-3' : 'lg:col-span-5'} space-y-4`}
-        >
-          <TacticalCard title={`BARRAS EN BÓVEDA — ${totalBars} REGISTROS`} accent="cyan">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="BUSCAR POR CÓDIGO..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full sm:w-56 bg-[var(--tac-bg-primary)] border border-[var(--tac-border)] pl-2 pr-2 py-1.5 text-[10px] font-mono text-[var(--tac-text-primary)] focus:outline-none focus:border-[var(--tac-accent-cyan)] placeholder:text-[var(--tac-text-dim)]/30"
-                />
+                <span className="text-xs font-mono font-bold text-[var(--pm-accent-gold)] uppercase tracking-wider">Registro Individual</span>
               </div>
             </div>
 
-            {barsLoading ? (
-              <div className="flex flex-col items-center justify-center py-12 text-[var(--tac-text-dim)]">
-                <span className="w-2 h-2 rounded-full bg-[var(--tac-accent-amber)] animate-pulse mb-2" />
-                <span className="text-[10px] font-mono">CARGANDO INVENTARIO...</span>
+            <form onSubmit={handleSubmitBar} className="p-5 space-y-4">
+              {/* Client selector */}
+              <div className="space-y-1">
+                <label className="text-[10px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider">Proveedor</label>
+                <select value={clientId} onChange={e => setClientId(e.target.value)}
+                  className="w-full bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] rounded-lg px-3 py-2.5 text-xs font-sans text-[var(--pm-text-primary)] focus:outline-none focus:border-[var(--pm-accent-gold)] transition-colors cursor-pointer"
+                >
+                  {clients.map(c => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {/* Bar code */}
+                <div className="space-y-1">
+                  <label className="text-[10px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider">Código de Barra</label>
+                  <input type="text" placeholder="Ej: BARRA-A001" value={barNumber}
+                    onChange={e => setBarNumber(e.target.value.toUpperCase())}
+                    className="w-full bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] rounded-lg px-3 py-2.5 text-xs font-mono text-[var(--pm-text-primary)] focus:outline-none focus:border-[var(--pm-accent-gold)] transition-colors uppercase placeholder:text-[var(--pm-text-dim)]/30"
+                    required
+                  />
+                </div>
+
+                {/* Gross weight */}
+                <div className="space-y-1">
+                  <label className="text-[10px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider flex items-center gap-1">
+                    <Weight className="w-3 h-3" /> Peso Bruto
+                  </label>
+                  <div className="relative">
+                    <input type="number" step="any" placeholder="0.00" value={grossWeight}
+                      onChange={e => setGrossWeight(e.target.value)}
+                      className="w-full bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] rounded-lg px-3 py-2.5 pr-14 text-xs font-mono text-[var(--pm-text-primary)] focus:outline-none focus:border-[var(--pm-accent-gold)] transition-colors placeholder:text-[var(--pm-text-dim)]/30"
+                      required
+                    />
+                    <button type="button" onClick={() => setFormWeightUnit(prev => prev === 'g' ? 'kg' : 'g')}
+                      className="absolute right-1.5 top-1/2 -translate-y-1/2 px-2 py-1 rounded text-[9px] font-mono font-bold uppercase tracking-wider cursor-pointer active:scale-90 transition-all"
+                      style={{ background: 'rgba(212,175,55,0.1)', color: 'var(--pm-accent-gold)', border: '1px solid rgba(212,175,55,0.2)' }}
+                    >{formWeightUnit}</button>
+                  </div>
+                  {weightWarning && (
+                    <span className="text-[9px] font-mono text-[var(--pm-accent-amber)] flex items-center gap-1 mt-1">
+                      <AlertTriangle className="w-3 h-3" /> Peso superior a 24,900 g
+                    </span>
+                  )}
+                </div>
+
+                {/* Purity */}
+                <div className="space-y-1">
+                  <label className="text-[10px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider flex items-center gap-1">
+                    <Microscope className="w-3 h-3" /> Pureza Au (‰)
+                  </label>
+                  <input type="number" min="0" max="1000" step="0.1" placeholder="999.9" value={purity}
+                    onChange={e => setPurity(e.target.value)}
+                    className="w-full bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] rounded-lg px-3 py-2.5 text-xs font-mono text-[var(--pm-text-primary)] focus:outline-none focus:border-[var(--pm-accent-gold)] transition-colors placeholder:text-[var(--pm-text-dim)]/30"
+                    required
+                  />
+                </div>
+
+                {/* Ley Ag */}
+                <div className="space-y-1">
+                  <label className="text-[10px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider">
+                    Ley Ag (‰) <span className="opacity-40">(opcional)</span>
+                  </label>
+                  <input type="number" min="0" max="1000" step="0.1" placeholder="0.00" value={leyAg}
+                    onChange={e => setLeyAg(e.target.value)}
+                    className="w-full bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] rounded-lg px-3 py-2.5 text-xs font-mono text-[var(--pm-text-primary)] focus:outline-none focus:border-[var(--pm-accent-gold)] transition-colors placeholder:text-[var(--pm-text-dim)]/30"
+                  />
+                </div>
+              </div>
+
+              {/* Live calculation box */}
+              {(parseFloat(grossWeight) > 0 && parseFloat(purity) > 0) && (
+                <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
+                  className="p-4 rounded-xl border" style={{ background: 'rgba(212,175,55,0.06)', borderColor: 'rgba(212,175,55,0.2)' }}
+                >
+                  <div className="flex items-center gap-1.5 mb-2">
+                    <Zap className="w-3.5 h-3.5 text-[var(--pm-accent-gold)]" />
+                    <span className="text-[9px] font-mono font-bold text-[var(--pm-accent-gold)] uppercase tracking-wider">Cálculo en Tiempo Real</span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-3 text-center">
+                    <div>
+                      <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block">FA (Fino)</span>
+                      <span className="text-sm font-mono font-bold text-[var(--pm-text-primary)]">{formatNumber(liveFA, 4)} g</span>
+                      <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block">{formatNumber(liveFAkg, 6)} kg</span>
+                    </div>
+                    <div className="border-x border-[var(--pm-border)]">
+                      <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block">FE (Esperado)</span>
+                      <span className="text-sm font-mono font-bold text-[var(--pm-text-primary)]">{formatNumber(liveFE, 4)} g</span>
+                      <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block">FA × 0.99</span>
+                    </div>
+                    <div>
+                      <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block">Ag (Plata)</span>
+                      <span className="text-sm font-mono font-bold text-[var(--pm-text-primary)]">{formatNumber(liveAg, 4)} g</span>
+                      <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block">{liveAg > 0 ? 'calculado' : '—'}</span>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+              {formError && (
+                <div className="flex items-center gap-2 p-3 rounded-lg text-xs font-mono bg-[var(--pm-accent-red)]/10 border border-[var(--pm-accent-red)]/25 text-[var(--pm-accent-red)]">
+                  <AlertTriangle className="w-4 h-4 shrink-0" />{formError}
+                </div>
+              )}
+
+              <div className="flex gap-3 pt-1">
+                <button type="button" onClick={resetForm}
+                  className="flex-1 py-2.5 rounded-lg border border-[var(--pm-border)] text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] hover:bg-[var(--pm-bg-tertiary)] text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer"
+                >Limpiar</button>
+                <button type="submit" disabled={createBar.isPending}
+                  className="flex-[2] py-2.5 rounded-lg text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(212,175,55,0.2), rgba(212,175,55,0.1))',
+                    color: 'var(--pm-accent-gold)', border: '1px solid rgba(212,175,55,0.3)',
+                  }}
+                >
+                  {createBar.isPending ? (
+                    <><div className="w-3.5 h-3.5 border-2 border-[var(--pm-accent-gold)] border-t-transparent rounded-full animate-spin" /> Registrando...</>
+                  ) : (
+                    <><Plus className="w-3.5 h-3.5" /> Registrar Barra</>
+                  )}
+                </button>
+              </div>
+            </form>
+          </motion.div>
+
+          {/* ═══════ BULK UPLOAD ═══════ */}
+          <motion.div initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.15, duration: 0.4 }}
+            className="premium-card overflow-hidden"
+          >
+            <button type="button" onClick={() => setIsBulkOpen(!isBulkOpen)}
+              className="w-full flex items-center justify-between px-5 py-4 active:scale-[0.99] transition-all cursor-pointer"
+            >
+              <div className="flex items-center gap-2">
+                <FileSpreadsheet className="w-4 h-4 text-[var(--pm-accent-amber)]" />
+                <span className="text-xs font-mono font-bold text-[var(--pm-text-primary)] uppercase tracking-wider">Carga Masiva</span>
+              </div>
+              {isBulkOpen ? <ChevronUp className="w-4 h-4 text-[var(--pm-text-dim)]" /> : <ChevronDown className="w-4 h-4 text-[var(--pm-text-dim)]" />}
+            </button>
+
+            <AnimatePresence>
+              {isBulkOpen && (
+                <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <div className="px-5 pb-5 space-y-4 border-t border-[var(--pm-border)] pt-4">
+                    <select value={bulkClientId} onChange={e => setBulkClientId(e.target.value)}
+                      className="w-full bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] rounded-lg px-3 py-2 text-xs font-sans text-[var(--pm-text-primary)] focus:outline-none focus:border-[var(--pm-accent-gold)] transition-colors cursor-pointer"
+                    >
+                      {clients.map(c => (<option key={c.id} value={c.id}>{c.name}</option>))}
+                    </select>
+
+                    {/* Dropzone */}
+                    <div ref={dropRef} onDragOver={e => { e.preventDefault(); setDragOver(true); }} onDragLeave={() => setDragOver(false)}
+                      onDrop={e => { e.preventDefault(); setDragOver(false); const f = e.dataTransfer.files[0]; if (f && (f.name.endsWith('.xlsx') || f.name.endsWith('.xls'))) setBulkFile(f); }}
+                      className={`relative border-2 border-dashed rounded-xl p-6 text-center transition-all cursor-pointer ${dragOver ? 'border-[var(--pm-accent-gold)] bg-[var(--pm-accent-gold)]/5' : 'border-[var(--pm-border)] hover:border-[var(--pm-text-dim)]/30'}`}
+                      onClick={() => document.getElementById('bulk-file-input')?.click()}
+                    >
+                      <input id="bulk-file-input" type="file" accept=".xlsx,.xls" className="hidden" onChange={e => setBulkFile(e.target.files?.[0] || null)} />
+                      <Upload className={`w-6 h-6 mx-auto mb-2 ${dragOver ? 'text-[var(--pm-accent-gold)]' : 'text-[var(--pm-text-dim)]'}`} />
+                      <p className="text-[11px] font-mono text-[var(--pm-text-dim)]">
+                        {bulkFile ? <span className="text-[var(--pm-accent-amber)] font-bold">{bulkFile.name}</span> : 'Arrastra un archivo .xlsx o haz clic para seleccionar'}
+                      </p>
+                      <p className="text-[9px] font-mono text-[var(--pm-text-dim)]/50 mt-1">Tamaño máximo: 10 MB</p>
+                    </div>
+
+                    <div className="flex gap-2">
+                      <button type="button" onClick={downloadTemplate}
+                        className="flex-1 py-2 rounded-lg border border-[var(--pm-border)] text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] hover:bg-[var(--pm-bg-tertiary)] text-[10px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1.5"
+                      ><Download className="w-3 h-3" /> Plantilla</button>
+                      <button type="button" onClick={handleBulkUpload} disabled={!bulkFile || bulkUploadMutation.isPending}
+                        className="flex-1 py-2 rounded-lg text-[10px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer disabled:opacity-40 flex items-center justify-center gap-1.5"
+                        style={{
+                          background: bulkFile ? 'rgba(212,175,55,0.12)' : 'transparent',
+                          color: 'var(--pm-accent-amber)', border: '1px solid rgba(212,175,55,0.2)',
+                        }}
+                      >{bulkUploadMutation.isPending ? 'Subiendo...' : <><Upload className="w-3 h-3" /> Subir</>}</button>
+                    </div>
+
+                    {bulkError && <p className="text-[10px] font-mono text-[var(--pm-accent-red)]">{bulkError}</p>}
+                    {bulkResult && (
+                      <div className="p-3 rounded-lg border text-[10px] font-mono bg-[var(--pm-accent-emerald)]/5 border-[var(--pm-accent-emerald)]/20 text-[var(--pm-accent-emerald)]">
+                        <Check className="w-3 h-3 inline mr-1" /> Creadas: <strong>{bulkResult.created}</strong> | Saltadas: <strong>{bulkResult.skipped}</strong>
+                        {bulkResult.errors.length > 0 && (
+                          <div className="mt-2 max-h-24 overflow-y-auto space-y-0.5">
+                            {bulkResult.errors.map((e, i) => (
+                              <div key={i} className="text-[var(--pm-accent-red)] text-[9px]">Fila {e.row}: {e.message}</div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
+        </div>
+
+        {/* ═══════ RIGHT PANEL: Inventory ═══════ */}
+        <motion.div initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.15, duration: 0.4 }}
+          className="premium-card overflow-hidden"
+        >
+          {/* Search */}
+          <div className="flex items-center gap-3 px-5 py-3 border-b border-[var(--pm-border)]">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[var(--pm-text-dim)]/40" />
+              <input type="text" placeholder="Buscar barra por código..." value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                className="w-full bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] rounded-lg pl-9 pr-3 py-2 text-xs font-mono text-[var(--pm-text-primary)] focus:outline-none focus:border-[var(--pm-accent-gold)] transition-colors placeholder:text-[var(--pm-text-dim)]/30"
+              />
+            </div>
+            <span className="text-[10px] font-mono text-[var(--pm-text-dim)] whitespace-nowrap">{totalBars} barras</span>
+          </div>
+
+          {/* Accordion list */}
+          <div className="divide-y divide-[var(--pm-border)] overflow-y-auto max-h-[calc(100vh-280px)] v2-scroll">
+            {clients.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 text-[var(--pm-text-dim)]">
+                <Package className="w-10 h-10 text-[var(--pm-accent-gold)]/20 mb-3 animate-pulse" />
+                <span className="text-sm font-sans">Sin proveedores registrados</span>
               </div>
             ) : (
-              <div className="space-y-4">
-                {clients.map(client => {
-                  const groupBars = barsByClient[client.id] || [];
-                  const isExpanded = openAccordions[client.id];
-                  const totalW = groupBars.reduce((sum, b) => sum + Number(b.grossWeight), 0);
-                  const totalFA = groupBars.reduce((sum, b) => sum + Number(b.fineWeight), 0);
+              clients.map(client => {
+                const clientBars = barsByClient[client.id] || [];
+                const isOpen = openAccordions[client.id] ?? true;
+                const barCount = clientBars.length;
+                const clientFA = clientBars.reduce((s, b) => s + Number(b.fineWeight), 0);
+                const currentPage = accordionPages[client.id] || 0;
+                const totalPages = Math.ceil(barCount / PAGE_SIZE) || 1;
+                const pageBars = clientBars.slice(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE);
 
-                  return (
-                    <div key={client.id} className="bg-[var(--tac-bg-secondary)] border border-[var(--tac-border)]">
-                      <button
-                        onClick={() => toggleAccordion(client.id)}
-                        className="w-full px-4 py-3 flex items-center justify-between text-left hover:bg-[var(--tac-bg-tertiary)] transition-colors active:scale-[0.99]"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="w-7 h-7 border border-[var(--tac-accent-cyan)]/30 bg-[var(--tac-bg-primary)] flex items-center justify-center font-bold text-[10px] text-[var(--tac-accent-cyan)]">
-                            {client.name.charAt(0)}
-                          </div>
-                          <div>
-                            <span className="text-[10px] font-mono font-bold text-[var(--tac-text-primary)] uppercase tracking-wider">
-                              {client.name}
-                            </span>
-                            <span className="text-[8px] font-mono text-[var(--tac-text-dim)] ml-2">
-                              {formatRif(client.rif)}
-                            </span>
-                          </div>
+                return (
+                  <div key={client.id}>
+                    {/* Accordion header */}
+                    <button type="button" onClick={() => toggleAccordion(client.id)}
+                      className="w-full flex items-center justify-between px-5 py-3.5 hover:bg-[var(--pm-bg-tertiary)]/50 active:scale-[0.99] transition-all cursor-pointer"
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        {isOpen ? <ChevronDown className="w-3.5 h-3.5 shrink-0 text-[var(--pm-accent-gold)]" /> : <ChevronUp className="w-3.5 h-3.5 shrink-0 text-[var(--pm-text-dim)]" />}
+                        <div className="text-left min-w-0">
+                          <span className="text-xs font-sans font-semibold text-[var(--pm-text-primary)] truncate block">{client.name}</span>
+                          <span className="text-[9px] font-mono text-[var(--pm-text-dim)]">{barCount} barras · FA: {formatNumber(clientFA, 2)} g</span>
                         </div>
-                        <div className="flex items-center gap-3">
-                          <div className="text-right hidden sm:block">
-                            <span className="text-[8px] text-[var(--tac-text-dim)]/50 block uppercase font-mono">BRUTO / FA</span>
-                            <span className="text-[9px] font-mono font-bold text-[var(--tac-accent-amber)]">
-                              {formatWeight(totalW, 'kg')} / {formatWeight(totalFA, 'kg')}
-                            </span>
-                          </div>
-                          <span className="text-[9px] font-mono text-[var(--tac-text-dim)] bg-[var(--tac-bg-primary)] border border-[var(--tac-border)] px-2 py-0.5">
-                            {groupBars.length} u
-                          </span>
-                          {isExpanded ? (
-                            <ChevronUp className="w-3 h-3 text-[var(--tac-text-dim)]" />
+                      </div>
+                      <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded ${barCount > 0 ? 'text-[var(--pm-accent-gold)] bg-[var(--pm-accent-gold)]/10' : 'text-[var(--pm-text-dim)] bg-[var(--pm-bg-tertiary)]'}`}>
+                        {barCount} uds
+                      </span>
+                    </button>
+
+                    {/* Accordion content */}
+                    <AnimatePresence>
+                      {isOpen && (
+                        <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }}>
+                          {barCount === 0 ? (
+                            <div className="px-5 pb-4 text-[10px] font-mono text-[var(--pm-text-dim)]/50 italic">Sin barras registradas</div>
                           ) : (
-                            <ChevronDown className="w-3 h-3 text-[var(--tac-text-dim)]" />
-                          )}
-                        </div>
-                      </button>
+                            <div className="px-0 pb-2">
+                              <table className="premium-table w-full">
+                                <thead>
+                                  <tr>
+                                    <th className="text-center">Código</th>
+                                    <th className="text-right">Bruto (g)</th>
+                                    <th className="text-right">FA (g)</th>
+                                    <th className="text-right">FE (g)</th>
+                                    <th className="text-right hidden md:table-cell">Ag (g)</th>
+                                    <th className="text-center">Estado</th>
+                                    <th className="text-center">Acción</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {pageBars.map((bar, idx) => (
+                                    <motion.tr key={bar.id} initial={{ opacity: 0, x: -4 }} animate={{ opacity: 1, x: 0 }}
+                                      transition={{ delay: idx * 0.02, duration: 0.15 }}
+                                      className="odd:bg-[var(--pm-bg-deepest)]/30 hover:bg-[var(--pm-bg-tertiary)]/40 transition-all duration-150"
+                                    >
+                                      <td className="text-center font-mono font-bold text-[var(--pm-accent-gold)] tracking-wider text-[11px]">{bar.barNumber}</td>
+                                      <td className="text-right font-mono text-[var(--pm-text-primary)]">{formatNumber(Number(bar.grossWeight), 2)}</td>
+                                      <td className="text-right font-mono text-[var(--pm-text-primary)]">{formatNumber(Number(bar.fineWeight), 4)}</td>
+                                      <td className="text-right font-mono text-[var(--pm-text-dim)]">{formatNumber(Number(bar.fineWeight) * 0.99, 4)}</td>
+                                      <td className="text-right font-mono text-[var(--pm-text-dim)] hidden md:table-cell">{bar.fineWeightAg ? formatNumber(Number(bar.fineWeightAg), 4) : '—'}</td>
+                                      <td className="text-center">
+                                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-[8px] font-mono font-bold border rounded ${STATUS_STYLES[bar.status] || ''}`}>
+                                          {STATUS_LABELS[bar.status] || bar.status}
+                                        </span>
+                                      </td>
+                                      <td className="text-center">
+                                        <button type="button" onClick={() => setConfirmDeleteId(bar.id)}
+                                          disabled={bar.status !== 'IN_STOCK'}
+                                          className={`p-1 rounded transition-all ${bar.status === 'IN_STOCK' ? 'text-[var(--pm-text-dim)] hover:text-[var(--pm-accent-red)] hover:bg-[var(--pm-accent-red)]/10 active:scale-90 cursor-pointer' : 'opacity-20 cursor-not-allowed'}`}
+                                          title="Eliminar barra"
+                                        ><Trash2 className="w-3.5 h-3.5" /></button>
+                                      </td>
+                                    </motion.tr>
+                                  ))}
+                                </tbody>
+                              </table>
 
-                      {isExpanded && (
-                        <div className="border-t border-[var(--tac-border)] bg-[var(--tac-bg-primary)]/30">
-                          {groupBars.length === 0 ? (
-                            <div className="text-center py-6 text-[10px] font-mono text-[var(--tac-text-dim)]">
-                              NO HAY BARRAS REGISTRADAS PARA ESTE CLIENTE
+                              {/* Pagination */}
+                              {totalPages > 1 && (
+                                <div className="flex items-center justify-between px-5 py-2 border-t border-[var(--pm-border)]">
+                                  <span className="text-[9px] font-mono text-[var(--pm-text-dim)]">
+                                    Pág. {currentPage + 1} de {totalPages}
+                                  </span>
+                                  <div className="flex gap-1">
+                                    <button type="button" onClick={() => setAccordionPage(client.id, Math.max(0, currentPage - 1))}
+                                      disabled={currentPage === 0}
+                                      className="px-2.5 py-1 rounded text-[9px] font-mono border border-[var(--pm-border)] text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] hover:bg-[var(--pm-bg-tertiary)] transition-all disabled:opacity-30 active:scale-95 cursor-pointer"
+                                    >Anterior</button>
+                                    <button type="button" onClick={() => setAccordionPage(client.id, Math.min(totalPages - 1, currentPage + 1))}
+                                      disabled={currentPage >= totalPages - 1}
+                                      className="px-2.5 py-1 rounded text-[9px] font-mono border border-[var(--pm-border)] text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] hover:bg-[var(--pm-bg-tertiary)] transition-all disabled:opacity-30 active:scale-95 cursor-pointer"
+                                    >Siguiente</button>
+                                  </div>
+                                </div>
+                              )}
                             </div>
-                          ) : (
-                            <ScannerTable
-                              columns={columns}
-                              data={groupBars}
-                              keyExtractor={b => b.id}
-                              emptyMessage="NO HAY BARRAS"
-                            />
                           )}
-                        </div>
+                        </motion.div>
                       )}
-                    </div>
-                  );
-                })}
-              </div>
+                    </AnimatePresence>
+                  </div>
+                );
+              })
             )}
-          </TacticalCard>
-
-          {/* Metrics Row */}
-          <MetricsHUD
-            items={[
-              {
-                key: 'total-bars',
-                label: 'TOTAL BARRAS',
-                value: `${totalBars} u`,
-                accent: 'cyan',
-              },
-              {
-                key: 'total-gross',
-                label: 'MASA BRUTA',
-                value: formatWeight(totalGrossWeight, 'kg'),
-                accent: 'cyan',
-              },
-              {
-                key: 'total-fa',
-                label: 'TOTAL FA AU',
-                value: formatWeight(totalFineWeight, 'kg'),
-                accent: 'amber',
-              },
-              {
-                key: 'avg-purity',
-                label: 'PUREZA PROMEDIO',
-                value: bars.length > 0
-                  ? `${(bars.reduce((s, b) => s + Number(b.purity), 0) / bars.length).toFixed(0)}‰`
-                  : '—',
-                accent: 'green',
-              },
-            ]}
-            cols={4}
-          />
+          </div>
         </motion.div>
       </div>
 
-      {/* Ingest Success Overlay */}
+      {/* Ingest status overlay */}
       <AnimatePresence>
-        {ingestSuccess && (
-          <motion.div
-            key="ingest-success"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+        {ingestStatus && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4"
           >
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="w-full max-w-sm"
+            <motion.div initial={{ opacity: 0, scale: 0.92 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.92 }}
+              className="w-full max-w-xs glass-panel rounded-2xl overflow-hidden p-8 flex flex-col items-center gap-4"
             >
-              <TacticalCard accent="green" className="shadow-[0_0_40px_rgba(57,255,20,0.08)]">
-                <div className="flex flex-col items-center py-6 space-y-4 text-center">
-                  <motion.div
-                    initial={{ scale: 0, rotate: -180 }}
-                    animate={{ scale: 1, rotate: 0 }}
-                    transition={{ type: 'spring', stiffness: 200, damping: 12 }}
-                    className="w-14 h-14 border-2 border-[var(--tac-accent-green)]/40 flex items-center justify-center"
-                  >
-                    <Check className="w-7 h-7 text-[var(--tac-accent-green)]" strokeWidth={2.5} />
-                  </motion.div>
-                  <div>
-                    <span className="text-[9px] font-mono font-bold text-[var(--tac-accent-green)] uppercase tracking-[0.15em]">
-                      INGESTA COMPLETA
-                    </span>
-                    <h3 className="text-sm font-mono font-bold text-[var(--tac-text-primary)] mt-1">
-                      {ingestSuccess.barNumber}
-                    </h3>
-                  </div>
-                  <p className="text-[10px] font-mono text-[var(--tac-text-dim)]">
-                    BARRA REGISTRADA EN EL SISTEMA
-                  </p>
-                </div>
-              </TacticalCard>
+              {ingestStatus.status === 'ingesting' ? (
+                <><div className="w-10 h-10 border-2 border-[var(--pm-accent-gold)] border-t-transparent rounded-full animate-spin" />
+                  <div className="text-center"><span className="text-xs font-mono text-[var(--pm-text-dim)]">Registrando</span>
+                    <p className="text-sm font-mono font-bold text-[var(--pm-accent-gold)]">{ingestStatus.barNumber}</p></div></>
+              ) : (
+                <><div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ background: 'rgba(16,185,129,0.1)', border: '2px solid rgba(16,185,129,0.25)' }}>
+                  <Check className="w-7 h-7 text-[var(--pm-accent-emerald)]" strokeWidth={2.5} /></div>
+                  <div className="text-center"><span className="text-sm font-sans font-bold text-[var(--pm-accent-emerald)]">Barra Registrada</span>
+                    <p className="text-xs font-mono text-[var(--pm-text-dim)] mt-1">{ingestStatus.barNumber}</p></div></>
+              )}
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Delete Confirmation */}
+      {/* Delete confirm modal */}
       <AnimatePresence>
         {confirmDeleteId && (() => {
           const target = bars.find(b => b.id === confirmDeleteId);
-          if (!target) return null;
           return (
-            <motion.div
-              key="delete-modal"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+            <motion.div key="del-modal" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
             >
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.2 }}
-                className="w-full max-w-md"
+              <motion.div initial={{ opacity: 0, scale: 0.92, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.92, y: 10 }} transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+                className="w-full max-w-sm glass-panel rounded-2xl overflow-hidden p-6 space-y-4"
               >
-                <TacticalCard accent="red" className="shadow-[0_0_40px_rgba(255,51,85,0.12)]">
-                  <div className="space-y-4 text-center">
-                    <div className="w-10 h-10 mx-auto border-2 border-[var(--tac-accent-red)] flex items-center justify-center">
-                      <span className="text-[var(--tac-accent-red)] font-mono font-bold text-lg">!</span>
-                    </div>
-                    <div>
-                      <span className="text-[9px] font-mono font-bold text-[var(--tac-accent-red)] uppercase tracking-[0.15em]">
-                        ADVERTENCIA
-                      </span>
-                      <h3 className="text-sm font-mono font-bold text-[var(--tac-text-primary)] mt-1">
-                        ELIMINAR BARRA DEL REGISTRO
-                      </h3>
-                    </div>
-                    <div className="bg-[var(--tac-bg-primary)] p-3 space-y-1 text-[10px] font-mono text-left">
-                      <div className="flex justify-between">
-                        <span className="text-[var(--tac-text-dim)]">BARRA:</span>
-                        <span className="text-[var(--tac-accent-cyan)] font-bold">{target.barNumber}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-[var(--tac-text-dim)]">PESO:</span>
-                        <span className="text-[var(--tac-text-primary)] font-bold">{formatWeight(Number(target.grossWeight), 'kg')}</span>
-                      </div>
-                    </div>
-                    <p className="text-[10px] font-mono text-[var(--tac-text-dim)] leading-relaxed">
-                      Esta acción no se puede deshacer.
-                    </p>
-                    <div className="flex gap-2 pt-1">
-                      <HudButton variant="ghost" onClick={() => setConfirmDeleteId(null)} className="flex-1">
-                        CANCELAR
-                      </HudButton>
-                      <HudButton variant="danger" prefix="!" onClick={() => handleDeleteBar(confirmDeleteId)} className="flex-1">
-                        CONFIRMAR
-                      </HudButton>
-                    </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)' }}>
+                    <AlertTriangle className="w-4 h-4 text-[var(--pm-accent-red)]" />
                   </div>
-                </TacticalCard>
+                  <div>
+                    <span className="text-[9px] font-mono font-bold text-[var(--pm-accent-red)] uppercase tracking-wider">Eliminar Barra</span>
+                    <p className="text-xs font-sans font-semibold text-[var(--pm-text-primary)] mt-0.5">{target?.barNumber || ''}</p>
+                  </div>
+                </div>
+                <p className="text-xs text-[var(--pm-text-dim)] font-sans leading-relaxed">
+                  ¿Eliminar definitivamente esta barra del registro? Esta acción no se puede deshacer.
+                </p>
+                <div className="flex gap-3 pt-1">
+                  <button type="button" onClick={() => setConfirmDeleteId(null)}
+                    className="flex-1 py-2.5 rounded-lg border border-[var(--pm-border)] text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] hover:bg-[var(--pm-bg-tertiary)] text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer"
+                  >Cancelar</button>
+                  <button type="button" onClick={() => handleDeleteBar(confirmDeleteId)}
+                    className="flex-1 py-2.5 rounded-lg text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer"
+                    style={{ background: 'rgba(239,68,68,0.15)', color: 'var(--pm-accent-red)', border: '1px solid rgba(239,68,68,0.3)' }}
+                  ><Trash2 className="w-3.5 h-3.5 inline mr-1" /> Eliminar</button>
+                </div>
               </motion.div>
             </motion.div>
           );
@@ -1084,128 +654,28 @@ export default function IngresosPage() {
       {/* Delete status overlay */}
       <AnimatePresence>
         {deleteStatus !== 'idle' && (
-          <motion.div
-            key="delete-status"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          <motion.div key="del-status" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[60] flex items-center justify-center p-4"
           >
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="w-full max-w-sm"
+            <motion.div initial={{ opacity: 0, scale: 0.92 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.92 }}
+              className="w-full max-w-xs glass-panel rounded-2xl p-8 flex flex-col items-center gap-4"
             >
-              <TacticalCard accent={deleteStatus === 'deleting' ? 'amber' : deleteStatus === 'success' ? 'green' : 'red'}>
-                <div className="flex flex-col items-center py-4 space-y-3">
-                  {deleteStatus === 'deleting' && (
-                    <>
-                      <span className="w-8 h-8 border-2 border-[var(--tac-accent-amber)] border-t-transparent rounded-full animate-spin" />
-                      <span className="text-[10px] font-mono text-[var(--tac-text-dim)]">ELIMINANDO BARRA...</span>
-                    </>
-                  )}
-                  {deleteStatus === 'success' && (
-                    <>
-                      <Check className="w-8 h-8 text-[var(--tac-accent-green)]" />
-                      <span className="text-[10px] font-mono text-[var(--tac-accent-green)]">BARRA ELIMINADA</span>
-                    </>
-                  )}
-                  {deleteStatus === 'error' && (
-                    <>
-                      <span className="text-[var(--tac-accent-red)] font-mono font-bold text-lg">!</span>
-                      <span className="text-[10px] font-mono text-[var(--tac-accent-red)]">ERROR AL ELIMINAR</span>
-                    </>
-                  )}
-                </div>
-              </TacticalCard>
+              {deleteStatus === 'deleting' ? (
+                <><div className="w-10 h-10 border-2 border-[var(--pm-accent-red)] border-t-transparent rounded-full animate-spin" />
+                  <span className="text-xs font-mono text-[var(--pm-text-dim)]">Eliminando...</span></>
+              ) : (
+                <><div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ background: 'rgba(16,185,129,0.1)', border: '2px solid rgba(16,185,129,0.25)' }}>
+                  <Check className="w-7 h-7 text-[var(--pm-accent-emerald)]" strokeWidth={2.5} /></div>
+                  <span className="text-sm font-sans font-bold text-[var(--pm-accent-emerald)]">Barra Eliminada</span></>
+              )}
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Bulk result overlay */}
-      <AnimatePresence>
-        {bulkResult && (
-          <motion.div
-            key="bulk-result"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-          >
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="w-full max-w-md"
-            >
-              <TacticalCard accent={bulkResult.errors.length > 0 ? 'amber' : 'green'}>
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 border-2 flex items-center justify-center ${bulkResult.errors.length > 0 ? 'border-[var(--tac-accent-amber)]/40' : 'border-[var(--tac-accent-green)]/40'}`}>
-                      {bulkResult.errors.length > 0
-                        ? <AlertTriangle className="w-5 h-5 text-[var(--tac-accent-amber)]" />
-                        : <Check className="w-5 h-5 text-[var(--tac-accent-green)]" />
-                      }
-                    </div>
-                    <div>
-                      <span className={`text-[9px] font-mono px-2 py-0.5 font-bold uppercase tracking-[0.12em] border ${bulkResult.errors.length > 0 ? 'text-[var(--tac-accent-amber)] border-[var(--tac-accent-amber)]/30' : 'text-[var(--tac-accent-green)] border-[var(--tac-accent-green)]/30'}`}>
-                        {bulkResult.errors.length > 0 ? 'CARGA PARCIAL' : 'CARGA EXITOSA'}
-                      </span>
-                      <h3 className="text-xs font-mono font-bold text-[var(--tac-text-primary)] mt-1">RESULTADO DE CARGA MASIVA</h3>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="bg-[var(--tac-bg-primary)] border border-[var(--tac-border)] p-3 text-center">
-                      <span className="text-[8px] text-[var(--tac-text-dim)] font-mono uppercase block">CREADAS</span>
-                      <strong className="text-lg font-bold text-[var(--tac-accent-green)]">{bulkResult.created}</strong>
-                    </div>
-                    <div className="bg-[var(--tac-bg-primary)] border border-[var(--tac-border)] p-3 text-center">
-                      <span className="text-[8px] text-[var(--tac-text-dim)] font-mono uppercase block">ERRORES</span>
-                      <strong className="text-lg font-bold text-[var(--tac-accent-amber)]">{bulkResult.errors.length}</strong>
-                    </div>
-                  </div>
-
-                  {bulkResult.errors.length > 0 && (
-                    <div className="space-y-1 max-h-32 overflow-y-auto">
-                      <span className="text-[9px] font-mono text-[var(--tac-text-dim)] uppercase">DETALLE DE ERRORES</span>
-                      {bulkResult.errors.map((err, i) => (
-                        <div key={i} className="p-1.5 border border-[var(--tac-accent-red)]/30 text-[9px] font-mono text-[var(--tac-accent-red)] bg-[var(--tac-accent-red)]/5">
-                          FILA {err.row}: {err.message}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  <div className="flex justify-end">
-                    <HudButton variant="primary" onClick={() => setBulkResult(null)}>
-                      ACEPTAR
-                    </HudButton>
-                  </div>
-                </div>
-              </TacticalCard>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* System Status Footer */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.5 }}
-        className="flex items-center gap-3 text-[8px] font-mono text-[var(--tac-text-dim)] border-t border-[var(--tac-border)] pt-3"
-      >
-        <span className="flex items-center gap-1">
-          <span className="w-1 h-1 rounded-full bg-[var(--tac-accent-green)] animate-pulse" />
-          DB ONLINE
-        </span>
-        <span>{totalBars} BARRAS EN BÓVEDA</span>
-        <span>{formatWeight(totalFineWeight, 'kg')} FA TOTAL</span>
-        <span>{clients.length} PROVEEDORES</span>
-      </motion.div>
+      <p className="text-[9px] text-[var(--pm-text-dim)] font-mono text-center opacity-50">
+        Datos actualizados en tiempo real · Bandes v2 Premium · {totalBars} barras · {formatNumber(totalFineWeight, 2)} g FA
+      </p>
     </motion.div>
   );
 }

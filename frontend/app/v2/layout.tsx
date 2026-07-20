@@ -1,54 +1,36 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { usePathname } from 'next/navigation';
-import { TacticalSidebar } from '@/components/tactical/TacticalSidebar';
-import { UIModeProvider } from '@/context/UIModeContext';
-import { RoleProvider, useRole } from '@/context/RoleContext';
-import { Calendar, Shield, ShieldCheck } from 'lucide-react';
+import { usePathname, useRouter } from 'next/navigation';
+import Link from 'next/link';
+import {
+  LayoutDashboard, Users, ClipboardList, Flame,
+  ArrowLeftRight, FileText, FolderUp, Coins, LogOut,
+  Calendar, ArrowLeftRight as ModeIcon
+} from 'lucide-react';
 
-function RoleBadge() {
-  const { role, setRole } = useRole();
-  const [open, setOpen] = useState(false);
-  const roles = ['ADMIN', 'OWNER', 'SUPERADMIN'] as const;
-  return (
-    <div className="relative">
-      <button
-        onClick={() => setOpen(!open)}
-        className="flex items-center gap-1.5 px-2 py-1 border border-[var(--tac-border)] text-[9px] font-mono text-[var(--tac-text-dim)] hover:border-[var(--tac-accent-cyan)]/40 transition-colors"
-      >
-        {role === 'SUPERADMIN' ? <ShieldCheck className="w-3 h-3 text-[var(--tac-accent-amber)]" /> : <Shield className="w-3 h-3 text-[var(--tac-text-dim)]" />}
-        {role}
-      </button>
-      {open && (
-        <div className="absolute right-0 top-full mt-1 bg-[var(--tac-bg-secondary)] border border-[var(--tac-border)] shadow-lg z-50 min-w-[140px]">
-          {roles.map(r => (
-            <button
-              key={r}
-              onClick={() => { setRole(r); setOpen(false); }}
-              className={`block w-full text-left px-3 py-1.5 text-[10px] font-mono transition-colors ${role === r ? 'text-[var(--tac-accent-cyan)] bg-[var(--tac-bg-tertiary)]' : 'text-[var(--tac-text-dim)] hover:text-[var(--tac-text-primary)] hover:bg-[var(--tac-bg-tertiary)]/50'}`}
-            >
-              {r === 'SUPERADMIN' && <><ShieldCheck className="w-3 h-3 inline mr-1 text-[var(--tac-accent-amber)]" /></>}
-              {r === 'OWNER' && <><Shield className="w-3 h-3 inline mr-1 text-[var(--tac-accent-cyan)]" /></>}
-              {r === 'ADMIN' && <><Shield className="w-3 h-3 inline mr-1 text-[var(--tac-text-dim)]" /></>}
-              {r}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
+const menuItems = [
+  { id: 'dashboard', name: 'Dashboard', icon: LayoutDashboard },
+  { id: 'clientes', name: 'Clientes', icon: Users },
+  { id: 'ingresos', name: 'Ingresos', icon: ClipboardList },
+  { id: 'procesos', name: 'Procesos', icon: Flame },
+  { id: 'egresos', name: 'Egresos', icon: ArrowLeftRight },
+  { id: 'packing', name: 'Packing', icon: FolderUp },
+  { id: 'reportes', name: 'Reportes', icon: FileText },
+];
 
-export default function TacticalLayout({ children }: { children: React.ReactNode }) {
-  const currentPath = usePathname();
-  const activeSection = currentPath.split('/').pop() || 'DASHBOARD';
+export default function V2Layout({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  const router = useRouter();
+  const activeTab = pathname.split('/').pop() || 'dashboard';
   const [sysTime, setSysTime] = useState('');
 
   useEffect(() => {
     const tick = () => {
       const now = new Date();
-      setSysTime(now.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }));
+      setSysTime(now.toLocaleTimeString('es-ES', {
+        hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false,
+      }));
     };
     tick();
     const interval = setInterval(tick, 1000);
@@ -56,56 +38,107 @@ export default function TacticalLayout({ children }: { children: React.ReactNode
   }, []);
 
   return (
-    <UIModeProvider>
-    <RoleProvider>
-    <div className="min-h-screen bg-[var(--tac-bg-primary)] text-[var(--tac-text-primary)] font-sans flex overflow-hidden">
-      <TacticalSidebar />
+    <div className="v2-premium min-h-screen text-[var(--pm-text-primary)] font-sans flex overflow-hidden">
+      {/* Sidebar */}
+      <aside className="v2-sidebar">
+        {/* Logo */}
+        <div className="flex items-center gap-3 h-16 px-5 shrink-0 border-b border-[var(--pm-border)]">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[var(--pm-accent-gold)] to-amber-700 flex items-center justify-center">
+            <Coins className="w-4 h-4 text-[var(--pm-bg-deepest)]" />
+          </div>
+          <span className="text-sm font-mono font-bold text-[var(--pm-accent-gold)] tracking-widest">
+            BANDES
+          </span>
+        </div>
 
-      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden lg:ml-14">
-        {/* HUD Header */}
-        <header className="h-12 border-b border-[var(--tac-border)] bg-[var(--tac-bg-primary)]/90 backdrop-blur-md flex items-center justify-between px-4 shrink-0 z-30">
+        {/* Nav */}
+        <nav className="flex-1 flex flex-col gap-0.5 py-4 overflow-y-auto">
+          {menuItems.map(item => {
+            const IconComponent = item.icon;
+            const isActive = activeTab === item.id;
+            const href = `/v2/${item.id}`;
+            return (
+              <Link
+                key={item.id}
+                href={href}
+                className={`
+                  nav-item group ${isActive ? 'active' : ''}
+                  active:scale-[0.97] transition-all duration-150
+                `}
+              >
+                <IconComponent className={`w-4 h-4 shrink-0 ${isActive ? 'text-[var(--pm-accent-gold)]' : 'text-[var(--pm-text-dim)] group-hover:text-[var(--pm-text-primary)]'}`} />
+                <span>{item.name}</span>
+                {isActive && (
+                  <span className="ml-auto w-1.5 h-1.5 rounded-full bg-[var(--pm-accent-gold)] animate-pulse" />
+                )}
+              </Link>
+            );
+          })}
+        </nav>
+
+        {/* Bottom */}
+        <div className="px-3 py-4 border-t border-[var(--pm-border)] space-y-1">
+          <button
+            onClick={() => {
+              localStorage.setItem('bandes_ui_mode', 'classic');
+              router.push('/dashboard');
+            }}
+            className="nav-item w-full text-[10px] active:scale-95"
+          >
+            <ModeIcon className="w-3.5 h-3.5 shrink-0" />
+            <span>Modo Clásico</span>
+          </button>
+          <button className="nav-item w-full text-[10px] active:scale-95">
+            <LogOut className="w-3.5 h-3.5 shrink-0" />
+            <span>Salir</span>
+          </button>
+        </div>
+      </aside>
+
+      {/* Main area */}
+      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
+        {/* Header */}
+        <header className="h-14 shrink-0 flex items-center justify-between px-6 border-b border-[var(--pm-border)] bg-[var(--pm-bg-primary)]/80 backdrop-blur-md">
           <div className="flex items-center gap-3">
-            <span className="text-[9px] font-mono font-bold text-[var(--tac-accent-cyan)] uppercase tracking-[0.2em]">
-              {'>'} {activeSection}
+            <span className="text-[10px] font-mono font-bold text-[var(--pm-accent-gold)] uppercase tracking-[0.15em]">
+              / {activeTab}
             </span>
           </div>
-
-          <div className="flex items-center gap-3">
-            <RoleBadge />
-            <div className="flex items-center gap-1.5 px-2 py-1 border border-[var(--tac-border)]">
-              <Calendar className="w-3 h-3 text-[var(--tac-accent-cyan)]" />
-              <span className="text-[10px] font-mono text-[var(--tac-text-dim)]">
-                {new Date().toLocaleDateString('es-ES', { year: 'numeric', month: '2-digit', day: '2-digit' })}
-              </span>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-1.5 px-2.5 py-1 border border-[var(--pm-border)] rounded-md">
+              <span className="w-1.5 h-1.5 rounded-full bg-[var(--pm-accent-emerald)] animate-pulse" />
+              <span className="text-[10px] font-mono text-[var(--pm-text-dim)]">{sysTime}</span>
             </div>
-            <div className="flex items-center gap-1.5 px-2 py-1 border border-[var(--tac-border)]">
-              <span className="w-1.5 h-1.5 rounded-full bg-[var(--tac-accent-green)] animate-pulse" />
-              <span className="text-[10px] font-mono text-[var(--tac-text-dim)]">{sysTime}</span>
+            <div className="flex items-center gap-2 px-2.5 py-1 border border-[var(--pm-border)] rounded-md">
+              <Calendar className="w-3 h-3 text-[var(--pm-accent-gold)]" />
+              <span className="text-[10px] font-mono text-[var(--pm-text-dim)]">
+                {new Date().toLocaleDateString('es-ES', {
+                  year: 'numeric', month: '2-digit', day: '2-digit',
+                })}
+              </span>
             </div>
           </div>
         </header>
 
         {/* Content */}
-        <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-[var(--tac-bg-primary)]">
-          <div className="max-w-7xl mx-auto space-y-6">
+        <main className="flex-1 overflow-y-auto v2-scroll">
+          <div className="max-w-7xl mx-auto p-6 md:p-8 space-y-8">
             {children}
           </div>
         </main>
 
         {/* Status bar */}
-        <footer className="h-6 border-t border-[var(--tac-border)] bg-[var(--tac-bg-primary)] flex items-center px-4 shrink-0">
-          <div className="flex items-center gap-3 text-[8px] font-mono text-[var(--tac-text-dim)]">
+        <footer className="h-7 shrink-0 flex items-center px-6 border-t border-[var(--pm-border)] bg-[var(--pm-bg-primary)]">
+          <div className="flex items-center gap-4 text-[8px] font-mono text-[var(--pm-text-dim)]">
             <span className="flex items-center gap-1">
-              <span className="w-1 h-1 rounded-full bg-[var(--tac-accent-green)]" />
-              SYS OK
+              <span className="w-1 h-1 rounded-full bg-[var(--pm-accent-emerald)]" />
+              SYS ONLINE
             </span>
-            <span>BANDES v2.0 TACTICAL</span>
-            <span>API: localhost:3001</span>
+            <span className="hidden sm:inline">BANDES v2 Premium</span>
+            <span className="hidden md:inline">API: localhost:3001</span>
           </div>
         </footer>
       </div>
     </div>
-    </RoleProvider>
-    </UIModeProvider>
   );
 }

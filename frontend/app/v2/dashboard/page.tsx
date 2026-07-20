@@ -3,231 +3,291 @@
 import React, { useMemo } from 'react';
 import { motion } from 'motion/react';
 import { useBars } from '@/hooks/useBars';
-import { useMaterialExits } from '@/hooks/useExits';
 import { useClients } from '@/hooks/useClients';
+import { useMaterialExits } from '@/hooks/useExits';
+import { useProcesses } from '@/hooks/useProcesses';
 import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
+import {
+  ClipboardList, Flame, Warehouse, TrendingDown,
+  Coins, Scale, Pickaxe,
+} from 'lucide-react';
+import { AreaChart, Area, ResponsiveContainer } from 'recharts';
+import { formatNumber } from '@/lib/format';
 import { useGoldTraceability } from '@/context/GoldTraceabilityContext';
-import { formatWeight } from '@/lib/format';
-import { MetricsHUD, type MetricItem } from '@/components/tactical/MetricsHUD';
-import { ScannerTable, type ColumnDef } from '@/components/tactical/ScannerTable';
-import { TacticalCard } from '@/components/tactical/TacticalCard';
-import { TerminalPanel } from '@/components/tactical/TerminalPanel';
 
-export default function TacticalDashboardPage() {
+function SparklineArea({ data, color, id }: { data: number[]; color: string; id: string }) {
+  const chartData = data.map((v, i) => ({ i, v }));
+  return (
+    <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-[inherit] opacity-40">
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart data={chartData} margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
+          <defs>
+            <linearGradient id={`spark-${id}`} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={color} stopOpacity={0.35} />
+              <stop offset="100%" stopColor={color} stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          <Area
+            type="monotone"
+            dataKey="v"
+            stroke={color}
+            strokeWidth={1.5}
+            fill={`url(#spark-${id})`}
+            isAnimationActive={false}
+          />
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
+const KPI_COLORS = [
+  { accent: '#D4AF37', label: 'FA' },
+  { accent: '#0EA5E9', label: 'FE' },
+  { accent: '#10B981', label: 'R' },
+  { accent: '#EF4444', label: '%' },
+];
+
+const KPI_ICONS = [ClipboardList, Flame, Warehouse, TrendingDown];
+
+export default function V2DashboardPage() {
   const { data: bars = [] } = useBars();
   const { data: clients = [] } = useClients();
   const { data: exits = [] } = useMaterialExits();
+  const { data: processes = [] } = useProcesses();
   const { data: metrics, isLoading } = useDashboardMetrics();
   const { weightUnit } = useGoldTraceability();
 
-  const metricsItems: MetricItem[] = useMemo(() => [
-    {
-      key: 'oro-recibido',
-      label: 'ORO RECIBIDO',
-      value: formatWeight(metrics?.oroRecibido.fineWeight ?? 0, weightUnit),
-      sublabel: `FA total — ${metrics?.oroRecibido.barCount ?? 0} barras`,
-      accent: 'green',
-      health: 85,
-    },
-    {
-      key: 'oro-proceso',
-      label: 'ORO EN PROCESO',
-      value: formatWeight(metrics?.oroEnProceso.fineWeight ?? 0, weightUnit),
-      sublabel: `Barras en horno: ${metrics?.oroEnProceso.barCount ?? 0} u`,
-      accent: 'amber',
-      health: metrics?.oroEnProceso.barCount ? Math.min(100, metrics.oroEnProceso.barCount * 10) : 0,
-    },
-    {
-      key: 'oro-boveda',
-      label: 'ORO EN BÓVEDA',
-      value: formatWeight(metrics?.oroEnBoveda.fineWeight ?? 0, weightUnit),
-      sublabel: 'Disponible para despacho',
-      accent: 'cyan',
-      health: 70,
-    },
-    {
-      key: 'merma',
-      label: 'MERMA',
-      value: `${(metrics?.merma.porcentaje ?? 0).toFixed(1)}%`,
-      sublabel: `Pérdida: ${formatWeight(metrics?.merma.gramos ?? 0, weightUnit)} Au`,
-      accent: 'red',
-      health: metrics?.merma.porcentaje ? Math.max(0, 100 - metrics.merma.porcentaje) : 100,
-    },
-  ], [metrics, weightUnit]);
-
-  const supplierData = useMemo(() => {
-    return clients.map(c => {
-      const cBars = bars.filter(b => b.clientId === c.id);
-      const w = cBars.reduce((s, b) => s + Number(b.grossWeight), 0);
-      const cnt = cBars.length;
-      const avgP = cnt > 0 ? Math.round(cBars.reduce((s, b) => s + Number(b.purity), 0) / cnt) : 0;
-      return { id: c.id, name: c.name, rif: c.rif, grossWeight: w, count: cnt, avgPurity: avgP };
-    }).filter(s => s.grossWeight > 0).sort((a, b) => b.grossWeight - a.grossWeight);
-  }, [bars, clients]);
-
-  const supplierColumns: ColumnDef<typeof supplierData[0]>[] = [
-    { key: 'name', label: 'CLIENTE', render: r => <span className="font-bold text-[var(--tac-accent-cyan)]">{r.name}</span> },
-    { key: 'rif', label: 'RIF', align: 'center', render: r => <span className="text-[var(--tac-text-dim)]">{r.rif.slice(0, 10)}</span> },
-    { key: 'grossWeight', label: `BRUTO (${weightUnit.toUpperCase()})`, align: 'right', render: r => <span className="font-bold">{formatWeight(r.grossWeight, weightUnit)}</span> },
-    { key: 'fineWeight', label: `FA (${weightUnit.toUpperCase()})`, align: 'right', render: r => <span className="text-[var(--tac-accent-green)]">{formatWeight(r.grossWeight, weightUnit)}</span> },
-    { key: 'count', label: 'BARRAS', align: 'center', render: r => <span className="text-[var(--tac-text-dim)]">{r.count} u</span> },
-    { key: 'avgPurity', label: 'PUREZA', align: 'center', render: r => <span>{r.avgPurity}‰</span> },
-  ];
-
   const flowData = useMemo(() => {
-    const days: Record<string, { date: string; dateShort: string; in: number; out: number }> = {};
+    const days: Record<string, { in: number; out: number }> = {};
     bars.forEach(b => {
-      const d = new Date(b.createdAt);
-      const key = d.toISOString().split('T')[0];
-      const short = d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' });
-      if (!days[key]) days[key] = { date: key, dateShort: short, in: 0, out: 0 };
-      days[key].in += Number(b.fineWeight);
+      const d = new Date(b.createdAt).toISOString().split('T')[0];
+      if (!days[d]) days[d] = { in: 0, out: 0 };
+      days[d].in += Number(b.fineWeight);
     });
     exits.forEach(e => {
-      const d = new Date(e.createdAt);
-      const key = d.toISOString().split('T')[0];
-      const short = d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' });
-      if (!days[key]) days[key] = { date: key, dateShort: short, in: 0, out: 0 };
-      days[key].out += Number(e.totalWeight);
+      const d = new Date(e.createdAt).toISOString().split('T')[0];
+      if (!days[d]) days[d] = { in: 0, out: 0 };
+      days[d].out += Number(e.totalWeight);
     });
-    return Object.values(days).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()).slice(-7);
+    return Object.values(days);
   }, [bars, exits]);
 
-  const maxFlow = useMemo(() => {
-    return Math.max(...flowData.map(d => Math.max(d.in, d.out)), 1);
-  }, [flowData]);
+  const sparkIn = useMemo(() => flowData.map(d => d.in).slice(-14), [flowData]);
+  const sparkOut = useMemo(() => flowData.map(d => d.out).slice(-14), [flowData]);
+  const sparkNet = useMemo(() => flowData.map(d => d.in - d.out).slice(-14), [flowData]);
+  const sparkMerma = useMemo(() => flowData.map(d => Math.abs(d.in - d.out) * 0.02).slice(-14), [flowData]);
+
+  const clientBalances = useMemo(() => {
+    if (!clients || !bars) return [];
+    return clients.map(client => {
+      const clientBars = bars.filter(b => b.clientId === client.id);
+      const ingresoBruto = clientBars.reduce((s, b) => s + Number(b.grossWeight), 0);
+      const fa = clientBars.reduce((s, b) => s + Number(b.fineWeight), 0);
+      const clientProcesses = processes.filter(p => p.clientId === client.id);
+      const r = clientProcesses.reduce((s, p) =>
+        s + (p.lots?.reduce((sl, l) => sl + Number(l.recovered ?? 0), 0) ?? 0), 0);
+      const clientExits = exits.filter(e =>
+        e.exitDetails.some(d => d.lot?.process?.client?.id === client.id));
+      const egresos = clientExits.reduce((s, e) => s + Number(e.totalWeight), 0);
+      const balance = fa + r - egresos;
+      return { id: client.id, name: client.name, ingresoBruto, fa, r, egresos, balance };
+    })
+      .filter(c => c.ingresoBruto > 0 || c.fa > 0 || c.egresos > 0)
+      .sort((a, b) => b.ingresoBruto - a.ingresoBruto);
+  }, [clients, bars, processes, exits]);
+
+  const totalBalance = useMemo(
+    () => clientBalances.reduce((s, c) => s + c.balance, 0),
+    [clientBalances],
+  );
+
+  const kpiData = [
+    {
+      label: 'Oro Recibido',
+      value: metrics?.oroRecibido.fineWeight ?? 0,
+      sublabel: `FA total: ${formatNumber((metrics?.oroRecibido.fineWeight ?? 0) / (weightUnit === 'kg' ? 1000 : 1), weightUnit === 'kg' ? 4 : 2)} ${weightUnit === 'kg' ? 'kg' : 'g'}`,
+      subicon: Scale,
+      accent: KPI_COLORS[0].accent,
+      tag: KPI_COLORS[0].label,
+      postfix: '',
+      spark: sparkIn,
+    },
+    {
+      label: 'Oro en Proceso',
+      value: metrics?.oroEnProceso.fineWeight ?? 0,
+      sublabel: `Barras en horno: ${metrics?.oroEnProceso.barCount ?? 0} u`,
+      subicon: Flame,
+      accent: KPI_COLORS[1].accent,
+      tag: KPI_COLORS[1].label,
+      postfix: '',
+      spark: sparkOut,
+    },
+    {
+      label: 'Oro en Bóveda',
+      value: metrics?.oroEnBoveda.fineWeight ?? 0,
+      sublabel: `R neto disponible: ${formatNumber((metrics?.oroEnBoveda.fineWeight ?? 0) / (weightUnit === 'kg' ? 1000 : 1), weightUnit === 'kg' ? 4 : 2)} ${weightUnit === 'kg' ? 'kg' : 'g'}`,
+      subicon: Pickaxe,
+      accent: KPI_COLORS[2].accent,
+      tag: KPI_COLORS[2].label,
+      postfix: '',
+      spark: sparkNet,
+    },
+    {
+      label: 'Merma',
+      value: metrics?.merma.porcentaje ?? 0,
+      sublabel: `Pérdida total: ${formatNumber((metrics?.merma.gramos ?? 0) / (weightUnit === 'kg' ? 1000 : 1), weightUnit === 'kg' ? 4 : 2)} ${weightUnit === 'kg' ? 'kg' : 'g'} Au`,
+      subicon: Scale,
+      accent: KPI_COLORS[3].accent,
+      tag: KPI_COLORS[3].label,
+      postfix: '%',
+      spark: sparkMerma,
+    },
+  ];
+
+  const formatWeightCell = (val: number) =>
+    `${formatNumber(val / (weightUnit === 'kg' ? 1000 : 1), weightUnit === 'kg' ? 4 : 2)} ${weightUnit === 'kg' ? 'kg' : 'g'}`;
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }} className="space-y-6">
-      {/* HUD Metrics Row */}
-      <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05, duration: 0.4 }}>
-        <MetricsHUD items={metricsItems} cols={4} />
-      </motion.div>
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.35 }}>
+      {/* KPI Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
+        {kpiData.map((kpi, idx) => {
+          const Icon = KPI_ICONS[idx];
+          return (
+            <motion.div
+              key={kpi.label}
+              initial={{ opacity: 0, y: -24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.08 * idx, duration: 0.45 }}
+              className="premium-card relative overflow-hidden active:scale-[0.97] transition-all duration-150 cursor-default"
+            >
+              <SparklineArea data={kpi.spark} color={kpi.accent} id={`kpi-${idx}`} />
 
-      {/* Two-column layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Supplier Breakdown */}
-        <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.15, duration: 0.4 }}>
-          <TacticalCard title="INGRESOS — DISTRIBUCIÓN POR PROVEEDOR" accent="cyan">
-            <ScannerTable
-              columns={supplierColumns}
-              data={supplierData}
-              keyExtractor={r => r.id}
-              emptyMessage="NO HAY DATOS DE INGRESOS"
-            />
-          </TacticalCard>
-        </motion.div>
+              <div className="relative z-10 p-5">
+                <div className="flex items-center justify-between mb-4">
+                  <div
+                    className="w-9 h-9 rounded-xl flex items-center justify-center"
+                    style={{ background: `${kpi.accent}12`, border: `1px solid ${kpi.accent}25` }}
+                  >
+                    <Icon className="w-4.5 h-4.5" style={{ color: kpi.accent }} />
+                  </div>
+                  <span
+                    className="text-[9px] font-mono font-bold tracking-wider px-2 py-0.5 rounded"
+                    style={{ background: `${kpi.accent}10`, color: kpi.accent, border: `1px solid ${kpi.accent}20` }}
+                  >
+                    {kpi.tag}
+                  </span>
+                </div>
 
-        {/* Client Exits Breakdown */}
-        <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2, duration: 0.4 }}>
-          <TacticalCard title="EGRESOS — DISTRIBUCIÓN POR CLIENTE" accent="amber">
-            <ScannerTable
-              columns={[
-                { key: 'name', label: 'CLIENTE', render: r => <span className="font-bold text-[var(--tac-accent-amber)]">{r.name}</span> },
-                { key: 'rif', label: 'RIF', align: 'center', render: r => <span className="text-[var(--tac-text-dim)]">{r.rif.slice(0, 10)}</span> },
-                { key: 'total', label: `DESPACHADO (${weightUnit.toUpperCase()})`, align: 'right', render: r => <span className="font-bold">{formatWeight(r.grossWeight, weightUnit)}</span> },
-                { key: 'count', label: 'ENVÍOS', align: 'center', render: r => <span className="text-[var(--tac-text-dim)]">{r.count} ops</span> },
-              ]}
-              data={clients.map(c => {
-                const cExits = exits.filter(e => e.exitDetails.some(d => d.lot?.process?.client?.id === c.id));
-                const totalW = cExits.reduce((s, e) => s + Number(e.totalWeight), 0);
-                return { ...c, grossWeight: totalW, count: cExits.length };
-              }).filter(c => c.grossWeight > 0).sort((a, b) => b.grossWeight - a.grossWeight)}
-              keyExtractor={r => r.id}
-              emptyMessage="NO HAY DATOS DE EGRESOS"
-            />
-          </TacticalCard>
-        </motion.div>
+                <span className="text-[11px] text-[var(--pm-text-dim)] font-sans block mb-1">{kpi.label}</span>
+                <div className="flex items-baseline gap-1.5 mb-3">
+                  <span className="text-2xl font-mono font-bold text-[var(--pm-text-primary)] tracking-tight">
+                    {kpi.postfix === '%'
+                      ? `${formatNumber(kpi.value, 1)}`
+                      : formatNumber(kpi.value / (weightUnit === 'kg' ? 1000 : 1), weightUnit === 'kg' ? 4 : 2)}
+                  </span>
+                  <span className="text-[11px] text-[var(--pm-text-dim)] font-mono">
+                    {kpi.postfix || (weightUnit === 'kg' ? 'kg' : 'g')}
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-1.5 pt-3 border-t border-[var(--pm-border)]">
+                  <kpi.subicon className="w-3 h-3 shrink-0" style={{ color: kpi.accent }} />
+                  <span className="text-[10px] text-[var(--pm-text-dim)] font-mono truncate">{kpi.sublabel}</span>
+                </div>
+              </div>
+            </motion.div>
+          );
+        })}
       </div>
 
-      {/* Flow Terminal */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, duration: 0.4 }}>
-        <TerminalPanel title="FLUJO DE TRAZABILIDAD — ÚLTIMOS 7 DÍAS" accent="cyan">
-          {flowData.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-8 text-[var(--tac-text-dim)]">
-              <span className="text-[11px] font-mono">NO HAY TRANSACCIONES REGISTRADAS</span>
-            </div>
-          ) : (
-            <div className="space-y-1.5">
-              {/* Header */}
-              <div className="flex items-center gap-3 text-[9px] font-mono font-bold text-[var(--tac-text-dim)] uppercase tracking-[0.1em] pb-1.5 border-b border-[var(--tac-border)] mb-2">
-                <span className="w-24 shrink-0">FECHA</span>
-                <span className="flex-1">INGRESO [IN]</span>
-                <span className="w-2 shrink-0" />
-                <span className="flex-1 text-right">EGRESO [OUT]</span>
-              </div>
-
-              {flowData.map((day, idx) => {
-                const inPct = (day.in / maxFlow) * 100;
-                const outPct = (day.out / maxFlow) * 100;
-                return (
-                  <div key={day.date} className="flex items-center gap-3 text-[10px] font-mono">
-                    <span className="w-24 shrink-0 text-[var(--tac-text-dim)]">{day.dateShort}</span>
-                    <div className="flex-1 flex items-center gap-2">
-                      <div className="flex-1 h-3 bg-[var(--tac-bg-primary)] relative overflow-hidden">
-                        <motion.div
-                          initial={{ width: 0 }}
-                          animate={{ width: `${inPct}%` }}
-                          transition={{ delay: 0.4 + idx * 0.08, duration: 0.6, ease: 'easeOut' }}
-                          className="h-full bg-gradient-to-r from-[var(--tac-accent-green)] to-[var(--tac-accent-green)]/60"
-                        />
-                      </div>
-                      <span className="w-16 text-right text-[var(--tac-accent-green)] font-bold text-[9px]">
-                        {formatWeight(day.in, weightUnit, 1)}
-                      </span>
-                    </div>
-                    <span className="w-2 text-center text-[var(--tac-text-dim)] text-[8px]">|</span>
-                    <div className="flex-1 flex items-center gap-2">
-                      <span className="w-16 text-left text-[var(--tac-accent-amber)] font-bold text-[9px]">
-                        {formatWeight(day.out, weightUnit, 1)}
-                      </span>
-                      <div className="flex-1 h-3 bg-[var(--tac-bg-primary)] relative overflow-hidden">
-                        <motion.div
-                          initial={{ width: 0 }}
-                          animate={{ width: `${outPct}%` }}
-                          transition={{ delay: 0.5 + idx * 0.08, duration: 0.6, ease: 'easeOut' }}
-                          className="h-full bg-gradient-to-r from-[var(--tac-accent-amber)] to-[var(--tac-accent-amber)]/60 float-right"
-                          style={{ direction: 'rtl' }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-
-              {/* Stats footer */}
-              <div className="flex items-center gap-4 mt-3 pt-2 border-t border-[var(--tac-border)] text-[9px] font-mono text-[var(--tac-text-dim)]">
-                <span className="flex items-center gap-1">
-                  <span className="w-2 h-2 bg-[var(--tac-accent-green)]" />
-                  IN: {formatWeight(flowData.reduce((s, d) => s + d.in, 0), weightUnit, 1)}
-                </span>
-                <span className="flex items-center gap-1">
-                  <span className="w-2 h-2 bg-[var(--tac-accent-amber)]" />
-                  OUT: {formatWeight(flowData.reduce((s, d) => s + d.out, 0), weightUnit, 1)}
-                </span>
-                <span className="flex items-center gap-1">
-                  <span className="w-2 h-2 bg-[var(--tac-accent-cyan)]" />
-                  NET: {formatWeight(flowData.reduce((s, d) => s + d.in, 0) - flowData.reduce((s, d) => s + d.out, 0), weightUnit, 1)}
-                </span>
-              </div>
-            </div>
-          )}
-        </TerminalPanel>
-      </motion.div>
-
-      {/* System status line */}
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }}
-        className="flex items-center gap-4 text-[9px] font-mono text-[var(--tac-text-dim)] border-t border-[var(--tac-border)] pt-3"
+      {/* Balances Table */}
+      <motion.div
+        initial={{ opacity: 0, y: 32 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.35, duration: 0.45 }}
+        className="premium-card overflow-hidden"
       >
-        <span className="flex items-center gap-1">
-          <span className="w-1.5 h-1.5 rounded-full bg-[var(--tac-accent-green)] animate-pulse" />
-          TRACKING LIVE
-        </span>
-        <span>BARRAS: {bars.length}</span>
-        <span>CLIENTES: {clients.length}</span>
-        <span>EGRESOS: {exits.length}</span>
-        <span className="text-[var(--tac-accent-cyan)]">PULSE: {metrics?.oroEnProceso.barCount ? 'ACTIVE' : 'STANDBY'}</span>
+        <div className="flex items-center justify-between px-6 pt-5 pb-3 border-b border-[var(--pm-border)]">
+          <div>
+            <h3 className="text-sm font-semibold text-[var(--pm-text-primary)] font-sans">
+              Resumen de Balances
+            </h3>
+            <p className="text-[11px] text-[var(--pm-text-dim)] font-sans mt-0.5">
+              Ingresos, recuperación y egresos por cliente.
+            </p>
+          </div>
+          <div className="text-right">
+            <span className="text-[10px] text-[var(--pm-text-dim)] font-mono block">BALANCE TOTAL</span>
+            <span
+              className={`text-sm font-mono font-bold ${totalBalance >= 0 ? 'text-[var(--pm-accent-emerald)]' : 'text-[var(--pm-accent-red)]'}`}
+            >
+              {formatWeightCell(Math.abs(totalBalance))}
+              {totalBalance < 0 ? ' (negativo)' : ''}
+            </span>
+          </div>
+        </div>
+
+        {clientBalances.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 text-[var(--pm-text-dim)]">
+            <Coins className="w-10 h-10 text-[var(--pm-accent-gold)]/20 mb-3 animate-pulse" />
+            <span className="text-sm font-sans">No hay datos de clientes</span>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="premium-table w-full">
+              <thead>
+                <tr>
+                  <th>Cliente</th>
+                  <th className="text-right">Ingreso Bruto</th>
+                  <th className="text-right">FA (g)</th>
+                  <th className="text-right">R (g)</th>
+                  <th className="text-right">Egresos</th>
+                  <th className="text-right">Balance</th>
+                </tr>
+              </thead>
+              <tbody>
+                {clientBalances.map((c, idx) => (
+                  <motion.tr
+                    key={c.id}
+                    initial={{ opacity: 0, x: -8 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.45 + idx * 0.04, duration: 0.3 }}
+                  >
+                    <td className="font-sans font-semibold text-[var(--pm-text-primary)]">
+                      {c.name}
+                    </td>
+                    <td className="text-right text-[var(--pm-text-dim)]">
+                      {formatWeightCell(c.ingresoBruto)}
+                    </td>
+                    <td className="text-right text-[var(--pm-accent-gold)]">
+                      {formatWeightCell(c.fa)}
+                    </td>
+                    <td className="text-right text-[var(--pm-accent-amber)]">
+                      {formatWeightCell(c.r)}
+                    </td>
+                    <td className="text-right text-[var(--pm-accent-red)]">
+                      {formatWeightCell(c.egresos)}
+                    </td>
+                    <td
+                      className={`text-right font-bold ${c.balance >= 0 ? 'text-[var(--pm-accent-emerald)]' : 'text-[var(--pm-accent-red)]'}`}
+                    >
+                      {formatWeightCell(Math.abs(c.balance))}
+                      {c.balance < 0 ? ' −' : ''}
+                    </td>
+                  </motion.tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </motion.div>
+
+      {/* Footer note */}
+      <p className="text-[9px] text-[var(--pm-text-dim)] font-mono text-center opacity-50">
+        Datos actualizados en tiempo real · Bandes v2 Premium
+      </p>
     </motion.div>
   );
 }

@@ -207,3 +207,151 @@ tr:hover > td.sticky {
 .shadow-\[0_4px_12px_rgba\(0\2c 0\2c 0\2c 0\.3\)\] {
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45) !important;
 }
+
+/* ═══════════════════════════════════════════════════════
+   V2 — BANDES PREMIUM (Midnight Blue / Glass)
+   ═══════════════════════════════════════════════════════ */
+
+:root {
+  --pm-bg-deepest:   #070B14;
+  --pm-bg-primary:   #0A0F1A;
+  --pm-bg-secondary: #0F1420;
+  --pm-bg-tertiary:  #151C2D;
+  --pm-bg-elevated:  #1A2340;
+  --pm-border:       #1E2A45;
+  --pm-border-light: #2A3A5C;
+  --pm-text-primary: #E2E8F0;
+  --pm-text-dim:     #64748B;
+  --pm-accent-gold:  #D4AF37;
+  --pm-accent-sky:   #0EA5E9;
+  --pm-accent-emerald: #10B981;
+  --pm-accent-amber: #F59E0B;
+  --pm-accent-red:   #EF4444;
+  --pm-glass-bg:     rgba(15, 20, 32, 0.72);
+  --pm-glass-border: rgba(30, 42, 69, 0.25);
+  --pm-shadow:       0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+/* --- Technical grid background --- */
+.v2-premium {
+  background-color: var(--pm-bg-deepest) !important;
+  background-image:
+    linear-gradient(rgba(30, 42, 69, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(30, 42, 69, 0.08) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+/* --- Glass panel --- */
+.glass-panel {
+  background: var(--pm-glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--pm-glass-border);
+  box-shadow: var(--pm-shadow);
+}
+
+/* --- Premium sidebar --- */
+.v2-sidebar {
+  width: 220px;
+  background: linear-gradient(180deg, #0A0F1A 0%, #080C14 100%);
+  border-right: 1px solid var(--pm-border);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.v2-sidebar .nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 18px;
+  font-size: 12px;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: var(--pm-text-dim);
+  border-left: 2px solid transparent;
+  transition: all 150ms ease;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.v2-sidebar .nav-item:hover {
+  color: var(--pm-text-primary);
+  background: rgba(21, 28, 45, 0.6);
+}
+
+.v2-sidebar .nav-item.active {
+  color: var(--pm-accent-gold);
+  background: rgba(212, 175, 55, 0.06);
+  border-left-color: var(--pm-accent-gold);
+}
+
+/* --- Premium card --- */
+.premium-card {
+  background: var(--pm-glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--pm-glass-border);
+  border-radius: 16px;
+  box-shadow: var(--pm-shadow);
+  transition: all 250ms ease;
+}
+
+.premium-card:hover {
+  border-color: rgba(212, 175, 55, 0.25);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55);
+}
+
+/* --- Premium table --- */
+.premium-table th {
+  color: var(--pm-text-dim);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--pm-border);
+  text-align: left;
+}
+
+.premium-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(30, 42, 69, 0.15);
+  font-size: 12px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.premium-table tbody tr {
+  transition: background 150ms ease;
+}
+
+.premium-table tbody tr:hover {
+  background: rgba(21, 28, 45, 0.5);
+}
+
+/* --- Custom scrollbar for v2 --- */
+.v2-scroll::-webkit-scrollbar {
+  width: 5px;
+}
+
+.v2-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.v2-scroll::-webkit-scrollbar-thumb {
+  background: var(--pm-border);
+  border-radius: 999px;
+}
+
+.v2-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--pm-border-light);
+}
+
+/* --- Utils --- */
+.premium-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--pm-border), transparent);
+}
