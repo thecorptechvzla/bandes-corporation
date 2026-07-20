@@ -11,8 +11,9 @@ export class BarsController {
     @Query('status') status?: string,
     @Query('clientId') clientId?: string,
     @Query('lotId') lotId?: string,
+    @Query('includePorValidar') includePorValidar?: string,
   ) {
-    return this.service.findAll({ status, clientId, lotId });
+    return this.service.findAll({ status, clientId, lotId, includePorValidar: includePorValidar === 'true' });
   }
 
   @Get(':id')
@@ -70,7 +71,7 @@ export class BarsController {
     @Body()
     body: {
       lotId?: string | null;
-      status?: 'IN_STOCK' | 'PROCESANDO' | 'COMPLETADO' | 'EXITED';
+      status?: 'POR_VALIDAR' | 'IN_STOCK' | 'PROCESANDO' | 'COMPLETADO' | 'EXITED';
     },
   ) {
     return this.service.update(id, body);

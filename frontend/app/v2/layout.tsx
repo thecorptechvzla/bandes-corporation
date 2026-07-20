@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
-  LayoutDashboard, Users, ClipboardList, Flame,
+  LayoutDashboard, Users, Flame,
   ArrowLeftRight, FileText, FolderUp, Coins, LogOut,
   Calendar, ArrowLeftRight as ModeIcon
 } from 'lucide-react';
@@ -12,10 +12,9 @@ import {
 const menuItems = [
   { id: 'dashboard', name: 'Dashboard', icon: LayoutDashboard },
   { id: 'clientes', name: 'Clientes', icon: Users },
-  { id: 'ingresos', name: 'Ingresos', icon: ClipboardList },
+  { id: 'packing', name: 'Packing', icon: FolderUp },
   { id: 'procesos', name: 'Procesos', icon: Flame },
   { id: 'egresos', name: 'Egresos', icon: ArrowLeftRight },
-  { id: 'packing', name: 'Packing', icon: FolderUp },
   { id: 'reportes', name: 'Reportes', icon: FileText },
 ];
 

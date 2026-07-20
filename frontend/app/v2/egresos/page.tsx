@@ -12,7 +12,7 @@ import { useGoldTraceability } from '@/context/GoldTraceabilityContext';
 import type { WeightUnit } from '@/lib/format';
 import {
   ArrowLeftRight, Check, Send, Search, X, Download,
-  AlertTriangle, Package, Users, Building2, MapPin,
+  AlertTriangle, Package, Users, Building2, MapPin, ShoppingCart,
 } from 'lucide-react';
 
 interface AvailableLot {
@@ -27,18 +27,18 @@ interface AvailableLot {
 }
 
 interface DispatchResult {
-  clientName: string;
-  destination: string;
   reference: string;
+  destination: string;
   totalWeight: number;
   lotCount: number;
-  clientCount: number;
-  lots: { name: string; weight: number }[];
+  providerCount: number;
+  lots: { name: string; weight: number; provider: string }[];
+  providers: { name: string; lots: number; weight: number }[];
   createdAt: string;
 }
 
 export default function V2EgresosPage() {
-  const { data: clients = [] } = useClients({ role: 'CLIENTE' });
+  const { data: clients = [] } = useClients();
   const { data: bars = [] } = useBars();
   const { data: processes = [] } = useProcesses();
   const createExit = useCreateMaterialExit();
@@ -135,7 +135,6 @@ export default function V2EgresosPage() {
     doc.setFontSize(20);
     doc.setFont('helvetica', 'bold');
     doc.text('BANDES', m, y + 10);
-
     doc.setTextColor(200, 200, 200);
     doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
@@ -144,8 +143,7 @@ export default function V2EgresosPage() {
     doc.setTextColor(212, 175, 55);
     doc.setFontSize(14);
     doc.setFont('helvetica', 'bold');
-    doc.text('COMPROBANTE DE DESPACHO', pw - m, y + 10, { align: 'right' });
-
+    doc.text('COMPROBANTE DE DESPACHO GLOBAL', pw - m, y + 10, { align: 'right' });
     doc.setTextColor(160, 160, 160);
     doc.setFontSize(7);
     doc.text(`Ref: ${data.reference}`, pw - m, y + 18, { align: 'right' });
@@ -159,16 +157,15 @@ export default function V2EgresosPage() {
     doc.setTextColor(40, 40, 40);
     doc.setFontSize(10);
     doc.setFont('helvetica', 'bold');
-    doc.text('DATOS DEL DESPACHO', m, y);
-    y += 8;
-
+    doc.text('DATOS DEL DESPACHO', m, y); y += 8;
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(80, 80, 80);
-    doc.text(`Destino: ${data.destination}`, m, y); y += 6;
-    doc.text(`Clientes: ${data.clientName}`, m, y); y += 6;
+    doc.text(`Destinatario: ${data.destination}`, m, y); y += 6;
+    doc.text(`Proveedores: ${data.providerCount}`, m, y); y += 6;
     doc.text(`Lotes: ${data.lotCount}`, m, y); y += 6;
-    doc.text(`Peso Total: ${weightUnit === 'kg' ? `${(data.totalWeight / 1000).toFixed(4)} kg` : `${data.totalWeight.toFixed(2)} g`}`, m, y); y += 6;
+    const totalDisp = weightUnit === 'kg' ? `${(data.totalWeight / 1000).toFixed(4)} kg` : `${data.totalWeight.toFixed(2)} g`;
+    doc.text(`Peso Total: ${totalDisp}`, m, y); y += 6;
     doc.text(`Fecha: ${new Date(data.createdAt).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`, m, y);
     y += 10;
 
@@ -180,58 +177,54 @@ export default function V2EgresosPage() {
     doc.setTextColor(40, 40, 40);
     doc.setFontSize(10);
     doc.setFont('helvetica', 'bold');
-    doc.text('DETALLE DE LOTES', m, y);
-    y += 8;
+    doc.text('DETALLE POR PROVEEDOR', m, y); y += 8;
 
-    doc.setFillColor(7, 11, 20);
-    doc.rect(m, y - 4, cw, 8, 'F');
-    doc.setTextColor(212, 175, 55);
-    doc.setFontSize(7);
-    doc.setFont('helvetica', 'bold');
-    doc.text('LOTE', m + 2, y + 1);
-    doc.text('PESO', pw - m - 2, y + 1, { align: 'right' });
-    y += 8;
+    data.providers.forEach((pv, pidx) => {
+      if (y > 250) { doc.addPage(); y = 20; }
+      doc.setFillColor(7, 11, 20);
+      doc.rect(m, y - 4, cw, 7, 'F');
+      doc.setTextColor(212, 175, 55);
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'bold');
+      doc.text(`${pv.name} — ${pv.lots} lote(s) — ${weightUnit === 'kg' ? `${(pv.weight / 1000).toFixed(4)} kg` : `${pv.weight.toFixed(2)} g`}`, m + 2, y + 1);
+      y += 10;
 
-    doc.setTextColor(80, 80, 80);
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8);
-    data.lots.forEach((lot, idx) => {
-      if (y > 260) { doc.addPage(); y = 20; }
-      if (idx % 2 === 0) {
-        doc.setFillColor(248, 248, 248);
-        doc.rect(m, y - 4, cw, 8, 'F');
-      }
-      doc.text(lot.name, m + 2, y + 1);
-      const display = weightUnit === 'kg'
-        ? `${(lot.weight / 1000).toFixed(4)} kg`
-        : `${lot.weight.toFixed(2)} g`;
-      doc.text(display, pw - m - 2, y + 1, { align: 'right' });
-      y += 8;
+      const providerLots = data.lots.filter(l => l.provider === pv.name);
+      providerLots.forEach((lot, idx) => {
+        if (y > 260) { doc.addPage(); y = 20; }
+        if (idx % 2 === 0) {
+          doc.setFillColor(248, 248, 248);
+          doc.rect(m, y - 4, cw, 7, 'F');
+        }
+        doc.setTextColor(80, 80, 80);
+        doc.setFontSize(7);
+        doc.setFont('helvetica', 'normal');
+        doc.text(lot.name, m + 4, y + 1);
+        const ld = weightUnit === 'kg' ? `${(lot.weight / 1000).toFixed(4)} kg` : `${lot.weight.toFixed(2)} g`;
+        doc.text(ld, pw - m - 2, y + 1, { align: 'right' });
+        y += 7;
+      });
+      y += 4;
     });
 
-    y += 8;
+    y += 4;
     doc.setDrawColor(212, 175, 55);
     doc.setLineWidth(0.6);
-    doc.line(m, y, pw - m, y);
-    y += 8;
+    doc.line(m, y, pw - m, y); y += 8;
 
     doc.setTextColor(40, 40, 40);
     doc.setFontSize(11);
     doc.setFont('helvetica', 'bold');
-    const totalDisp = weightUnit === 'kg'
-      ? `${(data.totalWeight / 1000).toFixed(4)} kg`
-      : `${data.totalWeight.toFixed(2)} g`;
-    doc.text(`PESO TOTAL: ${totalDisp}`, m, y);
-    y += 8;
-    doc.text(`LOTES: ${data.lotCount}`, m, y);
-    y += 20;
+    doc.text(`PESO TOTAL: ${totalDisp}`, m, y); y += 7;
+    doc.text(`LOTES: ${data.lotCount}`, m, y); y += 7;
+    doc.text(`PROVEEDORES: ${data.providerCount}`, m, y); y += 20;
 
     doc.setDrawColor(200, 200, 200);
     doc.setLineWidth(0.2);
-    doc.line(m, y, pw - m, y);
-    y += 8;
+    doc.line(m, y, pw - m, y); y += 8;
     doc.setTextColor(140, 140, 140);
     doc.setFontSize(8);
+    doc.setTextColor(100, 100, 100);
     doc.text('_________________________', m, y); y += 5;
     doc.text('Firma Autorizada', m, y);
     doc.text('_________________________', pw - m - 40, y - 5);
@@ -257,16 +250,20 @@ export default function V2EgresosPage() {
         lotIds: selectedLots.map(l => l.id),
       });
 
-      const clientNames = [...new Set(selectedLots.map(l => l.clientName))].join(', ');
+      const providers = Object.entries(groupedByClient).map(([cId, lots]) => ({
+        name: lots[0].clientName,
+        lots: lots.length,
+        weight: lots.reduce((s, l) => s + l.availableWeight, 0),
+      }));
 
       setDispatchResult({
-        clientName: clientNames,
-        destination: result.destination,
         reference: `DESP-${Date.now().toString(36).toUpperCase()}`,
+        destination: result.destination,
         totalWeight: result.totalWeight,
         lotCount: selectedLots.length,
-        clientCount,
-        lots: selectedLots.map(l => ({ name: l.name, weight: l.availableWeight })),
+        providerCount: clientCount,
+        lots: selectedLots.map(l => ({ name: l.name, weight: l.availableWeight, provider: l.clientName })),
+        providers,
         createdAt: new Date().toISOString(),
       });
 
@@ -285,16 +282,14 @@ export default function V2EgresosPage() {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }} className="space-y-6">
-      {/* Header */}
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col sm:flex-row sm:items-center justify-between gap-3"
-      >
+        className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-xl font-semibold text-[var(--pm-text-primary)] font-sans flex items-center gap-2.5">
             <ArrowLeftRight className="w-6 h-6 text-[var(--pm-accent-gold)]" />
             Salida de <span className="text-[var(--pm-accent-gold)]">Material</span>
           </h1>
-          <p className="text-xs text-[var(--pm-text-dim)] mt-0.5">Gestión de despachos multi-cliente con comprobante digital.</p>
+          <p className="text-xs text-[var(--pm-text-dim)] mt-0.5">Despacho global multi-proveedor con destinatario final.</p>
         </div>
         <div className="flex items-center gap-3 text-[10px] font-mono text-[var(--pm-text-dim)]">
           <span className="flex items-center gap-1">
@@ -304,24 +299,20 @@ export default function V2EgresosPage() {
         </div>
       </motion.div>
 
-      {/* Split pane */}
       <div className="grid grid-cols-1 xl:grid-cols-5 gap-6 items-start">
-        {/* ═══ LEFT: Available Lots ═══ */}
+        {/* LEFT: Available Lots */}
         <motion.div initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1, duration: 0.4 }}
-          className="xl:col-span-3 premium-card overflow-hidden"
-        >
-          <div className="px-5 py-3.5 border-b border-[var(--pm-border)] flex items-center justify-between gap-3">
+          className="xl:col-span-3 glass-panel rounded-2xl border border-[var(--pm-border)]/40 overflow-hidden">
+          <div className="px-5 py-3.5 border-b border-[var(--pm-border)]/20 flex items-center justify-between gap-3">
             <div className="relative flex-1 max-w-xs">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[var(--pm-text-dim)]/40" />
-              <input type="text" placeholder="Buscar lote, proceso o cliente..." value={searchQuery}
+              <input type="text" placeholder="Buscar lote, proceso o proveedor..." value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className="w-full bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] rounded-lg pl-9 pr-3 py-2 text-xs font-mono text-[var(--pm-text-primary)] focus:outline-none focus:border-[var(--pm-accent-gold)] transition-colors placeholder:text-[var(--pm-text-dim)]/30"
-              />
+                className="w-full bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] rounded-lg pl-9 pr-3 py-2 text-xs font-mono text-[var(--pm-text-primary)] focus:outline-none focus:border-[var(--pm-accent-gold)] transition-colors placeholder:text-[var(--pm-text-dim)]/30" />
             </div>
             <div className="flex items-center gap-2">
               <button type="button" onClick={toggleAll}
-                className="text-[9px] font-mono text-[var(--pm-accent-gold)] hover:text-[var(--pm-accent-amber)] active:scale-95 transition-all cursor-pointer"
-              >
+                className="text-[9px] font-mono text-[var(--pm-accent-gold)] hover:text-[var(--pm-accent-amber)] active:scale-95 transition-all cursor-pointer">
                 {selectedLotIds.size === filteredLots.length ? 'Deseleccionar' : 'Todo'}
               </button>
               <span className="text-[10px] font-mono text-[var(--pm-text-dim)]">{filteredLots.length} lotes</span>
@@ -335,45 +326,41 @@ export default function V2EgresosPage() {
               <p className="text-[10px] font-mono mt-1">Asegúrese de que haya procesos cerrados con recuperación.</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="premium-table w-full">
+            <div className="overflow-x-auto premium-table">
+              <table className="w-full text-left text-xs font-sans">
                 <thead>
-                  <tr>
-                    <th className="w-10 text-center">
+                  <tr className="border-b border-[var(--pm-border)]/20 text-[10px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider">
+                    <th className="w-10 text-center py-3 bg-[var(--pm-bg-base)]/50">
                       <input type="checkbox" checked={selectedLotIds.size === filteredLots.length && filteredLots.length > 0}
                         onChange={toggleAll} className="accent-[var(--pm-accent-gold)] cursor-pointer" />
                     </th>
-                    <th className="sticky left-0 bg-[var(--pm-bg-secondary)] z-10 min-w-[140px]">Cliente</th>
-                    <th>Proceso</th>
-                    <th>Lote</th>
-                    <th className="text-right">R (g)</th>
-                    <th className="text-center">Barras</th>
+                    <th className="py-3 bg-[var(--pm-bg-base)]/50 sticky left-0 z-10 min-w-[160px]">Proveedor</th>
+                    <th className="py-3 bg-[var(--pm-bg-base)]/50">Proceso</th>
+                    <th className="py-3 bg-[var(--pm-bg-base)]/50">Lote</th>
+                    <th className="py-3 bg-[var(--pm-bg-base)]/50 text-right">R (g)</th>
+                    <th className="py-3 bg-[var(--pm-bg-base)]/50 text-center">Barras</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-[var(--pm-border)]/20">
                   {filteredLots.map((lot, idx) => (
-                    <motion.tr key={lot.id} initial={{ opacity: 0, x: -4 }} animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: idx * 0.008, duration: 0.15 }}
-                      onClick={() => toggleLot(lot.id)}
-                      className={`odd:bg-[var(--pm-bg-deepest)]/30 hover:bg-[var(--pm-bg-tertiary)]/50 transition-all cursor-pointer ${selectedLotIds.has(lot.id) ? 'bg-[var(--pm-accent-gold)]/5' : ''}`}
-                    >
-                      <td className="text-center" onClick={e => e.stopPropagation()}>
+                    <tr key={lot.id} onClick={() => toggleLot(lot.id)}
+                      className={`group transition-all duration-150 cursor-pointer ${idx % 2 === 0 ? 'bg-transparent' : 'bg-[var(--pm-bg-base)]/20'} hover:bg-[var(--pm-bg-hover)]/40 ${selectedLotIds.has(lot.id) ? 'bg-[var(--pm-accent-gold)]/8' : ''}`}>
+                      <td className="py-3 text-center" onClick={e => e.stopPropagation()}>
                         <input type="checkbox" checked={selectedLotIds.has(lot.id)}
-                          onChange={() => toggleLot(lot.id)} className="accent-[var(--pm-accent-gold)] cursor-pointer active:scale-90" />
+                          onChange={() => toggleLot(lot.id)}
+                          className="accent-[var(--pm-accent-gold)] cursor-pointer active:scale-90" />
                       </td>
-                      <td className="sticky left-0 bg-[var(--pm-bg-secondary)] z-10 font-sans font-semibold text-[var(--pm-text-primary)] text-[11px]">
-                        <span className="block truncate max-w-[140px]">{lot.clientName}</span>
+                      <td className="py-3 sticky left-0 z-10 bg-[var(--pm-bg-primary)] group-hover:bg-[var(--pm-bg-hover)]/40 font-sans font-semibold text-[var(--pm-text-primary)] text-[11px]">
+                        <span className="block truncate max-w-[160px]">{lot.clientName}</span>
                         <span className="text-[8px] font-mono text-[var(--pm-text-dim)]">{lot.clientRif}</span>
                       </td>
-                      <td className="font-mono text-[var(--pm-text-dim)] text-[11px]">{lot.processName}</td>
-                      <td className="font-mono font-bold text-[var(--pm-accent-gold)] tracking-wider text-[11px]">{lot.name}</td>
-                      <td className="text-right font-mono text-[var(--pm-text-primary)]">{formatNumber(lot.availableWeight, 4)}</td>
-                      <td className="text-center">
-                        <span className="text-[9px] font-mono text-[var(--pm-text-dim)] bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] px-1.5 py-0.5 rounded">
-                          {lot.barCount} u
-                        </span>
+                      <td className="py-3 font-mono text-[var(--pm-text-dim)] text-[11px]">{lot.processName}</td>
+                      <td className="py-3 font-mono font-bold text-[var(--pm-accent-gold)] tracking-wider text-[11px]">{lot.name}</td>
+                      <td className="py-3 text-right font-mono text-[var(--pm-text-primary)]">{formatNumber(lot.availableWeight, 4)}</td>
+                      <td className="py-3 text-center">
+                        <span className="text-[9px] font-mono text-[var(--pm-text-dim)] bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] px-1.5 py-0.5 rounded">{lot.barCount} u</span>
                       </td>
-                    </motion.tr>
+                    </tr>
                   ))}
                 </tbody>
               </table>
@@ -381,24 +368,22 @@ export default function V2EgresosPage() {
           )}
         </motion.div>
 
-        {/* ═══ RIGHT: Checkout Summary ═══ */}
+        {/* RIGHT: Checkout Summary */}
         <motion.div initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.15, duration: 0.4 }}
-          className="xl:col-span-2 premium-card overflow-hidden"
-        >
-          <div className="px-5 py-3.5 border-b border-[var(--pm-border)]">
+          className="xl:col-span-2 glass-panel rounded-2xl border border-[var(--pm-border)]/40 overflow-hidden">
+          <div className="px-5 py-3.5 border-b border-[var(--pm-border)]/20">
             <div className="flex items-center gap-2">
-              <Send className="w-4 h-4 text-[var(--pm-accent-gold)]" />
-              <span className="text-xs font-mono font-bold text-[var(--pm-text-primary)] uppercase tracking-wider">Caja de Salida</span>
+              <ShoppingCart className="w-4 h-4 text-[var(--pm-accent-gold)]" />
+              <span className="text-xs font-mono font-bold text-[var(--pm-text-primary)] uppercase tracking-wider">Caja de Salida Global</span>
             </div>
           </div>
 
           <div className="p-5 space-y-5">
-            {/* Empty state */}
             {selectedLots.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-10 text-[var(--pm-text-dim)]">
                 <Package className="w-8 h-8 text-[var(--pm-text-dim)]/30 mb-2" />
                 <span className="text-[11px] font-mono text-center">Seleccione lotes del panel izquierdo</span>
-                <p className="text-[9px] font-mono mt-1 text-center">Todos los pesos se agruparán automáticamente.</p>
+                <p className="text-[9px] font-mono mt-1 text-center">Puede seleccionar lotes de diferentes proveedores.</p>
               </div>
             ) : (
               <>
@@ -411,14 +396,14 @@ export default function V2EgresosPage() {
                     {fmtWeightDisplay(totalWeight)}
                   </span>
                   <span className="text-[10px] font-mono text-[var(--pm-text-dim)] block mt-1">
-                    {clientCount} cliente{clientCount !== 1 ? 's' : ''} involucrado{clientCount !== 1 ? 's' : ''}
+                    {clientCount} proveedor{clientCount !== 1 ? 'es' : ''} involucrado{clientCount !== 1 ? 's' : ''} · {selectedLots.length} lote{selectedLots.length !== 1 ? 's' : ''}
                   </span>
                 </div>
 
-                {/* Grouped by client */}
+                {/* Grouped by provider */}
                 <div className="space-y-3">
                   <span className="text-[9px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider block">
-                    Desglose por Cliente ({selectedLots.length} lotes)
+                    Desglose por Proveedor
                   </span>
                   {Object.entries(groupedByClient).map(([cId, lots]) => {
                     const client = lots[0];
@@ -445,19 +430,17 @@ export default function V2EgresosPage() {
                   })}
                 </div>
 
-                {/* Destination input */}
+                {/* Buyer / Destination field */}
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider flex items-center gap-1">
-                    <MapPin className="w-3 h-3" /> Destino
+                    <ShoppingCart className="w-3 h-3" /> ¿A quién se le vende? (Destinatario Final)
                   </label>
-                  <input type="text" placeholder="Ej: CLIENTE FINAL / FUNDICIÓN ABC" value={destination}
+                  <input type="text" placeholder="Ej: REFINERÍA ORO PURO S.A." value={destination}
                     onChange={e => setDestination(e.target.value.toUpperCase())}
                     className="w-full bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] rounded-lg px-3 py-2.5 text-xs font-mono text-[var(--pm-text-primary)] focus:outline-none focus:border-[var(--pm-accent-gold)] transition-colors uppercase placeholder:text-[var(--pm-text-dim)]/30"
-                    required
-                  />
+                    required />
                 </div>
 
-                {/* Dispatch button */}
                 <button type="button" onClick={handleOpenConfirm}
                   disabled={selectedLots.length === 0 || !destination.trim() || status === 'processing'}
                   className="w-full py-3 rounded-lg text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer disabled:opacity-40 flex items-center justify-center gap-2"
@@ -467,10 +450,9 @@ export default function V2EgresosPage() {
                       : 'transparent',
                     color: selectedLots.length > 0 && destination.trim() ? 'var(--pm-accent-gold)' : 'var(--pm-text-dim)',
                     border: `1px solid ${selectedLots.length > 0 && destination.trim() ? 'rgba(212,175,55,0.3)' : 'var(--pm-border)'}`,
-                  }}
-                >
+                  }}>
                   <Send className="w-4 h-4" />
-                  Ejecutar Despacho ({selectedLots.length} lotes)
+                  Ejecutar Despacho ({clientCount} proveedor{clientCount !== 1 ? 'es' : ''}, {selectedLots.length} lote{selectedLots.length !== 1 ? 's' : ''})
                 </button>
               </>
             )}
@@ -482,58 +464,50 @@ export default function V2EgresosPage() {
       <AnimatePresence>
         {showConfirmModal && (
           <motion.div key="confirm-modal" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-          >
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
             <motion.div initial={{ opacity: 0, scale: 0.92, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.92, y: 10 }} transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="w-full max-w-md glass-panel rounded-2xl overflow-hidden"
-            >
-              <div className="px-6 pt-6 pb-4 border-b border-[var(--pm-border)]">
+              className="w-full max-w-md glass-panel rounded-2xl overflow-hidden">
+              <div className="px-6 pt-6 pb-4 border-b border-[var(--pm-border)]/20">
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.2)' }}>
                     <Send className="w-4 h-4 text-[var(--pm-accent-gold)]" />
                   </div>
                   <div>
-                    <span className="text-[9px] font-mono font-bold text-[var(--pm-accent-gold)] uppercase tracking-wider">Confirmar Despacho</span>
-                    <h3 className="text-sm font-sans font-semibold text-[var(--pm-text-primary)] mt-0.5">Resumen de Salida</h3>
+                    <span className="text-[9px] font-mono font-bold text-[var(--pm-accent-gold)] uppercase tracking-wider">Confirmar Despacho Global</span>
+                    <h3 className="text-sm font-sans font-semibold text-[var(--pm-text-primary)] mt-0.5">Resumen de Salida Multi-Proveedor</h3>
                   </div>
                 </div>
               </div>
-
               <div className="p-6 space-y-4">
                 <div className="p-4 rounded-xl border border-[var(--pm-border)] bg-[var(--pm-bg-deepest)]/50 space-y-2 text-[11px] font-mono">
                   <div className="flex justify-between">
-                    <span className="text-[var(--pm-text-dim)]">Destino:</span>
+                    <span className="text-[var(--pm-text-dim)]">Destinatario:</span>
                     <span className="text-[var(--pm-accent-gold)] font-bold">{destination.toUpperCase()}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-[var(--pm-text-dim)]">Proveedores:</span>
+                    <span className="text-[var(--pm-text-primary)] font-bold">{clientCount}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-[var(--pm-text-dim)]">Lotes:</span>
                     <span className="text-[var(--pm-text-primary)] font-bold">{selectedLots.length}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-[var(--pm-text-dim)]">Clientes:</span>
-                    <span className="text-[var(--pm-text-primary)] font-bold">{clientCount}</span>
                   </div>
                   <div className="border-t border-[var(--pm-border)] pt-2 flex justify-between">
                     <span className="text-[var(--pm-text-dim)]">Peso Total:</span>
                     <span className="text-lg font-bold text-[var(--pm-accent-gold)]">{fmtWeightDisplay(totalWeight)}</span>
                   </div>
                   <div className="pt-1 text-[9px] text-[var(--pm-text-dim)]">
-                    Se entregarán {selectedLots.length} lote{selectedLots.length !== 1 ? 's' : ''} con un peso total de {fmtWeightDisplay(totalWeight)} a <strong className="text-[var(--pm-text-primary)]">{destination.toUpperCase()}</strong>.
+                    Se entregarán {selectedLots.length} lote{selectedLots.length !== 1 ? 's' : ''} de {clientCount} proveedor{clientCount !== 1 ? 'es' : ''} con un peso total de {fmtWeightDisplay(totalWeight)} a <strong className="text-[var(--pm-text-primary)]">{destination.toUpperCase()}</strong>.
                   </div>
                 </div>
-
                 <div className="flex gap-3 pt-1">
                   <button type="button" onClick={() => setShowConfirmModal(false)}
-                    className="flex-1 py-2.5 rounded-lg border border-[var(--pm-border)] text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] hover:bg-[var(--pm-bg-tertiary)] text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer"
-                  >Cancelar</button>
+                    className="flex-1 py-2.5 rounded-lg border border-[var(--pm-border)] text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] hover:bg-[var(--pm-bg-tertiary)] text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer">Cancelar</button>
                   <button type="button" onClick={handleDispatch}
                     className="flex-1 py-2.5 rounded-lg text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2"
-                    style={{
-                      background: 'linear-gradient(135deg, rgba(212,175,55,0.2), rgba(212,175,55,0.1))',
-                      color: 'var(--pm-accent-gold)', border: '1px solid rgba(212,175,55,0.3)',
-                    }}
-                  ><Send className="w-4 h-4" /> Confirmar Despacho</button>
+                    style={{ background: 'linear-gradient(135deg, rgba(212,175,55,0.2), rgba(212,175,55,0.1))', color: 'var(--pm-accent-gold)', border: '1px solid rgba(212,175,55,0.3)' }}>
+                    <Send className="w-4 h-4" /> Confirmar Despacho</button>
                 </div>
               </div>
             </motion.div>
@@ -545,29 +519,26 @@ export default function V2EgresosPage() {
       <AnimatePresence>
         {status === 'success' && dispatchResult && (
           <motion.div key="success-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-          >
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
             <motion.div initial={{ opacity: 0, scale: 0.92 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.92 }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="w-full max-w-md glass-panel rounded-2xl overflow-hidden p-6"
-            >
+              className="w-full max-w-md glass-panel rounded-2xl overflow-hidden p-6">
               <div className="flex flex-col items-center space-y-4">
                 <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}
                   className="w-16 h-16 rounded-full flex items-center justify-center" style={{ background: 'rgba(16,185,129,0.1)', border: '2px solid rgba(16,185,129,0.25)' }}>
                   <Check className="w-8 h-8 text-[var(--pm-accent-emerald)]" strokeWidth={2.5} />
                 </motion.div>
-
-                <span className="text-sm font-sans font-bold text-[var(--pm-accent-emerald)]">Despacho Exitoso</span>
+                <span className="text-sm font-sans font-bold text-[var(--pm-accent-emerald)]">Despacho Global Exitoso</span>
                 <span className="text-xs text-[var(--pm-text-dim)] text-center">{message}</span>
 
                 <div className="w-full p-4 rounded-xl border border-[var(--pm-border)] bg-[var(--pm-bg-deepest)]/50 space-y-2 text-[10px] font-mono">
                   <div className="flex justify-between">
-                    <span className="text-[var(--pm-text-dim)]">Destino:</span>
+                    <span className="text-[var(--pm-text-dim)]">Destinatario:</span>
                     <span className="text-[var(--pm-accent-gold)] font-bold">{dispatchResult.destination}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-[var(--pm-text-dim)]">Cliente(s):</span>
-                    <span className="text-[var(--pm-text-primary)] font-bold">{dispatchResult.clientName}</span>
+                    <span className="text-[var(--pm-text-dim)]">Proveedores:</span>
+                    <span className="text-[var(--pm-text-primary)] font-bold">{dispatchResult.providerCount}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-[var(--pm-text-dim)]">Lotes:</span>
@@ -582,14 +553,10 @@ export default function V2EgresosPage() {
                 <div className="flex gap-3 w-full">
                   <button type="button" onClick={() => generatePDF(dispatchResult)}
                     className="flex-[2] py-2.5 rounded-lg text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2"
-                    style={{
-                      background: 'linear-gradient(135deg, rgba(212,175,55,0.2), rgba(212,175,55,0.1))',
-                      color: 'var(--pm-accent-gold)', border: '1px solid rgba(212,175,55,0.3)',
-                    }}
-                  ><Download className="w-4 h-4" /> Descargar PDF</button>
+                    style={{ background: 'linear-gradient(135deg, rgba(212,175,55,0.2), rgba(212,175,55,0.1))', color: 'var(--pm-accent-gold)', border: '1px solid rgba(212,175,55,0.3)' }}>
+                    <Download className="w-4 h-4" /> Descargar PDF</button>
                   <button type="button" onClick={() => { setDispatchResult(null); setStatus('idle'); }}
-                    className="flex-1 py-2.5 rounded-lg border border-[var(--pm-border)] text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] hover:bg-[var(--pm-bg-tertiary)] text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer"
-                  >Cerrar</button>
+                    className="flex-1 py-2.5 rounded-lg border border-[var(--pm-border)] text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] hover:bg-[var(--pm-bg-tertiary)] text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer">Cerrar</button>
                 </div>
               </div>
             </motion.div>
@@ -601,18 +568,16 @@ export default function V2EgresosPage() {
       <AnimatePresence>
         {status === 'error' && (
           <motion.div key="error-banner" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-            className="flex items-center gap-2 p-4 rounded-xl border text-xs font-mono bg-[var(--pm-accent-red)]/10 border-[var(--pm-accent-red)]/25 text-[var(--pm-accent-red)]"
-          >
+            className="flex items-center gap-2 p-4 rounded-xl border text-xs font-mono bg-[var(--pm-accent-red)]/10 border-[var(--pm-accent-red)]/25 text-[var(--pm-accent-red)]">
             <AlertTriangle className="w-4 h-4 shrink-0" />{message}
             <button type="button" onClick={() => setStatus('idle')}
-              className="ml-auto p-1 rounded hover:bg-[var(--pm-accent-red)]/10 transition-colors cursor-pointer"
-            ><X className="w-3.5 h-3.5" /></button>
+              className="ml-auto p-1 rounded hover:bg-[var(--pm-accent-red)]/10 transition-colors cursor-pointer"><X className="w-3.5 h-3.5" /></button>
           </motion.div>
         )}
       </AnimatePresence>
 
       <p className="text-[9px] text-[var(--pm-text-dim)] font-mono text-center opacity-50">
-        Bandes v2 Premium · {allAvailableLots.length} lotes disponibles · {selectedLots.length} seleccionados
+        Bandes v2 Premium · {allAvailableLots.length} lotes disponibles de todos los proveedores · {selectedLots.length} seleccionados
       </p>
     </motion.div>
   );

@@ -46,13 +46,14 @@ export interface Bar {
   fineWeight: number;
   leyAg?: number | null;
   fineWeightAg?: number | null;
-  status: 'IN_STOCK' | 'PROCESANDO' | 'COMPLETADO' | 'EXITED';
+  status: 'POR_VALIDAR' | 'IN_STOCK' | 'PROCESANDO' | 'COMPLETADO' | 'EXITED';
   createdAt: string;
   updatedAt: string;
   clientId: string;
   exitDetailId?: string | null;
   lotId?: string | null;
   client?: { id: string; name: string };
+  packingId?: string | null;
 }
 
 export interface MaterialExit {
@@ -111,7 +112,7 @@ export interface CreateBarRequest {
 
 export interface UpdateBarRequest {
   lotId?: string | null;
-  status?: 'IN_STOCK' | 'PROCESANDO' | 'COMPLETADO' | 'EXITED';
+  status?: 'POR_VALIDAR' | 'IN_STOCK' | 'PROCESANDO' | 'COMPLETADO' | 'EXITED';
   grossWeight?: number;
   purity?: number;
   leyAg?: number;
@@ -182,7 +183,35 @@ export interface BulkUploadRecord {
 }
 
 export interface BulkUploadResult {
+  packingId?: string;
   created: number;
   skipped: number;
   errors: { row: number; message: string }[];
+}
+
+export type PackingStatus = 'PENDING' | 'VALIDATED';
+
+export interface Packing {
+  id: string;
+  fileName: string;
+  clientId: string;
+  totalRows: number;
+  created: number;
+  skipped: number;
+  errors?: { row: number; message: string }[];
+  status: PackingStatus;
+  createdAt: string;
+  updatedAt: string;
+  client?: { id: string; name: string };
+  bars?: Bar[];
+  _count?: { bars: number; pending: number; validated: number };
+}
+
+export interface AvailableLotsGlobalResponse {
+  id: string;
+  name: string;
+  status: 'CLOSED';
+  clientId: string;
+  clientName: string;
+  lots: AvailableLot[];
 }

@@ -7,10 +7,16 @@ datasource db {
 }
 
 enum BarStatus {
+  POR_VALIDAR
   IN_STOCK
   PROCESANDO
   COMPLETADO
   EXITED
+}
+
+enum PackingStatus {
+  PENDING
+  VALIDATED
 }
 
 enum ProcessStatus {
@@ -35,6 +41,7 @@ model Client {
 
   bars      Bar[]
   processes Process[]
+  packings  Packing[]
 }
 
 model Process {
@@ -76,7 +83,7 @@ model Bar {
   fineWeight  Decimal   @db.Decimal(15, 4)
   leyAg        Decimal?  @db.Decimal(7, 4)
   fineWeightAg Decimal?  @db.Decimal(15, 4)
-  status      BarStatus @default(IN_STOCK)
+  status      BarStatus @default(POR_VALIDAR)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
@@ -86,8 +93,26 @@ model Bar {
   exitDetail   ExitDetail?  @relation(fields: [exitDetailId], references: [id])
   lotId        String?
   lot          Lot?         @relation(fields: [lotId], references: [id])
+  packingId    String?
+  packing      Packing?     @relation(fields: [packingId], references: [id])
 
   @@unique([clientId, barNumber])
+}
+
+model Packing {
+  id          String        @id @default(uuid())
+  fileName    String
+  clientId    String
+  totalRows   Int
+  created     Int
+  skipped     Int
+  errors      Json?
+  status      PackingStatus @default(PENDING)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  client Client @relation(fields: [clientId], references: [id])
+  bars   Bar[]
 }
 
 model MaterialExit {

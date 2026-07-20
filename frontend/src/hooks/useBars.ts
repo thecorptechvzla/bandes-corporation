@@ -4,11 +4,12 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api, apiUpload } from '@/lib/api';
 import type { Bar, CreateBarRequest, UpdateBarRequest, BulkUploadResult } from '@/types/api';
 
-export function useBars(filters?: { status?: string; clientId?: string; lotId?: string }) {
+export function useBars(filters?: { status?: string; clientId?: string; lotId?: string; includePorValidar?: boolean }) {
   const params = new URLSearchParams();
   if (filters?.status) params.set('status', filters.status);
   if (filters?.clientId) params.set('clientId', filters.clientId);
   if (filters?.lotId) params.set('lotId', filters.lotId);
+  if (filters?.includePorValidar) params.set('includePorValidar', 'true');
   const qs = params.toString();
 
   return useQuery<Bar[]>({

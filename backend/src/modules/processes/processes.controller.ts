@@ -20,6 +20,11 @@ export class ProcessesController {
     return this.service.findAvailableLots(clientId);
   }
 
+  @Get('available-lots')
+  findAvailableLotsGlobal() {
+    return this.service.findAvailableLotsGlobal();
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.service.findOne(id);

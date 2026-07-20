@@ -83,4 +83,42 @@ export class ProcessesService {
         })),
     }));
   }
+
+  async findAvailableLotsGlobal() {
+    const processes = await this.prisma.process.findMany({
+      where: { status: 'CLOSED' },
+      include: {
+        client: { select: { id: true, name: true } },
+        lots: {
+          include: {
+            bars: {
+              where: { status: 'IN_STOCK' },
+              select: { fineWeight: true, leyAg: true, fineWeightAg: true },
+            },
+          },
+        },
+      },
+      orderBy: { name: 'asc' },
+    });
+
+    return processes
+      .map((p) => ({
+        id: p.id,
+        name: p.name,
+        status: p.status,
+        clientId: p.clientId,
+        clientName: p.client.name,
+        lots: p.lots
+          .filter((l) => l.bars.length > 0)
+          .map((l) => ({
+            id: l.id,
+            name: l.name,
+            availableWeight: Number(
+              l.bars.reduce((sum, b) => sum + Number(b.fineWeight), 0),
+            ),
+            barCount: l.bars.length,
+          })),
+      }))
+      .filter((p) => p.lots.length > 0);
+  }
 }

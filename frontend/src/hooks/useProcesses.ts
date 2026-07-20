@@ -5,6 +5,7 @@ import { api } from '@/lib/api';
 import type {
   Process,
   AvailableLotsResponse,
+  AvailableLotsGlobalResponse,
   CreateProcessRequest,
   UpdateProcessRequest,
 } from '@/types/api';
@@ -37,6 +38,13 @@ export function useAvailableLots(clientId: string | null) {
     queryKey: ['available-lots', clientId],
     queryFn: () => api.get(`/processes/available-lots/${clientId}`).then((r) => r.data),
     enabled: !!clientId,
+  });
+}
+
+export function useAvailableLotsGlobal() {
+  return useQuery<AvailableLotsGlobalResponse[]>({
+    queryKey: ['available-lots', 'global'],
+    queryFn: () => api.get('/processes/available-lots').then((r) => r.data),
   });
 }
 

@@ -3,6 +3,7 @@ import { PrismaService } from '../../prisma/prisma.service.js';
 import ExcelJS from 'exceljs';
 
 export interface BulkUploadResult {
+  packingId?: string;
   created: number;
   skipped: number;
   errors: { row: number; message: string }[];
@@ -20,10 +21,15 @@ interface HeaderMap {
 export class BarsService {
   constructor(private prisma: PrismaService) {}
 
-  async findAll(filters?: { status?: string; clientId?: string; lotId?: string }) {
+  async findAll(filters?: { status?: string; clientId?: string; lotId?: string; includePorValidar?: boolean }) {
+    const statusFilter = filters?.status
+      ? { status: filters.status as any }
+      : filters?.includePorValidar
+        ? {}
+        : { status: { not: 'POR_VALIDAR' as const } };
     return this.prisma.bar.findMany({
       where: {
-        ...(filters?.status && { status: filters.status as any }),
+        ...statusFilter,
         ...(filters?.clientId && { clientId: filters.clientId }),
         ...(filters?.lotId && { lotId: filters.lotId }),
       },
@@ -47,6 +53,7 @@ export class BarsService {
     purity: number;
     clientId: string;
     leyAg?: number;
+    packingId?: string;
   }) {
     const fineWeight = data.grossWeight * (data.purity / 1000);
     const fineWeightAg = data.leyAg
@@ -62,6 +69,8 @@ export class BarsService {
         leyAg: data.leyAg ?? null,
         fineWeightAg,
         clientId: data.clientId,
+        status: 'POR_VALIDAR',
+        packingId: data.packingId,
       },
       include: { client: { select: { id: true, name: true } } },
     });
@@ -77,11 +86,17 @@ export class BarsService {
     });
   }
 
+  async countByPacking(packingId: string, status?: string) {
+    return this.prisma.bar.count({
+      where: { packingId, ...(status && { status: status as any }) },
+    });
+  }
+
   async update(
     id: string,
     data: {
       lotId?: string | null;
-      status?: 'IN_STOCK' | 'PROCESANDO' | 'COMPLETADO' | 'EXITED';
+      status?: 'POR_VALIDAR' | 'IN_STOCK' | 'PROCESANDO' | 'COMPLETADO' | 'EXITED';
     },
   ) {
     const bar = await this.findOne(id);
@@ -216,6 +231,18 @@ export class BarsService {
     }
 
     await this.prisma.$transaction(async (tx) => {
+      const packing = await tx.packing.create({
+        data: {
+          fileName: file.originalname,
+          clientId,
+          totalRows: barsToCreate.length,
+          created: 0,
+          skipped: 0,
+          errors: result.errors.length > 0 ? result.errors : undefined,
+          status: 'PENDING',
+        },
+      });
+
       const created = await tx.bar.createMany({
         data: barsToCreate.map((b) => ({
           barNumber: b.barNumber,
@@ -225,9 +252,18 @@ export class BarsService {
           leyAg: b.leyAg,
           fineWeightAg: b.fineWeightAg,
           clientId,
+          status: 'POR_VALIDAR',
+          packingId: packing.id,
         })),
       });
+
+      await tx.packing.update({
+        where: { id: packing.id },
+        data: { created: created.count, skipped: barsToCreate.length - created.count },
+      });
+
       result.created = created.count;
+      result.packingId = packing.id;
     });
 
     return result;

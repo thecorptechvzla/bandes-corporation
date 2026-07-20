@@ -8,8 +8,9 @@ export class DashboardService {
   async getMetrics() {
     const [recibidoAgg, procesoAgg, recoveredAgg, exitedAgg, mermaFAAgg] =
       await Promise.all([
-        // 1. ORO RECIBIDO: fineWeight total de todas las barras
+        // 1. ORO RECIBIDO: fineWeight de barras validadas (excluye POR_VALIDAR)
         this.prisma.bar.aggregate({
+          where: { status: { not: 'POR_VALIDAR' } },
           _sum: { fineWeight: true },
           _count: true,
         }),
