@@ -398,7 +398,7 @@ export default function V2DashboardPage() {
     {
       label: 'Oro Recibido',
       value: metrics?.oroRecibido.fineWeight ?? 0,
-      sublabel: `FA total: ${formatNumber((metrics?.oroRecibido.fineWeight ?? 0) / (weightUnit === 'kg' ? 1000 : 1), weightUnit === 'kg' ? 4 : 2)} ${weightUnit === 'kg' ? 'kg' : 'g'}`,
+      sublabel: `FA total: ${formatNumber((metrics?.oroRecibido.fineWeight ?? 0) / (weightUnit === 'kg' ? 1000 : 1), 2)} ${weightUnit === 'kg' ? 'kg' : 'g'}`,
       subicon: Scale,
       accent: KPI_COLORS[0].accent,
       tag: KPI_COLORS[0].label,
@@ -418,7 +418,7 @@ export default function V2DashboardPage() {
     {
       label: 'Oro en Bóveda',
       value: metrics?.oroEnBoveda.fineWeight ?? 0,
-      sublabel: `R neto disponible: ${formatNumber((metrics?.oroEnBoveda.fineWeight ?? 0) / (weightUnit === 'kg' ? 1000 : 1), weightUnit === 'kg' ? 4 : 2)} ${weightUnit === 'kg' ? 'kg' : 'g'}`,
+      sublabel: `R neto disponible: ${formatNumber((metrics?.oroEnBoveda.fineWeight ?? 0) / (weightUnit === 'kg' ? 1000 : 1), 2)} ${weightUnit === 'kg' ? 'kg' : 'g'}`,
       subicon: Pickaxe,
       accent: KPI_COLORS[2].accent,
       tag: KPI_COLORS[2].label,
@@ -428,7 +428,7 @@ export default function V2DashboardPage() {
     {
       label: 'Merma',
       value: metrics?.merma.porcentaje ?? 0,
-      sublabel: `Pérdida total: ${formatNumber((metrics?.merma.gramos ?? 0) / (weightUnit === 'kg' ? 1000 : 1), weightUnit === 'kg' ? 4 : 2)} ${weightUnit === 'kg' ? 'kg' : 'g'} Au`,
+      sublabel: `Pérdida total: ${formatNumber((metrics?.merma.gramos ?? 0) / (weightUnit === 'kg' ? 1000 : 1), 2)} ${weightUnit === 'kg' ? 'kg' : 'g'} Au`,
       subicon: Scale,
       accent: KPI_COLORS[3].accent,
       tag: KPI_COLORS[3].label,
@@ -438,7 +438,7 @@ export default function V2DashboardPage() {
   ];
 
   const formatWeightCell = (val: number) =>
-    `${formatNumber(val / (weightUnit === 'kg' ? 1000 : 1), weightUnit === 'kg' ? 4 : 2)} ${weightUnit === 'kg' ? 'kg' : 'g'}`;
+    `${formatNumber(val / (weightUnit === 'kg' ? 1000 : 1), 2)} ${weightUnit === 'kg' ? 'kg' : 'g'}`;
 
   const fmtKg = (val: number) => formatNumber(val / 1000, 2);
 
@@ -547,7 +547,7 @@ export default function V2DashboardPage() {
                   <span className="text-2xl font-mono font-bold text-[var(--pm-text-primary)] tracking-tight">
                     {kpi.postfix === '%'
                       ? `${formatNumber(kpi.value, 1)}`
-                      : formatNumber(kpi.value / (weightUnit === 'kg' ? 1000 : 1), weightUnit === 'kg' ? 4 : 2)}
+                      : formatNumber(kpi.value / (weightUnit === 'kg' ? 1000 : 1), 2)}
                   </span>
                   <span className="text-[11px] text-[var(--pm-text-dim)] font-mono">
                     {kpi.postfix || (weightUnit === 'kg' ? 'kg' : 'g')}
@@ -685,8 +685,8 @@ export default function V2DashboardPage() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <div className="min-w-[700px]">
-              <div className="grid grid-cols-[180px_repeat(5,1fr)] px-6 py-3 border-b border-[var(--pm-border)] text-[10px] font-mono font-bold tracking-[0.1em] uppercase text-[var(--pm-text-dim)]">
+            <div className="min-w-[800px]">
+              <div className="grid grid-cols-[180px_repeat(5,120px)] px-6 py-3 border-b border-[var(--pm-border)] text-[10px] font-mono font-bold tracking-[0.1em] uppercase text-[var(--pm-text-dim)]">
                 <div className="text-left">Cliente</div>
                 <div className="text-right">Ingreso Bruto (KG)</div>
                 <div className="text-right">FA (KG)</div>
@@ -700,7 +700,7 @@ export default function V2DashboardPage() {
                   initial={{ opacity: 0, x: -8 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.45 + idx * 0.04, duration: 0.3 }}
-                  className="grid grid-cols-[180px_repeat(5,1fr)] px-6 py-3 border-b border-[rgba(30,42,69,0.15)] text-[12px] font-mono transition-colors duration-100 hover:bg-[rgba(21,28,45,0.5)]"
+                  className="grid grid-cols-[180px_repeat(5,120px)] px-6 py-3 border-b border-[rgba(30,42,69,0.15)] text-[12px] font-mono transition-colors duration-100 hover:bg-[rgba(21,28,45,0.5)]"
                   style={{ background: idx % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.015)' }}
                 >
                   <div className="text-left font-sans font-semibold text-[var(--pm-text-primary)] truncate">
