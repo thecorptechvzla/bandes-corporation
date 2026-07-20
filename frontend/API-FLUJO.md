@@ -8,19 +8,21 @@
 ## 1. Prisma Schema (Post-Refactor)
 
 ```prisma
-enum BarStatus { IN_STOCK, EXITED }
+enum BarStatus { IN_STOCK, PROCESANDO, COMPLETADO, EXITED }
 enum ProcessStatus { OPEN, CLOSED }
+enum ClientRole { PROVEEDOR, CLIENTE, AMBOS }
 
 model Client {
-  id          String   @id @default(uuid())
-  rif         String   @unique
+  id          String      @id @default(uuid())
+  rif         String      @unique
   name        String
   contactInfo String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  bars        Bar[]
-  exitDetails ExitDetail[]
-  processes   Process[]
+  role        ClientRole  @default(AMBOS)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  bars      Bar[]
+  processes Process[]
 }
 
 model Process {
@@ -31,35 +33,49 @@ model Process {
   client    Client        @relation(fields: [clientId], references: [id])
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
+
   lots Lot[]
+
   @@unique([name, clientId])
 }
 
 model Lot {
-  id        String   @id @default(uuid())
-  name      String
-  processId String
-  process   Process  @relation(fields: [processId], references: [id])
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  bars Bar[]
+  id          String    @id @default(uuid())
+  name        String
+  processId   String
+  process     Process   @relation(fields: [processId], references: [id])
+  operator    String?
+  castingTemp Float?
+  moldCode    String?
+  recovered   Decimal?  @db.Decimal(15, 4)
+  recoveryAt  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  bars         Bar[]
+  exitDetails  ExitDetail[]
 }
 
 model Bar {
   id          String    @id @default(uuid())
-  barNumber   String    @unique
+  barNumber   String
   grossWeight Decimal   @db.Decimal(15, 4)
   purity      Decimal   @db.Decimal(7, 4)
   fineWeight  Decimal   @db.Decimal(15, 4)
+  leyAg        Decimal?  @db.Decimal(7, 4)
+  fineWeightAg Decimal?  @db.Decimal(15, 4)
   status      BarStatus @default(IN_STOCK)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+
   clientId     String
   client       Client       @relation(fields: [clientId], references: [id])
   exitDetailId String?
   exitDetail   ExitDetail?  @relation(fields: [exitDetailId], references: [id])
   lotId        String?
   lot          Lot?         @relation(fields: [lotId], references: [id])
+
+  @@unique([clientId, barNumber])
 }
 
 model MaterialExit {
@@ -67,17 +83,22 @@ model MaterialExit {
   destination String
   totalWeight Decimal  @db.Decimal(15, 4)
   createdAt   DateTime @default(now())
+
   exitDetails ExitDetail[]
 }
 
 model ExitDetail {
   id            String @id @default(uuid())
   weightAported Decimal @db.Decimal(15, 4)
+
   exitId   String
   exit     MaterialExit @relation(fields: [exitId], references: [id])
-  lotId    String
-  lot      Lot @relation(fields: [lotId], references: [id])
+
+  lotId String
+  lot   Lot @relation(fields: [lotId], references: [id])
+
   bars Bar[]
+
   @@unique([exitId, lotId])
 }
 ```
@@ -92,8 +113,8 @@ model ExitDetail {
 |--------|------|------|-----------|
 | `GET` | `/clients` | — | `Client[]` ordenados por name |
 | `GET` | `/clients/:id` | — | `Client` |
-| `POST` | `/clients` | `{ rif, name, contactInfo? }` | `Client` creado (name → UPPERCASE) |
-| `PATCH` | `/clients/:id` | `{ rif?, name?, contactInfo? }` | `Client` actualizado |
+| `POST` | `/clients` | `{ rif, name, contactInfo?, role? }` | `Client` creado (name → UPPERCASE, RIF → `J${raw}`) |
+| `PATCH` | `/clients/:id` | `{ rif?, name?, contactInfo?, role? }` | `Client` actualizado |
 | `DELETE` | `/clients/:id` | — | `Client` eliminado (solo si 0 barras en historial) |
 | `GET` | `/clients/:id/balance` | — | `{ clientId, clientName, totalReceived, totalExited, inStock, currentBalance }` |
 
@@ -101,9 +122,12 @@ model ExitDetail {
 
 | Método | Ruta | Body / Query | Respuesta |
 |--------|------|--------------|-----------|
-| `GET` | `/bars` | `?status=IN_STOCK&clientId=uuid` | `Bar[]` (con `client: { id, name }`) |
+| `GET` | `/bars` | `?status=IN_STOCK&clientId=uuid&lotId=uuid` | `Bar[]` (con `client: { id, name }`) |
 | `GET` | `/bars/:id` | — | `Bar` (con client) |
-| `POST` | `/bars` | `{ barNumber, grossWeight, clientId, purity }` | `Bar` (fineWeight auto-calc) |
+| `POST` | `/bars` | `{ barNumber, grossWeight, clientId, purity, leyAg? }` | `Bar` (fineWeight y fineWeightAg auto-calc) |
+| `POST` | `/bars/bulk-upload` | `FormData: file (CSV), clientId` | `Bar[]` creados |
+| `PATCH` | `/bars/:id` | `{ lotId?, status? }` | `Bar` actualizado |
+| `DELETE` | `/bars/:id` | — | `Bar` eliminado |
 
 ### Processes — `/processes`
 
@@ -113,7 +137,8 @@ model ExitDetail {
 | `GET` | `/processes/:id` | — | `Process` (con client + lots) |
 | `GET` | `/processes/client/:clientId` | — | `Process[]` (con `lots`) |
 | `POST` | `/processes` | `{ name, clientId }` | `Process` creado |
-| **`GET`** | **`/processes/available-lots/:clientId`** | — | **NUEVO** — Procesos CLOSED con lotes + bars IN_STOCK |
+| `PATCH` | `/processes/:id` | `{ name?, status? }` | `Process` actualizado |
+| `GET` | `/processes/available-lots/:clientId` | — | Procesos CLOSED con lotes + bars IN_STOCK |
 
 ### Lots — `/lots`
 
@@ -177,6 +202,8 @@ model ExitDetail {
 
 ### `POST /material-exits` (REFACTORIZADO)
 
+Selecciona barras con status `IN_STOCK` o `COMPLETADO` dentro de los lotes.
+
 **Request:**
 ```json
 { "destination": "CLIENTE DESTINO", "lotIds": ["uuid-lote-1", "uuid-lote-2"] }
@@ -236,7 +263,7 @@ model ExitDetail {
    → Backend: $transaction {
        Create MaterialExit
        Create ExitDetail x lote
-       Update bars → EXITED
+        Update bars (IN_STOCK / COMPLETADO) → EXITED
      }
 
 5. ✅ Respuesta: MaterialExit con detalles
@@ -252,6 +279,7 @@ interface Client {
   rif: string;
   name: string;
   contactInfo?: string;
+  role: 'PROVEEDOR' | 'CLIENTE' | 'AMBOS';
   createdAt: string;
   updatedAt: string;
 }
@@ -285,7 +313,9 @@ interface Bar {
   grossWeight: number;
   purity: number;
   fineWeight: number;
-  status: 'IN_STOCK' | 'EXITED';
+  leyAg?: number;
+  fineWeightAg?: number;
+  status: 'IN_STOCK' | 'PROCESANDO' | 'COMPLETADO' | 'EXITED';
   createdAt: string;
   updatedAt: string;
   clientId: string;
@@ -353,14 +383,12 @@ interface CreateMaterialExitRequest {
 
 ---
 
-## 7. Cambios Post-Refactor (Backend)
+## 7. Cambios Respecto a la Versión Anterior del Backend
 
 | Archivo | Cambio |
 |---------|--------|
-| `prisma/schema.prisma` | +`ProcessStatus` enum, +`Process.status`, ExitDetail per-lote |
-| `processes.service.ts` | +`findAvailableLots()` |
-| `processes.controller.ts` | +`GET /processes/available-lots/:clientId` |
-| `material-exits.service.ts` | `create()` acepta `{ destination, lotIds }`, $transaction por lote |
-| `material-exits.controller.ts` | Actualizar body type |
-| `bars.service.ts` | Eliminar `autoSelect()` |
-| `bars.controller.ts` | Eliminar `POST /bars/auto-select` |
+| `prisma/schema.prisma` | +`ClientRole` enum, +`Client.role`, +`BarStatus.PROCESANDO`/`COMPLETADO`, +`Bar.leyAg`/`fineWeightAg`, +`Lot.operator`/`castingTemp`/`moldCode`/`recovered`/`recoveryAt`, `barNumber` ahora es compuesto `@@unique([clientId, barNumber])` |
+| `clients` | +`role` en DTOs y service (`PROVEEDOR`/`CLIENTE`/`AMBOS`), `balance()` usa `totalReceived - totalExited` |
+| `bars` | +`bulkCreate()` (carga CSV), +`update()`/`remove()`, se eliminó `autoSelect()` |
+| `processes` | +`findAvailableLots()`, +`update()` (cambiar nombre/status) |
+| `material-exits` | `create()` busca bars con `IN_STOCK` o `COMPLETADO` (ya no solo `IN_STOCK`) |
