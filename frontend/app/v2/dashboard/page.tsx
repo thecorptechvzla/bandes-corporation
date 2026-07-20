@@ -50,15 +50,34 @@ const KPI_COLORS = [
 
 const KPI_ICONS = [ClipboardList, Flame, Warehouse, TrendingDown];
 
-const CYAN_SCALE = (t: number) => {
-  const i = Math.min(t, 1);
-  return `rgba(14, 165, 233, ${0.25 + i * 0.75})`;
-};
+function hashStr(s: string): number {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) {
+    h = ((h << 5) - h) + s.charCodeAt(i);
+    h |= 0;
+  }
+  return Math.abs(h);
+}
 
-const GOLD_SCALE = (t: number) => {
-  const i = Math.min(t, 1);
-  return `rgba(212, 175, 55, ${0.25 + i * 0.75})`;
-};
+function makeCyanColor(name: string, intensity: number): string {
+  const hue = 180 + (hashStr(name) % 16);
+  const sat = 75 + (hashStr(name + 'sat') % 20);
+  const lit = 28 + intensity * 28;
+  return `hsl(${hue}, ${sat}%, ${lit}%)`;
+}
+
+function makeGoldColor(name: string, intensity: number): string {
+  const hue = 37 + (hashStr(name) % 14);
+  const sat = 55 + (hashStr(name + 'sat') % 20);
+  const lit = 28 + intensity * 28;
+  return `hsl(${hue}, ${sat}%, ${lit}%)`;
+}
+
+function darkenHsl(hsl: string): string {
+  const m = hsl.match(/hsl\((\d+),\s*(\d+)%,\s*(\d+)%\)/);
+  if (!m) return 'rgba(10,15,26,0.85)';
+  return `hsl(${m[1]}, ${m[2]}%, ${Math.max(6, Math.round(parseInt(m[3]) * 0.25))}%)`;
+}
 
 function TreemapTooltip({
   active, payload, accent, scaleLabel, weightUnit,
@@ -71,12 +90,13 @@ function TreemapTooltip({
   const dec = weightUnit === 'kg' ? 4 : 2;
   return (
     <div
-      className="rounded-xl border px-4 py-3 text-[11px] font-mono space-y-1.5 min-w-[190px]"
+      className="rounded-lg border px-3.5 py-2.5 text-[10px] font-mono space-y-1 min-w-[170px]"
       style={{
-        background: 'rgba(10, 15, 26, 0.92)',
-        backdropFilter: 'blur(12px)',
-        borderColor: `${accent}60`,
-        boxShadow: `0 0 30px ${accent}25, 0 8px 32px rgba(0,0,0,0.6)`,
+        background: 'rgba(10, 15, 26, 0.88)',
+        backdropFilter: 'blur(8px)',
+        borderColor: `${accent}40`,
+        borderWidth: 1,
+        boxShadow: `0 0 20px ${accent}15, 0 4px 16px rgba(0,0,0,0.5)`,
       }}
     >
       <div className="flex items-center gap-2 text-[9px] text-[var(--pm-text-dim)] uppercase tracking-[0.12em] font-bold">
@@ -98,6 +118,189 @@ function TreemapTooltip({
           </span>
         </p>
       </div>
+    </div>
+  );
+}
+
+interface CustomBlockProps {
+  x?: number;
+  y?: number;
+  width?: number;
+  height?: number;
+  name?: string;
+  value?: number;
+  pct?: number;
+  fill?: string;
+  accent?: string;
+  glowColor?: string;
+  index?: number;
+  weightUnit?: string;
+}
+
+function CustomTreemapBlock(props: CustomBlockProps) {
+  const {
+    x = 0, y = 0, width = 0, height = 0,
+    name = '', value = 0, pct = 0, fill = '#0D1520',
+    accent = '#00E5FF', glowColor = '#00E5FF', weightUnit = 'g',
+  } = props;
+  const [hovered, setHovered] = useState(false);
+
+  if (width <= 0 || height <= 0) return null;
+
+  const uid = name.replace(/[^a-zA-Z0-9]/g, '');
+  const darkFill = darkenHsl(fill);
+  const divisor = weightUnit === 'kg' ? 1000 : 1;
+  const dec = weightUnit === 'kg' ? 4 : 2;
+  const weightLabel = `${formatNumber(value / divisor, dec)} ${weightUnit}`;
+
+  const showName = width > 50 && height > 40;
+  const showWeight = width > 60 && height > 60;
+  const showPct = width > 70 && height > 80;
+
+  return (
+    <g
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{ cursor: 'pointer' }}
+    >
+      <defs>
+        <linearGradient id={`bg-${uid}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={fill} stopOpacity={1} />
+          <stop offset="100%" stopColor={darkFill} stopOpacity={1} />
+        </linearGradient>
+        <filter id={`glow-${uid}`}>
+          <feGaussianBlur stdDeviation="4" result="blur" />
+          <feComposite in="SourceGraphic" in2="blur" operator="over" />
+        </filter>
+      </defs>
+
+      <rect
+        x={x}
+        y={y}
+        width={width}
+        height={height}
+        fill={`url(#bg-${uid})`}
+        rx={8}
+      />
+
+      <rect
+        x={x}
+        y={y}
+        width={width}
+        height={height}
+        fill="none"
+        stroke={accent}
+        strokeOpacity={hovered ? 0.5 : 0.2}
+        strokeWidth={hovered ? 1.5 : 0.75}
+        rx={8}
+      />
+
+      {hovered && (
+        <>
+          <rect
+            x={x - 1}
+            y={y - 1}
+            width={width + 2}
+            height={height + 2}
+            fill="none"
+            stroke={glowColor}
+            strokeWidth={2}
+            rx={9}
+            opacity={0.6}
+            filter={`url(#glow-${uid})`}
+          />
+          <rect
+            x={x - 1}
+            y={y - 1}
+            width={width + 2}
+            height={height + 2}
+            fill="none"
+            stroke={glowColor}
+            strokeWidth={6}
+            rx={10}
+            opacity={0.15}
+            style={{ filter: 'blur(5px)' }}
+          />
+        </>
+      )}
+
+      {showName && (
+        <text
+          x={x + width / 2}
+          y={y + height / 2 - (showWeight ? 12 : showPct ? 16 : 0)}
+          textAnchor="middle"
+          dominantBaseline="central"
+          fill="#F4F4F5"
+          fontFamily="'JetBrains Mono', 'Fira Code', monospace"
+          fontSize={height > 100 ? 14 : height > 70 ? 12 : 10}
+          fontWeight={800}
+          style={{ textShadow: '0 2px 8px rgba(0,0,0,0.95), 0 0 4px rgba(0,0,0,0.8)' }}
+        >
+          {name.length > (width > 120 ? 22 : width > 80 ? 16 : 10)
+            ? `${name.slice(0, width > 120 ? 22 : width > 80 ? 16 : 10)}…`
+            : name}
+        </text>
+      )}
+
+      {showWeight && (
+        <text
+          x={x + width / 2}
+          y={y + height / 2 + 14}
+          textAnchor="middle"
+          dominantBaseline="central"
+          fill="#E2E8F0"
+          fontFamily="'JetBrains Mono', 'Fira Code', monospace"
+          fontSize={height > 100 ? 12 : 10}
+          fontWeight={600}
+          opacity={0.9}
+          style={{ textShadow: '0 1px 6px rgba(0,0,0,0.9)' }}
+        >
+          {weightLabel}
+        </text>
+      )}
+
+      {showPct && (
+        <text
+          x={x + width / 2}
+          y={y + height / 2 + 30}
+          textAnchor="middle"
+          dominantBaseline="central"
+          fill={accent}
+          fontFamily="'JetBrains Mono', 'Fira Code', monospace"
+          fontSize={10}
+          fontWeight={600}
+          opacity={0.7}
+          style={{ textShadow: '0 1px 4px rgba(0,0,0,0.9)' }}
+        >
+          {formatNumber(pct, 1)}%
+        </text>
+      )}
+    </g>
+  );
+}
+
+function TreemapLegend({
+  data, weightUnit,
+}: {
+  data: { name: string; value: number; pct: number; fill: string }[];
+  weightUnit: string;
+}) {
+  const divisor = weightUnit === 'kg' ? 1000 : 1;
+  const dec = weightUnit === 'kg' ? 4 : 2;
+  return (
+    <div className="flex flex-wrap gap-x-5 gap-y-1 px-4 pb-3 pt-2.5 border-t border-[var(--pm-border)]/30 text-[9px] font-mono">
+      {data.map(item => (
+        <div key={item.name} className="flex items-center gap-1.5 whitespace-nowrap">
+          <span className="w-2 h-2 rounded-full shrink-0" style={{ background: item.fill }} />
+          <span className="text-[var(--pm-text-primary)] font-semibold">{item.name}:</span>
+          <span className="text-[var(--pm-text-dim)]">
+            {formatNumber(item.value / divisor, dec)} {weightUnit}
+          </span>
+          <span className="text-[var(--pm-text-dim)] opacity-60">
+            ({formatNumber(item.pct, 1)}%)
+          </span>
+        </div>
+      ))}
     </div>
   );
 }
@@ -166,12 +369,10 @@ export default function V2DashboardPage() {
     const total = Object.values(map).reduce((s, v) => s + v, 0);
     const maxVal = Math.max(...Object.values(map), 1);
     return Object.entries(map)
-      .map(([name, value]) => ({
-        name,
-        value,
-        pct: total > 0 ? (value / total) * 100 : 0,
-        fill: CYAN_SCALE(value / maxVal),
-      }))
+      .map(([name, value]) => {
+        const intensity = value / maxVal;
+        return { name, value, pct: total > 0 ? (value / total) * 100 : 0, fill: makeCyanColor(name, intensity) };
+      })
       .sort((a, b) => b.value - a.value);
   }, [bars]);
 
@@ -186,12 +387,10 @@ export default function V2DashboardPage() {
     const total = Object.values(map).reduce((s, v) => s + v, 0);
     const maxVal = Math.max(...Object.values(map), 1);
     return Object.entries(map)
-      .map(([name, value]) => ({
-        name,
-        value,
-        pct: total > 0 ? (value / total) * 100 : 0,
-        fill: GOLD_SCALE(value / maxVal),
-      }))
+      .map(([name, value]) => {
+        const intensity = value / maxVal;
+        return { name, value, pct: total > 0 ? (value / total) * 100 : 0, fill: makeGoldColor(name, intensity) };
+      })
       .sort((a, b) => b.value - a.value);
   }, [exits]);
 
@@ -244,21 +443,26 @@ export default function V2DashboardPage() {
   const renderTreemap = (
     data: { name: string; value: number; pct: number; fill: string }[],
     accent: string,
+    glowColor: string,
     scaleLabel: string,
   ) => (
-    <ResponsiveContainer width="100%" height={340}>
-      <Treemap
-        data={data}
-        dataKey="value"
-        aspectRatio={4 / 3}
-        stroke="var(--pm-bg-deepest)"
-        isAnimationActive={true}
-      >
-        <Tooltip
-          content={<TreemapTooltip accent={accent} scaleLabel={scaleLabel} weightUnit={weightUnit} />}
-        />
-      </Treemap>
-    </ResponsiveContainer>
+    <>
+      <ResponsiveContainer width="100%" height={340}>
+        <Treemap
+          data={data}
+          dataKey="value"
+          aspectRatio={4 / 3}
+          stroke="transparent"
+          isAnimationActive={true}
+          content={<CustomTreemapBlock accent={accent} glowColor={glowColor} weightUnit={weightUnit} />}
+        >
+          <Tooltip
+            content={<TreemapTooltip accent={accent} scaleLabel={scaleLabel} weightUnit={weightUnit} />}
+          />
+        </Treemap>
+      </ResponsiveContainer>
+      {data.length > 1 && <TreemapLegend data={data} weightUnit={weightUnit} />}
+    </>
   );
 
   const renderDetailTable = (
@@ -398,9 +602,7 @@ export default function V2DashboardPage() {
           ) : showTableIngresos ? (
             renderDetailTable(ingresosTreemap, 'var(--pm-accent-sky)')
           ) : (
-            <div className="p-2">
-              {renderTreemap(ingresosTreemap, '#0EA5E9', 'PROVEEDOR')}
-            </div>
+            renderTreemap(ingresosTreemap, '#00E5FF', '#00E5FF', 'PROVEEDOR')
           )}
         </motion.div>
 
@@ -442,9 +644,7 @@ export default function V2DashboardPage() {
           ) : showTableEgresos ? (
             renderDetailTable(egresosTreemap, 'var(--pm-accent-gold)')
           ) : (
-            <div className="p-2">
-              {renderTreemap(egresosTreemap, '#D4AF37', 'CLIENTE')}
-            </div>
+            renderTreemap(egresosTreemap, '#D5B042', '#D5B042', 'CLIENTE')
           )}
         </motion.div>
       </div>
