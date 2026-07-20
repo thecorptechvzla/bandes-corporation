@@ -440,6 +440,8 @@ export default function V2DashboardPage() {
   const formatWeightCell = (val: number) =>
     `${formatNumber(val / (weightUnit === 'kg' ? 1000 : 1), weightUnit === 'kg' ? 4 : 2)} ${weightUnit === 'kg' ? 'kg' : 'g'}`;
 
+  const fmtKg = (val: number) => formatNumber(val / 1000, 4);
+
   const renderTreemap = (
     data: { name: string; value: number; pct: number; fill: string }[],
     accent: string,
@@ -683,50 +685,46 @@ export default function V2DashboardPage() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="premium-table w-full">
-              <thead>
-                <tr>
-                  <th>Cliente</th>
-                  <th className="text-right">Ingreso Bruto</th>
-                  <th className="text-right">FA (g)</th>
-                  <th className="text-right">R (g)</th>
-                  <th className="text-right">Egresos</th>
-                  <th className="text-right">Balance</th>
-                </tr>
-              </thead>
-              <tbody>
-                {clientBalances.map((c, idx) => (
-                  <motion.tr
-                    key={c.id}
-                    initial={{ opacity: 0, x: -8 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.45 + idx * 0.04, duration: 0.3 }}
-                  >
-                    <td className="font-sans font-semibold text-[var(--pm-text-primary)]">
-                      {c.name}
-                    </td>
-                    <td className="text-right text-[var(--pm-text-dim)]">
-                      {formatWeightCell(c.ingresoBruto)}
-                    </td>
-                    <td className="text-right text-[var(--pm-accent-gold)]">
-                      {formatWeightCell(c.fa)}
-                    </td>
-                    <td className="text-right text-[var(--pm-accent-amber)]">
-                      {formatWeightCell(c.r)}
-                    </td>
-                    <td className="text-right text-[var(--pm-accent-red)]">
-                      {formatWeightCell(c.egresos)}
-                    </td>
-                    <td
-                      className={`text-right font-bold ${c.balance >= 0 ? 'text-[var(--pm-accent-emerald)]' : 'text-[var(--pm-accent-red)]'}`}
-                    >
-                      {formatWeightCell(Math.abs(c.balance))}
-                      {c.balance < 0 ? ' −' : ''}
-                    </td>
-                  </motion.tr>
-                ))}
-              </tbody>
-            </table>
+            <div className="min-w-[700px]">
+              <div className="grid grid-cols-[1.5fr_1fr_1fr_1fr_1fr_1fr] px-6 py-3 border-b border-[var(--pm-border)] text-[10px] font-mono font-bold tracking-[0.1em] uppercase text-[var(--pm-text-dim)]">
+                <div className="text-left">Cliente</div>
+                <div className="text-right">Ingreso Bruto (KG)</div>
+                <div className="text-right">FA (KG)</div>
+                <div className="text-right">R (KG)</div>
+                <div className="text-right">Egresos (KG)</div>
+                <div className="text-right">Balance (KG)</div>
+              </div>
+              {clientBalances.map((c, idx) => (
+                <motion.div
+                  key={c.id}
+                  initial={{ opacity: 0, x: -8 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.45 + idx * 0.04, duration: 0.3 }}
+                  className="grid grid-cols-[1.5fr_1fr_1fr_1fr_1fr_1fr] px-6 py-3 border-b border-[rgba(30,42,69,0.15)] text-[12px] font-mono transition-colors duration-100 hover:bg-[rgba(21,28,45,0.5)]"
+                  style={{ background: idx % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.015)' }}
+                >
+                  <div className="text-left font-sans font-semibold text-[var(--pm-text-primary)] truncate">
+                    {c.name}
+                  </div>
+                  <div className="text-right text-[var(--pm-text-dim)]">
+                    {fmtKg(c.ingresoBruto)}
+                  </div>
+                  <div className="text-right text-[var(--pm-accent-gold)]">
+                    {fmtKg(c.fa)}
+                  </div>
+                  <div className="text-right text-[var(--pm-accent-amber)]">
+                    {fmtKg(c.r)}
+                  </div>
+                  <div className="text-right text-[var(--pm-accent-red)]">
+                    {fmtKg(c.egresos)}
+                  </div>
+                  <div className={`text-right font-bold ${c.balance >= 0 ? 'text-[var(--pm-accent-emerald)]' : 'text-[var(--pm-accent-red)]'}`}>
+                    {fmtKg(Math.abs(c.balance))}
+                    {c.balance < 0 ? ' −' : ''}
+                  </div>
+                </motion.div>
+              ))}
+            </div>
           </div>
         )}
       </motion.div>
