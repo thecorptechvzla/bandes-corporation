@@ -321,6 +321,9 @@ export default function PackingPage() {
         id: selectedPacking.id,
         bars: [{ barId, grossWeight: bw, purity: la, leyAg: lag > 0 ? lag : undefined }],
       });
+      if (photoUploadedUrl) {
+        setBarPhotoUrls(prev => ({ ...prev, [barId]: photoUploadedUrl }));
+      }
       setConfirmModal(null);
       setSelectedBarId(null);
       resetPhotoState();
