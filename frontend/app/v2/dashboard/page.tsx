@@ -558,18 +558,20 @@ export default function V2DashboardPage() {
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.35 }}>
       {/* Filters */}
-      <DashboardFilters
-        startDate={filterStartDate}
-        endDate={filterEndDate}
-        supplierId={filterSupplierId}
-        clientId={filterClientId}
-        onChange={({ startDate, endDate, supplierId, clientId }) => {
-          setFilterStartDate(startDate);
-          setFilterEndDate(endDate);
-          setFilterSupplierId(supplierId);
-          setFilterClientId(clientId);
-        }}
-      />
+      <div className="mb-5">
+        <DashboardFilters
+          startDate={filterStartDate}
+          endDate={filterEndDate}
+          supplierId={filterSupplierId}
+          clientId={filterClientId}
+          onChange={({ startDate, endDate, supplierId, clientId }) => {
+            setFilterStartDate(startDate);
+            setFilterEndDate(endDate);
+            setFilterSupplierId(supplierId);
+            setFilterClientId(clientId);
+          }}
+        />
+      </div>
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">

@@ -263,7 +263,7 @@ export default function DashboardFilters({
   return (
     <>
       {/* Desktop */}
-      <div className="hidden md:flex items-end gap-4 flex-wrap glass-panel p-4 rounded-xl border border-[var(--pm-border)]">
+      <div className="hidden md:flex items-center justify-center gap-6 flex-wrap glass-panel px-6 py-5 rounded-xl border border-[var(--pm-border)]">
         {content}
       </div>
 
