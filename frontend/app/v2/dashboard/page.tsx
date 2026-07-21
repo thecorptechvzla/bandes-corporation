@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useMemo, useState, useEffect } from 'react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { useBars } from '@/hooks/useBars';
 import { useClients } from '@/hooks/useClients';
 import { useMaterialExits } from '@/hooks/useExits';
@@ -9,10 +9,11 @@ import { useProcesses } from '@/hooks/useProcesses';
 import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
 import {
   ClipboardList, Flame, Warehouse, Inbox, TrendingDown,
-  Coins, Scale, Pickaxe, LayoutGrid, Table2,
+  Coins, Scale, Pickaxe, LayoutGrid, Table2, X, Building2,
 } from 'lucide-react';
 import { AreaChart, Area, ResponsiveContainer, Treemap, Tooltip } from 'recharts';
 import { formatNumber } from '@/lib/format';
+import { SupplierDirectory } from '@/components/SupplierDirectory';
 
 function SparklineArea({ data, color, id }: { data: number[]; color: string; id: string }) {
   const chartData = data.map((v, i) => ({ i, v }));
@@ -308,6 +309,12 @@ export default function V2DashboardPage() {
 
   const [showTableIngresos, setShowTableIngresos] = useState(false);
   const [showTableEgresos, setShowTableEgresos] = useState(false);
+  const [isIngresoModalOpen, setIsIngresoModalOpen] = useState(false);
+
+  const ingresoBars = useMemo(
+    () => bars.filter((b) => b.status !== 'POR_VALIDAR'),
+    [bars],
+  );
 
   const flowData = useMemo(() => {
     const days: Record<string, { in: number; out: number }> = {};
@@ -521,7 +528,8 @@ export default function V2DashboardPage() {
               initial={{ opacity: 0, y: -24 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.08 * idx, duration: 0.45 }}
-              className="premium-card relative overflow-hidden active:scale-[0.97] transition-all duration-150 cursor-default"
+              className={`premium-card relative overflow-hidden active:scale-[0.97] transition-all duration-150 ${idx === 0 ? 'cursor-pointer' : 'cursor-default'}`}
+              onClick={idx === 0 ? () => setIsIngresoModalOpen(true) : undefined}
             >
               <SparklineArea data={kpi.spark} color={kpi.accent} id={`kpi-${idx}`} />
 
@@ -742,6 +750,52 @@ export default function V2DashboardPage() {
       <p className="text-[9px] text-[var(--pm-text-dim)] font-mono text-center opacity-50 mt-5">
         Datos actualizados en tiempo real · Bandes v2 Premium
       </p>
+
+      {/* Supplier directory modal — triggered from Oro Recibido card */}
+      <AnimatePresence>
+        {isIngresoModalOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6"
+          >
+            <div
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              onClick={() => setIsIngresoModalOpen(false)}
+            />
+            <motion.div
+              initial={{ scale: 0.94, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.94, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="relative glass-panel w-full max-w-4xl h-[80vh] max-h-[800px] rounded-2xl border border-[var(--pm-border)] flex flex-col overflow-hidden"
+            >
+              <div className="flex items-center justify-between p-4 sm:p-5 border-b border-[var(--pm-border)]">
+                <div className="flex items-center gap-3">
+                  <Building2 className="w-5 h-5 text-[var(--pm-accent-gold)]" />
+                  <h2 className="text-sm font-bold uppercase tracking-wider text-[var(--pm-text-primary)]">
+                    Directorio de Proveedores
+                  </h2>
+                </div>
+                <button
+                  onClick={() => setIsIngresoModalOpen(false)}
+                  className="w-7 h-7 rounded-lg bg-[var(--pm-bg-deepest)]/50 border border-[var(--pm-border)] flex items-center justify-center text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] transition-all"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+              <SupplierDirectory
+                bars={ingresoBars}
+                clients={clients}
+                purityFirst
+                showSearch
+              />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }

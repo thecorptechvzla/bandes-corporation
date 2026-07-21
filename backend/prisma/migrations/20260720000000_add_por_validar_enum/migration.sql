@@ -1,0 +1,2 @@
+-- AlterEnum
+ALTER TYPE "BarStatus" ADD VALUE 'POR_VALIDAR' BEFORE 'IN_STOCK';
