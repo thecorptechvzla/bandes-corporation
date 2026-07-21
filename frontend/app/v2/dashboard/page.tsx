@@ -310,6 +310,8 @@ export default function V2DashboardPage() {
   const [showTableIngresos, setShowTableIngresos] = useState(false);
   const [showTableEgresos, setShowTableEgresos] = useState(false);
   const [isIngresoModalOpen, setIsIngresoModalOpen] = useState(false);
+  const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
+  const [isClientBarModalOpen, setIsClientBarModalOpen] = useState(false);
 
   const ingresoBars = useMemo(
     () => bars.filter((b) => b.status !== 'POR_VALIDAR'),
@@ -711,7 +713,8 @@ export default function V2DashboardPage() {
                   initial={{ opacity: 0, x: -8 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.45 + idx * 0.04, duration: 0.3 }}
-                  className="grid grid-cols-[180px_repeat(5,120px)_100px_80px] px-6 py-3 border-b border-[rgba(30,42,69,0.15)] text-[12px] font-mono transition-colors duration-100 hover:bg-[rgba(21,28,45,0.5)]"
+                  onClick={() => { setSelectedClientId(c.id); setIsClientBarModalOpen(true); }}
+                  className="grid grid-cols-[180px_repeat(5,120px)_100px_80px] px-6 py-3 border-b border-[rgba(30,42,69,0.15)] text-[12px] font-mono transition-all duration-100 hover:bg-white/[0.04] active:scale-[0.98] cursor-pointer"
                   style={{ background: idx % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.015)' }}
                 >
                   <div className="text-left font-sans font-semibold text-[var(--pm-text-primary)] truncate">
@@ -750,6 +753,52 @@ export default function V2DashboardPage() {
       <p className="text-[9px] text-[var(--pm-text-dim)] font-mono text-center opacity-50 mt-5">
         Datos actualizados en tiempo real · Bandes v2 Premium
       </p>
+
+      {/* Client bar detail modal — triggered from balance table row */}
+      <AnimatePresence>
+        {isClientBarModalOpen && selectedClientId && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6"
+          >
+            <div
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              onClick={() => setIsClientBarModalOpen(false)}
+            />
+            <motion.div
+              initial={{ scale: 0.94, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.94, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="relative glass-panel w-full max-w-4xl h-[80vh] max-h-[800px] rounded-2xl border border-[var(--pm-border)] flex flex-col overflow-hidden"
+            >
+              <div className="flex items-center justify-between p-4 sm:p-5 border-b border-[var(--pm-border)]">
+                <div className="flex items-center gap-3">
+                  <Building2 className="w-5 h-5 text-[var(--pm-accent-gold)]" />
+                  <h2 className="text-sm font-bold uppercase tracking-wider text-[var(--pm-text-primary)]">
+                    {clients.find((cl) => cl.id === selectedClientId)?.name ?? 'Detalle de barras'}
+                  </h2>
+                </div>
+                <button
+                  onClick={() => setIsClientBarModalOpen(false)}
+                  className="w-7 h-7 rounded-lg bg-[var(--pm-bg-deepest)]/50 border border-[var(--pm-border)] flex items-center justify-center text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] transition-all"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+              <SupplierDirectory
+                bars={ingresoBars}
+                clients={clients}
+                filterSupplierId={selectedClientId}
+                purityFirst
+              />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Supplier directory modal — triggered from Oro Recibido card */}
       <AnimatePresence>

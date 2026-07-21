@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, Fragment } from 'react';
+import React, { useState, useMemo, useEffect, Fragment } from 'react';
 import { formatNumber } from '@/lib/format';
 import { motion, AnimatePresence } from 'motion/react';
 import {
@@ -14,6 +14,7 @@ interface SupplierDirectoryProps {
   isLoading?: boolean;
   purityFirst?: boolean;
   showSearch?: boolean;
+  filterSupplierId?: string;
 }
 
 const STATUS_STYLES: Record<string, string> = {
@@ -38,14 +39,21 @@ export function SupplierDirectory({
   isLoading,
   purityFirst = false,
   showSearch = false,
+  filterSupplierId,
 }: SupplierDirectoryProps) {
   const SUPPLIERS_PER_PAGE = 10;
   const BARS_PER_PAGE = 10;
 
   const [searchCode, setSearchCode] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [expandedSupplierId, setExpandedSupplierId] = useState<string | null>(null);
+  const [expandedSupplierId, setExpandedSupplierId] = useState<string | null>(
+    filterSupplierId ?? null,
+  );
   const [supplierBarPages, setSupplierBarPages] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    if (filterSupplierId) setExpandedSupplierId(filterSupplierId);
+  }, [filterSupplierId]);
 
   const { visibleClients, barsByClient } = useMemo(() => {
     const q = searchCode.toLowerCase();
@@ -66,6 +74,7 @@ export function SupplierDirectory({
 
     const filtered = (clients ?? [])
       .filter((c) => {
+        if (filterSupplierId) return c.id === filterSupplierId;
         if (!latestDate.has(c.id)) return false;
         if (!q) return true;
         return grouped.get(c.id)?.some((b) => b.barNumber.toLowerCase().includes(q)) ?? false;
@@ -73,7 +82,7 @@ export function SupplierDirectory({
       .sort((a, b) => (latestDate.get(b.id) ?? 0) - (latestDate.get(a.id) ?? 0));
 
     return { visibleClients: filtered, barsByClient: grouped };
-  }, [bars, clients, searchCode]);
+  }, [bars, clients, searchCode, filterSupplierId]);
 
   const supplierTotalPages = Math.max(1, Math.ceil(visibleClients.length / SUPPLIERS_PER_PAGE));
   const safeSupplierPage = Math.min(currentPage, supplierTotalPages);
