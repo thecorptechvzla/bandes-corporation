@@ -52,9 +52,11 @@ export function useCreateProcess() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: CreateProcessRequest) =>
-      api.post('/processes', data).then((r) => r.data),
+      api.post('/processes/full', data).then((r) => r.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['processes'] });
+      queryClient.invalidateQueries({ queryKey: ['bars'] });
+      queryClient.invalidateQueries({ queryKey: ['lots'] });
     },
   });
 }

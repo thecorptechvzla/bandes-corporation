@@ -36,6 +36,64 @@ export class ProcessesService {
     });
   }
 
+  async createFullProcess(data: {
+    clientId: string;
+    barIds: string[];
+    operator: string;
+    moldCode: string;
+    castingTemp?: number;
+  }) {
+    return this.prisma.$transaction(
+      async (tx) => {
+        const count = await tx.process.count({
+          where: { clientId: data.clientId },
+        });
+        const seq = count + 1;
+        const name = `P-${seq}`;
+
+        const process = await tx.process.create({
+          data: { name, clientId: data.clientId },
+        });
+
+        const lot = await tx.lot.create({
+          data: {
+            name: `LOTE-${data.moldCode}`,
+            processId: process.id,
+            operator: data.operator,
+            castingTemp: data.castingTemp ?? 1064,
+            moldCode: data.moldCode,
+          },
+        });
+
+        const bars = await tx.bar.findMany({
+          where: { id: { in: data.barIds } },
+        });
+
+        const invalid = bars.filter(
+          (b) => b.status !== 'IN_STOCK' && b.status !== 'POR_VALIDAR',
+        );
+        if (invalid.length > 0) {
+          throw new Error(
+            `Barras no disponibles: ${invalid.map((b) => b.barNumber).join(', ')} (status: ${invalid.map((b) => b.status).join(', ')})`,
+          );
+        }
+
+        await tx.bar.updateMany({
+          where: { id: { in: data.barIds } },
+          data: { status: 'PROCESANDO', lotId: lot.id },
+        });
+
+        return {
+          process,
+          lot,
+          barCount: data.barIds.length,
+          barNumbers: bars.map((b) => b.barNumber),
+        };
+      },
+      { timeout: 10_000 },
+    );
+  }
+
   async update(id: string, data: { name?: string; status?: 'OPEN' | 'CLOSED' }) {
     const process = await this.findOne(id);
 

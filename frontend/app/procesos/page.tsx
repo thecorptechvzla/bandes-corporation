@@ -10,7 +10,7 @@ import {
 import { useClients } from '@/hooks/useClients';
 import { useBars, useUpdateBar } from '@/hooks/useBars';
 import { useProcesses, useCreateProcess, useUpdateProcess } from '@/hooks/useProcesses';
-import { useLots, useCreateLot, useUpdateLot } from '@/hooks/useLots';
+import { useLots, useUpdateLot } from '@/hooks/useLots';
 import { formatNumber, formatWeight } from '@/lib/format';
 import { useGoldTraceability } from '@/context/GoldTraceabilityContext';
 import type { Process, Lot, Bar } from '@/types/api';
@@ -23,7 +23,6 @@ export default function ProcesosPage() {
   const { data: lots = [] } = useLots();
 
   const createProcess = useCreateProcess();
-  const createLot = useCreateLot();
   const updateBar = useUpdateBar();
   const updateLot = useUpdateLot();
   const updateProcess = useUpdateProcess();
@@ -115,21 +114,13 @@ export default function ProcesosPage() {
     setCreating(true);
     try {
       const clientId = uniqueClients[0];
-      const processName = `P-${new Date().toISOString().slice(0, 10)}-${clientId.slice(0, 6)}`;
-
-      const process = await createProcess.mutateAsync({ name: processName, clientId });
-      const lot = await createLot.mutateAsync({
-        name: `LOTE-${moldCode}`,
-        processId: process.id,
-        operator,
+      await createProcess.mutateAsync({
+        clientId,
+        barIds: selectedBarIds,
+        operator: operator.trim(),
+        moldCode: moldCode.trim(),
         castingTemp: parseInt(castingTemp) || 1064,
-        moldCode,
       });
-
-      for (const barId of selectedBarIds) {
-        await updateBar.mutateAsync({ id: barId, data: { lotId: lot.id, status: 'PROCESANDO' } });
-      }
-
       setBatchSuccess(`¡Proceso de fundición para ${selectedBarIds.length} barra(s) iniciado con éxito!`);
       setSelectedBarIds([]);
       setMoldCode('');
@@ -137,7 +128,7 @@ export default function ProcesosPage() {
       setCastingTemp('1064');
       setCreating(false);
     } catch (err: any) {
-      setBatchError(err?.message || 'Error al iniciar la fundición.');
+      setBatchError(err?.response?.data?.message || err?.message || 'Error al iniciar la fundición.');
       setCreating(false);
     }
   };

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3001';
+const BACKEND_URL = process.env.NODE_ENV === 'development'
+  ? 'http://127.0.0.1:3001'
+  : (process.env.BACKEND_URL || 'http://127.0.0.1:3001');
 const TIMEOUT_MS = 15_000;
 
 async function proxy(request: NextRequest, params: { path: string[] }, method: string) {

@@ -119,8 +119,11 @@ export interface UpdateBarRequest {
 }
 
 export interface CreateProcessRequest {
-  name: string;
   clientId: string;
+  barIds: string[];
+  operator: string;
+  moldCode: string;
+  castingTemp?: number;
 }
 
 export interface UpdateProcessRequest {

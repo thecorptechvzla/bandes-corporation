@@ -12,7 +12,7 @@ import './globals.css';
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      retry: 1,
+      retry: process.env.NODE_ENV === 'development' ? 0 : 1,
       retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10_000),
       refetchOnWindowFocus: false,
       refetchOnReconnect: false,

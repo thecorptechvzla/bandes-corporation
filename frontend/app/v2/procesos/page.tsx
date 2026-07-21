@@ -10,7 +10,7 @@ import {
 import { useClients } from '@/hooks/useClients';
 import { useBars, useUpdateBar } from '@/hooks/useBars';
 import { useProcesses, useCreateProcess, useUpdateProcess } from '@/hooks/useProcesses';
-import { useLots, useCreateLot, useUpdateLot } from '@/hooks/useLots';
+import { useLots, useUpdateLot } from '@/hooks/useLots';
 import { formatNumber } from '@/lib/format';
 import type { Process, Lot, Bar } from '@/types/api';
 
@@ -20,7 +20,6 @@ export default function V2ProcesosPage() {
   const { data: processes = [] } = useProcesses();
   const { data: lots = [] } = useLots();
   const createProcess = useCreateProcess();
-  const createLot = useCreateLot();
   const updateBar = useUpdateBar();
   const updateLot = useUpdateLot();
   const updateProcess = useUpdateProcess();
@@ -175,25 +174,20 @@ export default function V2ProcesosPage() {
     setCreating(true);
     try {
       const clientId = uniqueClients[0];
-      const processName = `P-${new Date().toISOString().slice(0, 10)}-${clientId.slice(0, 6)}`;
-      const process = await createProcess.mutateAsync({ name: processName, clientId });
-      const lot = await createLot.mutateAsync({
-        name: `LOTE-${moldCode}`,
-        processId: process.id,
-        operator,
+      await createProcess.mutateAsync({
+        clientId,
+        barIds: selectedBarIds,
+        operator: operator.trim(),
+        moldCode: moldCode.trim(),
         castingTemp: parseInt(castingTemp) || 1064,
-        moldCode,
       });
-      for (const barId of selectedBarIds) {
-        await updateBar.mutateAsync({ id: barId, data: { lotId: lot.id, status: 'PROCESANDO' } });
-      }
       setFormSuccess(`Fundición iniciada — ${selectedBarIds.length} barra(s) en crisol.`);
       setSelectedBarIds([]);
       setMoldCode('');
       setOperator('');
       setCastingTemp('1064');
     } catch (err: any) {
-      setFormError(err?.message || 'Error al iniciar la fundición.');
+      setFormError(err?.response?.data?.message || err?.message || 'Error al iniciar la fundición.');
     } finally {
       setCreating(false);
     }

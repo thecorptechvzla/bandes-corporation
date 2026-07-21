@@ -9,7 +9,7 @@ import {
 import { useClients } from '@/hooks/useClients';
 import { useBars, useUpdateBar } from '@/hooks/useBars';
 import { useProcesses, useCreateProcess, useUpdateProcess } from '@/hooks/useProcesses';
-import { useLots, useCreateLot, useUpdateLot } from '@/hooks/useLots';
+import { useLots, useUpdateLot } from '@/hooks/useLots';
 import { useRole } from '@/context/RoleContext';
 import { formatWeight } from '@/lib/format';
 import { HudButton } from '@/components/tactical/HudButton';
@@ -27,7 +27,6 @@ export default function ReactorCorePage() {
   const canDispatch = hasRole('OWNER', 'SUPERADMIN');
 
   const createProcess = useCreateProcess();
-  const createLot = useCreateLot();
   const updateBar = useUpdateBar();
   const updateLot = useUpdateLot();
   const updateProcess = useUpdateProcess();
@@ -144,21 +143,13 @@ export default function ReactorCorePage() {
     setCreating(true);
     try {
       const clientId = uniqueClients[0];
-      const processName = `P-${new Date().toISOString().slice(0, 10)}-${clientId.slice(0, 6)}`;
-
-      const process = await createProcess.mutateAsync({ name: processName, clientId });
-      const lot = await createLot.mutateAsync({
-        name: `LOTE-${moldCode}`,
-        processId: process.id,
-        operator,
+      await createProcess.mutateAsync({
+        clientId,
+        barIds: selectedBarIds,
+        operator: operator.trim(),
+        moldCode: moldCode.trim(),
         castingTemp: parseInt(castingTemp) || 1064,
-        moldCode,
       });
-
-      for (const barId of selectedBarIds) {
-        await updateBar.mutateAsync({ id: barId, data: { lotId: lot.id, status: 'PROCESANDO' } });
-      }
-
       setBatchSuccess(`Fundición iniciada — ${selectedBarIds.length} barra(s) en crisol.`);
       setSelectedBarIds([]);
       setMoldCode('');
