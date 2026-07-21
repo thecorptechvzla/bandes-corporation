@@ -85,6 +85,9 @@ export default function PackingPage() {
   const [photoBlob, setPhotoBlob] = useState<Blob | null>(null);
   const [photoPreviewUrl, setPhotoPreviewUrl] = useState<string | null>(null);
   const [photoUploadedUrl, setPhotoUploadedUrl] = useState<string | null>(null);
+  const [evidenceBarId, setEvidenceBarId] = useState<string | null>(null);
+  const [barPhotoUrls, setBarPhotoUrls] = useState<Record<string, string>>({});
+  const spValuesRef = useRef<Record<string, { grossWeight: number; purity: number; leyAg?: number }>>({});
 
   useEffect(() => {
     if (clients.length > 0) {
@@ -103,6 +106,7 @@ export default function PackingPage() {
   useEffect(() => {
     if (selectedPacking?.bars) {
       const edits: Record<string, { barNumber: string; grossWeight: string; purity: string; leyAg: string }> = {};
+      const sp: Record<string, { grossWeight: number; purity: number; leyAg?: number }> = {};
       selectedPacking.bars.forEach(b => {
         edits[b.id] = {
           barNumber: b.barNumber,
@@ -110,8 +114,14 @@ export default function PackingPage() {
           purity: String(Number(b.purity)),
           leyAg: b.leyAg != null ? String(Number(b.leyAg)) : '',
         };
+        sp[b.id] = {
+          grossWeight: Number(b.grossWeight),
+          purity: Number(b.purity),
+          leyAg: b.leyAg != null ? Number(b.leyAg) : undefined,
+        };
       });
       setValidationEdits(edits);
+      spValuesRef.current = sp;
       setValidationResult(null);
     }
   }, [selectedPacking]);
@@ -344,10 +354,11 @@ export default function PackingPage() {
   }, [photoPreviewUrl]);
 
   const handleUsePhoto = useCallback(async () => {
-    if (!photoBlob) return;
+    if (!photoBlob || !confirmModal) return;
     try {
       const url = await uploadPhoto(photoBlob);
       setPhotoUploadedUrl(url);
+      setBarPhotoUrls(prev => ({ ...prev, [confirmModal.barId]: url }));
       if (photoPreviewUrl) URL.revokeObjectURL(photoPreviewUrl);
       setPhotoBlob(null);
       setPhotoPreviewUrl(null);
@@ -355,7 +366,7 @@ export default function PackingPage() {
     } catch {
       console.error('Upload failed');
     }
-  }, [photoBlob, photoPreviewUrl, uploadPhoto]);
+  }, [photoBlob, photoPreviewUrl, uploadPhoto, confirmModal]);
 
   const modalLiveFA = useMemo(() => {
     if (!confirmModal) return 0;
@@ -854,8 +865,21 @@ export default function PackingPage() {
                         const origGross = Number(bar.grossWeight);
                         const origPurity = Number(bar.purity);
                         return (
-                          <tr key={bar.id} onClick={() => handleRowSelect(bar.id, bar.status)}
-                            className={`${idx % 2 === 0 ? 'bg-transparent' : 'bg-[var(--pm-bg-base)]/20'} hover:bg-[var(--pm-bg-hover)]/40 transition-all cursor-pointer ${!isPorValidar ? 'opacity-50' : ''} ${isSelected ? 'ring-1 ring-[var(--pm-accent-gold)] bg-[var(--pm-accent-gold)]/5' : ''}`}>
+                          <tr key={bar.id} onClick={() => {
+                            if (bar.status === 'IN_STOCK') {
+                              setEvidenceBarId(bar.id);
+                            } else if (bar.status === 'POR_VALIDAR') {
+                              handleRowSelect(bar.id, bar.status);
+                            }
+                          }}
+                            className={`
+                              ${idx % 2 === 0 ? 'bg-transparent' : 'bg-[var(--pm-bg-base)]/20'}
+                              hover:bg-[var(--pm-bg-hover)]/40 transition-all
+                              ${bar.status === 'IN_STOCK' ? 'cursor-pointer hover:bg-[var(--pm-accent-emerald)]/5' : ''}
+                              ${bar.status === 'POR_VALIDAR' ? 'cursor-pointer' : ''}
+                              ${!isPorValidar && bar.status !== 'IN_STOCK' ? 'opacity-50' : ''}
+                              ${isSelected ? 'ring-1 ring-[var(--pm-accent-gold)] bg-[var(--pm-accent-gold)]/5' : ''}
+                            `}>
                             <td className="py-2.5 px-3 text-center">
                               {isPorValidar && (
                                 <div className={`w-3.5 h-3.5 rounded-full border-2 transition-all ${isSelected ? 'border-[var(--pm-accent-gold)] bg-[var(--pm-accent-gold)] shadow-[0_0_6px_rgba(212,175,55,0.4)]' : 'border-[var(--pm-text-dim)]/30'}`} />
@@ -1064,6 +1088,145 @@ export default function PackingPage() {
           </motion.div>
         </div>
       )}
+
+      {/* Evidence Modal */}
+      <AnimatePresence>
+        {evidenceBarId && selectedPacking?.bars && (() => {
+          const bar = selectedPacking.bars.find(b => b.id === evidenceBarId);
+          if (!bar || bar.status !== 'IN_STOCK') return null;
+          const sp = spValuesRef.current[bar.id];
+          const spGross = sp?.grossWeight ?? Number(bar.grossWeight);
+          const spPurity = sp?.purity ?? Number(bar.purity);
+          const spLeyAg = sp?.leyAg;
+          const validatedGross = Number(bar.grossWeight);
+          const validatedPurity = Number(bar.purity);
+          const validatedLeyAg = bar.leyAg != null ? Number(bar.leyAg) : undefined;
+          const fa = validatedGross * (validatedPurity / 1000);
+          const fe = fa * 0.99;
+          const delta = validatedGross - spGross;
+          const photoUrl = barPhotoUrls[bar.id];
+          const validatedAt = bar.updatedAt;
+          return (
+            <motion.div key="evidence-modal" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+              onClick={() => setEvidenceBarId(null)}
+            >
+              <motion.div initial={{ opacity: 0, scale: 0.92, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.92, y: 10 }} transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+                className="w-full max-w-lg glass-panel rounded-2xl overflow-hidden border border-[var(--pm-border)]/40"
+                onClick={e => e.stopPropagation()}
+              >
+                {/* Header */}
+                <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-[var(--pm-border)]/20">
+                  <div>
+                    <span className="text-[9px] font-mono font-bold text-[var(--pm-accent-cyan)] uppercase tracking-wider flex items-center gap-1.5">
+                      <ClipboardCheck className="w-3.5 h-3.5" /> EVIDENCIA DE VALIDACIÓN
+                    </span>
+                    <h2 className="text-lg font-mono font-bold text-[var(--pm-text-primary)] mt-0.5 tracking-tight">
+                      {bar.barNumber}
+                    </h2>
+                  </div>
+                  <div className="text-right">
+                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[var(--pm-accent-emerald)]/10 border border-[var(--pm-accent-emerald)]/20">
+                      <Check className="w-3 h-3 text-[var(--pm-accent-emerald)]" />
+                      <span className="text-[9px] font-mono font-bold text-[var(--pm-accent-emerald)]">VALIDADO</span>
+                    </div>
+                    {validatedAt && (
+                      <span className="text-[8px] font-mono text-[var(--pm-text-dim)] block mt-1">
+                        {new Date(validatedAt).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="p-6 space-y-5">
+                  {/* Photo */}
+                  <div className="rounded-xl overflow-hidden border border-[var(--pm-border)] bg-black/60 flex items-center justify-center min-h-[160px]">
+                    {photoUrl ? (
+                      <img
+                        src={`/api/blob/view?url=${encodeURIComponent(photoUrl)}`}
+                        alt={`Barra ${bar.barNumber}`}
+                        className="w-full object-cover max-h-56"
+                      />
+                    ) : (
+                      <div className="text-center p-6">
+                        <Camera className="w-8 h-8 text-[var(--pm-text-dim)]/30 mx-auto mb-2" />
+                        <p className="text-[10px] font-mono text-[var(--pm-text-dim)]/40">Sin evidencia fotográfica</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Technical Grid */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="p-3 rounded-xl border border-[var(--pm-border)]/40 bg-[var(--pm-bg-deepest)]/30">
+                      <span className="text-[8px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider block text-center">SEGÚN PACKING (SP)</span>
+                      <div className="mt-2 space-y-1 text-center">
+                        <div>
+                          <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block">Bruto</span>
+                          <span className="text-sm font-mono font-bold text-[var(--pm-text-primary)]">{formatNumber(spGross, 2)} g</span>
+                        </div>
+                        <div>
+                          <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block">Ley Au</span>
+                          <span className="text-sm font-mono font-bold text-[var(--pm-text-primary)]">{formatNumber(spPurity, 1)} ‰</span>
+                        </div>
+                        {spLeyAg != null && (
+                          <div>
+                            <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block">Ley Ag</span>
+                            <span className="text-sm font-mono font-bold text-[var(--pm-text-primary)]">{formatNumber(spLeyAg, 1)} ‰</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="p-3 rounded-xl border border-[var(--pm-accent-cyan)]/30 bg-[var(--pm-accent-cyan)]/5">
+                      <span className="text-[8px] font-mono text-[var(--pm-accent-cyan)] uppercase tracking-wider block text-center">REAL (VALIDADO)</span>
+                      <div className="mt-2 space-y-1 text-center">
+                        <div>
+                          <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block">Bruto</span>
+                          <span className="text-sm font-mono font-bold text-[var(--pm-accent-cyan)]">{formatNumber(validatedGross, 2)} g</span>
+                        </div>
+                        <div>
+                          <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block">Ley Au</span>
+                          <span className="text-sm font-mono font-bold text-[var(--pm-accent-cyan)]">{formatNumber(validatedPurity, 1)} ‰</span>
+                        </div>
+                        {validatedLeyAg != null && (
+                          <div>
+                            <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block">Ley Ag</span>
+                            <span className="text-sm font-mono font-bold text-[var(--pm-accent-cyan)]">{formatNumber(validatedLeyAg, 1)} ‰</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* FA + FE + Delta */}
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="p-3 rounded-xl border border-[var(--pm-accent-gold)]/20 bg-[var(--pm-accent-gold)]/5">
+                      <span className="text-[8px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider block text-center">FA</span>
+                      <span className="text-sm font-mono font-bold text-[var(--pm-accent-gold)] block text-center">{formatNumber(fa, 4)} g</span>
+                    </div>
+                    <div className="p-3 rounded-xl border border-[var(--pm-accent-cyan)]/20 bg-[var(--pm-accent-cyan)]/5">
+                      <span className="text-[8px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider block text-center">FE</span>
+                      <span className="text-sm font-mono font-bold text-[var(--pm-accent-cyan)] block text-center">{formatNumber(fe, 4)} g</span>
+                    </div>
+                    <div className={`p-3 rounded-xl border ${delta >= 0 ? 'border-[var(--pm-accent-emerald)]/20 bg-[var(--pm-accent-emerald)]/5' : 'border-[var(--pm-accent-red)]/20 bg-[var(--pm-accent-red)]/5'}`}>
+                      <span className="text-[8px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider block text-center">DELTA</span>
+                      <span className={`text-sm font-mono font-bold block text-center ${delta >= 0 ? 'text-[var(--pm-accent-emerald)]' : 'text-[var(--pm-accent-red)]'}`}>
+                        {delta >= 0 ? '+' : ''}{formatNumber(delta, 2)} g
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Close */}
+                  <button type="button" onClick={() => setEvidenceBarId(null)}
+                    className="w-full py-2.5 rounded-lg border border-[var(--pm-border)] text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] hover:bg-[var(--pm-bg-tertiary)] text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer">
+                    CERRAR FICHA
+                  </button>
+                </div>
+              </motion.div>
+            </motion.div>
+          );
+        })()}
+      </AnimatePresence>
 
       {/* Ingest Status Overlay */}
       <AnimatePresence>
