@@ -14,6 +14,7 @@ import {
 import { AreaChart, Area, ResponsiveContainer, Treemap, Tooltip } from 'recharts';
 import { formatNumber } from '@/lib/format';
 import { SupplierDirectory } from '@/components/SupplierDirectory';
+import DashboardFilters from '@/components/DashboardFilters';
 
 function SparklineArea({ data, color, id }: { data: number[]; color: string; id: string }) {
   const chartData = data.map((v, i) => ({ i, v }));
@@ -298,11 +299,27 @@ function TreemapLegend({
 }
 
 export default function V2DashboardPage() {
+  const [filterStartDate, setFilterStartDate] = useState('');
+  const [filterEndDate, setFilterEndDate] = useState('');
+  const [filterSupplierId, setFilterSupplierId] = useState('');
+  const [filterClientId, setFilterClientId] = useState('');
+
+  const filters = {
+    startDate: filterStartDate || undefined,
+    endDate: filterEndDate || undefined,
+    supplierId: filterSupplierId || undefined,
+    clientId: filterClientId || undefined,
+  };
+
   const { data: bars = [] } = useBars();
   const { data: clients = [] } = useClients();
   const { data: exits = [] } = useMaterialExits();
   const { data: processes = [] } = useProcesses();
-  const { data: metrics, isLoading } = useDashboardMetrics();
+  const { data: metrics, isLoading } = useDashboardMetrics(
+    filterStartDate || filterEndDate || filterSupplierId || filterClientId
+      ? filters
+      : undefined,
+  );
 
   const [isMounted, setIsMounted] = useState(false);
   useEffect(() => { setIsMounted(true); }, []);
@@ -313,25 +330,45 @@ export default function V2DashboardPage() {
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
   const [isClientBarModalOpen, setIsClientBarModalOpen] = useState(false);
 
+  const filteredBars = useMemo(() => {
+    let result = bars;
+    if (filterSupplierId) result = result.filter((b) => b.clientId === filterSupplierId);
+    if (filterStartDate) result = result.filter((b) => new Date(b.createdAt) >= new Date(filterStartDate));
+    if (filterEndDate) result = result.filter((b) => new Date(b.createdAt) <= new Date(filterEndDate + 'T23:59:59'));
+    return result;
+  }, [bars, filterSupplierId, filterStartDate, filterEndDate]);
+
+  const filteredExits = useMemo(() => {
+    let result = exits;
+    if (filterClientId) {
+      result = result.filter((e) =>
+        e.exitDetails.some((d) => d.lot?.process?.client?.id === filterClientId),
+      );
+    }
+    if (filterStartDate) result = result.filter((e) => new Date(e.createdAt) >= new Date(filterStartDate));
+    if (filterEndDate) result = result.filter((e) => new Date(e.createdAt) <= new Date(filterEndDate + 'T23:59:59'));
+    return result;
+  }, [exits, filterClientId, filterStartDate, filterEndDate]);
+
   const ingresoBars = useMemo(
-    () => bars.filter((b) => b.status !== 'POR_VALIDAR'),
-    [bars],
+    () => filteredBars.filter((b) => b.status !== 'POR_VALIDAR'),
+    [filteredBars],
   );
 
   const flowData = useMemo(() => {
     const days: Record<string, { in: number; out: number }> = {};
-    bars.forEach(b => {
+    filteredBars.forEach(b => {
       const d = new Date(b.createdAt).toISOString().split('T')[0];
       if (!days[d]) days[d] = { in: 0, out: 0 };
       days[d].in += Number(b.fineWeight);
     });
-    exits.forEach(e => {
+    filteredExits.forEach(e => {
       const d = new Date(e.createdAt).toISOString().split('T')[0];
       if (!days[d]) days[d] = { in: 0, out: 0 };
       days[d].out += Number(e.totalWeight);
     });
     return Object.values(days);
-  }, [bars, exits]);
+  }, [filteredBars, filteredExits]);
 
   const sparkIn = useMemo(() => flowData.map(d => d.in).slice(-14), [flowData]);
   const sparkOut = useMemo(() => flowData.map(d => d.out).slice(-14), [flowData]);
@@ -340,15 +377,15 @@ export default function V2DashboardPage() {
   const sparkPorRefundir = useMemo(() => flowData.map(d => d.in).slice(-14), [flowData]);
 
   const clientBalances = useMemo(() => {
-    if (!clients || !bars) return [];
+    if (!clients || !filteredBars) return [];
     return clients.map(client => {
-      const clientBars = bars.filter(b => b.clientId === client.id);
+      const clientBars = filteredBars.filter(b => b.clientId === client.id);
       const ingresoBruto = clientBars.reduce((s, b) => s + Number(b.grossWeight), 0);
       const fa = clientBars.reduce((s, b) => s + Number(b.fineWeight), 0);
       const clientProcesses = processes.filter(p => p.clientId === client.id);
       const r = clientProcesses.reduce((s, p) =>
         s + (p.lots?.reduce((sl, l) => sl + Number(l.recovered ?? 0), 0) ?? 0), 0);
-      const clientExits = exits.filter(e =>
+      const clientExits = filteredExits.filter(e =>
         e.exitDetails.some(d => d.lot?.process?.client?.id === client.id));
       const egresos = clientExits.reduce((s, e) => s + Number(e.totalWeight), 0);
       const balance = fa + r - egresos;
@@ -361,7 +398,7 @@ export default function V2DashboardPage() {
     })
       .filter(c => c.ingresoBruto > 0 || c.fa > 0 || c.egresos > 0)
       .sort((a, b) => b.ingresoBruto - a.ingresoBruto);
-  }, [clients, bars, processes, exits]);
+  }, [clients, filteredBars, processes, filteredExits]);
 
   const totalBalance = useMemo(
     () => clientBalances.reduce((s, c) => s + c.balance, 0),
@@ -370,7 +407,7 @@ export default function V2DashboardPage() {
 
   const ingresosTreemap = useMemo(() => {
     const map: Record<string, number> = {};
-    bars.forEach(b => {
+    filteredBars.forEach(b => {
       const name = b.client?.name || 'Desconocido';
       map[name] = (map[name] || 0) + Number(b.grossWeight);
     });
@@ -382,11 +419,11 @@ export default function V2DashboardPage() {
         return { name, value, pct: total > 0 ? (value / total) * 100 : 0, fill: makeCyanColor(name, intensity) };
       })
       .sort((a, b) => b.value - a.value);
-  }, [bars]);
+  }, [filteredBars]);
 
   const egresosTreemap = useMemo(() => {
     const map: Record<string, number> = {};
-    exits.forEach(e => {
+    filteredExits.forEach(e => {
       e.exitDetails.forEach(d => {
         const clientName = d.lot?.process?.client?.name || e.destination || 'Desconocido';
         map[clientName] = (map[clientName] || 0) + Number(d.weightAported);
@@ -400,7 +437,7 @@ export default function V2DashboardPage() {
         return { name, value, pct: total > 0 ? (value / total) * 100 : 0, fill: makeGoldColor(name, intensity) };
       })
       .sort((a, b) => b.value - a.value);
-  }, [exits]);
+  }, [filteredExits]);
 
   const kpiData = [
     {
@@ -520,6 +557,20 @@ export default function V2DashboardPage() {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.35 }}>
+      {/* Filters */}
+      <DashboardFilters
+        startDate={filterStartDate}
+        endDate={filterEndDate}
+        supplierId={filterSupplierId}
+        clientId={filterClientId}
+        onChange={({ startDate, endDate, supplierId, clientId }) => {
+          setFilterStartDate(startDate);
+          setFilterEndDate(endDate);
+          setFilterSupplierId(supplierId);
+          setFilterClientId(clientId);
+        }}
+      />
+
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
         {kpiData.map((kpi, idx) => {
