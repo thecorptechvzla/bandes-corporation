@@ -5,8 +5,9 @@ import { motion, AnimatePresence } from 'motion/react';
 import {
   Flame, Thermometer, User, Weight, Plus, CheckCircle2, Play,
   ChevronRight, ChevronDown, Lock, AlertTriangle, Microscope,
-  Layers, Sparkles, X, Zap, Eye,
+  Layers, Sparkles, X, Zap, Eye, Cpu,
 } from 'lucide-react';
+import { HudButton } from '@/components/tactical/HudButton';
 import { useClients } from '@/hooks/useClients';
 import { useBars, useUpdateBar } from '@/hooks/useBars';
 import { useProcesses, useCreateProcess, useUpdateProcess } from '@/hooks/useProcesses';
@@ -40,6 +41,8 @@ export default function V2ProcesosPage() {
   const [recoveryError, setRecoveryError] = useState('');
   const [recoverySuccess, setRecoverySuccess] = useState(false);
   const [confirming, setConfirming] = useState(false);
+
+  const [hardwareMessage, setHardwareMessage] = useState('');
 
   const [showCompleted, setShowCompleted] = useState(false);
 
@@ -613,6 +616,16 @@ export default function V2ProcesosPage() {
                       className="w-full bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] rounded-lg px-3 py-2.5 text-sm font-mono text-[var(--pm-text-primary)] focus:outline-none focus:border-[var(--pm-accent-amber)] transition-colors"
                     />
                   </div>
+                  <div className="flex justify-start pb-1">
+                    <HudButton variant="ghost" className="text-[10px]"
+                      onClick={() => {
+                        setHardwareMessage('>_ SISTEMA: INTEGRACIÓN DE BÁSCULA PRÓXIMAMENTE...  ');
+                        setTimeout(() => setHardwareMessage(''), 3000);
+                      }}
+                    >
+                      ⚖️ OBTENER PESO
+                    </HudButton>
+                  </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1">
                       <label className="text-[10px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider">Ley Au (‰)</label>
@@ -629,7 +642,33 @@ export default function V2ProcesosPage() {
                       />
                     </div>
                   </div>
+                  <div className="flex justify-center pt-1">
+                    <HudButton variant="ghost" className="text-[10px]"
+                      onClick={() => {
+                        setHardwareMessage('>_ SISTEMA: INTEGRACIÓN DE ESPECTRÓMETRO PRÓXIMAMENTE...  ');
+                        setTimeout(() => setHardwareMessage(''), 3000);
+                      }}
+                    >
+                      🔬 OBTENER LEYES
+                    </HudButton>
+                  </div>
                 </div>
+
+                {/* Hardware notification overlay */}
+                <AnimatePresence>
+                  {hardwareMessage && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -6, scale: 0.96 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -6, scale: 0.96 }}
+                      transition={{ duration: 0.2 }}
+                      className="p-3 rounded-xl border bg-blue-500/10 border-blue-500/30 flex items-center gap-2"
+                    >
+                      <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse flex-shrink-0" />
+                      <span className="text-[10px] font-mono text-blue-300/90">{hardwareMessage}</span>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
 
                 {/* Live discrepancy */}
                 {recWeightNum > 0 && (
