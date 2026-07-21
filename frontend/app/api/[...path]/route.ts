@@ -1,8 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 const BACKEND_URL = process.env.NODE_ENV === 'development'
-  ? 'http://127.0.0.1:3001'
-  : (process.env.BACKEND_URL || 'http://127.0.0.1:3001');
+  ? (process.env.BACKEND_URL || 'http://127.0.0.1:3001')
+  : process.env.BACKEND_URL;
+
+if (!BACKEND_URL) {
+  throw new Error(
+    'BACKEND_URL no está definido. Cree la variable en Vercel Dashboard.',
+  );
+}
 const TIMEOUT_MS = 15_000;
 
 async function proxy(request: NextRequest, params: { path: string[] }, method: string) {
