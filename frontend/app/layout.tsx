@@ -13,8 +13,11 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: 1,
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10_000),
       refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
       staleTime: 10_000,
+      gcTime: 5 * 60 * 1000,
     },
   },
 });

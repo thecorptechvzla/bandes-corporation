@@ -22,6 +22,7 @@ export function useDashboardMetrics(filters?: DashboardFilters) {
   return useQuery<DashboardMetrics>({
     queryKey: ['dashboard', 'metrics', filters],
     queryFn: () => api.get(`/dashboard/metrics${qs ? `?${qs}` : ''}`).then((r) => r.data),
-    refetchInterval: 30_000,
+    refetchInterval: (query) => (query.state.data ? 30_000 : false),
+    retry: 1,
   });
 }
