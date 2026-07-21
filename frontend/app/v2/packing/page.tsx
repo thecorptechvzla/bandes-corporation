@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useClients } from '@/hooks/useClients';
 import { useBars, useCreateBar, useBulkUploadBars } from '@/hooks/useBars';
@@ -12,8 +12,10 @@ import type { Bar, BulkUploadResult } from '@/types/api';
 import {
   Camera, Scale, FolderUp, FileSpreadsheet, Plus, Upload, Download, ChevronDown, ChevronUp,
   Search, Trash2, AlertTriangle, Check, Weight, Microscope, X, Package, Zap,
-  ClipboardCheck, HardDrive, Edit3,
+  ClipboardCheck, HardDrive, Edit3, Image,
 } from 'lucide-react';
+import { HudButton } from '@/components/tactical/HudButton';
+import { CameraTerminal } from '@/components/tactical/CameraTerminal';
 
 const STATUS_LABELS: Record<string, string> = {
   POR_VALIDAR: 'Por Validar',
@@ -79,6 +81,10 @@ export default function PackingPage() {
     leyAu: string;
     leyAg: string;
   } | null>(null);
+  const [cameraMode, setCameraMode] = useState<'idle' | 'camera' | 'preview'>('idle');
+  const [photoBlob, setPhotoBlob] = useState<Blob | null>(null);
+  const [photoPreviewUrl, setPhotoPreviewUrl] = useState<string | null>(null);
+  const [photoUploadedUrl, setPhotoUploadedUrl] = useState<string | null>(null);
 
   useEffect(() => {
     if (clients.length > 0) {
@@ -279,6 +285,7 @@ export default function PackingPage() {
     if (!selectedBarId || !selectedPacking?.bars) return;
     const bar = selectedPacking.bars.find(b => b.id === selectedBarId);
     if (!bar) return;
+    resetPhotoState();
     setConfirmModal({
       barId: selectedBarId,
       basculaWeight: String(Number(bar.grossWeight)),
@@ -306,10 +313,49 @@ export default function PackingPage() {
       });
       setConfirmModal(null);
       setSelectedBarId(null);
+      resetPhotoState();
     } catch (err) {
       console.error('Sync error:', err);
     }
   };
+
+  const uploadPhoto = useCallback(async (blob: Blob): Promise<string> => {
+    const fd = new FormData();
+    fd.append('file', blob, `photo-${Date.now()}.jpg`);
+    const res = await fetch('/api/blob/upload', { method: 'POST', body: fd });
+    if (!res.ok) throw new Error('Error al subir la foto');
+    const data = await res.json();
+    return data.url as string;
+  }, []);
+
+  const handleCapture = useCallback((blob: Blob) => {
+    const url = URL.createObjectURL(blob);
+    setPhotoBlob(blob);
+    setPhotoPreviewUrl(url);
+    setCameraMode('preview');
+  }, []);
+
+  const resetPhotoState = useCallback(() => {
+    if (photoPreviewUrl) URL.revokeObjectURL(photoPreviewUrl);
+    setPhotoBlob(null);
+    setPhotoPreviewUrl(null);
+    setPhotoUploadedUrl(null);
+    setCameraMode('idle');
+  }, [photoPreviewUrl]);
+
+  const handleUsePhoto = useCallback(async () => {
+    if (!photoBlob) return;
+    try {
+      const url = await uploadPhoto(photoBlob);
+      setPhotoUploadedUrl(url);
+      if (photoPreviewUrl) URL.revokeObjectURL(photoPreviewUrl);
+      setPhotoBlob(null);
+      setPhotoPreviewUrl(null);
+      setCameraMode('idle');
+    } catch {
+      console.error('Upload failed');
+    }
+  }, [photoBlob, photoPreviewUrl, uploadPhoto]);
 
   const modalLiveFA = useMemo(() => {
     if (!confirmModal) return 0;
@@ -880,50 +926,103 @@ export default function PackingPage() {
                         <motion.div initial={{ opacity: 0, scale: 0.92, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }}
                           exit={{ opacity: 0, scale: 0.92, y: 10 }} transition={{ type: 'spring', damping: 25, stiffness: 300 }}
                           className="w-full max-w-lg glass-panel rounded-2xl overflow-hidden p-6 space-y-5 border border-[var(--pm-border)]/40">
-                          {/* Decorative icons */}
-                          <div className="flex items-center justify-center gap-4 opacity-20 mb-2">
-                            <Camera className="w-5 h-5 text-[var(--pm-text-dim)]" />
-                            <Scale className="w-5 h-5 text-[var(--pm-text-dim)]" />
-                            <Microscope className="w-5 h-5 text-[var(--pm-text-dim)]" />
+                          {/* Decorative icons — Camera now interactive */}
+                          <div className="flex items-center justify-center gap-4 mb-2">
+                            <div className={`transition-all duration-300 ${photoUploadedUrl ? 'opacity-100' : 'opacity-20'}`}>
+                              <Camera className={`w-5 h-5 ${photoUploadedUrl ? 'text-[var(--pm-accent-emerald)] drop-shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'text-[var(--pm-text-dim)]'}`} />
+                            </div>
+                            <Scale className="w-5 h-5 text-[var(--pm-text-dim)] opacity-20" />
+                            <Microscope className="w-5 h-5 text-[var(--pm-text-dim)] opacity-20" />
                           </div>
 
                           {/* Title */}
                           <div className="text-center">
                             <h2 className="text-lg font-mono font-bold text-[var(--pm-accent-gold)] tracking-wider">PROXIMAMENTE</h2>
                             <p className="text-[10px] font-mono text-[var(--pm-text-dim)] mt-1 uppercase tracking-wider">
-                              Lectura de dispositivos externos (Báscula / Espectrómetro)
+                              Lectura de dispositivos externos (Báscula / Espectrómetro / Cámara)
                             </p>
                           </div>
 
                           <div className="h-px bg-[var(--pm-border)]/30" />
 
-                          {/* Báscula */}
-                          <div className="space-y-1.5">
-                            <label className="text-[9px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider flex items-center gap-1.5">
-                              <Scale className="w-3 h-3 text-[var(--pm-accent-gold)]" /> PESO BÁSCULA (g)
-                            </label>
-                            <input type="number" step="any" value={confirmModal.basculaWeight}
-                              onChange={e => setConfirmModal(prev => prev ? { ...prev, basculaWeight: e.target.value } : null)}
-                              className="w-full bg-[var(--pm-bg-deepest)] border-2 border-[var(--pm-accent-gold)]/30 rounded-xl px-4 py-3 text-lg font-mono font-bold text-[var(--pm-text-primary)] text-right focus:outline-none focus:border-[var(--pm-accent-gold)] transition-all" />
-                          </div>
+                          {/* Camera Mode — replaces input fields */}
+                          {cameraMode === 'camera' ? (
+                            <CameraTerminal
+                              onCapture={handleCapture}
+                              onClose={() => setCameraMode('idle')}
+                            />
+                          ) : cameraMode === 'preview' ? (
+                            <div className="space-y-3">
+                              <div className="rounded-xl overflow-hidden border-2 border-[var(--pm-accent-cyan)]/30 bg-black">
+                                {photoPreviewUrl && (
+                                  <img src={photoPreviewUrl} alt="Preview" className="w-full object-cover max-h-64" />
+                                )}
+                              </div>
+                              <div className="flex gap-3">
+                                <button type="button" onClick={() => { if (photoPreviewUrl) URL.revokeObjectURL(photoPreviewUrl); setPhotoBlob(null); setPhotoPreviewUrl(null); setCameraMode('camera'); }}
+                                  className="flex-1 py-2.5 rounded-lg border border-[var(--pm-border)] text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] hover:bg-[var(--pm-bg-tertiary)] text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer">
+                                  🔁 REPETIR
+                                </button>
+                                <button type="button" onClick={handleUsePhoto} disabled={!photoBlob}
+                                  className="flex-[2] py-2.5 rounded-lg text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
+                                  style={{ background: 'linear-gradient(135deg, rgba(0,229,255,0.2), rgba(0,229,255,0.1))', color: 'var(--pm-accent-cyan)', border: '1px solid rgba(0,229,255,0.3)' }}>
+                                  <Camera className="w-3.5 h-3.5" /> USAR FOTO
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <>
+                              {/* Báscula */}
+                              <div className="space-y-1.5">
+                                <label className="text-[9px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider flex items-center gap-1.5">
+                                  <Scale className="w-3 h-3 text-[var(--pm-accent-gold)]" /> PESO BÁSCULA (g)
+                                </label>
+                                <input type="number" step="any" value={confirmModal.basculaWeight}
+                                  onChange={e => setConfirmModal(prev => prev ? { ...prev, basculaWeight: e.target.value } : null)}
+                                  className="w-full bg-[var(--pm-bg-deepest)] border-2 border-[var(--pm-accent-gold)]/30 rounded-xl px-4 py-3 text-lg font-mono font-bold text-[var(--pm-text-primary)] text-right focus:outline-none focus:border-[var(--pm-accent-gold)] transition-all" />
+                              </div>
 
-                          {/* Espectrómetro */}
-                          <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-1.5">
-                              <label className="text-[9px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider flex items-center gap-1.5">
-                                <Microscope className="w-3 h-3 text-[var(--pm-accent-gold)]" /> LEY AU (‰)
-                              </label>
-                              <input type="number" step="0.1" min="0" max="1000" value={confirmModal.leyAu}
-                                onChange={e => setConfirmModal(prev => prev ? { ...prev, leyAu: e.target.value } : null)}
-                                className="w-full bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] rounded-lg px-3 py-2.5 text-sm font-mono text-[var(--pm-text-primary)] text-right focus:outline-none focus:border-[var(--pm-accent-gold)] transition-all" />
-                            </div>
-                            <div className="space-y-1.5">
-                              <label className="text-[9px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider">LEY AG (‰)</label>
-                              <input type="number" step="0.1" min="0" max="1000" value={confirmModal.leyAg}
-                                onChange={e => setConfirmModal(prev => prev ? { ...prev, leyAg: e.target.value } : null)}
-                                className="w-full bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] rounded-lg px-3 py-2.5 text-sm font-mono text-[var(--pm-text-primary)] text-right focus:outline-none focus:border-[var(--pm-accent-gold)] transition-all" />
-                            </div>
-                          </div>
+                              {/* Espectrómetro */}
+                              <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-1.5">
+                                  <label className="text-[9px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider flex items-center gap-1.5">
+                                    <Microscope className="w-3 h-3 text-[var(--pm-accent-gold)]" /> LEY AU (‰)
+                                  </label>
+                                  <input type="number" step="0.1" min="0" max="1000" value={confirmModal.leyAu}
+                                    onChange={e => setConfirmModal(prev => prev ? { ...prev, leyAu: e.target.value } : null)}
+                                    className="w-full bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] rounded-lg px-3 py-2.5 text-sm font-mono text-[var(--pm-text-primary)] text-right focus:outline-none focus:border-[var(--pm-accent-gold)] transition-all" />
+                                </div>
+                                <div className="space-y-1.5">
+                                  <label className="text-[9px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider">LEY AG (‰)</label>
+                                  <input type="number" step="0.1" min="0" max="1000" value={confirmModal.leyAg}
+                                    onChange={e => setConfirmModal(prev => prev ? { ...prev, leyAg: e.target.value } : null)}
+                                    className="w-full bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] rounded-lg px-3 py-2.5 text-sm font-mono text-[var(--pm-text-primary)] text-right focus:outline-none focus:border-[var(--pm-accent-gold)] transition-all" />
+                                </div>
+                              </div>
+
+                              {/* Photo attachment */}
+                              {photoUploadedUrl ? (
+                                <div className="flex items-center gap-3 p-3 rounded-xl border border-[var(--pm-accent-emerald)]/30 bg-[var(--pm-accent-emerald)]/5">
+                                  <div className="w-12 h-12 rounded-lg overflow-hidden border border-[var(--pm-border)] shrink-0 bg-black">
+                                    <img src={photoUploadedUrl} alt="Foto adjunta" className="w-full h-full object-cover" />
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <span className="text-[10px] font-mono font-bold text-[var(--pm-accent-emerald)] flex items-center gap-1.5">
+                                      <Check className="w-3 h-3" /> Foto adjunta
+                                    </span>
+                                    <button type="button" onClick={() => setCameraMode('camera')}
+                                      className="text-[9px] font-mono text-[var(--pm-accent-cyan)] hover:underline mt-0.5 block cursor-pointer">
+                                      📷 Reemplazar foto
+                                    </button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <HudButton variant="primary" onClick={() => setCameraMode('camera')} className="w-full justify-center">
+                                  <Camera className="w-3.5 h-3.5" /> ADJUNTAR FOTO
+                                </HudButton>
+                              )}
+                            </>
+                          )}
 
                           {/* Live FA + Delta */}
                           <div className="grid grid-cols-2 gap-3">
@@ -939,9 +1038,9 @@ export default function PackingPage() {
                             </div>
                           </div>
 
-                          {/* Buttons */}
+                          {/* Buttons — always visible */}
                           <div className="flex gap-3 pt-1">
-                            <button type="button" onClick={() => { setConfirmModal(null); setSelectedBarId(null); }}
+                            <button type="button" onClick={() => { setConfirmModal(null); setSelectedBarId(null); resetPhotoState(); }}
                               className="flex-1 py-2.5 rounded-lg border border-[var(--pm-border)] text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] hover:bg-[var(--pm-bg-tertiary)] text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer">
                               Cancelar
                             </button>

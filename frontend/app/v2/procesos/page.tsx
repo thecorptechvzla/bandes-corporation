@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, Fragment } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Flame, Thermometer, User, Weight, Plus, CheckCircle2, Play,
@@ -104,7 +104,8 @@ export default function V2ProcesosPage() {
   }, [lots]);
 
   const [selectedProcessId, setSelectedProcessId] = useState<string | null>(null);
-  const handleViewDetail = (id: string) => setSelectedProcessId(id);
+  const [expandedLotId, setExpandedLotId] = useState<string | null>(null);
+  const handleViewDetail = (id: string) => { setSelectedProcessId(id); setExpandedLotId(null); };
 
   const selectedProcess = useMemo(
     () => selectedProcessId ? processes.find(p => p.id === selectedProcessId) ?? null : null,
@@ -849,26 +850,99 @@ export default function V2ProcesosPage() {
                         const r = Number(lot.recovered ?? 0);
                         const dif = fa - r;
                         const pctRecup = fa > 0 ? (r / fa) * 100 : 0;
+                        const isExpanded = expandedLotId === lot.id;
                         return (
-                          <tr key={lot.id} className={`${idx % 2 === 1 ? 'bg-[var(--pm-bg-deepest)]/30' : ''}`}>
-                            <td className="sticky left-0 bg-[var(--pm-bg-primary)] font-semibold text-[var(--pm-text-primary)]" style={{ minWidth: 140 }}>
-                              <div>
-                                <span>{lot.name}</span>
-                                {lot.moldCode && <span className="text-[9px] text-[var(--pm-text-dim)] ml-1">({lot.moldCode})</span>}
-                              </div>
-                            </td>
-                            <td className="text-right text-[var(--pm-accent-gold)]">{formatNumber(fa, 4)}</td>
-                            <td className="text-right text-[var(--pm-accent-cyan)]">{formatNumber(fe, 4)}</td>
-                            <td className="text-right text-[var(--pm-accent-emerald)]">{formatNumber(r, 4)}</td>
-                            <td className={`text-right ${dif >= 0 ? 'text-[var(--pm-accent-emerald)]' : 'text-[var(--pm-accent-red)]'}`}>
-                              {dif >= 0 ? '+' : ''}{formatNumber(dif, 4)}
-                            </td>
-                            <td className="text-right">
-                              <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${Math.abs(pctRecup - 100) <= 5 ? 'text-[var(--pm-accent-emerald)]' : 'text-[var(--pm-accent-red)]'}`}>
-                                {formatNumber(pctRecup, 2)}%
-                              </span>
-                            </td>
-                          </tr>
+                          <Fragment key={lot.id}>
+                            <tr
+                              className={`
+                                ${idx % 2 === 1 ? 'bg-[var(--pm-bg-deepest)]/30' : ''}
+                                cursor-pointer active:scale-[0.98] transition-all duration-150
+                                ${isExpanded ? 'bg-[var(--pm-accent-amber)]/[0.04]' : 'hover:bg-[var(--pm-accent-gold)]/[0.03]'}
+                              `}
+                              onClick={() => setExpandedLotId(isExpanded ? null : lot.id)}
+                            >
+                              <td className="sticky left-0 bg-[var(--pm-bg-primary)] font-semibold text-[var(--pm-text-primary)] z-10" style={{ minWidth: 140 }}>
+                                <div className="flex items-center gap-2">
+                                  {isExpanded ? (
+                                    <ChevronDown className="w-3.5 h-3.5 text-[var(--pm-accent-gold)] flex-shrink-0 transition-transform duration-200" />
+                                  ) : (
+                                    <ChevronRight className="w-3.5 h-3.5 text-[var(--pm-text-dim)] flex-shrink-0 transition-transform duration-200" />
+                                  )}
+                                  <span>{lot.name}</span>
+                                  {lot.moldCode && <span className="text-[9px] text-[var(--pm-text-dim)] ml-0.5">({lot.moldCode})</span>}
+                                </div>
+                              </td>
+                              <td className="text-right text-[var(--pm-accent-gold)]">{formatNumber(fa, 4)}</td>
+                              <td className="text-right text-[var(--pm-accent-cyan)]">{formatNumber(fe, 4)}</td>
+                              <td className="text-right text-[var(--pm-accent-emerald)]">{formatNumber(r, 4)}</td>
+                              <td className={`text-right ${dif >= 0 ? 'text-[var(--pm-accent-emerald)]' : 'text-[var(--pm-accent-red)]'}`}>
+                                {dif >= 0 ? '+' : ''}{formatNumber(dif, 4)}
+                              </td>
+                              <td className="text-right">
+                                <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${Math.abs(pctRecup - 100) <= 5 ? 'text-[var(--pm-accent-emerald)]' : 'text-[var(--pm-accent-red)]'}`}>
+                                  {formatNumber(pctRecup, 2)}%
+                                </span>
+                              </td>
+                            </tr>
+                            {/* Expanded bar details */}
+                            {isExpanded && (
+                              <tr key={`${lot.id}-bars`}>
+                                <td colSpan={6} className="p-0">
+                                  <motion.div
+                                    initial={{ height: 0, opacity: 0 }}
+                                    animate={{ height: 'auto', opacity: 1 }}
+                                    exit={{ height: 0, opacity: 0 }}
+                                    transition={{ duration: 0.2, ease: 'easeInOut' }}
+                                    className="overflow-hidden"
+                                  >
+                                    <div className="border-l-2 border-[var(--pm-accent-gold)]/30 ml-4 mr-4 mb-3 mt-1 rounded-r-xl bg-black/30 overflow-x-auto">
+                                      <table className="premium-table w-full text-[10px] font-mono">
+                                        <thead>
+                                          <tr>
+                                            <th className="sticky left-0 bg-[var(--pm-bg-deepest)] z-10 text-left" style={{ minWidth: 120, paddingLeft: 16 }}>CÓDIGO</th>
+                                            <th className="text-right">BRUTO (g)</th>
+                                            <th className="text-right">PUREZA AU (‰)</th>
+                                            <th className="text-right">FA (g)</th>
+                                            <th className="text-right">FE (g)</th>
+                                            <th className="text-right">LEY AG (‰)</th>
+                                            <th className="text-right">AG (g)</th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          {lb.map((bar, bi) => (
+                                            <tr key={bar.id}
+                                              className={`${bi % 2 === 1 ? 'bg-black/20' : ''} hover:bg-[var(--pm-accent-gold)]/[0.03] transition-colors`}
+                                            >
+                                              <td className="sticky left-0 bg-[var(--pm-bg-primary)] font-semibold text-[var(--pm-accent-gold)] z-10" style={{ paddingLeft: 16 }}>
+                                                {bar.barNumber}
+                                              </td>
+                                              <td className="text-right text-[var(--pm-text-primary)]">{formatNumber(Number(bar.grossWeight), 2)}</td>
+                                              <td className="text-right text-[var(--pm-text-primary)]">{formatNumber(Number(bar.purity), 1)}</td>
+                                              <td className="text-right text-[var(--pm-accent-gold)]">{formatNumber(Number(bar.fineWeight), 4)}</td>
+                                              <td className="text-right text-[var(--pm-accent-cyan)]">{formatNumber(Number(bar.fineWeight) * 0.99, 4)}</td>
+                                              <td className="text-right text-[var(--pm-text-dim)]">
+                                                {bar.leyAg != null ? formatNumber(Number(bar.leyAg), 1) : '—'}
+                                              </td>
+                                              <td className="text-right text-[var(--pm-text-dim)]">
+                                                {bar.fineWeightAg != null ? formatNumber(Number(bar.fineWeightAg), 4) : '—'}
+                                              </td>
+                                            </tr>
+                                          ))}
+                                          {lb.length === 0 && (
+                                            <tr>
+                                              <td colSpan={7} className="text-center py-4 text-[9px] text-[var(--pm-text-dim)] font-mono italic">
+                                                Sin barras asignadas a este lote
+                                              </td>
+                                            </tr>
+                                          )}
+                                        </tbody>
+                                      </table>
+                                    </div>
+                                  </motion.div>
+                                </td>
+                              </tr>
+                            )}
+                          </Fragment>
                         );
                       })}
                       {selectedProcessLots.length === 0 && (
