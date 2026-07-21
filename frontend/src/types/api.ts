@@ -46,6 +46,7 @@ export interface Bar {
   fineWeight: number;
   leyAg?: number | null;
   fineWeightAg?: number | null;
+  photoUrl?: string | null;
   status: 'POR_VALIDAR' | 'IN_STOCK' | 'PROCESANDO' | 'COMPLETADO' | 'EXITED';
   createdAt: string;
   updatedAt: string;

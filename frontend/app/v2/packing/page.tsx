@@ -319,7 +319,7 @@ export default function PackingPage() {
     try {
       await validatePacking.mutateAsync({
         id: selectedPacking.id,
-        bars: [{ barId, grossWeight: bw, purity: la, leyAg: lag > 0 ? lag : undefined }],
+        bars: [{ barId, grossWeight: bw, purity: la, leyAg: lag > 0 ? lag : undefined, photoUrl: photoUploadedUrl || undefined }],
       });
       if (photoUploadedUrl) {
         setBarPhotoUrls(prev => ({ ...prev, [barId]: photoUploadedUrl }));
@@ -1107,7 +1107,7 @@ export default function PackingPage() {
           const fa = validatedGross * (validatedPurity / 1000);
           const fe = fa * 0.99;
           const delta = validatedGross - spGross;
-          const photoUrl = barPhotoUrls[bar.id];
+          const photoUrl = bar.photoUrl || barPhotoUrls[bar.id] || null;
           const validatedAt = bar.updatedAt;
           return (
             <motion.div key="evidence-modal" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}

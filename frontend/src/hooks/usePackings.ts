@@ -33,6 +33,7 @@ export function useValidatePacking() {
         grossWeight: number;
         purity: number;
         leyAg?: number;
+        photoUrl?: string;
       }>;
     }) => api.post(`/packings/${id}/validate`, { bars }).then((r) => r.data),
     onSuccess: () => {

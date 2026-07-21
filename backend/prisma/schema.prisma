@@ -83,6 +83,7 @@ model Bar {
   fineWeight  Decimal   @db.Decimal(15, 4)
   leyAg        Decimal?  @db.Decimal(7, 4)
   fineWeightAg Decimal?  @db.Decimal(15, 4)
+  photoUrl     String?   @map("photo_url")
   status      BarStatus @default(POR_VALIDAR)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt

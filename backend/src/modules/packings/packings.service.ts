@@ -55,6 +55,7 @@ export class PackingsService {
       grossWeight: number;
       purity: number;
       leyAg?: number;
+      photoUrl?: string;
     }>,
   ) {
     const packing = await this.prisma.packing.findUnique({
@@ -93,6 +94,7 @@ export class PackingsService {
             purity: data.purity,
             fineWeight,
             ...(data.leyAg != null && { leyAg: data.leyAg, fineWeightAg }),
+            ...(data.photoUrl != null && { photoUrl: data.photoUrl }),
             status: 'IN_STOCK',
           },
         });

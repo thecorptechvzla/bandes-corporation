@@ -26,6 +26,7 @@ export class PackingsController {
         grossWeight: number;
         purity: number;
         leyAg?: number;
+        photoUrl?: string;
       }>;
     },
   ) {
