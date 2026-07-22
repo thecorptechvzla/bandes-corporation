@@ -11,7 +11,7 @@ import { formatNumber, formatWeight } from '@/lib/format';
 import { useGoldTraceability } from '@/context/GoldTraceabilityContext';
 import type { WeightUnit } from '@/lib/format';
 import {
-  ArrowLeftRight, Check, Send, Search, X, Download,
+  ArrowLeftRight, Check, Send, Search, X, Download, ChevronDown, ChevronUp,
   AlertTriangle, Package, Users, Building2, MapPin, ShoppingCart,
 } from 'lucide-react';
 
@@ -45,6 +45,7 @@ export default function V2EgresosPage() {
   const { weightUnit } = useGoldTraceability();
 
   const [selectedLotIds, setSelectedLotIds] = useState<Set<string>>(new Set());
+  const [openGroups, setOpenGroups] = useState<Set<string>>(new Set());
   const [destinationClient, setDestinationClient] = useState<{ id: string; name: string; rif: string; contactInfo?: string } | null>(null);
   const [clientSelectOpen, setClientSelectOpen] = useState(false);
   const [clientSearch, setClientSearch] = useState('');
@@ -94,6 +95,19 @@ export default function V2EgresosPage() {
     );
   }, [buyerClients, clientSearch]);
 
+  // Initialize all groups as open when lots first load
+  const allClientIds = useMemo(() =>
+    [...new Set(allAvailableLots.map(l => l.clientId))],
+  [allAvailableLots]);
+
+  React.useEffect(() => {
+    setOpenGroups(prev => {
+      const next = new Set(prev);
+      allClientIds.forEach(id => { if (!next.has(id)) next.add(id); });
+      return next;
+    });
+  }, [allClientIds.join(',')]);
+
   const filteredLots = useMemo(() => {
     if (!searchQuery) return allAvailableLots;
     const q = searchQuery.toLowerCase();
@@ -134,12 +148,44 @@ export default function V2EgresosPage() {
     });
   };
 
-  const toggleAll = () => {
-    if (selectedLotIds.size === filteredLots.length) {
-      setSelectedLotIds(new Set());
+  const groupedFilteredLots = useMemo(() => {
+    const groups: Record<string, AvailableLot[]> = {};
+    filteredLots.forEach(l => {
+      if (!groups[l.clientId]) groups[l.clientId] = [];
+      groups[l.clientId].push(l);
+    });
+    return groups;
+  }, [filteredLots]);
+
+  const isSupplierAllSelected = (clientId: string) => {
+    const lots = groupedFilteredLots[clientId] || [];
+    return lots.length > 0 && lots.every(l => selectedLotIds.has(l.id));
+  };
+
+  const toggleSupplierLots = (clientId: string) => {
+    const lots = groupedFilteredLots[clientId] || [];
+    if (isSupplierAllSelected(clientId)) {
+      setSelectedLotIds(prev => {
+        const next = new Set(prev);
+        lots.forEach(l => next.delete(l.id));
+        return next;
+      });
     } else {
-      setSelectedLotIds(new Set(filteredLots.map(l => l.id)));
+      setSelectedLotIds(prev => {
+        const next = new Set(prev);
+        lots.forEach(l => next.add(l.id));
+        return next;
+      });
     }
+  };
+
+  const toggleSupplier = (clientId: string) => {
+    setOpenGroups(prev => {
+      const next = new Set(prev);
+      if (next.has(clientId)) next.delete(clientId);
+      else next.add(clientId);
+      return next;
+    });
   };
 
   const generatePDF = useCallback((data: DispatchResult) => {
@@ -340,13 +386,7 @@ export default function V2EgresosPage() {
                 onChange={e => setSearchQuery(e.target.value)}
                 className="w-full bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] rounded-lg pl-9 pr-3 py-2 text-xs font-mono text-[var(--pm-text-primary)] focus:outline-none focus:border-[var(--pm-accent-gold)] transition-colors placeholder:text-[var(--pm-text-dim)]/30" />
             </div>
-            <div className="flex items-center gap-2">
-              <button type="button" onClick={toggleAll}
-                className="text-[9px] font-mono text-[var(--pm-accent-gold)] hover:text-[var(--pm-accent-amber)] active:scale-95 transition-all cursor-pointer">
-                {selectedLotIds.size === filteredLots.length ? 'Deseleccionar' : 'Todo'}
-              </button>
-              <span className="text-[10px] font-mono text-[var(--pm-text-dim)]">{filteredLots.length} lotes</span>
-            </div>
+            <span className="text-[10px] font-mono text-[var(--pm-text-dim)]">{filteredLots.length} lotes</span>
           </div>
 
           {filteredLots.length === 0 ? (
@@ -356,44 +396,85 @@ export default function V2EgresosPage() {
               <p className="text-[10px] font-mono mt-1">Asegúrese de que haya procesos cerrados con recuperación.</p>
             </div>
           ) : (
-            <div className="overflow-x-auto premium-table">
-              <table className="w-full text-left text-xs font-sans">
-                <thead>
-                  <tr className="border-b border-[var(--pm-border)]/20 text-[10px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider">
-                    <th className="w-10 text-center py-3 bg-[var(--pm-bg-base)]/50">
-                      <input type="checkbox" checked={selectedLotIds.size === filteredLots.length && filteredLots.length > 0}
-                        onChange={toggleAll} className="accent-[var(--pm-accent-gold)] cursor-pointer" />
-                    </th>
-                    <th className="py-3 bg-[var(--pm-bg-base)]/50 sticky left-0 z-10 min-w-[160px]">Proveedor</th>
-                    <th className="py-3 bg-[var(--pm-bg-base)]/50">Proceso</th>
-                    <th className="py-3 bg-[var(--pm-bg-base)]/50">Lote</th>
-                    <th className="py-3 bg-[var(--pm-bg-base)]/50 text-right">R (g)</th>
-                    <th className="py-3 bg-[var(--pm-bg-base)]/50 text-center">Barras</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[var(--pm-border)]/20">
-                  {filteredLots.map((lot, idx) => (
-                    <tr key={lot.id} onClick={() => toggleLot(lot.id)}
-                      className={`group transition-all duration-150 cursor-pointer ${idx % 2 === 0 ? 'bg-transparent' : 'bg-[var(--pm-bg-base)]/20'} hover:bg-[var(--pm-bg-hover)]/40 ${selectedLotIds.has(lot.id) ? 'bg-[var(--pm-accent-gold)]/8' : ''}`}>
-                      <td className="py-3 text-center" onClick={e => e.stopPropagation()}>
-                        <input type="checkbox" checked={selectedLotIds.has(lot.id)}
-                          onChange={() => toggleLot(lot.id)}
-                          className="accent-[var(--pm-accent-gold)] cursor-pointer active:scale-90" />
-                      </td>
-                      <td className="py-3 sticky left-0 z-10 bg-[var(--pm-bg-primary)] group-hover:bg-[var(--pm-bg-hover)]/40 font-sans font-semibold text-[var(--pm-text-primary)] text-[11px]">
-                        <span className="block truncate max-w-[160px]">{lot.clientName}</span>
-                        <span className="text-[8px] font-mono text-[var(--pm-text-dim)]">{lot.clientRif}</span>
-                      </td>
-                      <td className="py-3 font-mono text-[var(--pm-text-dim)] text-[11px]">{lot.processName}</td>
-                      <td className="py-3 font-mono font-bold text-[var(--pm-accent-gold)] tracking-wider text-[11px]">{lot.name}</td>
-                      <td className="py-3 text-right font-mono text-[var(--pm-text-primary)]">{formatNumber(lot.availableWeight, 4)}</td>
-                      <td className="py-3 text-center">
-                        <span className="text-[9px] font-mono text-[var(--pm-text-dim)] bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] px-1.5 py-0.5 rounded">{lot.barCount} u</span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="divide-y divide-[var(--pm-border)]/20 overflow-y-auto max-h-[calc(100vh-280px)] v2-scroll">
+              {Object.entries(groupedFilteredLots).map(([clientId, lots]) => {
+                const client = lots[0];
+                const supplierTotal = lots.reduce((s, l) => s + l.availableWeight, 0);
+                const isOpen = openGroups.has(clientId);
+                const allSelected = isSupplierAllSelected(clientId);
+                const someSelected = lots.some(l => selectedLotIds.has(l.id));
+                return (
+                  <div key={clientId}>
+                    {/* Supplier Header */}
+                    <button type="button" onClick={() => toggleSupplier(clientId)}
+                      className="w-full flex items-center justify-between px-5 py-3.5 hover:bg-[var(--pm-bg-tertiary)]/50 active:scale-[0.99] transition-all cursor-pointer">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div onClick={e => { e.stopPropagation(); toggleSupplierLots(clientId); }}
+                          className="flex items-center justify-center w-5 h-5 rounded border border-[var(--pm-border)] bg-[var(--pm-bg-deepest)] hover:border-[var(--pm-accent-gold)] transition-colors cursor-pointer shrink-0"
+                          style={{ background: allSelected ? 'rgba(212,175,55,0.15)' : undefined, borderColor: allSelected ? 'rgba(212,175,55,0.4)' : undefined }}>
+                          {allSelected ? (
+                            <Check className="w-3 h-3 text-[var(--pm-accent-gold)]" strokeWidth={3} />
+                          ) : someSelected ? (
+                            <div className="w-2 h-2 rounded-sm bg-[var(--pm-accent-gold)]/60" />
+                          ) : null}
+                        </div>
+                        <div className="text-left min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-sans font-semibold text-[var(--pm-text-primary)] truncate block">{lots[0].clientName}</span>
+                            <span className="text-[8px] font-mono text-[var(--pm-text-dim)]">{lots[0].clientRif}</span>
+                          </div>
+                          <span className="text-[9px] font-mono text-[var(--pm-text-dim)]">{lots.length} lotes · {formatNumber(supplierTotal, 4)} g FA</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className={`text-[9px] font-mono font-bold px-2 py-0.5 rounded ${selectedLotIds.size > 0 ? 'text-[var(--pm-accent-gold)] bg-[var(--pm-accent-gold)]/10' : 'text-[var(--pm-text-dim)] bg-[var(--pm-bg-tertiary)]'}`}>
+                          {lots.filter(l => selectedLotIds.has(l.id)).length}/{lots.length}
+                        </span>
+                        {isOpen ? <ChevronUp className="w-3.5 h-3.5 text-[var(--pm-text-dim)]" /> : <ChevronDown className="w-3.5 h-3.5 text-[var(--pm-text-dim)]" />}
+                      </div>
+                    </button>
+
+                    {/* Lots Table (expandable) */}
+                    <AnimatePresence>
+                      {isOpen && (
+                        <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }}>
+                          <div className="overflow-x-auto premium-table">
+                            <table className="w-full text-left text-xs font-sans">
+                              <thead>
+                                <tr className="border-t border-[var(--pm-border)]/20 text-[10px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider">
+                                  <th className="w-10 text-center py-2.5 px-2 bg-[var(--pm-bg-base)]/50"></th>
+                                  <th className="py-2.5 bg-[var(--pm-bg-base)]/50">Proceso</th>
+                                  <th className="py-2.5 bg-[var(--pm-bg-base)]/50">Lote</th>
+                                  <th className="py-2.5 bg-[var(--pm-bg-base)]/50 text-right">R (g)</th>
+                                  <th className="py-2.5 bg-[var(--pm-bg-base)]/50 text-center">Barras</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-[var(--pm-border)]/20">
+                                {lots.map((lot, idx) => (
+                                  <tr key={lot.id} onClick={() => toggleLot(lot.id)}
+                                    className={`group transition-all duration-150 cursor-pointer ${idx % 2 === 0 ? 'bg-transparent' : 'bg-[var(--pm-bg-base)]/20'} hover:bg-[var(--pm-bg-hover)]/40 ${selectedLotIds.has(lot.id) ? 'bg-[var(--pm-accent-gold)]/8' : ''}`}>
+                                    <td className="py-2.5 px-2 text-center" onClick={e => e.stopPropagation()}>
+                                      <input type="checkbox" checked={selectedLotIds.has(lot.id)}
+                                        onChange={() => toggleLot(lot.id)}
+                                        className="accent-[var(--pm-accent-gold)] cursor-pointer active:scale-90" />
+                                    </td>
+                                    <td className="py-2.5 font-mono text-[var(--pm-text-dim)] text-[11px]">{lot.processName}</td>
+                                    <td className="py-2.5 font-mono font-bold text-[var(--pm-accent-gold)] tracking-wider text-[11px]">{lot.name}</td>
+                                    <td className="py-2.5 text-right font-mono text-[var(--pm-text-primary)]">{formatNumber(lot.availableWeight, 4)}</td>
+                                    <td className="py-2.5 text-center">
+                                      <span className="text-[9px] font-mono text-[var(--pm-text-dim)] bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] px-1.5 py-0.5 rounded">{lot.barCount} u</span>
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                );
+              })}
             </div>
           )}
         </motion.div>
