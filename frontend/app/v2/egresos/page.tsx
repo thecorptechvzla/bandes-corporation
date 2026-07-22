@@ -396,7 +396,7 @@ export default function V2EgresosPage() {
               <p className="text-[10px] font-mono mt-1">Asegúrese de que haya procesos cerrados con recuperación.</p>
             </div>
           ) : (
-            <div className="divide-y divide-[var(--pm-border)]/20 overflow-y-auto max-h-[calc(100vh-280px)] v2-scroll">
+            <div className="space-y-3 overflow-y-auto max-h-[calc(100vh-280px)] v2-scroll">
               {Object.entries(groupedFilteredLots).map(([clientId, lots]) => {
                 const client = lots[0];
                 const supplierTotal = lots.reduce((s, l) => s + l.availableWeight, 0);
@@ -404,10 +404,10 @@ export default function V2EgresosPage() {
                 const allSelected = isSupplierAllSelected(clientId);
                 const someSelected = lots.some(l => selectedLotIds.has(l.id));
                 return (
-                  <div key={clientId}>
+                  <div key={clientId} className="glass-panel rounded-xl border border-[var(--pm-border)]/30 overflow-hidden">
                     {/* Supplier Header */}
                     <button type="button" onClick={() => toggleSupplier(clientId)}
-                      className="w-full flex items-center justify-between px-5 py-3.5 hover:bg-[var(--pm-bg-tertiary)]/50 active:scale-[0.99] transition-all cursor-pointer">
+                      className="w-full flex items-center justify-between px-5 py-3.5 bg-[var(--pm-bg-tertiary)]/50 hover:bg-[var(--pm-accent-gold)]/8 active:scale-[0.99] transition-all cursor-pointer">
                       <div className="flex items-center gap-3 min-w-0">
                         <div onClick={e => { e.stopPropagation(); toggleSupplierLots(clientId); }}
                           className="flex items-center justify-center w-5 h-5 rounded border border-[var(--pm-border)] bg-[var(--pm-bg-deepest)] hover:border-[var(--pm-accent-gold)] transition-colors cursor-pointer shrink-0"
@@ -438,10 +438,10 @@ export default function V2EgresosPage() {
                     <AnimatePresence>
                       {isOpen && (
                         <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }}>
-                          <div className="overflow-x-auto premium-table">
+                          <div className="overflow-x-auto premium-table border-t border-[var(--pm-border)]/20">
                             <table className="w-full text-left text-xs font-sans">
                               <thead>
-                                <tr className="border-t border-[var(--pm-border)]/20 text-[10px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider">
+                                <tr className="text-[10px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider">
                                   <th className="w-10 text-center py-2.5 px-2 bg-[var(--pm-bg-base)]/50"></th>
                                   <th className="py-2.5 bg-[var(--pm-bg-base)]/50">Proceso</th>
                                   <th className="py-2.5 bg-[var(--pm-bg-base)]/50">Lote</th>
