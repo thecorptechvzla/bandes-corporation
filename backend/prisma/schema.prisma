@@ -101,16 +101,17 @@ model Bar {
 }
 
 model Packing {
-  id          String        @id @default(uuid())
-  fileName    String
-  clientId    String
-  totalRows   Int
-  created     Int
-  skipped     Int
-  errors      Json?
-  status      PackingStatus @default(PENDING)
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  id            String        @id @default(uuid())
+  fileName      String
+  clientId      String
+  packingNumber Int?          @map("packing_number")
+  totalRows     Int
+  created       Int
+  skipped       Int
+  errors        Json?
+  status        PackingStatus @default(PENDING)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 
   client Client @relation(fields: [clientId], references: [id])
   bars   Bar[]

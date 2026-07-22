@@ -5,6 +5,11 @@ import { PackingsService } from './packings.service.js';
 export class PackingsController {
   constructor(private service: PackingsService) {}
 
+  @Get('next-info/:clientId')
+  getNextInfo(@Param('clientId') clientId: string) {
+    return this.service.getNextInfo(clientId);
+  }
+
   @Get()
   findAll() {
     return this.service.findAll();

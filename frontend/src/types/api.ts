@@ -203,6 +203,7 @@ export interface Packing {
   id: string;
   fileName: string;
   clientId: string;
+  packingNumber?: number | null;
   totalRows: number;
   created: number;
   skipped: number;

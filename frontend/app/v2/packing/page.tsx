@@ -90,10 +90,23 @@ export default function PackingPage() {
   const [evidenceBarId, setEvidenceBarId] = useState<string | null>(null);
   const [barPhotoUrls, setBarPhotoUrls] = useState<Record<string, string>>({});
   const spValuesRef = useRef<Record<string, { grossWeight: number; purity: number; leyAg?: number }>>({});
-  const [activePackingId, setActivePackingId] = useState<string | null>(null);
-  const [activePackingName, setActivePackingName] = useState<string | null>(null);
-  const [packingNameInput, setPackingNameInput] = useState('');
   const createPacking = useCreatePacking();
+  const [confirmRegOverlay, setConfirmRegOverlay] = useState<{
+    barNumber: string;
+    grossWeight: number;
+    purity: number;
+    leyAg?: number;
+    clientId: string;
+    packingNumber: number;
+    packingId: string | null;
+    clientName: string;
+  } | null>(null);
+  const [confirmBulkOverlay, setConfirmBulkOverlay] = useState<{
+    clientId: string;
+    packingNumber: number;
+    packingId: string | null;
+    clientName: string;
+  } | null>(null);
 
   useEffect(() => {
     if (clients.length > 0) {
@@ -191,10 +204,6 @@ export default function PackingPage() {
   const handleSubmitBar = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError('');
-    if (!activePackingId) {
-      setFormError('Seleccione o cree un packing primero.');
-      return;
-    }
     if (!barNumber.trim() || !grossWeight || !purity || !clientId) {
       setFormError('Complete todos los campos obligatorios.');
       return;
@@ -214,10 +223,44 @@ export default function PackingPage() {
     }
 
     try {
-      await createBar.mutateAsync({ barNumber: code, grossWeight: g, purity: p, clientId, leyAg: ag || undefined, packingId: activePackingId });
-      setIngestStatus({ barNumber: code, status: 'ingesting' });
+      const info = await api.get(`/packings/next-info/${clientId}`).then(r => r.data);
+      setConfirmRegOverlay({
+        barNumber: code,
+        grossWeight: g,
+        purity: p,
+        leyAg: ag || undefined,
+        clientId,
+        packingNumber: info.packingNumber,
+        packingId: info.packingId,
+        clientName: info.clientName,
+      });
+    } catch (err: any) {
+      setFormError('Error al obtener información del packing.');
+    }
+  };
+
+  const handleConfirmBarRegistration = async () => {
+    if (!confirmRegOverlay) return;
+    const { barNumber, grossWeight, purity, leyAg, clientId, packingNumber, packingId } = confirmRegOverlay;
+
+    let targetPackingId = packingId;
+    if (!targetPackingId) {
+      try {
+        const packing = await createPacking.mutateAsync({ fileName: `PACKING #${packingNumber}`, clientId });
+        targetPackingId = packing.id;
+      } catch (err) {
+        setFormError('Error al crear el packing.');
+        setConfirmRegOverlay(null);
+        return;
+      }
+    }
+
+    setConfirmRegOverlay(null);
+    try {
+      await createBar.mutateAsync({ barNumber, grossWeight, purity, clientId, leyAg, packingId: targetPackingId });
+      setIngestStatus({ barNumber, status: 'ingesting' });
       setBarNumber(''); setGrossWeight(''); setPurity(''); setLeyAg('');
-      setTimeout(() => setIngestStatus({ barNumber: code, status: 'success' }), 800);
+      setTimeout(() => setIngestStatus({ barNumber, status: 'success' }), 800);
       setTimeout(() => setIngestStatus(null), 2800);
     } catch (err: any) {
       setFormError(err?.response?.data?.message || 'Error al registrar la barra.');
@@ -226,12 +269,41 @@ export default function PackingPage() {
 
   const handleBulkUpload = async () => {
     if (!bulkClientId || !bulkFile) return;
-    if (!activePackingId) { setBulkError('Seleccione o cree un packing primero.'); return; }
     setBulkError(''); setBulkResult(null);
     if (bulkFile.size > 10 * 1024 * 1024) { setBulkError('Archivo excede 10 MB.'); return; }
+    try {
+      const info = await api.get(`/packings/next-info/${bulkClientId}`).then(r => r.data);
+      setConfirmBulkOverlay({
+        clientId: bulkClientId,
+        packingNumber: info.packingNumber,
+        packingId: info.packingId,
+        clientName: info.clientName,
+      });
+    } catch (e) {
+      setBulkError('Error al obtener información del packing.');
+    }
+  };
+
+  const handleConfirmBulkUpload = async () => {
+    if (!confirmBulkOverlay || !bulkFile) return;
+    const { clientId, packingNumber, packingId } = confirmBulkOverlay;
+
+    let targetPackingId = packingId;
+    if (!targetPackingId) {
+      try {
+        const packing = await createPacking.mutateAsync({ fileName: `PACKING #${packingNumber}`, clientId });
+        targetPackingId = packing.id;
+      } catch (err) {
+        setBulkError('Error al crear el packing.');
+        setConfirmBulkOverlay(null);
+        return;
+      }
+    }
+
+    setConfirmBulkOverlay(null);
     const fd = new FormData();
-    fd.append('file', bulkFile); fd.append('clientId', bulkClientId);
-    if (activePackingId) fd.append('packingId', activePackingId);
+    fd.append('file', bulkFile); fd.append('clientId', clientId);
+    if (targetPackingId) fd.append('packingId', targetPackingId);
     try {
       const result = await bulkUploadMutation.mutateAsync(fd);
       setBulkResult(result); setBulkFile(null);
@@ -465,64 +537,9 @@ export default function PackingPage() {
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
           {/* LEFT PANEL: Forms */}
           <div className="space-y-5">
-            {/* Active Packing Selector */}
-            <motion.div initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.05, duration: 0.4 }}
-              className="glass-panel rounded-2xl border border-[var(--pm-border)]/40 overflow-hidden">
-              <div className="px-5 pt-5 pb-4 border-b border-[var(--pm-border)]/20">
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'rgba(0,229,255,0.08)', border: '1px solid rgba(0,229,255,0.2)' }}>
-                    <FolderUp className="w-3.5 h-3.5 text-[var(--pm-accent-cyan)]" />
-                  </div>
-                  <span className="text-xs font-mono font-bold text-[var(--pm-accent-cyan)] uppercase tracking-wider">Sesión de Carga</span>
-                </div>
-                {activePackingId && activePackingName ? (
-                  <div className="flex items-center justify-between gap-3 p-3 rounded-xl border border-[var(--pm-accent-emerald)]/30 bg-[var(--pm-accent-emerald)]/5">
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <div className="w-2 h-2 rounded-full bg-[var(--pm-accent-emerald)] shadow-[0_0_6px_rgba(16,185,129,0.5)] shrink-0 animate-pulse" />
-                      <span className="text-[11px] font-mono font-bold text-[var(--pm-accent-emerald)] truncate">{activePackingName}</span>
-                    </div>
-                    <button type="button" onClick={() => { setActivePackingId(null); setActivePackingName(null); setPackingNameInput(''); }}
-                      className="px-3 py-1 rounded-lg border border-[var(--pm-border)] text-[var(--pm-text-dim)] hover:text-[var(--pm-accent-red)] hover:border-[var(--pm-accent-red)]/30 text-[9px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer shrink-0">
-                      Cerrar Sesión
-                    </button>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    <div className="flex gap-2">
-                      <input type="text" value={packingNameInput} placeholder="Ej: ENTREGA MAÑANA"
-                        onChange={e => setPackingNameInput(e.target.value.toUpperCase())}
-                        onKeyDown={async e => { if (e.key === 'Enter' && packingNameInput.trim() && clientId) { try { const p = await createPacking.mutateAsync({ fileName: packingNameInput.trim(), clientId }); setActivePackingId(p.id); setActivePackingName(p.fileName); setPackingNameInput(''); } catch {} } }}
-                        className="flex-1 bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] rounded-lg px-3 py-2 text-xs font-mono text-[var(--pm-text-primary)] focus:outline-none focus:border-[var(--pm-accent-cyan)] transition-colors placeholder:text-[var(--pm-text-dim)]/30 uppercase" />
-                      <button type="button" onClick={async () => { if (!packingNameInput.trim() || !clientId) return; try { const p = await createPacking.mutateAsync({ fileName: packingNameInput.trim(), clientId }); setActivePackingId(p.id); setActivePackingName(p.fileName); setPackingNameInput(''); } catch {} }}
-                        disabled={createPacking.isPending || !packingNameInput.trim() || !clientId}
-                        className="px-4 py-2 rounded-lg text-[10px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer disabled:opacity-40 flex items-center gap-1.5"
-                        style={{ background: 'rgba(0,229,255,0.12)', color: 'var(--pm-accent-cyan)', border: '1px solid rgba(0,229,255,0.3)' }}>
-                        {createPacking.isPending ? <div className="w-3 h-3 border-2 border-[var(--pm-accent-cyan)] border-t-transparent rounded-full animate-spin" /> : <Plus className="w-3 h-3" />}
-                        CREAR
-                      </button>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="h-px flex-1 bg-[var(--pm-border)]/30" />
-                      <span className="text-[8px] font-mono text-[var(--pm-text-dim)]/40 uppercase tracking-wider">O SELECCIONAR EXISTENTE</span>
-                      <div className="h-px flex-1 bg-[var(--pm-border)]/30" />
-                    </div>
-                    <select value="" onChange={async e => { const id = e.target.value; if (!id) return; const p = packings.find(x => x.id === id); if (p) { setActivePackingId(p.id); setActivePackingName(p.fileName); } }}
-                      className="w-full bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] rounded-lg px-3 py-2 text-xs font-mono text-[var(--pm-text-primary)] focus:outline-none focus:border-[var(--pm-accent-cyan)] transition-colors cursor-pointer">
-                      <option value="">— Seleccionar packing pendiente —</option>
-                      {packings.filter(p => p.status === 'PENDING').map(p => (
-                        <option key={p.id} value={p.id}>
-                          {p.fileName} · {p.client?.name ?? p.clientId.slice(0, 8)} · {p._count?.bars ?? 0} barras
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                )}
-              </div>
-            </motion.div>
-
             {/* Individual Registration */}
             <motion.div initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1, duration: 0.4 }}
-              className={`glass-panel rounded-2xl border border-[var(--pm-border)]/40 overflow-hidden ${!activePackingId ? 'opacity-40 pointer-events-none' : ''}`}>
+              className="glass-panel rounded-2xl border border-[var(--pm-border)]/40 overflow-hidden">
               <div className="px-5 pt-5 pb-2 border-b border-[var(--pm-border)]/20">
                 <div className="flex items-center gap-2">
                   <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.2)' }}>
@@ -628,7 +645,7 @@ export default function PackingPage() {
 
             {/* Bulk Upload */}
             <motion.div initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.15, duration: 0.4 }}
-              className={`glass-panel rounded-2xl border border-[var(--pm-border)]/40 overflow-hidden ${!activePackingId ? 'opacity-40 pointer-events-none' : ''}`}>
+              className="glass-panel rounded-2xl border border-[var(--pm-border)]/40 overflow-hidden">
               <button type="button" onClick={() => setIsBulkOpen(!isBulkOpen)}
                 className="w-full flex items-center justify-between px-5 py-4 active:scale-[0.99] transition-all cursor-pointer">
                 <div className="flex items-center gap-2">
@@ -1360,6 +1377,118 @@ export default function PackingPage() {
             </motion.div>
           );
         })()}
+      </AnimatePresence>
+
+      {/* Confirm Registration Overlay */}
+      <AnimatePresence>
+        {confirmRegOverlay && (
+          <motion.div key="confirm-reg" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={() => setConfirmRegOverlay(null)}
+          >
+            <motion.div initial={{ opacity: 0, scale: 0.92, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.92, y: 10 }} transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              className="w-full max-w-sm glass-panel rounded-2xl overflow-hidden p-6 space-y-5 border border-[var(--pm-border)]/40"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="text-center">
+                <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-3"
+                  style={{ background: 'rgba(212,175,55,0.1)', border: '2px solid rgba(212,175,55,0.25)' }}>
+                  <ClipboardCheck className="w-7 h-7 text-[var(--pm-accent-gold)]" strokeWidth={2.5} />
+                </div>
+                <h2 className="text-sm font-mono font-bold text-[var(--pm-text-primary)] uppercase tracking-wider">Confirmar Registro</h2>
+              </div>
+
+              <div className="p-4 rounded-xl border border-[var(--pm-border)]/40 bg-[var(--pm-bg-deepest)]/30 space-y-2">
+                <div className="flex justify-between text-[10px] font-mono">
+                  <span className="text-[var(--pm-text-dim)]">Código</span>
+                  <span className="font-bold text-[var(--pm-accent-gold)]">{confirmRegOverlay.barNumber}</span>
+                </div>
+                <div className="flex justify-between text-[10px] font-mono">
+                  <span className="text-[var(--pm-text-dim)]">Peso Bruto</span>
+                  <span className="font-bold text-[var(--pm-text-primary)]">{formatNumber(confirmRegOverlay.grossWeight, 2)} g</span>
+                </div>
+                <div className="flex justify-between text-[10px] font-mono">
+                  <span className="text-[var(--pm-text-dim)]">Pureza Au</span>
+                  <span className="font-bold text-[var(--pm-text-primary)]">{formatNumber(confirmRegOverlay.purity, 1)} ‰</span>
+                </div>
+                {confirmRegOverlay.leyAg != null && confirmRegOverlay.leyAg > 0 && (
+                  <div className="flex justify-between text-[10px] font-mono">
+                    <span className="text-[var(--pm-text-dim)]">Ley Ag</span>
+                    <span className="font-bold text-[var(--pm-text-primary)]">{formatNumber(confirmRegOverlay.leyAg, 1)} ‰</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="p-4 rounded-xl border border-[var(--pm-accent-cyan)]/30 bg-[var(--pm-accent-cyan)]/5 text-center">
+                <Package className="w-5 h-5 text-[var(--pm-accent-cyan)] mx-auto mb-2" />
+                <p className="text-[11px] font-mono text-[var(--pm-text-primary)] leading-relaxed">
+                  Esta barra se asignará al <strong className="text-[var(--pm-accent-cyan)]">Packing #{confirmRegOverlay.packingNumber}</strong> del proveedor <strong className="text-[var(--pm-text-primary)]">{confirmRegOverlay.clientName}</strong>
+                </p>
+              </div>
+
+              <div className="flex gap-3">
+                <button type="button" onClick={() => setConfirmRegOverlay(null)}
+                  className="flex-1 py-2.5 rounded-lg border border-[var(--pm-border)] text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] hover:bg-[var(--pm-bg-tertiary)] text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer">
+                  Cancelar
+                </button>
+                <button type="button" onClick={handleConfirmBarRegistration}
+                  className="flex-[2] py-2.5 rounded-lg text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2"
+                  style={{ background: 'linear-gradient(135deg, rgba(212,175,55,0.2), rgba(212,175,55,0.1))', color: 'var(--pm-accent-gold)', border: '1px solid rgba(212,175,55,0.3)' }}>
+                  <Check className="w-4 h-4" /> CONFIRMAR
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Confirm Bulk Upload Overlay */}
+      <AnimatePresence>
+        {confirmBulkOverlay && (
+          <motion.div key="confirm-bulk" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={() => setConfirmBulkOverlay(null)}
+          >
+            <motion.div initial={{ opacity: 0, scale: 0.92, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.92, y: 10 }} transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              className="w-full max-w-sm glass-panel rounded-2xl overflow-hidden p-6 space-y-5 border border-[var(--pm-border)]/40"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="text-center">
+                <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-3"
+                  style={{ background: 'rgba(245,158,11,0.1)', border: '2px solid rgba(245,158,11,0.25)' }}>
+                  <Upload className="w-7 h-7 text-[var(--pm-accent-amber)]" strokeWidth={2.5} />
+                </div>
+                <h2 className="text-sm font-mono font-bold text-[var(--pm-text-primary)] uppercase tracking-wider">Confirmar Carga Masiva</h2>
+              </div>
+
+              <div className="p-4 rounded-xl border border-[var(--pm-border)]/40 bg-[var(--pm-bg-deepest)]/30 text-center">
+                <FileSpreadsheet className="w-5 h-5 text-[var(--pm-accent-amber)] mx-auto mb-1" />
+                <p className="text-[10px] font-mono text-[var(--pm-text-dim)] truncate">{bulkFile?.name}</p>
+              </div>
+
+              <div className="p-4 rounded-xl border border-[var(--pm-accent-cyan)]/30 bg-[var(--pm-accent-cyan)]/5 text-center">
+                <Package className="w-5 h-5 text-[var(--pm-accent-cyan)] mx-auto mb-2" />
+                <p className="text-[11px] font-mono text-[var(--pm-text-primary)] leading-relaxed">
+                  Este archivo se asignará al <strong className="text-[var(--pm-accent-cyan)]">Packing #{confirmBulkOverlay.packingNumber}</strong> del proveedor <strong className="text-[var(--pm-text-primary)]">{confirmBulkOverlay.clientName}</strong>
+                </p>
+              </div>
+
+              <div className="flex gap-3">
+                <button type="button" onClick={() => setConfirmBulkOverlay(null)}
+                  className="flex-1 py-2.5 rounded-lg border border-[var(--pm-border)] text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] hover:bg-[var(--pm-bg-tertiary)] text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer">
+                  Cancelar
+                </button>
+                <button type="button" onClick={handleConfirmBulkUpload}
+                  className="flex-[2] py-2.5 rounded-lg text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2"
+                  style={{ background: 'linear-gradient(135deg, rgba(245,158,11,0.2), rgba(245,158,11,0.1))', color: 'var(--pm-accent-amber)', border: '1px solid rgba(245,158,11,0.3)' }}>
+                  <Check className="w-4 h-4" /> CONFIRMAR
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
       </AnimatePresence>
 
       {/* Ingest Status Overlay */}

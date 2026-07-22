@@ -5,6 +5,41 @@ import { PrismaService } from '../../prisma/prisma.service.js';
 export class PackingsService {
   constructor(private prisma: PrismaService) {}
 
+  async getNextInfo(clientId: string) {
+    const client = await this.prisma.client.findUnique({
+      where: { id: clientId },
+      select: { name: true },
+    });
+    if (!client) throw new NotFoundException('Cliente no encontrado');
+
+    const existing = await this.prisma.packing.findFirst({
+      where: { clientId, status: 'PENDING' },
+      orderBy: { createdAt: 'desc' },
+      select: { id: true, packingNumber: true },
+    });
+
+    if (existing) {
+      return {
+        packingNumber: existing.packingNumber,
+        packingId: existing.id,
+        clientName: client.name,
+      };
+    }
+
+    const last = await this.prisma.packing.findFirst({
+      where: { clientId, packingNumber: { not: null } },
+      orderBy: { packingNumber: 'desc' },
+      select: { packingNumber: true },
+    });
+    const nextNumber = (last?.packingNumber ?? 0) + 1;
+
+    return {
+      packingNumber: nextNumber,
+      packingId: null,
+      clientName: client.name,
+    };
+  }
+
   async findAll() {
     const packings = await this.prisma.packing.findMany({
       include: {
@@ -48,10 +83,18 @@ export class PackingsService {
   }
 
   async create(data: { fileName: string; clientId: string }) {
+    const last = await this.prisma.packing.findFirst({
+      where: { clientId: data.clientId, packingNumber: { not: null } },
+      orderBy: { packingNumber: 'desc' },
+      select: { packingNumber: true },
+    });
+    const packingNumber = (last?.packingNumber ?? 0) + 1;
+
     return this.prisma.packing.create({
       data: {
         fileName: data.fileName.toUpperCase(),
         clientId: data.clientId,
+        packingNumber,
         totalRows: 0,
         created: 0,
         skipped: 0,
