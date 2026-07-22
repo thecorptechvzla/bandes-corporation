@@ -316,13 +316,21 @@ export default function PackingPage() {
     handleEditChange(barId, 'purity', leyAu);
     if (leyAg) handleEditChange(barId, 'leyAg', leyAg);
 
+    let url = photoUploadedUrl;
+    if (!url && photoBlob) {
+      try { url = await uploadPhoto(photoBlob); } catch (err) { console.error('Fallback upload failed:', err); }
+    }
+
+    const isDataUrl = url?.startsWith('data:');
+    const apiUrl = !isDataUrl ? (url || undefined) : undefined;
+
     try {
       await validatePacking.mutateAsync({
         id: selectedPacking.id,
-        bars: [{ barId, grossWeight: bw, purity: la, leyAg: lag > 0 ? lag : undefined, photoUrl: photoUploadedUrl || undefined }],
+        bars: [{ barId, grossWeight: bw, purity: la, leyAg: lag > 0 ? lag : undefined, photoUrl: apiUrl }],
       });
-      if (photoUploadedUrl) {
-        setBarPhotoUrls(prev => ({ ...prev, [barId]: photoUploadedUrl }));
+      if (url) {
+        setBarPhotoUrls(prev => ({ ...prev, [barId]: url }));
       }
       setConfirmModal(null);
       setSelectedBarId(null);
@@ -341,12 +349,30 @@ export default function PackingPage() {
     return data.url as string;
   }, []);
 
-  const handleCapture = useCallback((blob: Blob) => {
-    const url = URL.createObjectURL(blob);
+  const handleCapture = useCallback(async (blob: Blob) => {
+    const localUrl = URL.createObjectURL(blob);
     setPhotoBlob(blob);
-    setPhotoPreviewUrl(url);
+    setPhotoPreviewUrl(localUrl);
     setCameraMode('preview');
-  }, []);
+    try {
+      const url = await uploadPhoto(blob);
+      setPhotoUploadedUrl(url);
+      if (confirmModal) {
+        setBarPhotoUrls(prev => ({ ...prev, [confirmModal.barId]: url }));
+      }
+    } catch (err) {
+      console.error('Auto-upload failed, will retry on sync:', err);
+      const fallbackUrl = await new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.readAsDataURL(blob);
+      });
+      setPhotoUploadedUrl(fallbackUrl);
+      if (confirmModal) {
+        setBarPhotoUrls(prev => ({ ...prev, [confirmModal.barId]: fallbackUrl }));
+      }
+    }
+  }, [uploadPhoto, confirmModal]);
 
   const resetPhotoState = useCallback(() => {
     if (photoPreviewUrl) URL.revokeObjectURL(photoPreviewUrl);
@@ -355,21 +381,6 @@ export default function PackingPage() {
     setPhotoUploadedUrl(null);
     setCameraMode('idle');
   }, [photoPreviewUrl]);
-
-  const handleUsePhoto = useCallback(async () => {
-    if (!photoBlob || !confirmModal) return;
-    try {
-      const url = await uploadPhoto(photoBlob);
-      setPhotoUploadedUrl(url);
-      setBarPhotoUrls(prev => ({ ...prev, [confirmModal.barId]: url }));
-      if (photoPreviewUrl) URL.revokeObjectURL(photoPreviewUrl);
-      setPhotoBlob(null);
-      setPhotoPreviewUrl(null);
-      setCameraMode('idle');
-    } catch {
-      console.error('Upload failed');
-    }
-  }, [photoBlob, photoPreviewUrl, uploadPhoto, confirmModal]);
 
   const modalLiveFA = useMemo(() => {
     if (!confirmModal) return 0;
@@ -979,24 +990,32 @@ export default function PackingPage() {
                               onClose={() => setCameraMode('idle')}
                             />
                           ) : cameraMode === 'preview' ? (
-                            <div className="space-y-3">
-                              <div className="rounded-xl overflow-hidden border-2 border-[var(--pm-accent-cyan)]/30 bg-black">
-                                {photoPreviewUrl && (
-                                  <img src={photoPreviewUrl} alt="Preview" className="w-full object-cover max-h-64" />
-                                )}
+                              <div className="space-y-3">
+                                <div className="rounded-xl overflow-hidden border-2 border-[var(--pm-accent-cyan)]/30 bg-black">
+                                  {photoPreviewUrl && (
+                                    <img src={photoPreviewUrl} alt="Preview" className="w-full object-cover max-h-64" />
+                                  )}
+                                </div>
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-2">
+                                    {photoUploadedUrl ? (
+                                      <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[var(--pm-accent-emerald)]/10 border border-[var(--pm-accent-emerald)]/20">
+                                        <Check className="w-3 h-3 text-[var(--pm-accent-emerald)]" />
+                                        <span className="text-[9px] font-mono font-bold text-[var(--pm-accent-emerald)]">Foto lista</span>
+                                      </span>
+                                    ) : (
+                                      <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[var(--pm-accent-amber)]/10 border border-[var(--pm-accent-amber)]/20">
+                                        <div className="w-2.5 h-2.5 border-2 border-[var(--pm-accent-amber)] border-t-transparent rounded-full animate-spin" />
+                                        <span className="text-[9px] font-mono font-bold text-[var(--pm-accent-amber)]">Subiendo...</span>
+                                      </span>
+                                    )}
+                                  </div>
+                                  <button type="button" onClick={() => { if (photoPreviewUrl) URL.revokeObjectURL(photoPreviewUrl); setPhotoBlob(null); setPhotoPreviewUrl(null); setPhotoUploadedUrl(null); setCameraMode('camera'); }}
+                                    className="px-4 py-2 rounded-lg border border-[var(--pm-border)] text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] hover:bg-[var(--pm-bg-tertiary)] text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer">
+                                    🔁 REPETIR
+                                  </button>
+                                </div>
                               </div>
-                              <div className="flex gap-3">
-                                <button type="button" onClick={() => { if (photoPreviewUrl) URL.revokeObjectURL(photoPreviewUrl); setPhotoBlob(null); setPhotoPreviewUrl(null); setCameraMode('camera'); }}
-                                  className="flex-1 py-2.5 rounded-lg border border-[var(--pm-border)] text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] hover:bg-[var(--pm-bg-tertiary)] text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer">
-                                  🔁 REPETIR
-                                </button>
-                                <button type="button" onClick={handleUsePhoto} disabled={!photoBlob}
-                                  className="flex-[2] py-2.5 rounded-lg text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
-                                  style={{ background: 'linear-gradient(135deg, rgba(0,229,255,0.2), rgba(0,229,255,0.1))', color: 'var(--pm-accent-cyan)', border: '1px solid rgba(0,229,255,0.3)' }}>
-                                  <Camera className="w-3.5 h-3.5" /> USAR FOTO
-                                </button>
-                              </div>
-                            </div>
                           ) : (
                             <>
                               {/* Báscula */}
@@ -1147,7 +1166,7 @@ export default function PackingPage() {
                   <div className="rounded-xl overflow-hidden border border-[var(--pm-border)] bg-black/60 flex items-center justify-center min-h-[160px]">
                     {photoUrl ? (
                       <img
-                        src={`/api/blob/view?url=${encodeURIComponent(photoUrl)}`}
+                        src={photoUrl.startsWith('data:') ? photoUrl : `/api/blob/view?url=${encodeURIComponent(photoUrl)}`}
                         alt={`Barra ${bar.barNumber}`}
                         className="w-full object-cover max-h-56"
                       />
