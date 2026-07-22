@@ -11,13 +11,14 @@ export async function POST(request: Request) {
 
     const blob = await put(`packing-photos/${Date.now()}-${file.name}`, file, {
       access: 'private',
+      token: process.env.BLOB_READ_WRITE_TOKEN,
     });
 
     return NextResponse.json({ url: blob.url });
-  } catch (err) {
-    console.error('[BLOB] Upload error:', err instanceof Error ? err.message : err);
+  } catch (error: any) {
+    console.error('[Vercel Blob Upload Error]:', error.message || error);
     return NextResponse.json(
-      { error: 'Error al subir la imagen' },
+      { error: 'Error al subir a Vercel Blob', details: error.message },
       { status: 500 },
     );
   }
