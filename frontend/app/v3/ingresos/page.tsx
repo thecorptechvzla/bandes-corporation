@@ -38,9 +38,9 @@ type IngestStep = 'CLIENTE' | 'CODIGO' | 'PESO' | 'PUREZA' | 'LEY_AG' | 'CONFIRM
 const STEPS: IngestStep[] = ['CLIENTE', 'CODIGO', 'PESO', 'PUREZA', 'LEY_AG', 'CONFIRMAR'];
 
 const STATUS_LABELS: Record<string, string> = {
-  IN_STOCK: 'EN BÓVEDA',
-  PROCESANDO: 'PROCESANDO',
-  COMPLETADO: 'COMPLETADO',
+  IN_STOCK: 'VALIDADO',
+  PROCESANDO: 'EN PROCESO',
+  COMPLETADO: 'VALIDADO',
   EXITED: 'EGRESADO',
 };
 
@@ -52,8 +52,8 @@ function formatRif(raw: string) {
 function statusBadge(status: string) {
   const map: Record<string, string> = {
     IN_STOCK: 'text-[var(--tac-accent-green)] border-[var(--tac-accent-green)]/30 bg-[var(--tac-accent-green)]/10',
-    PROCESANDO: 'text-[var(--tac-accent-amber)] border-[var(--tac-accent-amber)]/30 bg-[var(--tac-accent-amber)]/10',
-    COMPLETADO: 'text-[var(--tac-accent-cyan)] border-[var(--tac-accent-cyan)]/30 bg-[var(--tac-accent-cyan)]/10',
+    PROCESANDO: 'text-[var(--tac-accent-cyan)] border-[var(--tac-accent-cyan)]/30 bg-[var(--tac-accent-cyan)]/10',
+    COMPLETADO: 'text-[var(--tac-accent-green)] border-[var(--tac-accent-green)]/30 bg-[var(--tac-accent-green)]/10',
     EXITED: 'text-[var(--tac-text-dim)] border-[var(--tac-border)] bg-[var(--tac-bg-tertiary)]',
   };
   return map[status] || map.IN_STOCK;

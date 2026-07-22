@@ -15,16 +15,16 @@ import {
 } from 'lucide-react';
 
 const STATUS_LABELS: Record<string, string> = {
-  IN_STOCK: 'En Bóveda',
-  PROCESANDO: 'Procesando',
-  COMPLETADO: 'Completado',
-  EXITED: 'Egresado',
+  IN_STOCK: 'VALIDADO',
+  PROCESANDO: 'EN PROCESO',
+  COMPLETADO: 'VALIDADO',
+  EXITED: 'EGRESADO',
 };
 
 const STATUS_STYLES: Record<string, string> = {
   IN_STOCK: 'text-emerald-400 border-emerald-500/25 bg-emerald-500/10',
-  PROCESANDO: 'text-[var(--pm-accent-amber)] border-[var(--pm-accent-amber)]/25 bg-[var(--pm-accent-amber)]/10',
-  COMPLETADO: 'text-[var(--pm-accent-gold)] border-[var(--pm-accent-gold)]/25 bg-[var(--pm-accent-gold)]/10',
+  PROCESANDO: 'text-cyan-400 border-cyan-500/25 bg-cyan-500/10',
+  COMPLETADO: 'text-emerald-400 border-emerald-500/25 bg-emerald-500/10',
   EXITED: 'text-[var(--pm-text-dim)] border-[var(--pm-border)] bg-[var(--pm-bg-tertiary)]',
 };
 

@@ -21,16 +21,16 @@ const STATUS_STYLES: Record<string, string> = {
   POR_VALIDAR: 'text-[var(--pm-accent-amber)] bg-[var(--pm-accent-amber)]/10 border-[var(--pm-accent-amber)]/20',
   IN_STOCK: 'text-[var(--pm-accent-emerald)] bg-[var(--pm-accent-emerald)]/10 border-[var(--pm-accent-emerald)]/20',
   PROCESANDO: 'text-[var(--pm-accent-cyan)] bg-[var(--pm-accent-cyan)]/10 border-[var(--pm-accent-cyan)]/20',
-  COMPLETADO: 'text-[var(--pm-accent-gold)] bg-[var(--pm-accent-gold)]/10 border-[var(--pm-accent-gold)]/20',
+  COMPLETADO: 'text-[var(--pm-accent-emerald)] bg-[var(--pm-accent-emerald)]/10 border-[var(--pm-accent-emerald)]/20',
   EXITED: 'text-[var(--pm-text-dim)] bg-[var(--pm-bg-tertiary)]/50 border-[var(--pm-border)]/30',
 };
 
 const STATUS_LABELS: Record<string, string> = {
-  POR_VALIDAR: 'Pendiente',
-  IN_STOCK: 'En Bóveda',
-  PROCESANDO: 'Fundiendo',
-  COMPLETADO: 'Fundido',
-  EXITED: 'Despachado',
+  POR_VALIDAR: 'POR VALIDAR',
+  IN_STOCK: 'VALIDADO',
+  PROCESANDO: 'EN PROCESO',
+  COMPLETADO: 'VALIDADO',
+  EXITED: 'EGRESADO',
 };
 
 export function SupplierDirectory({

@@ -295,7 +295,7 @@ export default function ReportesPage() {
           if (c) parts.push(`Cliente: ${c.name}`);
         }
         if (statusFilter !== 'ALL') {
-          const labels: Record<string, string> = { IN_STOCK: 'En Bóveda', COMPLETADO: 'Fundido', EXITED: 'Despachado' };
+          const labels: Record<string, string> = { IN_STOCK: 'VALIDADO', COMPLETADO: 'VALIDADO', EXITED: 'EGRESADO' };
           parts.push(`Estado: ${labels[statusFilter] || statusFilter}`);
         }
         if (parts.length > 0) {
@@ -512,9 +512,9 @@ export default function ReportesPage() {
           <select value={statusFilter} onChange={e => setStatusFilter(e.target.value as StatusFilter)}
             className="bg-[var(--pm-bg-base)]/60 border border-[var(--pm-border)]/40 rounded-lg px-2 py-1.5 text-[10px] font-mono text-[var(--pm-text-primary)] focus:outline-none focus:border-[var(--pm-accent-gold)]">
             <option value="ALL">Todos los estados</option>
-            <option value="IN_STOCK">En Bóveda</option>
-            <option value="COMPLETADO">Fundido</option>
-            <option value="EXITED">Despachado</option>
+            <option value="IN_STOCK">VALIDADO</option>
+            <option value="COMPLETADO">VALIDADO</option>
+            <option value="EXITED">EGRESADO</option>
           </select>
 
           {hasActiveFilters && (

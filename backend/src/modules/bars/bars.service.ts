@@ -110,6 +110,7 @@ export class BarsService {
   async bulkCreate(
     file: Express.Multer.File,
     clientId: string,
+    packingId?: string,
   ): Promise<BulkUploadResult> {
     const result: BulkUploadResult = { created: 0, skipped: 0, errors: [] };
 
@@ -231,17 +232,27 @@ export class BarsService {
     }
 
     await this.prisma.$transaction(async (tx) => {
-      const packing = await tx.packing.create({
-        data: {
-          fileName: file.originalname,
-          clientId,
-          totalRows: barsToCreate.length,
-          created: 0,
-          skipped: 0,
-          errors: result.errors.length > 0 ? result.errors : undefined,
-          status: 'PENDING',
-        },
-      });
+      let targetPackingId = packingId;
+
+      if (!targetPackingId) {
+        const packing = await tx.packing.create({
+          data: {
+            fileName: file.originalname,
+            clientId,
+            totalRows: barsToCreate.length,
+            created: 0,
+            skipped: 0,
+            errors: result.errors.length > 0 ? result.errors : undefined,
+            status: 'PENDING',
+          },
+        });
+        targetPackingId = packing.id;
+      } else {
+        const existing = await tx.packing.findUnique({ where: { id: targetPackingId } });
+        if (!existing || existing.status !== 'PENDING') {
+          throw new BadRequestException('El packing especificado no existe o ya fue validado');
+        }
+      }
 
       const created = await tx.bar.createMany({
         data: barsToCreate.map((b) => ({
@@ -253,17 +264,21 @@ export class BarsService {
           fineWeightAg: b.fineWeightAg,
           clientId,
           status: 'POR_VALIDAR',
-          packingId: packing.id,
+          packingId: targetPackingId,
         })),
       });
 
       await tx.packing.update({
-        where: { id: packing.id },
-        data: { created: created.count, skipped: barsToCreate.length - created.count },
+        where: { id: targetPackingId },
+        data: {
+          totalRows: { increment: barsToCreate.length },
+          created: { increment: created.count },
+          skipped: { increment: barsToCreate.length - created.count },
+        },
       });
 
       result.created = created.count;
-      result.packingId = packing.id;
+      result.packingId = targetPackingId;
     });
 
     return result;

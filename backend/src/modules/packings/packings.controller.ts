@@ -15,6 +15,19 @@ export class PackingsController {
     return this.service.findOne(id);
   }
 
+  @Post()
+  create(
+    @Body()
+    body: {
+      fileName: string;
+      clientId: string;
+    },
+  ) {
+    if (!body.fileName?.trim()) throw new BadRequestException('Nombre del packing requerido');
+    if (!body.clientId) throw new BadRequestException('Cliente requerido');
+    return this.service.create(body);
+  }
+
   @Post(':id/validate')
   validate(
     @Param('id') id: string,

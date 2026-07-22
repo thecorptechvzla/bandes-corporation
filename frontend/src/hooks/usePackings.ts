@@ -2,7 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
-import type { Packing } from '@/types/api';
+import type { Packing, CreateBarRequest } from '@/types/api';
 
 export function usePackings() {
   return useQuery<Packing[]>({
@@ -16,6 +16,17 @@ export function usePacking(id: string | null) {
     queryKey: ['packings', id],
     queryFn: () => api.get(`/packings/${id}`).then((r) => r.data),
     enabled: !!id,
+  });
+}
+
+export function useCreatePacking() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { fileName: string; clientId: string }) =>
+      api.post('/packings', data).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['packings'] });
+    },
   });
 }
 

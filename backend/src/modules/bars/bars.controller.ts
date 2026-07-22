@@ -30,6 +30,7 @@ export class BarsController {
       purity: number;
       clientId: string;
       leyAg?: number;
+      packingId?: string;
     },
   ) {
     return this.service.create(body);
@@ -42,6 +43,7 @@ export class BarsController {
   async bulkUpload(
     @UploadedFile() file: Express.Multer.File,
     @Body('clientId') clientId: string,
+    @Body('packingId') packingId?: string,
   ) {
     if (!file) {
       throw new BadRequestException('No se ha subido ningún archivo');
@@ -57,7 +59,7 @@ export class BarsController {
       );
     }
 
-    return this.service.bulkCreate(file, clientId);
+    return this.service.bulkCreate(file, clientId, packingId);
   }
 
   @Delete(':id')

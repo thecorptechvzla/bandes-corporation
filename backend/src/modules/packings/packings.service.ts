@@ -47,6 +47,20 @@ export class PackingsService {
     return packing;
   }
 
+  async create(data: { fileName: string; clientId: string }) {
+    return this.prisma.packing.create({
+      data: {
+        fileName: data.fileName.toUpperCase(),
+        clientId: data.clientId,
+        totalRows: 0,
+        created: 0,
+        skipped: 0,
+        status: 'PENDING',
+      },
+      include: { client: { select: { id: true, name: true } } },
+    });
+  }
+
   async validate(
     packingId: string,
     barsData: Array<{

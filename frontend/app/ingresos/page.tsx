@@ -33,16 +33,16 @@ import {
 } from 'lucide-react';
 
 const STATUS_LABELS: Record<string, string> = {
-  IN_STOCK: 'INGRESADO',
-  PROCESANDO: 'PROCESANDO',
-  COMPLETADO: 'COMPLETADO',
+  IN_STOCK: 'VALIDADO',
+  PROCESANDO: 'EN PROCESO',
+  COMPLETADO: 'VALIDADO',
   EXITED: 'EGRESADO',
 };
 
 const STATUS_STYLES: Record<string, string> = {
   IN_STOCK: 'bg-[#152B1E] text-emerald-400 border border-emerald-500/10',
-  PROCESANDO: 'bg-[#2A1A0A] text-[#A65B17] border border-[#A65B17]/20',
-  COMPLETADO: 'bg-[#2A2008] text-[#D5B042] border border-[#D5B042]/20',
+  PROCESANDO: 'bg-[#0A1A2A] text-cyan-400 border border-cyan-500/20',
+  COMPLETADO: 'bg-[#152B1E] text-emerald-400 border border-emerald-500/10',
   EXITED: 'bg-blue-900/20 text-blue-400 border border-blue-500/10',
 };
 

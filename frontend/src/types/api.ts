@@ -109,6 +109,7 @@ export interface CreateBarRequest {
   purity: number;
   clientId: string;
   leyAg?: number;
+  packingId?: string;
 }
 
 export interface UpdateBarRequest {

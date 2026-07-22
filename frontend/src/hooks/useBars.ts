@@ -34,6 +34,7 @@ export function useCreateBar() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['bars'] });
       queryClient.invalidateQueries({ queryKey: ['clients'] });
+      queryClient.invalidateQueries({ queryKey: ['packings'] });
     },
   });
 }
@@ -56,6 +57,7 @@ export function useBulkUploadBars() {
       apiUpload<BulkUploadResult>('/bars/bulk-upload', formData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['bars'] });
+      queryClient.invalidateQueries({ queryKey: ['packings'] });
     },
   });
 }
