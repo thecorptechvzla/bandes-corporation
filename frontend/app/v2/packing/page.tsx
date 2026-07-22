@@ -1124,11 +1124,15 @@ export default function PackingPage() {
                               </div>
 
                               {/* Photo attachment */}
-                              {photoUploadedUrl ? (
+                              {photoUploadedUrl ? (() => {
+                                const thumbProxy = photoUploadedUrl.startsWith('data:')
+                                  ? photoUploadedUrl
+                                  : `/api/blob/view?url=${encodeURIComponent(photoUploadedUrl)}`;
+                                return (
                                 <div className="flex items-center gap-3 p-3 rounded-xl border border-[var(--pm-accent-emerald)]/30 bg-[var(--pm-accent-emerald)]/5">
                                   <div className="w-12 h-12 rounded-lg overflow-hidden border border-[var(--pm-border)] shrink-0 bg-black">
                                     <img
-                                      src={photoUploadedUrl?.startsWith('data:') ? photoUploadedUrl : `/api/blob/view?url=${encodeURIComponent(photoUploadedUrl!)}`}
+                                      src={thumbProxy}
                                       alt="Foto adjunta"
                                       className="w-full h-full object-cover"
                                     />
@@ -1143,7 +1147,7 @@ export default function PackingPage() {
                                     </button>
                                   </div>
                                 </div>
-                              ) : (
+                              );})() : (
                                 <HudButton variant="primary" onClick={() => setCameraMode('camera')} className="w-full justify-center">
                                   <Camera className="w-3.5 h-3.5" /> ADJUNTAR FOTO
                                 </HudButton>
@@ -1244,6 +1248,9 @@ export default function PackingPage() {
           const fe = fa * 0.99;
           const delta = validatedGross - spGross;
           const photoUrl = bar.photoUrl || barPhotoUrls[bar.id] || null;
+          const srcProxy = photoUrl?.startsWith('data:')
+            ? photoUrl
+            : `/api/blob/view?url=${encodeURIComponent(photoUrl || '')}`;
           const validatedAt = bar.updatedAt;
           return (
             <motion.div key={evidenceBarId} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
@@ -1283,7 +1290,7 @@ export default function PackingPage() {
                   <div className="rounded-xl overflow-hidden border border-[var(--pm-border)] bg-black/60 flex items-center justify-center min-h-[160px]">
                     {photoUrl ? (
                       <img
-                        src={photoUrl.startsWith('data:') ? photoUrl : `/api/blob/view?url=${encodeURIComponent(photoUrl)}`}
+                        src={srcProxy}
                         alt={`Barra ${bar.barNumber}`}
                         className="w-full object-cover max-h-56"
                       />
