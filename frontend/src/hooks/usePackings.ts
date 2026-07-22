@@ -2,7 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
-import type { Packing, CreateBarRequest } from '@/types/api';
+import type { Packing } from '@/types/api';
 
 export function usePackings() {
   return useQuery<Packing[]>({
@@ -26,6 +26,18 @@ export function useCreatePacking() {
       api.post('/packings', data).then((r) => r.data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['packings'] });
+    },
+  });
+}
+
+export function useFinalizePacking() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      api.post(`/packings/${id}/finalize`).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['packings'] });
+      qc.invalidateQueries({ queryKey: ['bars'] });
     },
   });
 }

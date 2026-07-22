@@ -115,19 +115,30 @@ export class PackingsService {
 
         results.push({ barId: data.barId, success: true });
       }
-
-      // Check if all bars are validated
-      const remaining = await tx.bar.count({
-        where: { packingId, status: 'POR_VALIDAR' },
-      });
-      if (remaining === 0) {
-        await tx.packing.update({
-          where: { id: packingId },
-          data: { status: 'VALIDATED' },
-        });
-      }
     });
 
     return { validated: results.filter((r) => r.success).length, errors: results.filter((r) => !r.success), results };
+  }
+
+  async finalize(packingId: string) {
+    const packing = await this.prisma.packing.findUnique({
+      where: { id: packingId },
+      include: { bars: true },
+    });
+    if (!packing) throw new NotFoundException('Packing no encontrado');
+    if (packing.status !== 'PENDING') {
+      throw new BadRequestException('Este packing ya fue validado');
+    }
+
+    const remaining = packing.bars.filter(b => b.status === 'POR_VALIDAR');
+    if (remaining.length > 0) {
+      throw new BadRequestException(`Faltan ${remaining.length} barra(s) por validar`);
+    }
+
+    return this.prisma.packing.update({
+      where: { id: packingId },
+      data: { status: 'VALIDATED' },
+      include: { client: { select: { id: true, name: true } } },
+    });
   }
 }

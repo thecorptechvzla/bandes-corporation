@@ -48,4 +48,9 @@ export class PackingsController {
     }
     return this.service.validate(id, body.bars);
   }
+
+  @Post(':id/finalize')
+  finalize(@Param('id') id: string) {
+    return this.service.finalize(id);
+  }
 }

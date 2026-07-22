@@ -4,7 +4,7 @@ import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'motion/react';
 import { useClients } from '@/hooks/useClients';
 import { useBars, useCreateBar, useBulkUploadBars } from '@/hooks/useBars';
-import { usePackings, usePacking, useValidatePacking, useCreatePacking } from '@/hooks/usePackings';
+import { usePackings, usePacking, useValidatePacking, useCreatePacking, useFinalizePacking } from '@/hooks/usePackings';
 import { api } from '@/lib/api';
 import { formatNumber } from '@/lib/format';
 import type { WeightUnit } from '@/lib/format';
@@ -71,9 +71,11 @@ export default function PackingPage() {
   const [selectedPackingId, setSelectedPackingId] = useState<string | null>(null);
   const { data: selectedPacking } = usePacking(selectedPackingId);
   const validatePacking = useValidatePacking();
+  const finalizePacking = useFinalizePacking();
   const [validationEdits, setValidationEdits] = useState<Record<string, { barNumber: string; grossWeight: string; purity: string; leyAg: string }>>({});
   const [validating, setValidating] = useState(false);
   const [validationResult, setValidationResult] = useState<{ total: number; success: number; error: number } | null>(null);
+  const [confirmFinalizeModal, setConfirmFinalizeModal] = useState(false);
   const [selectedBarId, setSelectedBarId] = useState<string | null>(null);
   const [confirmModal, setConfirmModal] = useState<{
     barId: string;
@@ -404,32 +406,23 @@ export default function PackingPage() {
     packings.filter(p => p.status === 'PENDING'),
   [packings]);
 
-  const handleValidatePacking = async () => {
-    if (!selectedPacking || !selectedPacking.bars) return;
+  const validatedCount = useMemo(() =>
+    selectedPacking?.bars?.filter(b => b.status !== 'POR_VALIDAR').length ?? 0,
+  [selectedPacking]);
+
+  const totalCount = selectedPacking?.bars?.length ?? 0;
+  const allBarsValidated = totalCount > 0 && validatedCount === totalCount;
+
+  const handleConfirmFinalize = async () => {
+    if (!selectedPacking) return;
+    setConfirmFinalizeModal(false);
     setValidating(true);
     try {
-      const barsData = selectedPacking.bars
-        .filter(b => b.status === 'POR_VALIDAR')
-        .map(b => {
-          const edit = validationEdits[b.id];
-          if (!edit) return null;
-          return {
-            barId: b.id,
-            barNumber: edit.barNumber.toUpperCase().trim() || b.barNumber,
-            grossWeight: parseFloat(edit.grossWeight) || Number(b.grossWeight),
-            purity: parseFloat(edit.purity) || Number(b.purity),
-            leyAg: edit.leyAg ? parseFloat(edit.leyAg) || undefined : undefined,
-          };
-        })
-        .filter(Boolean) as Array<{ barId: string; barNumber: string; grossWeight: number; purity: number; leyAg?: number }>;
-
-      const result = await validatePacking.mutateAsync({ id: selectedPacking.id, bars: barsData });
-      const success = result.results?.filter((r: any) => r.success).length || 0;
-      const errors = result.results?.filter((r: any) => !r.success).length || 0;
-      setValidationResult({ total: barsData.length, success, error: errors });
+      await finalizePacking.mutateAsync(selectedPacking.id);
+      setValidationResult({ total: totalCount, success: validatedCount, error: 0 });
       setTimeout(() => { setSelectedPackingId(null); setValidationResult(null); }, 3000);
-    } catch (err) {
-      console.error('Validation error:', err);
+    } catch (err: any) {
+      console.error('Finalize error:', err);
     } finally {
       setValidating(false);
     }
@@ -890,13 +883,27 @@ export default function PackingPage() {
                       {selectedPacking.client?.name} · {new Date(selectedPacking.createdAt).toLocaleDateString('es-ES')} · {selectedPacking.bars?.length ?? 0} barras
                     </p>
                   </div>
-                  <button onClick={handleValidatePacking} disabled={validating}
-                    className="px-4 py-2 rounded-lg text-[10px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer disabled:opacity-50 flex items-center gap-2"
-                    style={{ background: 'rgba(212,175,55,0.12)', color: 'var(--pm-accent-gold)', border: '1px solid rgba(212,175,55,0.3)' }}>
-                    {validating ? (
-                      <><div className="w-3 h-3 border-2 border-[var(--pm-accent-gold)] border-t-transparent rounded-full animate-spin" /> Validando...</>
-                    ) : (<><ClipboardCheck className="w-3.5 h-3.5" /> Validar Packing</>)}
-                  </button>
+                  <div className="flex items-center gap-3">
+                    <span className={`text-[9px] font-mono whitespace-nowrap ${allBarsValidated ? 'text-[var(--pm-accent-emerald)]' : 'text-[var(--pm-text-dim)]'}`}>
+                      {validatedCount} de {totalCount} barras validadas
+                    </span>
+                    <button onClick={() => setConfirmFinalizeModal(true)} disabled={!allBarsValidated || finalizePacking.isPending}
+                      className={`px-4 py-2 rounded-lg text-[10px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2 ${allBarsValidated ? 'active:scale-95' : ''}`}
+                      style={{
+                        background: allBarsValidated
+                          ? 'linear-gradient(135deg, rgba(16,185,129,0.2), rgba(16,185,129,0.1))'
+                          : 'rgba(100,100,100,0.08)',
+                        color: allBarsValidated ? 'var(--pm-accent-emerald)' : 'var(--pm-text-dim)',
+                        border: allBarsValidated
+                          ? '1px solid rgba(16,185,129,0.3)'
+                          : '1px solid rgba(100,100,100,0.15)',
+                        boxShadow: allBarsValidated ? '0 0 16px rgba(16,185,129,0.15)' : 'none',
+                      }}>
+                      {finalizePacking.isPending ? (
+                        <><div className="w-3 h-3 border-2 border-[var(--pm-accent-emerald)] border-t-transparent rounded-full animate-spin" /> Finalizando...</>
+                      ) : (<><ClipboardCheck className="w-3.5 h-3.5" /> CONFIRMAR VALIDACIÓN</>)}
+                    </button>
+                  </div>
                 </div>
 
                 {/* Confirm Bar — shown when a row is selected */}
@@ -1175,6 +1182,42 @@ export default function PackingPage() {
           </motion.div>
         </div>
       )}
+
+      {/* Finalize Confirmation Modal */}
+      <AnimatePresence>
+        {confirmFinalizeModal && selectedPacking && (
+          <motion.div key="finalize-modal" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0, scale: 0.92, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.92, y: 10 }} transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              className="w-full max-w-sm glass-panel rounded-2xl overflow-hidden p-6 space-y-5 border border-[var(--pm-border)]/40">
+              <div className="text-center">
+                <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-3"
+                  style={{ background: 'rgba(16,185,129,0.1)', border: '2px solid rgba(16,185,129,0.25)' }}>
+                  <ClipboardCheck className="w-7 h-7 text-[var(--pm-accent-emerald)]" strokeWidth={2.5} />
+                </div>
+                <h2 className="text-sm font-mono font-bold text-[var(--pm-text-primary)] uppercase tracking-wider">Confirmar Validación</h2>
+                <p className="text-[10px] font-mono text-[var(--pm-text-dim)] mt-2 leading-relaxed">
+                  ¿Confirmar recepción técnica del material? Se marcará el Packing como <strong className="text-[var(--pm-accent-emerald)]">VALIDADO</strong>{' '}
+                  y las barras estarán disponibles para fundición.
+                </p>
+              </div>
+              <div className="h-px bg-[var(--pm-border)]/30" />
+              <div className="flex gap-3">
+                <button type="button" onClick={() => setConfirmFinalizeModal(false)}
+                  className="flex-1 py-2.5 rounded-lg border border-[var(--pm-border)] text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] hover:bg-[var(--pm-bg-tertiary)] text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer">
+                  Cancelar
+                </button>
+                <button type="button" onClick={handleConfirmFinalize}
+                  className="flex-[2] py-2.5 rounded-lg text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2"
+                  style={{ background: 'linear-gradient(135deg, rgba(16,185,129,0.2), rgba(16,185,129,0.1))', color: 'var(--pm-accent-emerald)', border: '1px solid rgba(16,185,129,0.3)' }}>
+                  <Check className="w-4 h-4" /> CONFIRMAR
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Evidence Modal */}
       <AnimatePresence>
