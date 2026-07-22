@@ -395,12 +395,11 @@ export default function PackingPage() {
     if (leyAg) handleEditChange(barId, 'leyAg', leyAg);
 
     let url = photoUploadedUrl;
-    if (!url && photoBlob) {
-      try { url = await uploadPhoto(photoBlob); } catch (err) { console.error('Fallback upload failed:', err); }
+    if ((!url || url.startsWith('data:')) && photoBlob) {
+      url = await uploadPhoto(photoBlob);
     }
 
-    const isDataUrl = url?.startsWith('data:');
-    const apiUrl = !isDataUrl ? (url || undefined) : undefined;
+    const apiUrl = url || undefined;
 
     try {
       await validatePacking.mutateAsync({
@@ -440,15 +439,6 @@ export default function PackingPage() {
       }
     } catch (err) {
       console.error('Auto-upload failed, will retry on sync:', err);
-      const fallbackUrl = await new Promise<string>((resolve) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result as string);
-        reader.readAsDataURL(blob);
-      });
-      setPhotoUploadedUrl(fallbackUrl);
-      if (confirmModal) {
-        setBarPhotoUrls(prev => ({ ...prev, [confirmModal.barId]: fallbackUrl }));
-      }
     }
   }, [uploadPhoto, confirmModal]);
 
