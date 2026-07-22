@@ -1137,7 +1137,11 @@ export default function PackingPage() {
                               {photoUploadedUrl ? (
                                 <div className="flex items-center gap-3 p-3 rounded-xl border border-[var(--pm-accent-emerald)]/30 bg-[var(--pm-accent-emerald)]/5">
                                   <div className="w-12 h-12 rounded-lg overflow-hidden border border-[var(--pm-border)] shrink-0 bg-black">
-                                    <img src={photoUploadedUrl} alt="Foto adjunta" className="w-full h-full object-cover" />
+                                    <img
+                                      src={photoUploadedUrl?.startsWith('data:') ? photoUploadedUrl : `/api/blob/view?url=${encodeURIComponent(photoUploadedUrl!)}`}
+                                      alt="Foto adjunta"
+                                      className="w-full h-full object-cover"
+                                    />
                                   </div>
                                   <div className="flex-1 min-w-0">
                                     <span className="text-[10px] font-mono font-bold text-[var(--pm-accent-emerald)] flex items-center gap-1.5">
