@@ -478,6 +478,11 @@ export default function PackingPage() {
 
   const totalCount = selectedPacking?.bars?.length ?? 0;
   const allBarsValidated = totalCount > 0 && validatedCount === totalCount;
+  const packingStatusMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    packings.forEach(p => { map[p.id] = p.status; });
+    return map;
+  }, [packings]);
 
   const handleConfirmFinalize = async () => {
     if (!selectedPacking) return;
@@ -760,12 +765,12 @@ export default function PackingPage() {
                                   </thead>
                                   <tbody>
                                     {pageBars.map((bar, idx) => {
-                                      const isEvidenceReady = bar.status !== 'POR_VALIDAR';
+                                      const isPackingValidated = bar.packingId ? packingStatusMap[bar.packingId] === 'VALIDATED' : false;
                                       return (
                                       <motion.tr key={bar.id} initial={{ opacity: 0, x: -4 }} animate={{ opacity: 1, x: 0 }}
                                         transition={{ delay: idx * 0.02, duration: 0.15 }}
-                                        onClick={() => { if (isEvidenceReady) setEvidenceBarId(bar.id); }}
-                                        className={`${idx % 2 === 0 ? 'bg-transparent' : 'bg-[var(--pm-bg-deepest)]/30'} transition-all duration-150 ${isEvidenceReady ? 'cursor-pointer hover:bg-white/[0.04] active:scale-[0.98]' : ''}`}>
+                                        onClick={() => { if (isPackingValidated) setEvidenceBarId(bar.id); }}
+                                        className={`${idx % 2 === 0 ? 'bg-transparent' : 'bg-[var(--pm-bg-deepest)]/30'} transition-all duration-150 ${isPackingValidated ? 'cursor-pointer hover:bg-white/[0.04] active:scale-[0.98]' : 'cursor-default'}`}>
                                         <td className="text-center font-mono font-bold text-[var(--pm-accent-gold)] tracking-wider text-[11px]">{bar.barNumber}</td>
                                         <td className="text-right font-mono text-[var(--pm-text-primary)]">{formatNumber(Number(bar.grossWeight), 2)}</td>
                                         <td className="text-right font-mono text-[var(--pm-text-primary)]">{formatNumber(Number(bar.fineWeight), 4)}</td>
@@ -1232,8 +1237,8 @@ export default function PackingPage() {
       {/* Evidence Modal */}
       <AnimatePresence>
         {evidenceBarId && (() => {
-          const bar = selectedPacking?.bars?.find(b => b.id === evidenceBarId) || bars.find(b => b.id === evidenceBarId);
-          if (!bar || (bar.status !== 'IN_STOCK' && bar.status !== 'COMPLETADO' && bar.status !== 'PROCESANDO' && bar.status !== 'EXITED')) return null;
+          const bar = bars.find(b => b.id === evidenceBarId) || selectedPacking?.bars?.find(b => b.id === evidenceBarId);
+          if (!bar) return null;
           const sp = spValuesRef.current[bar.id];
           const spGross = sp?.grossWeight ?? Number(bar.grossWeight);
           const spPurity = sp?.purity ?? Number(bar.purity);
@@ -1247,7 +1252,7 @@ export default function PackingPage() {
           const photoUrl = bar.photoUrl || barPhotoUrls[bar.id] || null;
           const validatedAt = bar.updatedAt;
           return (
-            <motion.div key="evidence-modal" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            <motion.div key={evidenceBarId} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
               onClick={() => setEvidenceBarId(null)}
             >
