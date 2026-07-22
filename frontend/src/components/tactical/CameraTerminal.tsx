@@ -77,9 +77,9 @@ export function CameraTerminal({ onCapture, onClose }: CameraTerminalProps) {
             className="w-full bg-[var(--pm-bg-deepest)] border border-[var(--pm-accent-cyan)]/30 rounded-lg px-3 py-2 text-[10px] font-mono text-[var(--pm-text-primary)] focus:outline-none focus:border-[var(--pm-accent-cyan)] appearance-none cursor-pointer"
           >
             <option value="">Cámara frontal/posterior</option>
-            {devices.map(d => (
-              <option key={d.deviceId} value={d.deviceId}>
-                {d.label || `Cámara ${d.deviceId.slice(0, 8)}`}
+            {devices.map((d, index) => (
+              <option key={`${d.deviceId}-${index}`} value={d.deviceId}>
+                {d.label || `Dispositivo de video #${index + 1}`}
               </option>
             ))}
           </select>
