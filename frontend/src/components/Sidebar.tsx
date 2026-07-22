@@ -14,6 +14,7 @@ import {
   Coins,
   LogOut,
   FolderUp,
+  History,
 } from 'lucide-react';
 
 export const Sidebar: React.FC = () => {
@@ -29,6 +30,7 @@ export const Sidebar: React.FC = () => {
     { id: 'procesos', name: 'Procesos de Fundición', icon: Flame },
     { id: 'egresos', name: 'Egresos de Material', icon: ArrowLeftRight },
     { id: 'reportes', name: 'Reportes', icon: FileText },
+    { id: 'historicos', name: 'Históricos', icon: History },
   ];
 
   return (

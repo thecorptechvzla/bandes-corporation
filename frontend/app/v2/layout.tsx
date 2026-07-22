@@ -6,7 +6,7 @@ import Link from 'next/link';
 import {
   LayoutDashboard, Users, Flame,
   ArrowLeftRight, FileText, FolderUp, Coins, LogOut,
-  Calendar, ArrowLeftRight as ModeIcon
+  Calendar, ArrowLeftRight as ModeIcon, History,
 } from 'lucide-react';
 
 const menuItems = [
@@ -16,6 +16,7 @@ const menuItems = [
   { id: 'procesos', name: 'Procesos', icon: Flame },
   { id: 'egresos', name: 'Egresos', icon: ArrowLeftRight },
   { id: 'reportes', name: 'Reportes', icon: FileText },
+  { id: 'historicos', name: 'Históricos', icon: History },
 ];
 
 export default function V2Layout({ children }: { children: React.ReactNode }) {
