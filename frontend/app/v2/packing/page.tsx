@@ -753,10 +753,13 @@ export default function PackingPage() {
                                     </tr>
                                   </thead>
                                   <tbody>
-                                    {pageBars.map((bar, idx) => (
+                                    {pageBars.map((bar, idx) => {
+                                      const isEvidenceReady = bar.status !== 'POR_VALIDAR';
+                                      return (
                                       <motion.tr key={bar.id} initial={{ opacity: 0, x: -4 }} animate={{ opacity: 1, x: 0 }}
                                         transition={{ delay: idx * 0.02, duration: 0.15 }}
-                                        className="odd:bg-[var(--pm-bg-deepest)]/30 hover:bg-[var(--pm-bg-tertiary)]/40 transition-all duration-150">
+                                        onClick={() => { if (isEvidenceReady) setEvidenceBarId(bar.id); }}
+                                        className={`${idx % 2 === 0 ? 'bg-transparent' : 'bg-[var(--pm-bg-deepest)]/30'} transition-all duration-150 ${isEvidenceReady ? 'cursor-pointer hover:bg-white/[0.04] active:scale-[0.98]' : ''}`}>
                                         <td className="text-center font-mono font-bold text-[var(--pm-accent-gold)] tracking-wider text-[11px]">{bar.barNumber}</td>
                                         <td className="text-right font-mono text-[var(--pm-text-primary)]">{formatNumber(Number(bar.grossWeight), 2)}</td>
                                         <td className="text-right font-mono text-[var(--pm-text-primary)]">{formatNumber(Number(bar.fineWeight), 4)}</td>
@@ -774,7 +777,8 @@ export default function PackingPage() {
                                             title="Eliminar barra"><Trash2 className="w-3.5 h-3.5" /></button>
                                         </td>
                                       </motion.tr>
-                                    ))}
+                                    );
+                                    })}
                                   </tbody>
                                 </table>
                                 {totalPages > 1 && (
@@ -1221,9 +1225,9 @@ export default function PackingPage() {
 
       {/* Evidence Modal */}
       <AnimatePresence>
-        {evidenceBarId && selectedPacking?.bars && (() => {
-          const bar = selectedPacking.bars.find(b => b.id === evidenceBarId);
-          if (!bar || (bar.status !== 'IN_STOCK' && bar.status !== 'COMPLETADO')) return null;
+        {evidenceBarId && (() => {
+          const bar = selectedPacking?.bars?.find(b => b.id === evidenceBarId) || bars.find(b => b.id === evidenceBarId);
+          if (!bar || (bar.status !== 'IN_STOCK' && bar.status !== 'COMPLETADO' && bar.status !== 'PROCESANDO' && bar.status !== 'EXITED')) return null;
           const sp = spValuesRef.current[bar.id];
           const spGross = sp?.grossWeight ?? Number(bar.grossWeight);
           const spPurity = sp?.purity ?? Number(bar.purity);
@@ -1257,9 +1261,9 @@ export default function PackingPage() {
                     </h2>
                   </div>
                   <div className="text-right">
-                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[var(--pm-accent-emerald)]/10 border border-[var(--pm-accent-emerald)]/20">
-                      <Check className="w-3 h-3 text-[var(--pm-accent-emerald)]" />
-                      <span className="text-[9px] font-mono font-bold text-[var(--pm-accent-emerald)]">VALIDADO</span>
+                    <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border ${STATUS_STYLES[bar.status] || ''}`}>
+                      <Check className={`w-3 h-3 ${bar.status === 'PROCESANDO' ? 'text-cyan-400' : bar.status === 'EXITED' ? 'text-[var(--pm-text-dim)]' : 'text-[var(--pm-accent-emerald)]'}`} />
+                      <span className={`text-[9px] font-mono font-bold ${bar.status === 'PROCESANDO' ? 'text-cyan-400' : bar.status === 'EXITED' ? 'text-[var(--pm-text-dim)]' : 'text-[var(--pm-accent-emerald)]'}`}>{STATUS_LABELS[bar.status] || bar.status}</span>
                     </div>
                     {validatedAt && (
                       <span className="text-[8px] font-mono text-[var(--pm-text-dim)] block mt-1">
