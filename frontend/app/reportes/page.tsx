@@ -20,7 +20,6 @@ import { useGoldTraceability } from '@/context/GoldTraceabilityContext';
 export default function ReportesPage() {
   const { data: bars = [] } = useBars();
   const { data: clients = [] } = useClients();
-  const { weightUnit } = useGoldTraceability();
   const { data: processes = [] } = useProcesses();
   const { data: lots = [] } = useLots();
   const { data: exits = [] } = useMaterialExits();
@@ -193,9 +192,9 @@ export default function ReportesPage() {
           <div className="space-y-0.5 min-w-0">
             <strong 
               className="text-2xl sm:text-3xl font-mono font-bold text-[#E5E5E5] block truncate"
-              title={formatWeight(oroRecibido.pesoBruto, weightUnit)}
+              title={formatWeight(oroRecibido.pesoBruto)}
             >
-              {formatWeight(oroRecibido.pesoBruto, weightUnit)}
+              {formatWeight(oroRecibido.pesoBruto)}
             </strong>
             <span className="text-[10px] font-mono text-[#8C8C8C] block truncate">Peso Bruto Total</span>
           </div>
@@ -212,10 +211,10 @@ export default function ReportesPage() {
             <div className="col-span-2 min-w-0">
               <span 
                 className="text-[9px] font-mono text-[#8C8C8C] block truncate"
-                title={`FA (Fino Analítico): ${formatWeight(oroRecibido.finoTotal, weightUnit)}`}
+                title={`FA (Fino Analítico): ${formatWeight(oroRecibido.finoTotal)}`}
               >
                 FA (Fino Analítico):{' '}
-                <strong className="text-[#E5E5E5]">{formatWeight(oroRecibido.finoTotal, weightUnit)}</strong>
+                <strong className="text-[#E5E5E5]">{formatWeight(oroRecibido.finoTotal)}</strong>
               </span>
             </div>
           </div>
@@ -256,9 +255,9 @@ export default function ReportesPage() {
           <div className="space-y-0.5 min-w-0">
             <strong 
               className="text-2xl sm:text-3xl font-mono font-bold text-[#E5E5E5] block truncate"
-              title={formatWeight(oroRefinado.totalRecovered, weightUnit)}
+              title={formatWeight(oroRefinado.totalRecovered)}
             >
-              {formatWeight(oroRefinado.totalRecovered, weightUnit)}
+              {formatWeight(oroRefinado.totalRecovered)}
             </strong>
             <span className="text-[10px] font-mono text-[#8C8C8C] block truncate">R (Recuperado)</span>
           </div>
@@ -281,7 +280,7 @@ export default function ReportesPage() {
           </div>
 
           <div className="flex items-center justify-between text-[9px] font-mono text-[#8C8C8C] bg-neutral-900/50 px-2 py-1 rounded border border-neutral-800/20">
-            <span>FE (Fino Esperado): <strong className="text-[#D5B042]">{formatWeight(oroRefinado.totalExpected * 0.99, weightUnit)}</strong></span>
+            <span>FE (Fino Esperado): <strong className="text-[#D5B042]">{formatWeight(oroRefinado.totalExpected * 0.99)}</strong></span>
             <span className="text-[7px] text-[#8C8C8C]/50">FA × 0,99</span>
           </div>
           {oroRefinado.enProcesoCount > 0 && (
@@ -327,9 +326,9 @@ export default function ReportesPage() {
           <div className="space-y-0.5 min-w-0">
             <strong 
               className="text-2xl sm:text-3xl font-mono font-bold text-[#E5E5E5] block truncate"
-              title={formatWeight(oroEnEspera.pesoBruto, weightUnit)}
+              title={formatWeight(oroEnEspera.pesoBruto)}
             >
-              {formatWeight(oroEnEspera.pesoBruto, weightUnit)}
+              {formatWeight(oroEnEspera.pesoBruto)}
             </strong>
             <span className="text-[10px] font-mono text-[#8C8C8C] block truncate">Peso Bruto en Bóveda</span>
           </div>
@@ -346,9 +345,9 @@ export default function ReportesPage() {
             <div className="min-w-0">
               <span 
                 className="text-xs font-mono font-bold text-[#E5E5E5] block truncate"
-                title={formatWeight(oroEnEspera.finoTotal, weightUnit)}
+                title={formatWeight(oroEnEspera.finoTotal)}
               >
-                {formatWeight(oroEnEspera.finoTotal, weightUnit)}
+                {formatWeight(oroEnEspera.finoTotal)}
               </span>
               <span className="text-[9px] text-[#8C8C8C]/50 block truncate">FA (Fino Analítico)</span>
             </div>
@@ -398,9 +397,9 @@ export default function ReportesPage() {
                 <thead>
                   <tr className="border-b border-neutral-800/40 text-[10px] font-mono text-[#8C8C8C] uppercase tracking-wider">
                     <th className="py-3 px-4">Cliente</th>
-                    <th className="py-3 px-4 text-right">FA ({weightUnit})</th>
-                    <th className="py-3 px-4 text-right">Entregado ({weightUnit})</th>
-                    <th className="py-3 px-4 text-right">Balance ({weightUnit})</th>
+                    <th className="py-3 px-4 text-right">FA (g)</th>
+                    <th className="py-3 px-4 text-right">Entregado (g)</th>
+                    <th className="py-3 px-4 text-right">Balance (g)</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-neutral-800/20 text-xs font-sans text-[#E5E5E5]">
@@ -413,15 +412,15 @@ export default function ReportesPage() {
                           {cliente.name}
                         </td>
                         <td className="py-3.5 px-4 text-right font-mono font-bold text-emerald-400">
-                          {formatWeight(cliente.received, weightUnit)}
+                          {formatWeight(cliente.received)}
                         </td>
                         <td className="py-3.5 px-4 text-right font-mono font-bold text-amber-400">
-                          {formatWeight(cliente.delivered, weightUnit)}
+                          {formatWeight(cliente.delivered)}
                         </td>
                         <td className="py-3.5 px-4 text-right">
                           <span className={`inline-flex items-center gap-1 font-mono font-bold text-sm ${balance >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                             <ArrowUpRight className={`w-3 h-3 ${balance >= 0 ? '' : 'rotate-180'}`} />
-                            {balance >= 0 ? '+' : ''}{formatWeight(balance, weightUnit)}
+                            {balance >= 0 ? '+' : ''}{formatWeight(balance)}
                           </span>
                         </td>
                       </tr>

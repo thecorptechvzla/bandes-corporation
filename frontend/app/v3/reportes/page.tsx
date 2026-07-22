@@ -34,7 +34,7 @@ export default function V2ReportesPage() {
     {
       key: 'oro-recibido',
       label: 'ORO RECIBIDO',
-      value: formatWeight(metrics?.oroRecibido.fineWeight ?? 0, 'kg'),
+      value: formatWeight(metrics?.oroRecibido.fineWeight ?? 0),
       sublabel: `${metrics?.oroRecibido.barCount ?? 0} BARRAS`,
       accent: 'green',
       health: 85,
@@ -42,7 +42,7 @@ export default function V2ReportesPage() {
     {
       key: 'oro-proceso',
       label: 'ORO EN PROCESO',
-      value: formatWeight(metrics?.oroEnProceso.fineWeight ?? 0, 'kg'),
+      value: formatWeight(metrics?.oroEnProceso.fineWeight ?? 0),
       sublabel: `${metrics?.oroEnProceso.barCount ?? 0} BARRAS`,
       accent: 'amber',
       health: metrics?.oroEnProceso.barCount ? Math.min(100, metrics.oroEnProceso.barCount * 10) : 0,
@@ -50,7 +50,7 @@ export default function V2ReportesPage() {
     {
       key: 'oro-boveda',
       label: 'ORO EN BÓVEDA',
-      value: formatWeight(metrics?.oroEnBoveda.fineWeight ?? 0, 'kg'),
+      value: formatWeight(metrics?.oroEnBoveda.fineWeight ?? 0),
       sublabel: 'EN STOCK',
       accent: 'cyan',
       health: 70,
@@ -58,7 +58,7 @@ export default function V2ReportesPage() {
     {
       key: 'merma',
       label: 'MERMA',
-      value: formatWeight(metrics?.merma.gramos ?? 0, 'kg'),
+      value: formatWeight(metrics?.merma.gramos ?? 0),
       sublabel: `${(metrics?.merma.porcentaje ?? 0).toFixed(2)}%`,
       accent: 'red',
       health: metrics?.merma.porcentaje ? Math.max(0, 100 - metrics.merma.porcentaje) : 100,
@@ -129,25 +129,25 @@ export default function V2ReportesPage() {
     },
     {
       key: 'received',
-      label: 'FA (kg)',
+      label: 'FA (g)',
       align: 'right',
-      render: r => <span className="text-[var(--tac-accent-green)]">{formatWeight(r.received, 'kg')}</span>,
+      render: r => <span className="text-[var(--tac-accent-green)]">{formatWeight(r.received)}</span>,
     },
     {
       key: 'delivered',
-      label: 'ENTREGADO (kg)',
+      label: 'ENTREGADO (g)',
       align: 'right',
-      render: r => <span className="text-[var(--tac-accent-amber)]">{formatWeight(r.delivered, 'kg')}</span>,
+      render: r => <span className="text-[var(--tac-accent-amber)]">{formatWeight(r.delivered)}</span>,
     },
     {
       key: 'balance',
-      label: 'BALANCE (kg)',
+      label: 'BALANCE (g)',
       align: 'right',
       render: r => {
         const isPos = r.balance >= 0;
         return (
           <span className={`font-bold ${isPos ? 'text-[var(--tac-accent-green)]' : 'text-[var(--tac-accent-red)]'}`}>
-            {isPos ? '+' : ''}{formatWeight(Math.abs(r.balance), 'kg')}
+            {isPos ? '+' : ''}{formatWeight(Math.abs(r.balance))}
           </span>
         );
       },
@@ -204,7 +204,7 @@ export default function V2ReportesPage() {
           DB ONLINE
         </span>
         <span>{activeClients} CLIENTES ACTIVOS</span>
-        <span className="text-[var(--tac-accent-cyan)]">{formatWeight(totalFA, 'kg')} FA TOTAL</span>
+        <span className="text-[var(--tac-accent-cyan)]">{formatWeight(totalFA)} FA TOTAL</span>
       </div>
     </motion.div>
   );

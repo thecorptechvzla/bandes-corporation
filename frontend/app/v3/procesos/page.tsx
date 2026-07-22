@@ -335,7 +335,7 @@ export default function ReactorCorePage() {
                             <span className="text-[var(--tac-text-dim)]">| {bar.purity}‰</span>
                           </div>
                           <span className="text-[var(--tac-accent-amber)] shrink-0 ml-2">
-                            {formatWeight(bar.grossWeight, 'kg', 4)}
+                            {formatWeight(bar.grossWeight, 4)}
                           </span>
                           <span className="text-[var(--tac-text-dim)]/60 text-[8px] ml-1 truncate max-w-[60px]">
                             {c?.name}
@@ -354,11 +354,11 @@ export default function ReactorCorePage() {
                     </div>
                     <div className="flex justify-between border-t border-[var(--tac-border)]/50 pt-1.5">
                       <span className="text-[var(--tac-text-dim)]">Peso Total:</span>
-                      <span className="text-[var(--tac-text-primary)] font-bold">{formatWeight(selectedMetrics.weight, 'kg', 4)}</span>
+                      <span className="text-[var(--tac-text-primary)] font-bold">{formatWeight(selectedMetrics.weight, 4)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-[var(--tac-text-dim)]">FA Total:</span>
-                      <span className="text-[var(--tac-accent-amber)] font-bold">{formatWeight(selectedMetrics.fino, 'kg', 4)}</span>
+                      <span className="text-[var(--tac-accent-amber)] font-bold">{formatWeight(selectedMetrics.fino, 4)}</span>
                     </div>
                   </div>
                 )}
@@ -524,7 +524,7 @@ export default function ReactorCorePage() {
                                                 {bar.barNumber.split('-').pop() || bar.barNumber}
                                               </span>
                                               <span className="text-[7px] font-mono text-[var(--tac-text-dim)]">
-                                                {formatWeight(bar.grossWeight, 'kg', 4)} | {bar.purity}‰
+                                                {formatWeight(bar.grossWeight, 4)} | {bar.purity}‰
                                               </span>
                                             </div>
                                           ))}
@@ -533,10 +533,10 @@ export default function ReactorCorePage() {
 
                                       <div className="border-t border-[var(--tac-border)]/50 pt-2 flex justify-between text-[9px] font-mono">
                                         <span className="text-[var(--tac-text-dim)]">
-                                          Total Bruto: <strong className="text-[var(--tac-text-primary)]">{formatWeight(grossTotal, 'kg', 4)}</strong>
+                                          Total Bruto: <strong className="text-[var(--tac-text-primary)]">{formatWeight(grossTotal, 4)}</strong>
                                         </span>
                                         <span className="text-[var(--tac-accent-amber)]">
-                                          FA: <strong>{formatWeight(finoTotal, 'kg', 4)}</strong>
+                                          FA: <strong>{formatWeight(finoTotal, 4)}</strong>
                                         </span>
                                       </div>
 
@@ -613,11 +613,11 @@ export default function ReactorCorePage() {
                 <div className="border border-[var(--tac-border)] bg-[var(--tac-bg-primary)] p-2.5 mb-4 space-y-1 font-mono text-[10px]">
                   <div className="flex justify-between text-[var(--tac-text-dim)]">
                     <span>Gross loaded:</span>
-                    <span className="text-[var(--tac-text-primary)] font-bold">{formatWeight(activeLotGross, 'kg', 4)}</span>
+                    <span className="text-[var(--tac-text-primary)] font-bold">{formatWeight(activeLotGross, 4)}</span>
                   </div>
                   <div className="flex justify-between text-[var(--tac-text-dim)]">
                     <span>FA expected:</span>
-                    <span className="text-[var(--tac-accent-amber)] font-bold">{formatWeight(activeLotFA, 'kg', 4)}</span>
+                    <span className="text-[var(--tac-accent-amber)] font-bold">{formatWeight(activeLotFA, 4)}</span>
                   </div>
                 </div>
 
@@ -635,7 +635,7 @@ export default function ReactorCorePage() {
                         onChange={(e) => setRecoveredWeight(e.target.value)}
                         className="w-full bg-[var(--tac-bg-primary)] border border-[var(--tac-border)] px-2.5 py-2 pr-14 text-[11px] font-mono font-bold text-[var(--tac-text-primary)] focus:outline-none focus:border-[var(--tac-accent-amber)]/60 transition-colors"
                       />
-                      <span className="absolute right-2.5 top-2 text-[9px] font-mono text-[var(--tac-text-dim)]">kg</span>
+                      <span className="absolute right-2.5 top-2 text-[9px] font-mono text-[var(--tac-text-dim)]">g</span>
                     </div>
                   </div>
 
@@ -676,16 +676,16 @@ export default function ReactorCorePage() {
                     <div className="border border-[var(--tac-border)] bg-[var(--tac-bg-primary)] p-2.5 space-y-1 font-mono text-[10px]">
                       <div className="flex justify-between">
                         <span className="text-[var(--tac-text-dim)]">FA (Σ):</span>
-                        <span className="text-[var(--tac-accent-amber)] font-bold">{formatWeight(activeLotFA, 'kg', 4)}</span>
+                        <span className="text-[var(--tac-accent-amber)] font-bold">{formatWeight(activeLotFA, 4)}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-[var(--tac-text-dim)]">R (Recuperado):</span>
-                        <span className="text-[var(--tac-text-primary)] font-bold">{formatWeight(recWeightNum, 'kg', 4)}</span>
+                        <span className="text-[var(--tac-text-primary)] font-bold">{formatWeight(recWeightNum, 4)}</span>
                       </div>
                       <div className="flex justify-between border-t border-[var(--tac-border)]/50 pt-1">
                         <span className="text-[var(--tac-text-dim)]">MERMA:</span>
                         <span className={`font-bold ${mermaPct > 5 ? 'text-[var(--tac-accent-red)]' : 'text-[var(--tac-accent-green)]'}`}>
-                          {formatWeight(mermaGramos, 'kg', 4)} ({mermaPct.toFixed(2)}%)
+                          {formatWeight(mermaGramos, 4)} ({mermaPct.toFixed(2)}%)
                         </span>
                       </div>
                       <div className="flex justify-between text-[8px]">

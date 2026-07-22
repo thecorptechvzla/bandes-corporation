@@ -9,7 +9,6 @@ import { useBars } from '@/hooks/useBars';
 import { useCreateMaterialExit } from '@/hooks/useExits';
 import { formatNumber, formatWeight } from '@/lib/format';
 import { useGoldTraceability } from '@/context/GoldTraceabilityContext';
-import type { WeightUnit } from '@/lib/format';
 import {
   ArrowLeftRight, Check, Send, Search, X, Download, ChevronDown, ChevronUp,
   AlertTriangle, Package, Users, Building2, MapPin, ShoppingCart,
@@ -42,7 +41,6 @@ export default function V2EgresosPage() {
   const { data: bars = [] } = useBars();
   const { data: processes = [] } = useProcesses();
   const createExit = useCreateMaterialExit();
-  const { weightUnit } = useGoldTraceability();
 
   const [selectedLotIds, setSelectedLotIds] = useState<Set<string>>(new Set());
   const [openGroups, setOpenGroups] = useState<Set<string>>(new Set());
@@ -234,7 +232,7 @@ export default function V2EgresosPage() {
     y += 2;
     doc.text(`Proveedores: ${data.providerCount}`, m, y); y += 6;
     doc.text(`Lotes: ${data.lotCount}`, m, y); y += 6;
-    doc.text(`Peso Total: ${formatWeight(Number(data.totalWeight), weightUnit)}`, m, y); y += 6;
+    doc.text(`Peso Total: ${formatWeight(Number(data.totalWeight))}`, m, y); y += 6;
     doc.text(`Fecha: ${new Date(data.createdAt).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`, m, y);
     y += 10;
 
@@ -255,7 +253,7 @@ export default function V2EgresosPage() {
       doc.setTextColor(212, 175, 55);
       doc.setFontSize(8);
       doc.setFont('helvetica', 'bold');
-      doc.text(`${pv.name} — ${pv.lots} lote(s) — ${formatWeight(Number(pv.weight), weightUnit)}`, m + 2, y + 1);
+      doc.text(`${pv.name} — ${pv.lots} lote(s) — ${formatWeight(Number(pv.weight))}`, m + 2, y + 1);
       y += 10;
 
       const providerLots = data.lots.filter(l => l.provider === pv.name);
@@ -269,7 +267,7 @@ export default function V2EgresosPage() {
         doc.setFontSize(7);
         doc.setFont('helvetica', 'normal');
         doc.text(lot.name, m + 4, y + 1);
-        doc.text(formatWeight(Number(lot.weight), weightUnit), pw - m - 2, y + 1, { align: 'right' });
+        doc.text(formatWeight(Number(lot.weight)), pw - m - 2, y + 1, { align: 'right' });
         y += 7;
       });
       y += 4;
@@ -283,9 +281,9 @@ export default function V2EgresosPage() {
     doc.setTextColor(40, 40, 40);
     doc.setFontSize(11);
     doc.setFont('helvetica', 'bold');
-    doc.text(`FA: ${formatWeight(Number(data.totalWeight), weightUnit)}`, m, y); y += 7;
+    doc.text(`FA: ${formatWeight(Number(data.totalWeight))}`, m, y); y += 7;
     const fe = Number(data.totalWeight) * 0.99;
-    doc.text(`FE (FA × 0.99): ${formatWeight(fe, weightUnit)}`, m, y); y += 7;
+    doc.text(`FE (FA × 0.99): ${formatWeight(fe)}`, m, y); y += 7;
     doc.text(`LOTES: ${data.lotCount}`, m, y); y += 7;
     doc.text(`PROVEEDORES: ${data.providerCount}`, m, y); y += 20;
 
@@ -301,7 +299,7 @@ export default function V2EgresosPage() {
     doc.text('R', pw - m - 40, y);
 
     doc.save(`Comprobante_${data.reference.replace(/[/\\?%*:|"<>]/g, '_')}.pdf`);
-  }, [weightUnit]);
+  }, []);
 
   const handleOpenConfirm = () => {
     if (selectedLots.length === 0 || !destinationClient) return;
@@ -354,7 +352,7 @@ export default function V2EgresosPage() {
   };
 
   const fmtWeightDisplay = (val: number) =>
-    weightUnit === 'kg' ? `${formatNumber(val / 1000, 4)} kg` : `${formatNumber(val, 2)} g`;
+    `${formatNumber(val, 2)} g`;
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }} className="space-y-6">

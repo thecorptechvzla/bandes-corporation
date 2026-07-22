@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { Supplier, GoldBar, CastingLot, Transaction } from '../types';
-import type { WeightUnit } from '../lib/format';
 import { INITIAL_SUPPLIERS, INITIAL_GOLD_BARS, INITIAL_LOTS, INITIAL_TRANSACTIONS } from './gold-initial-data';
 
 interface GoldTraceabilityContextType {
@@ -16,8 +15,6 @@ interface GoldTraceabilityContextType {
   completeCastingLot: (lotId: string, recoveredWeight: number) => { success: boolean; error?: string };
   createEgreso: (clientId: string, selectedLotIds: string[], reference: string, customWeights?: Record<string, number>) => { success: boolean; error?: string };
   resetData: () => void;
-  weightUnit: WeightUnit;
-  toggleUnit: () => void;
 }
 
 const GoldTraceabilityContext = createContext<GoldTraceabilityContextType | undefined>(undefined);
@@ -55,20 +52,6 @@ export const GoldTraceabilityProvider: React.FC<{ children: React.ReactNode }> =
     const saved = localStorage.getItem('bandes_transactions');
     return saved ? JSON.parse(saved) : INITIAL_TRANSACTIONS;
   });
-
-  const [weightUnit, setWeightUnit] = useState<WeightUnit>(() => {
-    if (typeof window === 'undefined') return 'kg';
-    const saved = localStorage.getItem('bandes_weight_unit');
-    return saved === 'g' ? 'g' : 'kg';
-  });
-
-  const toggleUnit = useCallback(() => {
-    setWeightUnit(prev => {
-      const next = prev === 'kg' ? 'g' : 'kg';
-      if (typeof window !== 'undefined') localStorage.setItem('bandes_weight_unit', next);
-      return next;
-    });
-  }, []);
 
   const persistTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
@@ -440,8 +423,6 @@ export const GoldTraceabilityProvider: React.FC<{ children: React.ReactNode }> =
         completeCastingLot,
         createEgreso,
         resetData,
-        weightUnit,
-        toggleUnit,
       }}
     >
       {children}

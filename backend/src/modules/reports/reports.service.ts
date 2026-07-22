@@ -34,17 +34,17 @@ export class ReportsService {
       doc.fontSize(16).text(`Reporte de Cliente: ${client.name}`, { align: 'center' });
       doc.moveDown(2);
 
-      doc.fontSize(12).text(`Peso recibido total: ${totalReceived.toFixed(4)} kg`);
-      doc.text(`Peso entregado total: ${totalExited.toFixed(4)} kg`);
-      doc.text(`Saldo actual: ${balance.toFixed(4)} kg`);
+      doc.fontSize(12).text(`Peso recibido total: ${totalReceived.toFixed(4)} g`);
+      doc.text(`Peso entregado total: ${totalExited.toFixed(4)} g`);
+      doc.text(`Saldo actual: ${balance.toFixed(4)} g`);
       doc.moveDown();
 
       doc.fontSize(14).text('Historial de Barras:');
       for (const bar of bars) {
         doc.fontSize(10).text(
-          `#${bar.barNumber} — Bruto: ${Number(bar.grossWeight).toFixed(4)} kg, ` +
+          `#${bar.barNumber} — Bruto: ${Number(bar.grossWeight).toFixed(4)} g, ` +
           `Fineza: ${Number(bar.purity).toFixed(2)}‰, ` +
-          `FA: ${Number(bar.fineWeight).toFixed(4)} kg — ${bar.status}`,
+          `FA: ${Number(bar.fineWeight).toFixed(4)} g — ${bar.status}`,
         );
       }
     });
@@ -77,14 +77,14 @@ export class ReportsService {
       for (const exit of exits) {
         doc.fontSize(14).text(`Egreso ID-${exit.id.slice(0, 8)}`);
         doc.fontSize(10).text(`Destino: ${exit.destination}`);
-        doc.text(`Peso Total: ${Number(exit.totalWeight).toFixed(4)} kg`);
+        doc.text(`Peso Total: ${Number(exit.totalWeight).toFixed(4)} g`);
         doc.text(`Fecha: ${exit.createdAt.toISOString().split('T')[0]}`);
         doc.moveDown(0.5);
 
         for (const detail of exit.exitDetails) {
           const clientName = detail.lot?.process?.client?.name ?? 'N/A';
           doc.text(
-            `  → ${clientName}: ${Number(detail.weightAported).toFixed(4)} kg ` +
+            `  → ${clientName}: ${Number(detail.weightAported).toFixed(4)} g ` +
             `— Barras: [${detail.bars.map((b) => `#${b.barNumber}`).join(', ')}]`,
           );
         }

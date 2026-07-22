@@ -241,7 +241,7 @@ export default function TacticalEgresosPage() {
       doc.setFontSize(7.5);
       doc.setFont('helvetica', 'bold');
       doc.text('LOTE', m + 2, y + 1);
-      doc.text('PESO ASIGNADO (KG)', m + 120, y + 1);
+      doc.text('PESO ASIGNADO (g)', m + 120, y + 1);
       y += 8;
 
       doc.setTextColor(60, 60, 60);
@@ -256,13 +256,13 @@ export default function TacticalEgresosPage() {
         }
         doc.text(lot.name, m + 2, y + 1);
         doc.setFont('helvetica', 'bold');
-        doc.text(`${(lot.weight / 1000).toFixed(4)} kg`, m + 120, y + 1);
+        doc.text(`${lot.weight.toFixed(4)} g`, m + 120, y + 1);
         doc.setFont('helvetica', 'normal');
         y += 8;
       });
 
       doc.setFont('helvetica', 'bold');
-      doc.text(`Subtotal ${entry.clientName}: ${(entry.weightSum / 1000).toFixed(4)} kg`, m + 2, y + 2);
+      doc.text(`Subtotal ${entry.clientName}: ${entry.weightSum.toFixed(4)} g`, m + 2, y + 2);
       doc.setFont('helvetica', 'normal');
       y += 10;
     }
@@ -276,7 +276,7 @@ export default function TacticalEgresosPage() {
     doc.setTextColor(40, 40, 40);
     doc.setFontSize(10);
     doc.setFont('helvetica', 'bold');
-    doc.text(`PESO TOTAL DESPACHADO: ${(data.totalWeight / 1000).toFixed(4)} kg`, m, y);
+    doc.text(`PESO TOTAL DESPACHADO: ${data.totalWeight.toFixed(4)} g`, m, y);
     y += 8;
     doc.text(`LOTES DESPACHADOS: ${data.lotCount}`, m, y);
     y += 16;
@@ -337,7 +337,7 @@ export default function TacticalEgresosPage() {
       });
 
       setStatus('success');
-      setMessage(`EGRESO DESPLEGADO — ${result.destination} — ${formatWeight(result.totalWeight, 'g')}`);
+      setMessage(`EGRESO DESPLEGADO — ${result.destination} — ${formatWeight(result.totalWeight)}`);
 
       setAssignedLots({});
       setActiveClientIds([]);
@@ -376,7 +376,7 @@ export default function TacticalEgresosPage() {
     },
     {
       key: 'availableWeight',
-      label: 'DISPONIBLE (KG)',
+      label: 'DISPONIBLE (g)',
       align: 'right',
       render: r => (
         <span className="text-[var(--tac-accent-green)] font-bold">{formatWeight(r.availableWeight)}</span>

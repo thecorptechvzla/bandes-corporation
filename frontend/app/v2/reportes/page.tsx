@@ -251,10 +251,10 @@ export default function ReportesPage() {
 
       const kpiW = (cw - 12) / 4;
       const kpis = [
-        { label: 'ORO RECIBIDO (FA)', value: formatWeight(oroRecibido.fineWeight, 'kg'), sub: `${oroRecibido.barCount} barras` },
-        { label: 'ORO FUNDIDO (R)', value: formatWeight(oroFundido.totalRecovered, 'kg'), sub: `${oroFundido.lotCount} lotes` },
-        { label: 'ORO EN ESPERA', value: formatWeight(oroEnEspera.fineWeight, 'kg'), sub: `${oroEnEspera.count} barras` },
-        { label: 'BALANCE GLOBAL', value: formatWeight(totals.balance, 'kg'), sub: `${formatNumber(oroFundido.eficiencia, 1)}% eficiencia` },
+        { label: 'ORO RECIBIDO (FA)', value: formatWeight(oroRecibido.fineWeight), sub: `${oroRecibido.barCount} barras` },
+        { label: 'ORO FUNDIDO (R)', value: formatWeight(oroFundido.totalRecovered), sub: `${oroFundido.lotCount} lotes` },
+        { label: 'ORO EN ESPERA', value: formatWeight(oroEnEspera.fineWeight), sub: `${oroEnEspera.count} barras` },
+        { label: 'BALANCE GLOBAL', value: formatWeight(totals.balance), sub: `${formatNumber(oroFundido.eficiencia, 1)}% eficiencia` },
       ];
 
       kpis.forEach((kpi, idx) => {
@@ -327,11 +327,11 @@ export default function ReportesPage() {
 
       const cols = [
         { label: 'CLIENTE', x: m + 2, align: 'left' as const },
-        { label: 'FA (kg)', x: m + 52, align: 'right' as const },
-        { label: 'FE (kg)', x: m + 72, align: 'right' as const },
-        { label: 'R (kg)', x: m + 92, align: 'right' as const },
-        { label: 'ENTREGADO (kg)', x: m + 112, align: 'right' as const },
-        { label: 'BALANCE (kg)', x: m + 145, align: 'right' as const },
+        { label: 'FA (g)', x: m + 52, align: 'right' as const },
+        { label: 'FE (g)', x: m + 72, align: 'right' as const },
+        { label: 'R (g)', x: m + 92, align: 'right' as const },
+        { label: 'ENTREGADO (g)', x: m + 112, align: 'right' as const },
+        { label: 'BALANCE (g)', x: m + 145, align: 'right' as const },
       ];
 
       cols.forEach(col => {
@@ -365,11 +365,11 @@ export default function ReportesPage() {
         const isPos = row.balance >= 0;
         const rowData = [
           { text: row.name, x: m + 2, align: 'left' as const, color: '#282828' },
-          { text: formatWeight(row.fa, 'kg'), x: m + 52, align: 'right' as const, color: '#282828' },
-          { text: formatWeight(row.fe, 'kg'), x: m + 72, align: 'right' as const, color: '#282828' },
-          { text: formatWeight(row.r, 'kg'), x: m + 92, align: 'right' as const, color: '#282828' },
-          { text: formatWeight(row.entregado, 'kg'), x: m + 112, align: 'right' as const, color: '#282828' },
-          { text: `${isPos ? '+' : ''}${formatWeight(Math.abs(row.balance), 'kg')}`, x: m + 145, align: 'right' as const, color: isPos ? '#059669' : '#DC2626' },
+          { text: formatWeight(row.fa), x: m + 52, align: 'right' as const, color: '#282828' },
+          { text: formatWeight(row.fe), x: m + 72, align: 'right' as const, color: '#282828' },
+          { text: formatWeight(row.r), x: m + 92, align: 'right' as const, color: '#282828' },
+          { text: formatWeight(row.entregado), x: m + 112, align: 'right' as const, color: '#282828' },
+          { text: `${isPos ? '+' : ''}${formatWeight(Math.abs(row.balance))}`, x: m + 145, align: 'right' as const, color: isPos ? '#059669' : '#DC2626' },
         ];
 
         rowData.forEach(cell => {
@@ -391,11 +391,11 @@ export default function ReportesPage() {
       const totalIsPos = totals.balance >= 0;
       const totalRow = [
         { text: 'TOTALES', x: m + 2, align: 'left' as const },
-        { text: formatWeight(totals.fa, 'kg'), x: m + 52, align: 'right' as const },
-        { text: formatWeight(totals.fe, 'kg'), x: m + 72, align: 'right' as const },
-        { text: formatWeight(totals.r, 'kg'), x: m + 92, align: 'right' as const },
-        { text: formatWeight(totals.entregado, 'kg'), x: m + 112, align: 'right' as const },
-        { text: `${totalIsPos ? '+' : ''}${formatWeight(Math.abs(totals.balance), 'kg')}`, x: m + 145, align: 'right' as const },
+        { text: formatWeight(totals.fa), x: m + 52, align: 'right' as const },
+        { text: formatWeight(totals.fe), x: m + 72, align: 'right' as const },
+        { text: formatWeight(totals.r), x: m + 92, align: 'right' as const },
+        { text: formatWeight(totals.entregado), x: m + 112, align: 'right' as const },
+        { text: `${totalIsPos ? '+' : ''}${formatWeight(Math.abs(totals.balance))}`, x: m + 145, align: 'right' as const },
       ];
       totalRow.forEach(cell => pdf.text(cell.text, cell.x, y, { align: cell.align }));
 
@@ -447,23 +447,23 @@ export default function ReportesPage() {
       {/* KPIs */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <KpiCard
-          label="Oro Recibido" sublabel="Total histórico ingresado" value={formatWeight(oroRecibido.fineWeight, 'kg')}
-          unit="kg" icon={ArrowDownLeft} accent="hover:border-[var(--pm-accent-emerald)]/30"
+          label="Oro Recibido" sublabel="Total histórico ingresado" value={formatWeight(oroRecibido.fineWeight)}
+          unit="g" icon={ArrowDownLeft} accent="hover:border-[var(--pm-accent-emerald)]/30"
           sparklineData={oroRecibidoSpark} color="#10B981" delay={0.05}
         />
         <KpiCard
-          label="Oro Fundido (R)" sublabel="Fundiciones completadas" value={formatWeight(oroFundido.totalRecovered, 'kg')}
-          unit="kg" icon={Flame} accent="hover:border-[var(--pm-accent-amber)]/30"
+          label="Oro Fundido (R)" sublabel="Fundiciones completadas" value={formatWeight(oroFundido.totalRecovered)}
+          unit="g" icon={Flame} accent="hover:border-[var(--pm-accent-amber)]/30"
           sparklineData={filteredSpark} color="#F59E0B" delay={0.1}
         />
         <KpiCard
-          label="Oro en Espera" sublabel="Pendiente por procesar" value={formatWeight(oroEnEspera.fineWeight, 'kg')}
-          unit="kg" icon={Warehouse} accent="hover:border-[var(--pm-accent-sky)]/30"
+          label="Oro en Espera" sublabel="Pendiente por procesar" value={formatWeight(oroEnEspera.fineWeight)}
+          unit="g" icon={Warehouse} accent="hover:border-[var(--pm-accent-sky)]/30"
           sparklineData={filteredSpark} color="#0EA5E9" delay={0.15}
         />
         <KpiCard
           label="Balance Global" sublabel={`${formatNumber(oroFundido.eficiencia, 1)}% eficiencia`}
-          value={`${totals.balance >= 0 ? '+' : ''}${formatWeight(Math.abs(totals.balance), 'kg')}`}
+          value={`${totals.balance >= 0 ? '+' : ''}${formatWeight(Math.abs(totals.balance))}`}
           unit="" icon={Scale} accent="hover:border-[var(--pm-accent-gold)]/30"
           sparklineData={filteredSpark} color="#D4AF37" delay={0.2}
         />
@@ -578,11 +578,11 @@ export default function ReportesPage() {
               <thead>
                 <tr className="border-b border-[var(--pm-border)]/20 text-[10px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider">
                   <th className="py-3 px-4 bg-[var(--pm-bg-base)]/50 text-left sticky left-0 z-10 min-w-[180px]">Cliente</th>
-                  <th className="py-3 px-4 bg-[var(--pm-bg-base)]/50 text-right">FA (kg)</th>
-                  <th className="py-3 px-4 bg-[var(--pm-bg-base)]/50 text-right">FE (kg)</th>
-                  <th className="py-3 px-4 bg-[var(--pm-bg-base)]/50 text-right">R (kg)</th>
-                  <th className="py-3 px-4 bg-[var(--pm-bg-base)]/50 text-right">Entregado (kg)</th>
-                  <th className="py-3 px-4 bg-[var(--pm-bg-base)]/50 text-right">Balance (kg)</th>
+                  <th className="py-3 px-4 bg-[var(--pm-bg-base)]/50 text-right">FA (g)</th>
+                  <th className="py-3 px-4 bg-[var(--pm-bg-base)]/50 text-right">FE (g)</th>
+                  <th className="py-3 px-4 bg-[var(--pm-bg-base)]/50 text-right">R (g)</th>
+                  <th className="py-3 px-4 bg-[var(--pm-bg-base)]/50 text-right">Entregado (g)</th>
+                  <th className="py-3 px-4 bg-[var(--pm-bg-base)]/50 text-right">Balance (g)</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[var(--pm-border)]/20">
@@ -600,21 +600,21 @@ export default function ReportesPage() {
                         {row.name}
                       </td>
                       <td className="py-3 px-4 text-right font-mono font-bold text-[var(--pm-accent-emerald)]">
-                        {formatWeight(row.fa, 'kg')}
+                        {formatWeight(row.fa)}
                       </td>
                       <td className="py-3 px-4 text-right font-mono text-[var(--pm-accent-sky)]">
-                        {formatWeight(row.fe, 'kg')}
+                        {formatWeight(row.fe)}
                       </td>
                       <td className="py-3 px-4 text-right font-mono text-[var(--pm-accent-amber)]">
-                        {formatWeight(row.r, 'kg')}
+                        {formatWeight(row.r)}
                       </td>
                       <td className="py-3 px-4 text-right font-mono text-[var(--pm-text-dim)]">
-                        {formatWeight(row.entregado, 'kg')}
+                        {formatWeight(row.entregado)}
                       </td>
                       <td className="py-3 px-4 text-right">
                         <span className={`inline-flex items-center gap-1 font-mono font-bold text-sm ${isPos ? 'text-[var(--pm-accent-emerald)]' : 'text-[var(--pm-accent-red)]'}`}>
                           <ArrowUpRight className={`w-3 h-3 ${isPos ? '' : 'rotate-180'}`} />
-                          {isPos ? '+' : ''}{formatWeight(Math.abs(row.balance), 'kg')}
+                          {isPos ? '+' : ''}{formatWeight(Math.abs(row.balance))}
                         </span>
                       </td>
                     </tr>
@@ -627,21 +627,21 @@ export default function ReportesPage() {
                     TOTALES
                   </td>
                   <td className="py-4 px-4 text-right font-mono font-bold text-[var(--pm-accent-emerald)] text-sm">
-                    {formatWeight(totals.fa, 'kg')}
+                    {formatWeight(totals.fa)}
                   </td>
                   <td className="py-4 px-4 text-right font-mono font-bold text-[var(--pm-accent-sky)] text-sm">
-                    {formatWeight(totals.fe, 'kg')}
+                    {formatWeight(totals.fe)}
                   </td>
                   <td className="py-4 px-4 text-right font-mono font-bold text-[var(--pm-accent-amber)] text-sm">
-                    {formatWeight(totals.r, 'kg')}
+                    {formatWeight(totals.r)}
                   </td>
                   <td className="py-4 px-4 text-right font-mono font-bold text-[var(--pm-text-dim)] text-sm">
-                    {formatWeight(totals.entregado, 'kg')}
+                    {formatWeight(totals.entregado)}
                   </td>
                   <td className="py-4 px-4 text-right">
                     <span className={`inline-flex items-center gap-1 font-mono font-bold text-sm ${totals.balance >= 0 ? 'text-[var(--pm-accent-emerald)]' : 'text-[var(--pm-accent-red)]'}`}>
                       <ArrowUpRight className={`w-3 h-3 ${totals.balance >= 0 ? '' : 'rotate-180'}`} />
-                      {totals.balance >= 0 ? '+' : ''}{formatWeight(Math.abs(totals.balance), 'kg')}
+                      {totals.balance >= 0 ? '+' : ''}{formatWeight(Math.abs(totals.balance))}
                     </span>
                   </td>
                 </tr>
@@ -660,7 +660,7 @@ export default function ReportesPage() {
         </span>
         <HardDrive className="w-3 h-3" />
         <span>{activeClientCount} clientes activos</span>
-        <span className="text-[var(--pm-accent-gold)]">{formatWeight(totalFA, 'kg')} FA total</span>
+        <span className="text-[var(--pm-accent-gold)]">{formatWeight(totalFA)} FA total</span>
         <span>{bars.length} barras registradas</span>
       </motion.div>
     </motion.div>

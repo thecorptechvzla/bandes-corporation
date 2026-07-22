@@ -7,7 +7,6 @@ import { useBars, useCreateBar, useBulkUploadBars } from '@/hooks/useBars';
 import { usePackings, usePacking, useValidatePacking, useCreatePacking, useFinalizePacking } from '@/hooks/usePackings';
 import { api } from '@/lib/api';
 import { formatNumber } from '@/lib/format';
-import type { WeightUnit } from '@/lib/format';
 import type { Bar, BulkUploadResult } from '@/types/api';
 import {
   Camera, Scale, FolderUp, FileSpreadsheet, Plus, Upload, Download, ChevronDown, ChevronUp,
@@ -43,7 +42,7 @@ export default function PackingPage() {
   const createBar = useCreateBar();
   const bulkUploadMutation = useBulkUploadBars();
 
-  const [formWeightUnit, setFormWeightUnit] = useState<WeightUnit>('g');
+
   const [clientId, setClientId] = useState('');
   const [barNumber, setBarNumber] = useState('');
   const [grossWeight, setGrossWeight] = useState('');
@@ -148,31 +147,26 @@ export default function PackingPage() {
   const liveFA = useMemo(() => {
     const w = parseFloat(grossWeight);
     if (isNaN(w)) return 0;
-    const g = formWeightUnit === 'kg' ? w * 1000 : w;
     const p = parseFloat(purity);
     if (isNaN(p)) return 0;
-    return g * (p / 1000);
-  }, [grossWeight, purity, formWeightUnit]);
+    return w * (p / 1000);
+  }, [grossWeight, purity]);
 
   const liveFE = useMemo(() => liveFA * 0.99, [liveFA]);
-
-  const liveFAkg = useMemo(() => liveFA / 1000, [liveFA]);
 
   const liveAg = useMemo(() => {
     const w = parseFloat(grossWeight);
     if (isNaN(w)) return 0;
-    const g = formWeightUnit === 'kg' ? w * 1000 : w;
     const la = parseFloat(leyAg);
     if (isNaN(la)) return 0;
-    return g * (la / 1000);
-  }, [grossWeight, leyAg, formWeightUnit]);
+    return w * (la / 1000);
+  }, [grossWeight, leyAg]);
 
   const weightWarning = useMemo(() => {
     const w = parseFloat(grossWeight);
     if (isNaN(w)) return false;
-    const g = formWeightUnit === 'kg' ? w * 1000 : w;
-    return g > 24900;
-  }, [grossWeight, formWeightUnit]);
+    return w > 24900;
+  }, [grossWeight]);
 
   const filteredBars = useMemo(() => {
     if (!searchQuery) return bars;
@@ -208,7 +202,7 @@ export default function PackingPage() {
       setFormError('Complete todos los campos obligatorios.');
       return;
     }
-    const g = formWeightUnit === 'kg' ? parseFloat(grossWeight) * 1000 : parseFloat(grossWeight);
+    const g = parseFloat(grossWeight);
     if (isNaN(g) || g <= 0) { setFormError('Peso bruto debe ser un número positivo.'); return; }
     const p = parseFloat(purity);
     if (isNaN(p) || p < 0 || p > 1000) { setFormError('Pureza Au debe estar entre 0 y 1000‰.'); return; }
@@ -567,14 +561,9 @@ export default function PackingPage() {
                     <label className="text-[10px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider flex items-center gap-1">
                       <Weight className="w-3 h-3" /> Peso Bruto
                     </label>
-                    <div className="relative">
-                      <input type="number" step="any" placeholder="0.00" value={grossWeight}
-                        onChange={e => setGrossWeight(e.target.value)}
-                        className="w-full bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] rounded-lg px-3 py-2.5 pr-14 text-xs font-mono text-[var(--pm-text-primary)] focus:outline-none focus:border-[var(--pm-accent-gold)] transition-colors placeholder:text-[var(--pm-text-dim)]/30" required />
-                      <button type="button" onClick={() => setFormWeightUnit(prev => prev === 'g' ? 'kg' : 'g')}
-                        className="absolute right-1.5 top-1/2 -translate-y-1/2 px-2 py-1 rounded text-[9px] font-mono font-bold uppercase tracking-wider cursor-pointer active:scale-90 transition-all"
-                        style={{ background: 'rgba(212,175,55,0.1)', color: 'var(--pm-accent-gold)', border: '1px solid rgba(212,175,55,0.2)' }}>{formWeightUnit}</button>
-                    </div>
+                    <input type="number" step="any" placeholder="0.00" value={grossWeight}
+                      onChange={e => setGrossWeight(e.target.value)}
+                      className="w-full bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] rounded-lg px-3 py-2.5 text-xs font-mono text-[var(--pm-text-primary)] focus:outline-none focus:border-[var(--pm-accent-gold)] transition-colors placeholder:text-[var(--pm-text-dim)]/30" required />
                     {weightWarning && (
                       <span className="text-[9px] font-mono text-[var(--pm-accent-amber)] flex items-center gap-1 mt-1">
                         <AlertTriangle className="w-3 h-3" /> Peso superior a 24,900 g
@@ -609,7 +598,7 @@ export default function PackingPage() {
                       <div>
                         <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block">FA (Fino)</span>
                         <span className="text-sm font-mono font-bold text-[var(--pm-text-primary)]">{formatNumber(liveFA, 4)} g</span>
-                        <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block">{formatNumber(liveFAkg, 6)} kg</span>
+
                       </div>
                       <div className="border-x border-[var(--pm-border)]">
                         <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block">FE (Esperado)</span>

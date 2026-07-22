@@ -6,7 +6,6 @@ import { useBars } from '@/hooks/useBars';
 import { useMaterialExits } from '@/hooks/useExits';
 import { useClients } from '@/hooks/useClients';
 import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
-import { useGoldTraceability } from '@/context/GoldTraceabilityContext';
 import { formatWeight } from '@/lib/format';
 import { MetricsHUD, type MetricItem } from '@/components/tactical/MetricsHUD';
 import { ScannerTable, type ColumnDef } from '@/components/tactical/ScannerTable';
@@ -18,13 +17,12 @@ export default function TacticalDashboardPage() {
   const { data: clients = [] } = useClients();
   const { data: exits = [] } = useMaterialExits();
   const { data: metrics, isLoading } = useDashboardMetrics();
-  const { weightUnit } = useGoldTraceability();
 
   const metricsItems: MetricItem[] = useMemo(() => [
     {
       key: 'oro-recibido',
       label: 'ORO RECIBIDO',
-      value: formatWeight(metrics?.oroRecibido.fineWeight ?? 0, weightUnit),
+      value: formatWeight(metrics?.oroRecibido.fineWeight ?? 0),
       sublabel: `FA total — ${metrics?.oroRecibido.barCount ?? 0} barras`,
       accent: 'green',
       health: 85,
@@ -32,7 +30,7 @@ export default function TacticalDashboardPage() {
     {
       key: 'oro-proceso',
       label: 'ORO EN PROCESO',
-      value: formatWeight(metrics?.oroEnProceso.fineWeight ?? 0, weightUnit),
+      value: formatWeight(metrics?.oroEnProceso.fineWeight ?? 0),
       sublabel: `Barras en horno: ${metrics?.oroEnProceso.barCount ?? 0} u`,
       accent: 'amber',
       health: metrics?.oroEnProceso.barCount ? Math.min(100, metrics.oroEnProceso.barCount * 10) : 0,
@@ -40,7 +38,7 @@ export default function TacticalDashboardPage() {
     {
       key: 'oro-boveda',
       label: 'ORO EN BÓVEDA',
-      value: formatWeight(metrics?.oroEnBoveda.fineWeight ?? 0, weightUnit),
+      value: formatWeight(metrics?.oroEnBoveda.fineWeight ?? 0),
       sublabel: 'Disponible para despacho',
       accent: 'cyan',
       health: 70,
@@ -49,11 +47,11 @@ export default function TacticalDashboardPage() {
       key: 'merma',
       label: 'MERMA',
       value: `${(metrics?.merma.porcentaje ?? 0).toFixed(1)}%`,
-      sublabel: `Pérdida: ${formatWeight(metrics?.merma.gramos ?? 0, weightUnit)} Au`,
+      sublabel: `Pérdida: ${formatWeight(metrics?.merma.gramos ?? 0)} Au`,
       accent: 'red',
       health: metrics?.merma.porcentaje ? Math.max(0, 100 - metrics.merma.porcentaje) : 100,
     },
-  ], [metrics, weightUnit]);
+  ], [metrics]);
 
   const supplierData = useMemo(() => {
     return clients.map(c => {
@@ -68,8 +66,8 @@ export default function TacticalDashboardPage() {
   const supplierColumns: ColumnDef<typeof supplierData[0]>[] = [
     { key: 'name', label: 'CLIENTE', render: r => <span className="font-bold text-[var(--tac-accent-cyan)]">{r.name}</span> },
     { key: 'rif', label: 'RIF', align: 'center', render: r => <span className="text-[var(--tac-text-dim)]">{r.rif.slice(0, 10)}</span> },
-    { key: 'grossWeight', label: `BRUTO (${weightUnit.toUpperCase()})`, align: 'right', render: r => <span className="font-bold">{formatWeight(r.grossWeight, weightUnit)}</span> },
-    { key: 'fineWeight', label: `FA (${weightUnit.toUpperCase()})`, align: 'right', render: r => <span className="text-[var(--tac-accent-green)]">{formatWeight(r.grossWeight, weightUnit)}</span> },
+    { key: 'grossWeight', label: 'BRUTO (G)', align: 'right', render: r => <span className="font-bold">{formatWeight(r.grossWeight)}</span> },
+    { key: 'fineWeight', label: 'FA (G)', align: 'right', render: r => <span className="text-[var(--tac-accent-green)]">{formatWeight(r.grossWeight)}</span> },
     { key: 'count', label: 'BARRAS', align: 'center', render: r => <span className="text-[var(--tac-text-dim)]">{r.count} u</span> },
     { key: 'avgPurity', label: 'PUREZA', align: 'center', render: r => <span>{r.avgPurity}‰</span> },
   ];
@@ -125,7 +123,7 @@ export default function TacticalDashboardPage() {
               columns={[
                 { key: 'name', label: 'CLIENTE', render: r => <span className="font-bold text-[var(--tac-accent-amber)]">{r.name}</span> },
                 { key: 'rif', label: 'RIF', align: 'center', render: r => <span className="text-[var(--tac-text-dim)]">{r.rif.slice(0, 10)}</span> },
-                { key: 'total', label: `DESPACHADO (${weightUnit.toUpperCase()})`, align: 'right', render: r => <span className="font-bold">{formatWeight(r.grossWeight, weightUnit)}</span> },
+                { key: 'total', label: 'DESPACHADO (G)', align: 'right', render: r => <span className="font-bold">{formatWeight(r.grossWeight)}</span> },
                 { key: 'count', label: 'ENVÍOS', align: 'center', render: r => <span className="text-[var(--tac-text-dim)]">{r.count} ops</span> },
               ]}
               data={clients.map(c => {
@@ -173,13 +171,13 @@ export default function TacticalDashboardPage() {
                         />
                       </div>
                       <span className="w-16 text-right text-[var(--tac-accent-green)] font-bold text-[9px]">
-                        {formatWeight(day.in, weightUnit, 1)}
+                        {formatWeight(day.in, 1)}
                       </span>
                     </div>
                     <span className="w-2 text-center text-[var(--tac-text-dim)] text-[8px]">|</span>
                     <div className="flex-1 flex items-center gap-2">
                       <span className="w-16 text-left text-[var(--tac-accent-amber)] font-bold text-[9px]">
-                        {formatWeight(day.out, weightUnit, 1)}
+                        {formatWeight(day.out, 1)}
                       </span>
                       <div className="flex-1 h-3 bg-[var(--tac-bg-primary)] relative overflow-hidden">
                         <motion.div
@@ -199,15 +197,15 @@ export default function TacticalDashboardPage() {
               <div className="flex items-center gap-4 mt-3 pt-2 border-t border-[var(--tac-border)] text-[9px] font-mono text-[var(--tac-text-dim)]">
                 <span className="flex items-center gap-1">
                   <span className="w-2 h-2 bg-[var(--tac-accent-green)]" />
-                  IN: {formatWeight(flowData.reduce((s, d) => s + d.in, 0), weightUnit, 1)}
+                  IN: {formatWeight(flowData.reduce((s, d) => s + d.in, 0), 1)}
                 </span>
                 <span className="flex items-center gap-1">
                   <span className="w-2 h-2 bg-[var(--tac-accent-amber)]" />
-                  OUT: {formatWeight(flowData.reduce((s, d) => s + d.out, 0), weightUnit, 1)}
+                  OUT: {formatWeight(flowData.reduce((s, d) => s + d.out, 0), 1)}
                 </span>
                 <span className="flex items-center gap-1">
                   <span className="w-2 h-2 bg-[var(--tac-accent-cyan)]" />
-                  NET: {formatWeight(flowData.reduce((s, d) => s + d.in, 0) - flowData.reduce((s, d) => s + d.out, 0), weightUnit, 1)}
+                  NET: {formatWeight(flowData.reduce((s, d) => s + d.in, 0) - flowData.reduce((s, d) => s + d.out, 0), 1)}
                 </span>
               </div>
             </div>

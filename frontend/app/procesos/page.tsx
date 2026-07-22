@@ -18,7 +18,6 @@ import type { Process, Lot, Bar } from '@/types/api';
 export default function ProcesosPage() {
   const { data: bars = [] } = useBars();
   const { data: clients = [] } = useClients();
-  const { weightUnit } = useGoldTraceability();
   const { data: processes = [] } = useProcesses();
   const { data: lots = [] } = useLots();
 
@@ -354,7 +353,7 @@ export default function ProcesosPage() {
                             <span className="text-[9px] text-[#8C8C8C]/50">{c?.rif.slice(0, 5)} • Ley {bar.purity}‰</span>
                           </div>
                         </div>
-                        <span className="text-[#D5B042] font-semibold">{formatWeight(bar.grossWeight, weightUnit)}</span>
+                        <span className="text-[#D5B042] font-semibold">{formatWeight(bar.grossWeight)}</span>
                       </label>
                     );
                   })}
@@ -370,11 +369,11 @@ export default function ProcesosPage() {
                   <div className="grid grid-cols-2 gap-2 text-xs pt-1 border-t border-neutral-800/20">
                     <div>
                       <span className="text-[9px] text-[#8C8C8C]/50 uppercase block">Peso Bruto</span>
-                      <strong className="text-[#E5E5E5] text-sm">{formatWeight(selectedMetrics.weight, weightUnit)}</strong>
+                      <strong className="text-[#E5E5E5] text-sm">{formatWeight(selectedMetrics.weight)}</strong>
                     </div>
                     <div>
                       <span className="text-[9px] text-[#8C8C8C]/50 uppercase block">Fino Au</span>
-                      <strong className="text-[#D5B042] text-sm">{formatWeight(selectedMetrics.fino, weightUnit)}</strong>
+                      <strong className="text-[#D5B042] text-sm">{formatWeight(selectedMetrics.fino)}</strong>
                     </div>
                   </div>
                 </div>
@@ -548,7 +547,7 @@ export default function ProcesosPage() {
 
                                       <div className="flex items-center justify-between text-[10px] font-mono text-[#8C8C8C]">
                                         <span className="truncate max-w-[120px]">{lot.operator || 'N/A'}</span>
-                                        <span>{formatWeight(grossTotal, weightUnit)} Bruto</span>
+                                        <span>{formatWeight(grossTotal)} Bruto</span>
                                       </div>
 
                                       <div className="space-y-1.5 bg-neutral-950 p-2.5 rounded-lg border border-neutral-900">
@@ -570,7 +569,7 @@ export default function ProcesosPage() {
                                                   {b.barNumber.split('-').pop() || b.barNumber}
                                                 </span>
                                                 <span className="text-[8px] font-mono text-neutral-400">
-                                                  {formatWeight(b.grossWeight, weightUnit)} | {b.purity}‰
+                                                  {formatWeight(b.grossWeight)} | {b.purity}‰
                                                 </span>
                                               </div>
                                             ))}
@@ -644,11 +643,11 @@ export default function ProcesosPage() {
                   <div className="bg-black p-3 rounded-xl border border-neutral-800/40 space-y-1 text-xs font-mono">
                     <div className="flex justify-between text-[#8C8C8C]">
                       <span>Masa Cargada Bruta:</span>
-                      <span className="text-[#E5E5E5] font-bold">{formatWeight(grossTotal, weightUnit)}</span>
+                      <span className="text-[#E5E5E5] font-bold">{formatWeight(grossTotal)}</span>
                     </div>
                     <div className="flex justify-between text-[#8C8C8C]">
                       <span>Fino Analítico (FA) Teórico:</span>
-                      <span className="text-[#E5E5E5] font-bold">{formatWeight(finoTotal, weightUnit)}</span>
+                      <span className="text-[#E5E5E5] font-bold">{formatWeight(finoTotal)}</span>
                     </div>
                   </div>
                 );
@@ -665,7 +664,7 @@ export default function ProcesosPage() {
                     className="w-full bg-black border border-neutral-800/40 rounded-lg pl-4 pr-12 py-2 text-sm font-sans font-bold text-[#E5E5E5] focus:outline-none focus:border-[#D5B042] transition-colors"
                     required
                   />
-                  <span className="absolute right-4 top-2.5 text-xs font-mono text-[#8C8C8C]">{weightUnit}</span>
+                  <span className="absolute right-4 top-2.5 text-xs font-mono text-[#8C8C8C]">g</span>
                 </div>
               </div>
 

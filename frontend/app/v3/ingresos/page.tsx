@@ -12,7 +12,6 @@ import {
 import { api } from '@/lib/api';
 import { useRole } from '@/context/RoleContext';
 import { formatWeight } from '@/lib/format';
-import type { WeightUnit } from '@/lib/format';
 import type { Bar, BulkUploadResult } from '@/types/api';
 import { TacticalCard } from '@/components/tactical/TacticalCard';
 import { ScannerTable, type ColumnDef } from '@/components/tactical/ScannerTable';
@@ -76,7 +75,6 @@ export default function IngresosPage() {
   const [clientId, setClientId] = useState('');
   const [barNumber, setBarNumber] = useState('');
   const [grossWeight, setGrossWeight] = useState('');
-  const [weightUnit, setWeightUnit] = useState<WeightUnit>('g');
   const [purity, setPurity] = useState('');
   const [leyAg, setLeyAg] = useState('');
   const [formError, setFormError] = useState('');
@@ -115,16 +113,14 @@ export default function IngresosPage() {
   }, [clients]);
 
   const liveFA = useMemo(() => {
-    const wRaw = parseFloat(grossWeight);
-    if (isNaN(wRaw)) return 0;
-    const w = weightUnit === 'kg' ? wRaw * 1000 : wRaw;
+    const w = parseFloat(grossWeight);
+    if (isNaN(w)) return 0;
     const p = parseFloat(purity);
     if (isNaN(p)) return 0;
     return w * (p / 1000);
-  }, [grossWeight, purity, weightUnit]);
+  }, [grossWeight, purity]);
 
   const liveFE = useMemo(() => liveFA * 0.99, [liveFA]);
-  const liveFAkg = useMemo(() => liveFA / 1000, [liveFA]);
 
   const openTerminal = (bar?: Bar) => {
     if (bar) {
@@ -132,7 +128,6 @@ export default function IngresosPage() {
       setClientId(bar.clientId);
       setBarNumber(bar.barNumber);
       setGrossWeight(bar.grossWeight.toString());
-      setWeightUnit('g');
       setPurity(bar.purity.toString());
       setLeyAg((bar.leyAg || '').toString());
       setStep('CONFIRMAR');
@@ -141,7 +136,6 @@ export default function IngresosPage() {
       setClientId(clients[0]?.id || '');
       setBarNumber('');
       setGrossWeight('');
-      setWeightUnit('g');
       setPurity('');
       setLeyAg('');
       setStep('CLIENTE');
@@ -202,8 +196,7 @@ export default function IngresosPage() {
   const handleSubmit = async () => {
     setFormError('');
     setIsSubmitting(true);
-    const wRaw = parseFloat(grossWeight);
-    const w = weightUnit === 'kg' ? wRaw * 1000 : wRaw;
+    const w = parseFloat(grossWeight);
     const p = parseFloat(purity);
     const ag = parseFloat(leyAg) || 0;
     const code = barNumber.toUpperCase().trim();
@@ -343,21 +336,21 @@ export default function IngresosPage() {
     },
     {
       key: 'grossWeight',
-      label: 'BRUTO (KG)',
+      label: 'BRUTO (G)',
       align: 'right',
       render: r => (
         <span className="font-mono text-[var(--tac-text-primary)]">
-          {formatWeight(Number(r.grossWeight), 'kg')}
+          {formatWeight(Number(r.grossWeight))}
         </span>
       ),
     },
     {
       key: 'fineWeight',
-      label: 'FA (KG)',
+      label: 'FA (G)',
       align: 'right',
       render: r => (
         <span className="font-mono text-[var(--tac-accent-amber)]">
-          {formatWeight(Number(r.fineWeight), 'kg')}
+          {formatWeight(Number(r.fineWeight))}
         </span>
       ),
     },
@@ -543,8 +536,7 @@ export default function IngresosPage() {
                         <span className="text-[var(--tac-text-dim)] shrink-0">PESO_BRUTO</span>
                         <span className="text-[var(--tac-accent-cyan)] shrink-0">&gt;</span>
                         {step === 'PESO' ? (
-                          <div className="flex-1 flex items-center gap-1">
-                            <input
+                          <input
                               ref={inputRef}
                               type="number"
                               step="0.01"
@@ -554,22 +546,15 @@ export default function IngresosPage() {
                               placeholder="0.00"
                               autoFocus
                             />
-                            <button
-                              onClick={() => setWeightUnit(prev => prev === 'kg' ? 'g' : 'kg')}
-                              className="text-[9px] font-mono font-bold px-1.5 py-0.5 border border-[var(--tac-border)] text-[var(--tac-text-dim)] hover:text-[var(--tac-accent-cyan)] hover:border-[var(--tac-accent-cyan)]/40 active:scale-95 transition-all"
-                            >
-                              {weightUnit}
-                            </button>
-                          </div>
                         ) : (
                           <span className="text-[var(--tac-text-primary)] font-bold">
-                            {grossWeight ? formatWeight(parseFloat(grossWeight), weightUnit) : '—'}
+                            {grossWeight ? formatWeight(parseFloat(grossWeight)) : '—'}
                           </span>
                         )}
                       </div>
                       {step === 'PESO' && grossWeight && purity && (
                         <div className="mt-1 ml-[100px] text-[9px] font-mono text-[var(--tac-accent-amber)]">
-                          FA (kg): {formatWeight(liveFA, 'kg')}
+                          FA (g): {formatWeight(liveFA)}
                         </div>
                       )}
                     </div>
@@ -605,7 +590,7 @@ export default function IngresosPage() {
                       </div>
                       {step === 'PUREZA' && liveFA > 0 && (
                         <div className="mt-1 ml-[100px] text-[9px] font-mono text-[var(--tac-accent-amber)]">
-                          FA: {formatWeight(liveFA, 'kg')} | FE: {formatWeight(liveFE, 'kg')}
+                          FA: {formatWeight(liveFA)} | FE: {formatWeight(liveFE)}
                         </div>
                       )}
                     </div>
@@ -663,7 +648,7 @@ export default function IngresosPage() {
                         <div className="flex justify-between">
                           <span className="text-[var(--tac-text-dim)]">BRUTO:</span>
                           <span className="text-[var(--tac-text-primary)] font-bold">
-                            {grossWeight ? formatWeight(parseFloat(grossWeight), weightUnit) : '—'}
+                            {grossWeight ? formatWeight(parseFloat(grossWeight)) : '—'}
                           </span>
                         </div>
                         <div className="flex justify-between">
@@ -679,20 +664,20 @@ export default function IngresosPage() {
                         <div className="flex justify-between border-t border-[var(--tac-border)] pt-1 mt-1">
                           <span className="text-[var(--tac-text-dim)]">FA ESTIMADO:</span>
                           <span className="text-[var(--tac-accent-amber)] font-bold">
-                            {formatWeight(liveFA, 'kg')}
+                            {formatWeight(liveFA)}
                           </span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-[var(--tac-text-dim)]">FE (×0.99):</span>
                           <span className="text-[var(--tac-accent-cyan)] font-bold">
-                            {formatWeight(liveFE, 'kg')}
+                            {formatWeight(liveFE)}
                           </span>
                         </div>
                         {liveFA > 0 && (
                           <div className="flex justify-between">
                             <span className="text-[var(--tac-text-dim)]">MERMA ESPERADA (1%):</span>
                             <span className="text-[var(--tac-accent-green)] font-bold">
-                              {formatWeight(liveFA - liveFE, 'kg')}
+                              {formatWeight(liveFA - liveFE)}
                             </span>
                           </div>
                         )}
@@ -903,7 +888,7 @@ export default function IngresosPage() {
                           <div className="text-right hidden sm:block">
                             <span className="text-[8px] text-[var(--tac-text-dim)]/50 block uppercase font-mono">BRUTO / FA</span>
                             <span className="text-[9px] font-mono font-bold text-[var(--tac-accent-amber)]">
-                              {formatWeight(totalW, 'kg')} / {formatWeight(totalFA, 'kg')}
+                              {formatWeight(totalW)} / {formatWeight(totalFA)}
                             </span>
                           </div>
                           <span className="text-[9px] font-mono text-[var(--tac-text-dim)] bg-[var(--tac-bg-primary)] border border-[var(--tac-border)] px-2 py-0.5">
@@ -952,13 +937,13 @@ export default function IngresosPage() {
               {
                 key: 'total-gross',
                 label: 'MASA BRUTA',
-                value: formatWeight(totalGrossWeight, 'kg'),
+                value: formatWeight(totalGrossWeight),
                 accent: 'cyan',
               },
               {
                 key: 'total-fa',
                 label: 'TOTAL FA AU',
-                value: formatWeight(totalFineWeight, 'kg'),
+                value: formatWeight(totalFineWeight),
                 accent: 'amber',
               },
               {
@@ -1059,7 +1044,7 @@ export default function IngresosPage() {
                       </div>
                       <div className="flex justify-between">
                         <span className="text-[var(--tac-text-dim)]">PESO:</span>
-                        <span className="text-[var(--tac-text-primary)] font-bold">{formatWeight(Number(target.grossWeight), 'kg')}</span>
+                        <span className="text-[var(--tac-text-primary)] font-bold">{formatWeight(Number(target.grossWeight))}</span>
                       </div>
                     </div>
                     <p className="text-[10px] font-mono text-[var(--tac-text-dim)] leading-relaxed">
@@ -1203,7 +1188,7 @@ export default function IngresosPage() {
           DB ONLINE
         </span>
         <span>{totalBars} BARRAS EN BÓVEDA</span>
-        <span>{formatWeight(totalFineWeight, 'kg')} FA TOTAL</span>
+        <span>{formatWeight(totalFineWeight)} FA TOTAL</span>
         <span>{clients.length} PROVEEDORES</span>
       </motion.div>
     </motion.div>

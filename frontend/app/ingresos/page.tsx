@@ -7,8 +7,6 @@ import { useClients } from '@/hooks/useClients';
 import { useBars, useCreateBar, useBulkUploadBars, useUpdateBar } from '@/hooks/useBars';
 import { api } from '@/lib/api';
 import { formatNumber, formatWeight } from '@/lib/format';
-import type { WeightUnit } from '@/lib/format';
-import { useGoldTraceability } from '@/context/GoldTraceabilityContext';
 import type { Bar, BulkUploadResult } from '@/types/api';
 import {
   ChevronsUp,
@@ -51,8 +49,7 @@ export default function IngresosPage() {
   const { data: clients = [] } = useClients({ role: 'PROVEEDOR' });
   const { data: bars = [] } = useBars();
   const createBar = useCreateBar();
-  const { weightUnit } = useGoldTraceability();
-  const [formWeightUnit, setFormWeightUnit] = useState<WeightUnit>('g');
+
 
   const [showForm, setShowForm] = useState<boolean>(false);
   const [clientId, setClientId] = useState<string>('');
@@ -96,38 +93,34 @@ export default function IngresosPage() {
   }, [clients]);
 
   const liveFA = useMemo(() => {
-    const wRaw = parseFloat(grossWeight);
-    if (isNaN(wRaw)) return 0;
-    const w = formWeightUnit === 'kg' ? wRaw * 1000 : wRaw;
+    const w = parseFloat(grossWeight);
+    if (isNaN(w)) return 0;
     const l = parseFloat(purity);
     if (isNaN(l)) return 0;
     return w * (l / 1000);
-  }, [grossWeight, purity, formWeightUnit]);
+  }, [grossWeight, purity]);
 
 
   const liveAnalyticalAg = useMemo(() => {
-    const wRaw = parseFloat(grossWeight);
-    if (isNaN(wRaw)) return 0;
-    const w = formWeightUnit === 'kg' ? wRaw * 1000 : wRaw;
+    const w = parseFloat(grossWeight);
+    if (isNaN(w)) return 0;
     const lAg = parseFloat(leyAg);
     if (isNaN(lAg)) return 0;
     return w * (lAg / 1000);
-  }, [grossWeight, leyAg, formWeightUnit]);
+  }, [grossWeight, leyAg]);
 
   const weightWarning = useMemo(() => {
-    const wRaw = parseFloat(grossWeight);
-    if (isNaN(wRaw)) return false;
-    const w = formWeightUnit === 'kg' ? wRaw * 1000 : wRaw;
+    const w = parseFloat(grossWeight);
+    if (isNaN(w)) return false;
     return w > 24900;
-  }, [grossWeight, formWeightUnit]);
+  }, [grossWeight]);
 
   const purityWarning = useMemo(() => {
-    const wRaw = parseFloat(grossWeight);
-    if (isNaN(wRaw)) return false;
-    const w = formWeightUnit === 'kg' ? wRaw * 1000 : wRaw;
+    const w = parseFloat(grossWeight);
+    if (isNaN(w)) return false;
     const l = parseFloat(purity);
     return !isNaN(w) && !isNaN(l) && l < 850 && w > 1000;
-  }, [grossWeight, purity, formWeightUnit]);
+  }, [grossWeight, purity]);
 
   const handleSubmitBar = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -148,7 +141,7 @@ export default function IngresosPage() {
       return;
     }
 
-    const w = formWeightUnit === 'kg' ? wRaw * 1000 : wRaw;
+    const w = wRaw;
     if (isNaN(p) || p < 0 || p > 1000) {
       setFormError('La pureza Au debe estar entre 0 y 1000‰.');
       return;
@@ -218,7 +211,7 @@ export default function IngresosPage() {
 
     sheet.columns = [
       { header: 'CÓDIGO', key: 'code', width: 22 },
-      { header: `PESO BRUTO (${weightUnit.toUpperCase()})`, key: 'grossWeight', width: 18 },
+      { header: 'PESO BRUTO (G)', key: 'grossWeight', width: 18 },
       { header: 'PUREZA (‰)', key: 'purity', width: 15 },
       { header: 'LEY Ag (‰)', key: 'leyAg', width: 15 },
       { header: 'LOTE N°', key: 'lot', width: 18 },
@@ -385,15 +378,8 @@ export default function IngresosPage() {
                       <label className="text-[11px] font-mono text-[#8C8C8C] uppercase">Peso Bruto</label>
                       <div className="relative">
                         <input type="number" step="0.01" placeholder="0.00" value={grossWeight} onChange={(e) => setGrossWeight(e.target.value)}
-                          className={`w-full bg-black border rounded-lg pl-3 pr-14 py-2.5 text-xs font-sans text-[#E5E5E5] focus:outline-none transition-colors
+                          className={`w-full bg-black border rounded-lg pl-3 pr-3 py-2.5 text-xs font-sans text-[#E5E5E5] focus:outline-none transition-colors
                             ${weightWarning || purityWarning ? 'border-[#A65B17] focus:border-[#A65B17]' : 'border-neutral-800/40 focus:border-[#D5B042]'}`} required />
-                        <button
-                          type="button"
-                          onClick={() => setFormWeightUnit(prev => prev === 'kg' ? 'g' : 'kg')}
-                          className="absolute right-1.5 top-1.5 text-[9px] font-mono font-bold tracking-wider px-1.5 py-0.5 rounded bg-black border border-neutral-700/50 hover:border-[#D5B042]/40 text-[#8C8C8C] hover:text-[#D5B042] transition-all cursor-pointer"
-                        >
-                          {formWeightUnit}
-                        </button>
                       </div>
                     </div>
                     <div className="space-y-1">
@@ -422,7 +408,7 @@ export default function IngresosPage() {
                         <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
                         ADVERTENCIA DE PESO CRÍTICO
                       </div>
-                      <p className="text-[10px] leading-relaxed">El peso bruto excede los {formatWeight(24900, formWeightUnit)}.</p>
+                      <p className="text-[10px] leading-relaxed">El peso bruto excede los {formatWeight(24900)}.</p>
                     </div>
                   )}
 
@@ -432,7 +418,7 @@ export default function IngresosPage() {
                         <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
                         RESTRICCIÓN DE PUREZA Y PESO
                       </div>
-                      <p className="text-[10px] leading-relaxed">Ley inferior a 850‰ no puede pesar más de {formatWeight(1000, formWeightUnit)}.</p>
+                      <p className="text-[10px] leading-relaxed">Ley inferior a 850‰ no puede pesar más de {formatWeight(1000)}.</p>
                     </div>
                   )}
 
@@ -483,13 +469,13 @@ export default function IngresosPage() {
                     <div className="grid grid-cols-2 gap-4 text-xs font-mono border-t border-neutral-800/20 pt-2">
                       <div className="space-y-1">
                         <span className="text-[10px] text-[#8C8C8C]/60 uppercase block">Fino Analítico (FA)</span>
-                        <strong className="text-[#E5E5E5] text-[13px]">{formatWeight(liveFA, weightUnit)}</strong>
+                        <strong className="text-[#E5E5E5] text-[13px]">{formatWeight(liveFA)}</strong>
                       </div>
                     </div>
                     {liveAnalyticalAg > 0 && (
                       <div className="text-[10px] font-mono text-emerald-400 pt-1.5 flex justify-between items-center border-t border-neutral-800/20">
                         <span>Fino Analítico Ag (Plata):</span>
-                        <strong>{formatWeight(liveAnalyticalAg, weightUnit)} Ag</strong>
+                        <strong>{formatWeight(liveAnalyticalAg)} Ag</strong>
                       </div>
                     )}
                   </div>
@@ -636,7 +622,7 @@ export default function IngresosPage() {
                         <div className="text-right hidden md:block">
                           <span className="text-[10px] text-[#8C8C8C]/50 block uppercase font-mono">Total Crudo / Fino</span>
                           <span className="text-xs font-mono font-bold text-[#D5B042]">
-                            {formatWeight(totalW, weightUnit)} / {formatWeight(totalFA, weightUnit)} Au
+                            {formatWeight(totalW)} / {formatWeight(totalFA)} Au
                           </span>
                         </div>
                         <div className="text-right font-mono text-[10px] text-[#D5B042] bg-black border border-neutral-800/20 px-2.5 py-1 rounded-full">
@@ -655,8 +641,8 @@ export default function IngresosPage() {
                             <thead>
                               <tr className="border-b border-neutral-800/20 text-[10px] font-mono text-[#8C8C8C] uppercase tracking-wider">
                                 <th className="py-3 text-center sticky left-0 bg-black/50 z-10">Código</th>
-                                <th className="py-3 text-center bg-black/50">BRUTO ({weightUnit.toUpperCase()})</th>
-                                <th className="py-3 text-center bg-black/50">FA ({weightUnit.toUpperCase()})</th>
+                                <th className="py-3 text-center bg-black/50">BRUTO (G)</th>
+                                <th className="py-3 text-center bg-black/50">FA (G)</th>
                                 <th className="py-3 text-center bg-black/50">R</th>
                                 <th className="py-3 text-center bg-black/50">STATUS</th>
                                 <th className="py-3 text-center bg-black/50">Estado</th>
@@ -667,8 +653,8 @@ export default function IngresosPage() {
                               {groupBars.map(bar => (
                                 <tr key={bar.id} onClick={() => setSelectedBar(bar)} className="hover:bg-[#141414]/85 transition-colors cursor-pointer">
                                   <td className="py-3 text-center font-mono font-bold text-[#D5B042] sticky left-0 bg-black z-10">{bar.barNumber}</td>
-                                  <td className="py-3 text-center font-mono">{formatWeight(Number(bar.grossWeight), weightUnit)}</td>
-                                  <td className="py-3 text-center font-mono text-[#8C8C8C]">{formatWeight(Number(bar.fineWeight), weightUnit)}</td>
+                                  <td className="py-3 text-center font-mono">{formatWeight(Number(bar.grossWeight))}</td>
+                                  <td className="py-3 text-center font-mono text-[#8C8C8C]">{formatWeight(Number(bar.fineWeight))}</td>
                                   <td className="py-3 text-center font-mono text-[#8C8C8C]">--</td>
                                   <td className="py-3 text-center">
                                     <span className={`inline-block px-2.5 py-0.5 rounded text-[9px] font-mono font-semibold ${verifiedBars.has(bar.id) ? 'bg-[#152B1E] text-emerald-400 border border-emerald-500/10' : 'bg-[#2A1A0A] text-[#A65B17] border border-[#A65B17]/20'}`}>
@@ -722,11 +708,11 @@ export default function IngresosPage() {
                 </div>
                 <div>
                   <span className="text-[10px] text-[#8C8C8C]/50 block">MASA BRUTA</span>
-                  <strong className="text-[#E5E5E5] text-base font-bold">{formatWeight(totalGrossWeight, weightUnit)}</strong>
+                  <strong className="text-[#E5E5E5] text-base font-bold">{formatWeight(totalGrossWeight)}</strong>
                 </div>
                 <div>
                   <span className="text-[10px] text-[#8C8C8C]/50 block">TOTAL FINO AU ESPERADO</span>
-                  <strong className="text-[#D5B042] text-base font-bold">{formatWeight(totalFineWeight, weightUnit)} Au</strong>
+                  <strong className="text-[#D5B042] text-base font-bold">{formatWeight(totalFineWeight)} Au</strong>
                 </div>
               </div>
             </div>
