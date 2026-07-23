@@ -109,7 +109,6 @@ export default function PackingPage() {
 
   useEffect(() => {
     if (clients.length > 0) {
-      if (!clientId) setClientId(clients[0].id);
       if (!bulkClientId) setBulkClientId(clients[0].id);
       const acc: Record<string, boolean> = {};
       clients.forEach(c => { acc[c.id] = true; });
@@ -542,6 +541,7 @@ export default function PackingPage() {
                   <label className="text-[10px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider">Proveedor</label>
                   <select value={clientId} onChange={e => setClientId(e.target.value)}
                     className="w-full bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] rounded-lg px-3 py-2.5 text-xs font-sans text-[var(--pm-text-primary)] focus:outline-none focus:border-[var(--pm-accent-gold)] transition-colors cursor-pointer">
+                    <option value="" disabled>Seleccionar...</option>
                     {clients.map(c => (<option key={c.id} value={c.id}>{c.name}</option>))}
                   </select>
                 </div>
