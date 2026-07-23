@@ -52,6 +52,7 @@ export default function V2EgresosPage() {
   const [dispatchResult, setDispatchResult] = useState<DispatchResult | null>(null);
   const [message, setMessage] = useState('');
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [detailLotId, setDetailLotId] = useState<string | null>(null);
 
   const allAvailableLots: AvailableLot[] = useMemo(() => {
     return processes
@@ -351,6 +352,29 @@ export default function V2EgresosPage() {
     }
   };
 
+  const detailLot = useMemo(() => {
+    if (!detailLotId) return null;
+    return allAvailableLots.find(l => l.id === detailLotId) || null;
+  }, [detailLotId, allAvailableLots]);
+
+  const detailLotBars = useMemo(() => {
+    if (!detailLotId) return [];
+    return bars.filter(b => b.lotId === detailLotId);
+  }, [detailLotId, bars]);
+
+  const detailLotTotalGross = useMemo(
+    () => detailLotBars.reduce((s, b) => s + Number(b.grossWeight || 0), 0),
+    [detailLotBars],
+  );
+  const detailLotTotalFine = useMemo(
+    () => detailLotBars.reduce((s, b) => s + Number(b.fineWeight || 0), 0),
+    [detailLotBars],
+  );
+  const detailLotEfficiency = useMemo(
+    () => detailLotTotalFine > 0 ? (Number(detailLot?.availableWeight || 0) / detailLotTotalFine) * 100 : null,
+    [detailLotTotalFine, detailLot],
+  );
+
   const fmtWeightDisplay = (val: number) =>
     `${formatNumber(val, 2)} g`;
 
@@ -449,9 +473,9 @@ export default function V2EgresosPage() {
                               </thead>
                               <tbody className="divide-y divide-[var(--pm-border)]/20">
                                 {lots.map((lot, idx) => (
-                                  <tr key={lot.id} onClick={() => toggleLot(lot.id)}
+                                  <tr key={lot.id} onClick={() => setDetailLotId(lot.id)}
                                     className={`group transition-all duration-150 cursor-pointer ${idx % 2 === 0 ? 'bg-transparent' : 'bg-[var(--pm-bg-base)]/20'} hover:bg-[var(--pm-bg-hover)]/40 ${selectedLotIds.has(lot.id) ? 'bg-[var(--pm-accent-gold)]/8' : ''}`}>
-                                    <td className="py-2.5 px-2 text-center" onClick={e => e.stopPropagation()}>
+                                    <td className="py-2.5 px-2 text-center" onClick={e => { e.stopPropagation(); toggleLot(lot.id); }}>
                                       <input type="checkbox" checked={selectedLotIds.has(lot.id)}
                                         onChange={() => toggleLot(lot.id)}
                                         className="accent-[var(--pm-accent-gold)] cursor-pointer active:scale-90" />
@@ -719,6 +743,126 @@ export default function V2EgresosPage() {
             <AlertTriangle className="w-4 h-4 shrink-0" />{message}
             <button type="button" onClick={() => setStatus('idle')}
               className="ml-auto p-1 rounded hover:bg-[var(--pm-accent-red)]/10 transition-colors cursor-pointer"><X className="w-3.5 h-3.5" /></button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Detail Modal */}
+      <AnimatePresence>
+        {detailLotId && detailLot && (
+          <motion.div key="detail-modal" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4 sm:p-6"
+            onClick={() => setDetailLotId(null)}>
+            <motion.div initial={{ opacity: 0, scale: 0.92, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.92, y: 10 }} transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              className="w-full max-w-3xl glass-panel rounded-2xl overflow-hidden"
+              onClick={e => e.stopPropagation()}>
+              {/* Header */}
+              <div className="px-6 pt-5 sm:pt-6 pb-4 border-b border-[var(--pm-border)]/20">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.2)' }}>
+                      <Package className="w-4 h-4 text-[var(--pm-accent-gold)]" />
+                    </div>
+                    <div className="min-w-0">
+                      <span className="text-[9px] font-mono font-bold text-[var(--pm-accent-gold)] uppercase tracking-wider">Detalle de Lote</span>
+                      <h3 className="text-sm font-sans font-semibold text-[var(--pm-text-primary)] mt-0.5 truncate">{detailLot.name}</h3>
+                      <p className="text-[10px] font-mono text-[var(--pm-text-dim)] mt-0.5 truncate">Proceso: {detailLot.processName} · {detailLot.clientName}</p>
+                    </div>
+                  </div>
+                  <button type="button" onClick={() => setDetailLotId(null)}
+                    className="p-1.5 rounded-lg hover:bg-[var(--pm-bg-tertiary)] text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] transition-all cursor-pointer shrink-0">
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+              {/* Body: Bars Table */}
+              <div className="overflow-y-auto v2-scroll p-6 max-h-[75vh]">
+                {detailLotBars.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-10 text-[var(--pm-text-dim)]">
+                    <Package className="w-8 h-8 text-[var(--pm-text-dim)]/30 mb-2" />
+                    <span className="text-xs font-sans mb-1">Sin barras asociadas</span>
+                    <p className="text-[9px] font-mono">No se encontraron barras para este lote.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-5">
+                    <div className="flex items-center justify-between text-[10px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider">
+                      <span>Desglose de Barras Fundidas</span>
+                      <span>{detailLotBars.length} barra{detailLotBars.length !== 1 ? 's' : ''}</span>
+                    </div>
+                    <div className="overflow-x-auto w-full">
+                      <div className="premium-table rounded-xl border border-[var(--pm-border)]/30 w-full">
+                        <table className="w-full text-sm">
+                          <thead>
+                            <tr className="text-[10px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider bg-[var(--pm-bg-base)]/50">
+                              <th className="py-2.5 px-4 text-left font-medium">Código</th>
+                              <th className="py-2.5 px-4 text-right font-medium">Peso Bruto (g)</th>
+                              <th className="py-2.5 px-4 text-right font-medium">Ley Au (‰)</th>
+                              <th className="py-2.5 px-4 text-right font-medium">FA (g)</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-[var(--pm-border)]/20">
+                            {detailLotBars.map((b, i) => (
+                              <tr key={b.id} className={`${i % 2 === 0 ? 'bg-transparent' : 'bg-[var(--pm-bg-base)]/20'} hover:bg-[var(--pm-bg-hover)]/30 transition-colors`}>
+                                <td className="py-3 px-4 text-left font-mono font-bold text-[var(--pm-accent-gold)] tracking-wider">{b.barNumber}</td>
+                                <td className="py-3 px-4 text-right font-mono text-[var(--pm-text-primary)]">{formatNumber(Number(b.grossWeight || 0), 2)}</td>
+                                <td className="py-3 px-4 text-right font-mono text-[var(--pm-text-primary)]">{b.purity}</td>
+                                <td className="py-3 px-4 text-right font-mono font-semibold text-[var(--pm-text-primary)]">{formatNumber(Number(b.fineWeight || 0), 4)}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                          <tfoot>
+                            <tr className="bg-[var(--pm-bg-deepest)]/50 border-t border-[var(--pm-border)]/50">
+                              <td className="py-3 px-4 text-left text-[10px] font-mono font-bold text-[var(--pm-text-primary)] uppercase tracking-wider">Total</td>
+                              <td className="py-3 px-4 text-right font-mono font-bold text-[var(--pm-text-primary)]">{formatNumber(detailLotTotalGross, 2)}</td>
+                              <td className="py-3 px-4 text-right font-mono text-[var(--pm-text-dim)]">—</td>
+                              <td className="py-3 px-4 text-right font-mono font-bold text-[var(--pm-accent-gold)]">{formatNumber(detailLotTotalFine, 4)}</td>
+                            </tr>
+                          </tfoot>
+                        </table>
+                      </div>
+                    </div>
+                    {/* Footer KPIs */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="p-4 rounded-xl border border-[var(--pm-border)]/40 bg-[var(--pm-bg-deepest)]/40 flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.2)' }}>
+                          <Package className="w-4 h-4 text-[var(--pm-accent-gold)]" />
+                        </div>
+                        <div className="min-w-0">
+                          <span className="text-[9px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider">R (Recuperado)</span>
+                          <p className="text-sm font-mono font-bold text-[var(--pm-text-primary)]">{formatNumber(Number(detailLot.availableWeight || 0), 4)} g</p>
+                        </div>
+                      </div>
+                      <div className="p-4 rounded-xl border bg-[var(--pm-bg-deepest)]/40 flex items-center gap-3"
+                        style={{ borderColor: detailLotEfficiency !== null && detailLotEfficiency >= 99 ? 'rgba(16,185,129,0.3)' : detailLotEfficiency !== null && detailLotEfficiency >= 95 ? 'rgba(212,175,55,0.3)' : 'rgba(239,68,68,0.3)' }}>
+                        <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
+                          style={{
+                            background: detailLotEfficiency !== null && detailLotEfficiency >= 99 ? 'rgba(16,185,129,0.1)' : detailLotEfficiency !== null && detailLotEfficiency >= 95 ? 'rgba(212,175,55,0.1)' : 'rgba(239,68,68,0.1)',
+                            border: `1px solid ${detailLotEfficiency !== null && detailLotEfficiency >= 99 ? 'rgba(16,185,129,0.2)' : detailLotEfficiency !== null && detailLotEfficiency >= 95 ? 'rgba(212,175,55,0.2)' : 'rgba(239,68,68,0.2)'}`,
+                          }}>
+                          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                            style={{ color: detailLotEfficiency !== null && detailLotEfficiency >= 99 ? 'var(--pm-accent-emerald)' : detailLotEfficiency !== null && detailLotEfficiency >= 95 ? 'var(--pm-accent-gold)' : 'var(--pm-accent-red)' }}>
+                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+                          </svg>
+                        </div>
+                        <div className="min-w-0">
+                          <span className="text-[9px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider">Eficiencia</span>
+                          <p className={`text-sm font-mono font-bold ${
+                            detailLotEfficiency !== null && detailLotEfficiency >= 99
+                              ? 'text-[var(--pm-accent-emerald)]'
+                              : detailLotEfficiency !== null && detailLotEfficiency >= 95
+                                ? 'text-[var(--pm-accent-gold)]'
+                                : 'text-[var(--pm-accent-red)]'
+                          }`}>
+                            {detailLotEfficiency !== null ? `${detailLotEfficiency.toFixed(1)}%` : '—'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
