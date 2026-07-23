@@ -15,6 +15,7 @@ interface SupplierDirectoryProps {
   purityFirst?: boolean;
   showSearch?: boolean;
   filterSupplierId?: string;
+  onBarClick?: (barId: string) => void;
 }
 
 const STATUS_STYLES: Record<string, string> = {
@@ -40,6 +41,7 @@ export function SupplierDirectory({
   purityFirst = false,
   showSearch = false,
   filterSupplierId,
+  onBarClick,
 }: SupplierDirectoryProps) {
   const SUPPLIERS_PER_PAGE = 10;
   const BARS_PER_PAGE = 10;
@@ -208,7 +210,8 @@ export function SupplierDirectory({
                               const fe = Number(bar.fineWeight) * 0.99;
                               return (
                                 <tr key={bar.id}
-                                  className={`${idx % 2 === 1 ? 'bg-[var(--pm-bg-deepest)]/30' : ''} hover:bg-[var(--pm-accent-gold)]/[0.03] transition-colors`}>
+                                  onClick={() => onBarClick?.(bar.id)}
+                                  className={`${idx % 2 === 1 ? 'bg-[var(--pm-bg-deepest)]/30' : ''} hover:bg-[var(--pm-accent-gold)]/[0.03] transition-colors${onBarClick ? ' cursor-pointer' : ''}`}>
                                   <td className="sticky left-0 bg-[var(--pm-bg-primary)] font-semibold text-[var(--pm-accent-gold)]" style={{ minWidth: 120 }}>
                                     <span className="text-[11px]">{bar.barNumber}</span>
                                   </td>

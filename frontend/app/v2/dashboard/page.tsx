@@ -10,6 +10,7 @@ import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
 import {
   ClipboardList, Flame, Warehouse, Inbox, TrendingDown,
   Coins, Scale, Pickaxe, LayoutGrid, Table2, X, Building2,
+  ClipboardCheck, Camera, Check,
 } from 'lucide-react';
 import { AreaChart, Area, ResponsiveContainer, Treemap, Tooltip } from 'recharts';
 import { formatNumber } from '@/lib/format';
@@ -329,6 +330,7 @@ export default function V2DashboardPage() {
   const [isIngresoModalOpen, setIsIngresoModalOpen] = useState(false);
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
   const [isClientBarModalOpen, setIsClientBarModalOpen] = useState(false);
+  const [evidenceBarId, setEvidenceBarId] = useState<string | null>(null);
 
   const filteredBars = useMemo(() => {
     let result = bars;
@@ -481,6 +483,22 @@ export default function V2DashboardPage() {
       spark: sparkPorRefundir,
     },
   ];
+
+  const STATUS_LABELS: Record<string, string> = {
+    POR_VALIDAR: 'POR VALIDAR',
+    IN_STOCK: 'VALIDADO',
+    PROCESANDO: 'EN PROCESO',
+    COMPLETADO: 'VALIDADO',
+    EXITED: 'EGRESADO',
+  };
+
+  const STATUS_STYLES: Record<string, string> = {
+    POR_VALIDAR: 'text-[var(--pm-accent-amber)] bg-[var(--pm-accent-amber)]/10 border-[var(--pm-accent-amber)]/20',
+    IN_STOCK: 'text-[var(--pm-accent-emerald)] bg-[var(--pm-accent-emerald)]/10 border-[var(--pm-accent-emerald)]/20',
+    PROCESANDO: 'text-[var(--pm-accent-cyan)] bg-[var(--pm-accent-cyan)]/10 border-[var(--pm-accent-cyan)]/20',
+    COMPLETADO: 'text-[var(--pm-accent-emerald)] bg-[var(--pm-accent-emerald)]/10 border-[var(--pm-accent-emerald)]/20',
+    EXITED: 'text-[var(--pm-text-dim)] bg-[var(--pm-bg-tertiary)]/50 border-[var(--pm-border)]/30',
+  };
 
   const formatWeightCell = (val: number) =>
     `${formatNumber(val, 2)} g`;
@@ -847,6 +865,7 @@ export default function V2DashboardPage() {
                 clients={clients}
                 filterSupplierId={selectedClientId}
                 purityFirst
+                onBarClick={(id) => setEvidenceBarId(id)}
               />
             </motion.div>
           </motion.div>
@@ -878,7 +897,7 @@ export default function V2DashboardPage() {
                 <div className="flex items-center gap-3">
                   <Building2 className="w-5 h-5 text-[var(--pm-accent-gold)]" />
                   <h2 className="text-sm font-bold uppercase tracking-wider text-[var(--pm-text-primary)]">
-                    Directorio de Proveedores
+                    Material Ingresado
                   </h2>
                 </div>
                 <button
@@ -893,10 +912,116 @@ export default function V2DashboardPage() {
                 clients={clients}
                 purityFirst
                 showSearch
+                onBarClick={(id) => setEvidenceBarId(id)}
               />
             </motion.div>
           </motion.div>
         )}
+      </AnimatePresence>
+
+      {/* Evidence Modal — triggered from SupplierDirectory bar row click */}
+      <AnimatePresence>
+        {evidenceBarId && (() => {
+          const bar = bars.find(b => b.id === evidenceBarId);
+          if (!bar) return null;
+          const srcProxy = `/api/blob/view?url=${encodeURIComponent(bar.photoUrl || '')}`;
+          const fe = Number(bar.fineWeight) * 0.99;
+          return (
+            <motion.div key="evidence" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[120] flex items-center justify-center p-4"
+              onClick={() => setEvidenceBarId(null)}
+            >
+              <motion.div initial={{ opacity: 0, scale: 0.92, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.92, y: 10 }} transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+                className="w-full max-w-lg glass-panel rounded-2xl overflow-hidden border border-[var(--pm-border)]/40"
+                onClick={e => e.stopPropagation()}
+              >
+                {/* Header */}
+                <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-[var(--pm-border)]/20">
+                  <div>
+                    <span className="text-[9px] font-mono font-bold text-[var(--pm-accent-cyan)] uppercase tracking-wider flex items-center gap-1.5">
+                      <ClipboardCheck className="w-3.5 h-3.5" /> EVIDENCIA
+                    </span>
+                    <h2 className="text-lg font-mono font-bold text-[var(--pm-text-primary)] mt-0.5 tracking-tight">
+                      {bar.barNumber}
+                    </h2>
+                  </div>
+                  <div className="text-right">
+                    <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border ${STATUS_STYLES[bar.status] || ''}`}>
+                      <Check className={`w-3 h-3 ${bar.status === 'PROCESANDO' ? 'text-cyan-400' : bar.status === 'EXITED' ? 'text-[var(--pm-text-dim)]' : 'text-[var(--pm-accent-emerald)]'}`} />
+                      <span className={`text-[9px] font-mono font-bold ${bar.status === 'PROCESANDO' ? 'text-cyan-400' : bar.status === 'EXITED' ? 'text-[var(--pm-text-dim)]' : 'text-[var(--pm-accent-emerald)]'}`}>{STATUS_LABELS[bar.status] || bar.status}</span>
+                    </div>
+                    <span className="text-[8px] font-mono text-[var(--pm-text-dim)] block mt-1">
+                      {new Date(bar.updatedAt).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="p-6 space-y-5">
+                  {/* Photo */}
+                  <div className="rounded-xl overflow-hidden border border-[var(--pm-border)] bg-black/60 flex items-center justify-center min-h-[160px]">
+                    {bar.photoUrl ? (
+                      <img
+                        src={srcProxy}
+                        alt={`Barra ${bar.barNumber}`}
+                        className="w-full object-cover max-h-56"
+                      />
+                    ) : (
+                      <div className="text-center p-6">
+                        <Camera className="w-8 h-8 text-[var(--pm-text-dim)]/30 mx-auto mb-2" />
+                        <p className="text-[10px] font-mono text-[var(--pm-text-dim)]/40">Sin evidencia fotográfica</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Values Grid — Real validated data */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="p-3 rounded-xl border border-[var(--pm-accent-gold)]/20 bg-[var(--pm-accent-gold)]/5">
+                      <span className="text-[8px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider block text-center">Peso Bruto</span>
+                      <span className="text-sm font-mono font-bold text-[var(--pm-accent-gold)] block text-center mt-1">{formatNumber(Number(bar.grossWeight), 2)} g</span>
+                    </div>
+                    <div className="p-3 rounded-xl border border-[var(--pm-accent-cyan)]/20 bg-[var(--pm-accent-cyan)]/5">
+                      <span className="text-[8px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider block text-center">Ley Au</span>
+                      <span className="text-sm font-mono font-bold text-[var(--pm-accent-cyan)] block text-center mt-1">{formatNumber(Number(bar.purity), 1)} ‰</span>
+                    </div>
+                    <div className="p-3 rounded-xl border border-[var(--pm-accent-gold)]/20 bg-[var(--pm-accent-gold)]/5">
+                      <span className="text-[8px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider block text-center">FA</span>
+                      <span className="text-sm font-mono font-bold text-[var(--pm-accent-gold)] block text-center mt-1">{formatNumber(Number(bar.fineWeight), 4)} g</span>
+                    </div>
+                    <div className="p-3 rounded-xl border border-[var(--pm-accent-cyan)]/20 bg-[var(--pm-accent-cyan)]/5">
+                      <span className="text-[8px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider block text-center">FE</span>
+                      <span className="text-sm font-mono font-bold text-[var(--pm-accent-cyan)] block text-center mt-1">{formatNumber(fe, 4)} g</span>
+                    </div>
+                  </div>
+
+                  {/* Ag data row — conditionally shown */}
+                  {(bar.leyAg != null || bar.fineWeightAg != null) && (
+                    <div className="grid grid-cols-2 gap-3">
+                      {bar.leyAg != null && (
+                        <div className="p-3 rounded-xl border border-[var(--pm-border)]/40 bg-[var(--pm-bg-deepest)]/30">
+                          <span className="text-[8px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider block text-center">Ley Ag</span>
+                          <span className="text-sm font-mono font-bold text-[var(--pm-text-primary)] block text-center mt-1">{formatNumber(Number(bar.leyAg), 1)} ‰</span>
+                        </div>
+                      )}
+                      {bar.fineWeightAg != null && (
+                        <div className="p-3 rounded-xl border border-[var(--pm-border)]/40 bg-[var(--pm-bg-deepest)]/30">
+                          <span className="text-[8px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider block text-center">Ag</span>
+                          <span className="text-sm font-mono font-bold text-[var(--pm-text-primary)] block text-center mt-1">{formatNumber(Number(bar.fineWeightAg), 4)} g</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Close */}
+                  <button type="button" onClick={() => setEvidenceBarId(null)}
+                    className="w-full py-2.5 rounded-lg border border-[var(--pm-border)] text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] hover:bg-[var(--pm-bg-tertiary)] text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer">
+                    CERRAR FICHA
+                  </button>
+                </div>
+              </motion.div>
+            </motion.div>
+          );
+        })()}
       </AnimatePresence>
     </motion.div>
   );
