@@ -495,7 +495,7 @@ export default function PackingPage() {
         <h1 className="text-2xl md:text-3xl font-sans font-medium text-[var(--pm-text-primary)] tracking-tight flex items-center gap-2">
           <FolderUp className="w-8 h-8 text-[var(--pm-accent-gold)] drop-shadow-[0_0_8px_rgba(212,175,55,0.3)]" />
           Packing
-          <span className="text-[var(--pm-accent-gold)] font-semibold ml-1">— Recepción de Material</span>
+          <span className="text-[var(--pm-accent-gold)] font-semibold ml-1">— {activeTab === 'registro' ? 'Registro' : 'Validación'}</span>
         </h1>
       </motion.div>
 
