@@ -335,7 +335,7 @@ export default function V2ProcesosPage() {
                   <select value={selectedClientId} onChange={e => handleClientChange(e.target.value)}
                     className="w-full bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] rounded-lg px-3 py-2.5 text-xs font-sans text-[var(--pm-text-primary)] focus:outline-none focus:border-[var(--pm-accent-amber)] transition-colors cursor-pointer"
                   >
-                    <option value="">Seleccionar cliente</option>
+                    <option value="">Seleccionar proveedor</option>
                     {clientsWithAvailableBars.map(c => (
                       <option key={c.id} value={c.id}>{c.name}</option>
                     ))}
