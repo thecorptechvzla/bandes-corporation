@@ -111,7 +111,7 @@ export default function PackingPage() {
     if (clients.length > 0) {
       if (!bulkClientId) setBulkClientId(clients[0].id);
       const acc: Record<string, boolean> = {};
-      clients.forEach(c => { acc[c.id] = true; });
+      clients.forEach(c => { acc[c.id] = false; });
       setOpenAccordions(prev => {
         const hasAll = clients.every(c => prev[c.id] !== undefined);
         return hasAll ? prev : { ...prev, ...acc };
@@ -712,7 +712,7 @@ export default function PackingPage() {
               ) : (
                 clients.map(client => {
                   const clientBars = barsByClient[client.id] || [];
-                  const isOpen = openAccordions[client.id] ?? true;
+                  const isOpen = openAccordions[client.id] ?? false;
                   const barCount = clientBars.length;
                   const clientFA = clientBars.reduce((s, b) => s + Number(b.fineWeight), 0);
                   const currentPage = accordionPages[client.id] || 0;
