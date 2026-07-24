@@ -367,9 +367,9 @@ export default function V2ProcesosPage() {
                             />
                           </th>
                           <th>Código</th>
-                          <th className="text-right">Bruto (g)</th>
-                          <th className="text-right">FA (g)</th>
-                          <th className="text-right">Au (‰)</th>
+                          <th className="text-right">Peso Bruto (g)</th>
+                          <th className="text-right">Peso Fino (g)</th>
+                          <th className="text-right">Ley Au (‰)</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -401,8 +401,8 @@ export default function V2ProcesosPage() {
                       className="flex items-center gap-4 px-3 py-2 rounded-lg border border-[var(--pm-border)] bg-[var(--pm-bg-deepest)]/50 text-[10px] font-mono"
                     >
                       <span className="text-[var(--pm-text-dim)]">{selectedMetrics.count} barras</span>
-                      <span className="text-[var(--pm-accent-amber)]">Bruto: {formatNumber(selectedMetrics.gross, 2)} g</span>
-                      <span className="text-[var(--pm-accent-gold)]">FA: {formatNumber(selectedMetrics.fa, 4)} g</span>
+                      <span className="text-[var(--pm-accent-amber)]">Peso Bruto: {formatNumber(selectedMetrics.gross, 2)} g</span>
+                      <span className="text-[var(--pm-accent-gold)]">Peso Fino: {formatNumber(selectedMetrics.fa, 4)} g</span>
                     </motion.div>
                   )}
                 </div>
@@ -469,7 +469,7 @@ export default function V2ProcesosPage() {
                   <div key={cId} className="px-5 py-3">
                     <div className="flex items-center justify-between mb-3">
                       <span className="text-xs font-sans font-semibold text-[var(--pm-text-primary)]">{client?.name || cId}</span>
-                      <span className="text-[10px] font-mono text-[var(--pm-accent-amber)]">FA: {formatNumber(totalFA, 2)} g</span>
+                      <span className="text-[10px] font-mono text-[var(--pm-accent-amber)]">Peso Fino {formatNumber(totalFA, 2)} g</span>
                     </div>
                     <div className="space-y-2">
                       {procs.map(proc => {
@@ -502,8 +502,8 @@ export default function V2ProcesosPage() {
                                     <span>{lb.length} barra{lb.length !== 1 ? 's' : ''}</span>
                                   </div>
                                   <div className="flex items-center gap-3 text-[9px] font-mono">
-                                    <span className="text-[var(--pm-text-dim)]">Bruto: <strong className="text-[var(--pm-text-primary)]">{formatNumber(lotGross, 2)} g</strong></span>
-                                    <span>FA: <strong className="text-[var(--pm-accent-gold)]">{formatNumber(lotFA, 4)} g</strong></span>
+                                    <span className="text-[var(--pm-text-dim)]">Peso Bruto: <strong className="text-[var(--pm-text-primary)]">{formatNumber(lotGross, 2)} g</strong></span>
+                                    <span>Peso Fino <strong className="text-[var(--pm-accent-gold)]">{formatNumber(lotFA, 4)} g</strong></span>
                                     {lot.recovered && <span>R: <strong className="text-[var(--pm-accent-emerald)]">{formatNumber(Number(lot.recovered), 4)} g</strong></span>}
                                   </div>
                                 </div>
@@ -603,7 +603,7 @@ export default function V2ProcesosPage() {
                     <span className="text-lg font-mono font-bold text-[var(--pm-text-primary)]">{activeLotBars.length}</span>
                   </div>
                   <div className="p-3 rounded-xl border border-[var(--pm-border)] bg-[var(--pm-bg-deepest)]/50 text-center">
-                    <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block">Bruto</span>
+                    <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block">Peso Bruto</span>
                     <span className="text-sm font-mono font-bold text-[var(--pm-text-primary)]">{formatNumber(activeLotGross, 2)} g</span>
                   </div>
                   <div className="p-3 rounded-xl border border-[var(--pm-border)] bg-[var(--pm-bg-deepest)]/50 text-center">
@@ -639,20 +639,12 @@ export default function V2ProcesosPage() {
                         className="w-full bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] rounded-lg px-3 py-2 text-xs font-mono text-[var(--pm-text-primary)] focus:outline-none focus:border-[var(--pm-accent-amber)] transition-colors"
                       />
                     </div>
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider">Ley Ag (‰)</label>
-                      <input type="number" min="0" max="1000" step="0.1" value={recoveredLeyAg}
-                        onChange={e => setRecoveredLeyAg(e.target.value)}
-                        className="w-full bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] rounded-lg px-3 py-2 text-xs font-mono text-[var(--pm-text-primary)] focus:outline-none focus:border-[var(--pm-accent-amber)] transition-colors"
-                      />
                     </div>
-                  </div>
                   <div className="flex justify-center pt-1">
                     <HudButton variant="ghost" className="text-[10px]"
                       onClick={() => {
                         setActiveHardwareMode('LEY');
                         setHwLeyAu(recoveredLeyAu);
-                        setHwLeyAg(recoveredLeyAg);
                       }}
                     >
                       🔬 OBTENER LEYES
@@ -798,27 +790,18 @@ export default function V2ProcesosPage() {
               {/* Body */}
               <div className="p-6 space-y-4">
                 {/* Summary cards */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   <div className="p-3 rounded-xl border border-[var(--pm-border)] bg-[var(--pm-bg-deepest)]/50 text-center">
                     <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block">Lotes</span>
                     <span className="text-lg font-mono font-bold text-[var(--pm-text-primary)]">{selectedProcessLots.length}</span>
                   </div>
                   <div className="p-3 rounded-xl border border-[var(--pm-border)] bg-[var(--pm-bg-deepest)]/50 text-center">
-                    <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block">FA</span>
+                    <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block">Peso Fino</span>
                     <span className="text-sm font-mono font-bold text-[var(--pm-accent-gold)]">
                       {formatNumber(selectedProcessLots.reduce((s, l) => {
                         const lb = lotBarsMap[l.id] || [];
                         return s + lb.reduce((sb, b) => sb + Number(b.fineWeight), 0);
                       }, 0), 4)} g
-                    </span>
-                  </div>
-                  <div className="p-3 rounded-xl border border-[var(--pm-border)] bg-[var(--pm-bg-deepest)]/50 text-center">
-                    <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block">FE (FA × 0.99)</span>
-                    <span className="text-sm font-mono font-bold text-[var(--pm-accent-cyan)]">
-                      {formatNumber(selectedProcessLots.reduce((s, l) => {
-                        const lb = lotBarsMap[l.id] || [];
-                        return s + lb.reduce((sb, b) => sb + Number(b.fineWeight), 0);
-                      }, 0) * 0.99, 4)} g
                     </span>
                   </div>
                   <div className="p-3 rounded-xl border border-[var(--pm-border)] bg-[var(--pm-bg-deepest)]/50 text-center">
@@ -835,8 +818,7 @@ export default function V2ProcesosPage() {
                     <thead>
                       <tr>
                         <th className="sticky left-0 bg-[var(--pm-bg-primary)] z-10" style={{ minWidth: 140 }}>Lote</th>
-                        <th className="text-right">FA (g)</th>
-                        <th className="text-right">FE (g)</th>
+                        <th className="text-right">Peso Fino (g)</th>
                         <th className="text-right">R (g)</th>
                         <th className="text-right">DIF (g)</th>
                         <th className="text-right">% RECUP</th>
@@ -873,7 +855,6 @@ export default function V2ProcesosPage() {
                                 </div>
                               </td>
                               <td className="text-right text-[var(--pm-accent-gold)]">{formatNumber(fa, 4)}</td>
-                              <td className="text-right text-[var(--pm-accent-cyan)]">{formatNumber(fe, 4)}</td>
                               <td className="text-right text-[var(--pm-accent-emerald)]">{formatNumber(r, 4)}</td>
                               <td className={`text-right ${dif >= 0 ? 'text-[var(--pm-accent-emerald)]' : 'text-[var(--pm-accent-red)]'}`}>
                                 {dif >= 0 ? '+' : ''}{formatNumber(dif, 4)}
@@ -887,7 +868,7 @@ export default function V2ProcesosPage() {
                             {/* Expanded bar details */}
                             {isExpanded && (
                               <tr key={`${lot.id}-bars`}>
-                                <td colSpan={6} className="p-0">
+                                <td colSpan={5} className="p-0">
                                   <motion.div
                                     initial={{ height: 0, opacity: 0 }}
                                     animate={{ height: 'auto', opacity: 1 }}
@@ -900,12 +881,9 @@ export default function V2ProcesosPage() {
                                         <thead>
                                           <tr>
                                             <th className="sticky left-0 bg-[var(--pm-bg-deepest)] z-10 text-left" style={{ minWidth: 120, paddingLeft: 16 }}>CÓDIGO</th>
-                                            <th className="text-right">BRUTO (g)</th>
-                                            <th className="text-right">PUREZA AU (‰)</th>
-                                            <th className="text-right">FA (g)</th>
-                                            <th className="text-right">FE (g)</th>
-                                            <th className="text-right">LEY AG (‰)</th>
-                                            <th className="text-right">AG (g)</th>
+                                            <th className="text-right">Peso Bruto (g)</th>
+                                            <th className="text-right">Ley Au (‰)</th>
+                                            <th className="text-right">Peso Fino (g)</th>
                                           </tr>
                                         </thead>
                                         <tbody>
@@ -919,18 +897,11 @@ export default function V2ProcesosPage() {
                                               <td className="text-right text-[var(--pm-text-primary)]">{formatNumber(Number(bar.grossWeight), 2)}</td>
                                               <td className="text-right text-[var(--pm-text-primary)]">{formatNumber(Number(bar.purity), 1)}</td>
                                               <td className="text-right text-[var(--pm-accent-gold)]">{formatNumber(Number(bar.fineWeight), 4)}</td>
-                                              <td className="text-right text-[var(--pm-accent-cyan)]">{formatNumber(Number(bar.fineWeight) * 0.99, 4)}</td>
-                                              <td className="text-right text-[var(--pm-text-dim)]">
-                                                {bar.leyAg != null ? formatNumber(Number(bar.leyAg), 1) : '—'}
-                                              </td>
-                                              <td className="text-right text-[var(--pm-text-dim)]">
-                                                {bar.fineWeightAg != null ? formatNumber(Number(bar.fineWeightAg), 4) : '—'}
-                                              </td>
                                             </tr>
                                           ))}
                                           {lb.length === 0 && (
                                             <tr>
-                                              <td colSpan={7} className="text-center py-4 text-[9px] text-[var(--pm-text-dim)] font-mono italic">
+                                              <td colSpan={4} className="text-center py-4 text-[9px] text-[var(--pm-text-dim)] font-mono italic">
                                                 Sin barras asignadas a este lote
                                               </td>
                                             </tr>
@@ -946,7 +917,7 @@ export default function V2ProcesosPage() {
                         );
                       })}
                       {selectedProcessLots.length === 0 && (
-                        <tr><td colSpan={6} className="text-center py-8 text-[10px] text-[var(--pm-text-dim)] font-mono italic">Sin lotes registrados</td></tr>
+                        <tr><td colSpan={5} className="text-center py-8 text-[10px] text-[var(--pm-text-dim)] font-mono italic">Sin lotes registrados</td></tr>
                       )}
                     </tbody>
                   </table>
@@ -1056,17 +1027,7 @@ export default function V2ProcesosPage() {
                         autoFocus
                       />
                     </div>
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-mono text-cyan-400/60 uppercase tracking-[0.15em]">
-                        LEY AG (‰)
-                      </label>
-                      <input type="number" min="0" max="1000" step="0.1" value={hwLeyAg}
-                        onChange={e => setHwLeyAg(e.target.value)}
-                        className="w-full bg-black/60 border border-cyan-500/25 rounded-xl px-5 py-4 text-2xl font-mono font-bold text-cyan-300 text-center focus:outline-none focus:border-cyan-400/50 transition-colors"
-                        placeholder="0.0"
-                      />
                     </div>
-                  </div>
                 )}
 
                 {/* Footnote */}
@@ -1088,7 +1049,6 @@ export default function V2ProcesosPage() {
                       setRecoveredWeight(hwWeight);
                     } else {
                       setRecoveredLeyAu(hwLeyAu);
-                      setRecoveredLeyAg(hwLeyAg);
                     }
                     setActiveHardwareMode(null);
                   }}

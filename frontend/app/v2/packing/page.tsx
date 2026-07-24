@@ -204,7 +204,7 @@ export default function PackingPage() {
     const g = parseFloat(grossWeight);
     if (isNaN(g) || g <= 0) { setFormError('Peso bruto debe ser un número positivo.'); return; }
     const p = parseFloat(purity);
-    if (isNaN(p) || p < 0 || p > 1000) { setFormError('Pureza Au debe estar entre 0 y 1000‰.'); return; }
+    if (isNaN(p) || p < 0 || p > 1000) { setFormError('Ley Au debe estar entre 0 y 1000‰.'); return; }
     const ag = parseFloat(leyAg) || 0;
     if (ag < 0 || ag > 1000) { setFormError('Ley Ag debe estar entre 0 y 1000‰.'); return; }
 
@@ -314,8 +314,7 @@ export default function PackingPage() {
     ws.columns = [
       { header: 'CÓDIGO', key: 'code', width: 22 },
       { header: 'PESO BRUTO (g)', key: 'grossWeight', width: 18 },
-      { header: 'PUREZA (‰)', key: 'purity', width: 15 },
-      { header: 'LEY Ag (‰)', key: 'leyAg', width: 15 },
+      { header: 'LEY AU (‰)', key: 'purity', width: 15 },
     ];
     const hr = ws.getRow(1);
     hr.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 };
@@ -567,19 +566,11 @@ export default function PackingPage() {
                   </div>
                   <div className="space-y-1">
                     <label className="text-[10px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider flex items-center gap-1">
-                      <Microscope className="w-3 h-3" /> Pureza Au (‰)
+                      <Microscope className="w-3 h-3" /> Ley Au (‰)
                     </label>
                     <input type="number" min="0" max="1000" step="0.1" placeholder="999.9" value={purity}
                       onChange={e => setPurity(e.target.value)}
                       className="w-full bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] rounded-lg px-3 py-2.5 text-xs font-mono text-[var(--pm-text-primary)] focus:outline-none focus:border-[var(--pm-accent-gold)] transition-colors placeholder:text-[var(--pm-text-dim)]/30" required />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider">
-                      Ley Ag (‰) <span className="opacity-40">(opcional)</span>
-                    </label>
-                    <input type="number" min="0" max="1000" step="0.1" placeholder="0.00" value={leyAg}
-                      onChange={e => setLeyAg(e.target.value)}
-                      className="w-full bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] rounded-lg px-3 py-2.5 text-xs font-mono text-[var(--pm-text-primary)] focus:outline-none focus:border-[var(--pm-accent-gold)] transition-colors placeholder:text-[var(--pm-text-dim)]/30" />
                   </div>
                 </div>
                 {(parseFloat(grossWeight) > 0 && parseFloat(purity) > 0) && (
@@ -589,23 +580,10 @@ export default function PackingPage() {
                       <Zap className="w-3.5 h-3.5 text-[var(--pm-accent-gold)]" />
                       <span className="text-[9px] font-mono font-bold text-[var(--pm-accent-gold)] uppercase tracking-wider">Cálculo en Tiempo Real</span>
                     </div>
-                    <div className="grid grid-cols-3 gap-3 text-center">
-                      <div>
-                        <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block">FA (Fino)</span>
+                    <div className="text-center">
+                        <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block">Peso Fino</span>
                         <span className="text-sm font-mono font-bold text-[var(--pm-text-primary)]">{formatNumber(liveFA, 4)} g</span>
-
                       </div>
-                      <div className="border-x border-[var(--pm-border)]">
-                        <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block">FE (Esperado)</span>
-                        <span className="text-sm font-mono font-bold text-[var(--pm-text-primary)]">{formatNumber(liveFE, 4)} g</span>
-                        <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block">FA × 0.99</span>
-                      </div>
-                      <div>
-                        <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block">Ag (Plata)</span>
-                        <span className="text-sm font-mono font-bold text-[var(--pm-text-primary)]">{formatNumber(liveAg, 4)} g</span>
-                        <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block">{liveAg > 0 ? 'calculado' : '—'}</span>
-                      </div>
-                    </div>
                   </motion.div>
                 )}
                 {formError && (
@@ -745,10 +723,8 @@ export default function PackingPage() {
                                   <thead>
                                     <tr>
                                       <th className="text-center">Código</th>
-                                      <th className="text-right">Bruto (g)</th>
-                                      <th className="text-right">FA (g)</th>
-                                      <th className="text-right">FE (g)</th>
-                                      <th className="text-right hidden md:table-cell">Ag (g)</th>
+                                      <th className="text-right">Peso Bruto (g)</th>
+                                      <th className="text-right">Peso Fino (g)</th>
                                       <th className="text-center">Estado</th>
                                       <th className="text-center">Acción</th>
                                     </tr>
@@ -764,8 +740,6 @@ export default function PackingPage() {
                                         <td className="text-center font-mono font-bold text-[var(--pm-accent-gold)] tracking-wider text-[11px]">{bar.barNumber}</td>
                                         <td className="text-right font-mono text-[var(--pm-text-primary)]">{formatNumber(Number(bar.grossWeight), 2)}</td>
                                         <td className="text-right font-mono text-[var(--pm-text-primary)]">{formatNumber(Number(bar.fineWeight), 4)}</td>
-                                        <td className="text-right font-mono text-[var(--pm-text-dim)]">{formatNumber(Number(bar.fineWeight) * 0.99, 4)}</td>
-                                        <td className="text-right font-mono text-[var(--pm-text-dim)] hidden md:table-cell">{bar.fineWeightAg ? formatNumber(Number(bar.fineWeightAg), 4) : '—'}</td>
                                         <td className="text-center">
                                           <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-[8px] font-mono font-bold border rounded ${STATUS_STYLES[bar.status] || ''}`}>
                                             {STATUS_LABELS[bar.status] || bar.status}
@@ -943,7 +917,6 @@ export default function PackingPage() {
                         <th className="py-2.5 px-3 text-right min-w-[110px]">Peso Físico (g) <span className="text-[var(--pm-accent-gold)]">✎</span></th>
                         <th className="py-2.5 px-3 text-right">Ley SP (‰)</th>
                         <th className="py-2.5 px-3 text-right min-w-[100px]">Ley Física (‰) <span className="text-[var(--pm-accent-gold)]">✎</span></th>
-                        <th className="py-2.5 px-3 text-center">Delta (g)</th>
                         <th className="py-2.5 px-3 text-center">Estado</th>
                       </tr>
                     </thead>
@@ -1006,15 +979,6 @@ export default function PackingPage() {
                                   className="w-full bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] rounded px-2 py-1 text-[10px] font-mono text-[var(--pm-text-primary)] text-right focus:outline-none focus:border-[var(--pm-accent-gold)]" />
                               ) : (
                                 <span className="text-[var(--pm-text-dim)]">{formatNumber(origPurity, 1)}</span>
-                              )}
-                            </td>
-                            <td className="py-2.5 px-3 text-center font-mono">
-                              {isPorValidar ? (
-                                <span className={delta === 0 ? 'text-[var(--pm-text-dim)]' : delta > 0 ? 'text-[var(--pm-accent-emerald)]' : 'text-[var(--pm-accent-red)]'}>
-                                  {delta >= 0 ? '+' : ''}{formatNumber(delta, 2)}
-                                </span>
-                              ) : (
-                                <span className="text-[var(--pm-text-dim)]">—</span>
                               )}
                             </td>
                             <td className="py-2.5 px-3 text-center">
@@ -1098,7 +1062,7 @@ export default function PackingPage() {
                               {/* Báscula */}
                               <div className="space-y-1.5">
                                 <label className="text-[9px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider flex items-center gap-1.5">
-                                  <Scale className="w-3 h-3 text-[var(--pm-accent-gold)]" /> PESO BÁSCULA (g)
+                                  <Scale className="w-3 h-3 text-[var(--pm-accent-gold)]" /> PESO BRUTO (g)
                                 </label>
                                 <input type="number" step="any" value={confirmModal.basculaWeight}
                                   onChange={e => setConfirmModal(prev => prev ? { ...prev, basculaWeight: e.target.value } : null)}
@@ -1106,24 +1070,14 @@ export default function PackingPage() {
                               </div>
 
                               {/* Espectrómetro */}
-                              <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-1.5">
-                                  <label className="text-[9px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider flex items-center gap-1.5">
-                                    <Microscope className="w-3 h-3 text-[var(--pm-accent-gold)]" /> LEY AU (‰)
-                                  </label>
-                                  <input type="number" step="0.1" min="0" max="1000" value={confirmModal.leyAu}
-                                    onChange={e => setConfirmModal(prev => prev ? { ...prev, leyAu: e.target.value } : null)}
-                                    className="w-full bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] rounded-lg px-3 py-2.5 text-sm font-mono text-[var(--pm-text-primary)] text-right focus:outline-none focus:border-[var(--pm-accent-gold)] transition-all" />
-                                </div>
-                                <div className="space-y-1.5">
-                                  <label className="text-[9px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider">LEY AG (‰)</label>
-                                  <input type="number" step="0.1" min="0" max="1000" value={confirmModal.leyAg}
-                                    onChange={e => setConfirmModal(prev => prev ? { ...prev, leyAg: e.target.value } : null)}
-                                    className="w-full bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] rounded-lg px-3 py-2.5 text-sm font-mono text-[var(--pm-text-primary)] text-right focus:outline-none focus:border-[var(--pm-accent-gold)] transition-all" />
-                                </div>
+                              <div className="space-y-1.5">
+                                <label className="text-[9px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider flex items-center gap-1.5">
+                                  <Microscope className="w-3 h-3 text-[var(--pm-accent-gold)]" /> LEY AU (‰)
+                                </label>
+                                <input type="number" step="0.1" min="0" max="1000" value={confirmModal.leyAu}
+                                  onChange={e => setConfirmModal(prev => prev ? { ...prev, leyAu: e.target.value } : null)}
+                                  className="w-full bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] rounded-lg px-3 py-2.5 text-sm font-mono text-[var(--pm-text-primary)] text-right focus:outline-none focus:border-[var(--pm-accent-gold)] transition-all" />
                               </div>
-
-                              {/* Photo attachment */}
                               {photoUploadedUrl ? (() => {
                                 const thumbProxy = photoUploadedUrl.startsWith('data:')
                                   ? photoUploadedUrl
@@ -1155,18 +1109,10 @@ export default function PackingPage() {
                             </>
                           )}
 
-                          {/* Live FA + Delta */}
-                          <div className="grid grid-cols-2 gap-3">
-                            <div className="p-3 rounded-xl" style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)' }}>
-                              <span className="text-[8px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider block text-center">FINO CALCULADO (FA)</span>
-                              <span className="text-sm font-mono font-bold text-[var(--pm-accent-gold)] block text-center">{formatNumber(modalLiveFA, 2)} g</span>
-                            </div>
-                            <div className="p-3 rounded-xl" style={{ background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.2)' }}>
-                              <span className="text-[8px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider block text-center">DELTA vs SP</span>
-                              <span className={`text-sm font-mono font-bold block text-center ${newDelta >= 0 ? 'text-[var(--pm-accent-emerald)]' : 'text-[var(--pm-accent-red)]'}`}>
-                                {newDelta >= 0 ? '+' : ''}{formatNumber(newDelta, 2)} g
-                              </span>
-                            </div>
+                          {/* Live Peso Fino */}
+                          <div className="p-3 rounded-xl" style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)' }}>
+                            <span className="text-[8px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider block text-center">PESO FINO</span>
+                            <span className="text-sm font-mono font-bold text-[var(--pm-accent-gold)] block text-center">{formatNumber(modalLiveFA, 2)} g</span>
                           </div>
 
                           {/* Buttons — always visible */}
@@ -1315,12 +1261,6 @@ export default function PackingPage() {
                           <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block">Ley Au</span>
                           <span className="text-sm font-mono font-bold text-[var(--pm-text-primary)]">{formatNumber(spPurity, 1)} ‰</span>
                         </div>
-                        {spLeyAg != null && (
-                          <div>
-                            <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block">Ley Ag</span>
-                            <span className="text-sm font-mono font-bold text-[var(--pm-text-primary)]">{formatNumber(spLeyAg, 1)} ‰</span>
-                          </div>
-                        )}
                       </div>
                     </div>
                     <div className="p-3 rounded-xl border border-[var(--pm-accent-cyan)]/30 bg-[var(--pm-accent-cyan)]/5">
@@ -1334,32 +1274,14 @@ export default function PackingPage() {
                           <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block">Ley Au</span>
                           <span className="text-sm font-mono font-bold text-[var(--pm-accent-cyan)]">{formatNumber(validatedPurity, 1)} ‰</span>
                         </div>
-                        {validatedLeyAg != null && (
-                          <div>
-                            <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block">Ley Ag</span>
-                            <span className="text-sm font-mono font-bold text-[var(--pm-accent-cyan)]">{formatNumber(validatedLeyAg, 1)} ‰</span>
-                          </div>
-                        )}
                       </div>
                     </div>
                   </div>
 
-                  {/* FA + FE + Delta */}
-                  <div className="grid grid-cols-3 gap-3">
-                    <div className="p-3 rounded-xl border border-[var(--pm-accent-gold)]/20 bg-[var(--pm-accent-gold)]/5">
-                      <span className="text-[8px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider block text-center">FA</span>
-                      <span className="text-sm font-mono font-bold text-[var(--pm-accent-gold)] block text-center">{formatNumber(fa, 4)} g</span>
-                    </div>
-                    <div className="p-3 rounded-xl border border-[var(--pm-accent-cyan)]/20 bg-[var(--pm-accent-cyan)]/5">
-                      <span className="text-[8px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider block text-center">FE</span>
-                      <span className="text-sm font-mono font-bold text-[var(--pm-accent-cyan)] block text-center">{formatNumber(fe, 4)} g</span>
-                    </div>
-                    <div className={`p-3 rounded-xl border ${delta >= 0 ? 'border-[var(--pm-accent-emerald)]/20 bg-[var(--pm-accent-emerald)]/5' : 'border-[var(--pm-accent-red)]/20 bg-[var(--pm-accent-red)]/5'}`}>
-                      <span className="text-[8px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider block text-center">DELTA</span>
-                      <span className={`text-sm font-mono font-bold block text-center ${delta >= 0 ? 'text-[var(--pm-accent-emerald)]' : 'text-[var(--pm-accent-red)]'}`}>
-                        {delta >= 0 ? '+' : ''}{formatNumber(delta, 2)} g
-                      </span>
-                    </div>
+                  {/* Peso Fino */}
+                  <div className="p-3 rounded-xl border border-[var(--pm-accent-gold)]/20 bg-[var(--pm-accent-gold)]/5">
+                    <span className="text-[8px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider block text-center">PESO FINO</span>
+                    <span className="text-sm font-mono font-bold text-[var(--pm-accent-gold)] block text-center">{formatNumber(fa, 4)} g</span>
                   </div>
 
                   {/* Close */}
@@ -1404,16 +1326,10 @@ export default function PackingPage() {
                   <span className="font-bold text-[var(--pm-text-primary)]">{formatNumber(confirmRegOverlay.grossWeight, 2)} g</span>
                 </div>
                 <div className="flex justify-between text-[10px] font-mono">
-                  <span className="text-[var(--pm-text-dim)]">Pureza Au</span>
+                  <span className="text-[var(--pm-text-dim)]">Ley Au</span>
                   <span className="font-bold text-[var(--pm-text-primary)]">{formatNumber(confirmRegOverlay.purity, 1)} ‰</span>
                 </div>
-                {confirmRegOverlay.leyAg != null && confirmRegOverlay.leyAg > 0 && (
-                  <div className="flex justify-between text-[10px] font-mono">
-                    <span className="text-[var(--pm-text-dim)]">Ley Ag</span>
-                    <span className="font-bold text-[var(--pm-text-primary)]">{formatNumber(confirmRegOverlay.leyAg, 1)} ‰</span>
-                  </div>
-                )}
-              </div>
+                </div>
 
               <div className="p-4 rounded-xl border border-[var(--pm-accent-cyan)]/30 bg-[var(--pm-accent-cyan)]/5 text-center">
                 <Package className="w-5 h-5 text-[var(--pm-accent-cyan)] mx-auto mb-2" />

@@ -99,7 +99,6 @@ export function SupplierDirectory({
     return {
       grossWeight: visible.reduce((s, b) => s + Number(b.grossWeight), 0),
       fa: visible.reduce((s, b) => s + Number(b.fineWeight), 0),
-      fe: visible.reduce((s, b) => s + Number(b.fineWeight) * 0.99, 0),
     };
   }, [bars, visibleClients]);
 
@@ -148,7 +147,6 @@ export function SupplierDirectory({
             const clientTotals = {
               grossWeight: clientBars.reduce((s, b) => s + Number(b.grossWeight), 0),
               fa: clientBars.reduce((s, b) => s + Number(b.fineWeight), 0),
-              fe: clientBars.reduce((s, b) => s + Number(b.fineWeight) * 0.99, 0),
             };
 
             return (
@@ -195,19 +193,15 @@ export function SupplierDirectory({
                           <thead>
                             <tr>
                               <th className="sticky left-0 bg-[var(--pm-bg-primary)] z-10" style={{ minWidth: 120 }}>Código</th>
-                              {purityFirst && <th className="text-right">Ley Au (‰)</th>}
-                              <th className="text-right">Bruto (g)</th>
-                              {!purityFirst && <th className="text-right">Ley Au (‰)</th>}
-                              <th className="text-right">FA (g)</th>
-                              <th className="text-right">FE (g)</th>
-                              <th className="text-right">Ley Ag (‰)</th>
-                              <th className="text-right">Ag (g)</th>
+                              {purityFirst && <th className="text-right">Ley Au</th>}
+                              <th className="text-right">Peso Bruto</th>
+                              {!purityFirst && <th className="text-right">Ley Au</th>}
+                              <th className="text-right">Peso Fino</th>
                               <th className="text-right">Estado</th>
                             </tr>
                           </thead>
                           <tbody>
                             {paginatedBars.map((bar, idx) => {
-                              const fe = Number(bar.fineWeight) * 0.99;
                               return (
                                 <tr key={bar.id}
                                   onClick={() => onBarClick?.(bar.id)}
@@ -223,13 +217,6 @@ export function SupplierDirectory({
                                     <td className="text-right text-[var(--pm-text-primary)]">{formatNumber(Number(bar.purity), 1)}</td>
                                   )}
                                   <td className="text-right text-[var(--pm-accent-gold)]">{formatNumber(Number(bar.fineWeight), 4)}</td>
-                                  <td className="text-right text-[var(--pm-accent-cyan)]">{formatNumber(fe, 4)}</td>
-                                  <td className="text-right text-[var(--pm-text-dim)]">
-                                    {bar.leyAg != null ? formatNumber(Number(bar.leyAg), 1) : '—'}
-                                  </td>
-                                  <td className="text-right text-[var(--pm-text-dim)]">
-                                    {bar.fineWeightAg != null ? formatNumber(Number(bar.fineWeightAg), 4) : '—'}
-                                  </td>
                                   <td className="text-right">
                                     <span className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border ${STATUS_STYLES[bar.status] || ''}`}>
                                       {STATUS_LABELS[bar.status] || bar.status}
@@ -249,8 +236,7 @@ export function SupplierDirectory({
                                 <td className="text-right text-xs text-[var(--pm-text-primary)]">{formatNumber(clientTotals.grossWeight, 2)}</td>
                                 {!purityFirst && <td />}
                                 <td className="text-right text-xs text-[var(--pm-accent-gold)]">{formatNumber(clientTotals.fa, 4)}</td>
-                                <td className="text-right text-xs text-[var(--pm-accent-cyan)]">{formatNumber(clientTotals.fe, 4)}</td>
-                                <td colSpan={3} />
+                                <td colSpan={1} />
                               </tr>
                             </tfoot>
                           )}
@@ -310,7 +296,7 @@ export function SupplierDirectory({
             </span>
             <div className="flex items-center gap-5">
               <span className="text-xs font-mono text-[var(--pm-text-dim)]">
-                Bruto:{' '}
+                Peso Bruto:{' '}
                 <span className="text-[var(--pm-accent-gold)] font-bold text-sm">
                   {formatNumber(grandTotal.grossWeight, 2)}
                 </span>{' '}
@@ -318,17 +304,9 @@ export function SupplierDirectory({
               </span>
               <span className="text-[10px] text-[var(--pm-text-dim)]/30">|</span>
               <span className="text-xs font-mono text-[var(--pm-text-dim)]">
-                FA:{' '}
+                Peso Fino:{' '}
                 <span className="text-[var(--pm-accent-gold)] font-bold text-sm">
                   {formatNumber(grandTotal.fa, 4)}
-                </span>{' '}
-                <span className="text-[10px] text-[var(--pm-text-dim)]">g</span>
-              </span>
-              <span className="text-[10px] text-[var(--pm-text-dim)]/30">|</span>
-              <span className="text-xs font-mono text-[var(--pm-text-dim)]">
-                FE:{' '}
-                <span className="text-[var(--pm-accent-gold)] font-bold text-sm">
-                  {formatNumber(grandTotal.fe, 4)}
                 </span>{' '}
                 <span className="text-[10px] text-[var(--pm-text-dim)]">g</span>
               </span>
@@ -341,23 +319,16 @@ export function SupplierDirectory({
             </div>
             <div className="grid grid-cols-2 gap-x-4 gap-y-2">
               <div>
-                <div className="text-[9px] text-[var(--pm-text-dim)] uppercase tracking-wider">Bruto</div>
+                <div className="text-[9px] text-[var(--pm-text-dim)] uppercase tracking-wider">Peso Bruto</div>
                 <div className="text-[13px] font-mono font-bold text-[var(--pm-accent-gold)] leading-tight whitespace-nowrap">
                   {formatNumber(grandTotal.grossWeight, 2)}{' '}
                   <span className="text-[10px] font-normal text-[var(--pm-text-dim)]">g</span>
                 </div>
               </div>
               <div>
-                <div className="text-[9px] text-[var(--pm-text-dim)] uppercase tracking-wider">FA</div>
+                <div className="text-[9px] text-[var(--pm-text-dim)] uppercase tracking-wider">Peso Fino</div>
                 <div className="text-[13px] font-mono font-bold text-[var(--pm-accent-gold)] leading-tight whitespace-nowrap">
                   {formatNumber(grandTotal.fa, 4)}{' '}
-                  <span className="text-[10px] font-normal text-[var(--pm-text-dim)]">g</span>
-                </div>
-              </div>
-              <div>
-                <div className="text-[9px] text-[var(--pm-text-dim)] uppercase tracking-wider">FE</div>
-                <div className="text-[13px] font-mono font-bold text-[var(--pm-accent-gold)] leading-tight whitespace-nowrap">
-                  {formatNumber(grandTotal.fe, 4)}{' '}
                   <span className="text-[10px] font-normal text-[var(--pm-text-dim)]">g</span>
                 </div>
               </div>

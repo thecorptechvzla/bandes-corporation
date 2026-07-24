@@ -251,7 +251,7 @@ export default function ReportesPage() {
 
       const kpiW = (cw - 12) / 4;
       const kpis = [
-        { label: 'ORO RECIBIDO (FA)', value: formatWeight(oroRecibido.fineWeight), sub: `${oroRecibido.barCount} barras` },
+        { label: 'ORO RECIBIDO (Peso Fino)', value: formatWeight(oroRecibido.fineWeight), sub: `${oroRecibido.barCount} barras` },
         { label: 'ORO FUNDIDO (R)', value: formatWeight(oroFundido.totalRecovered), sub: `${oroFundido.lotCount} lotes` },
         { label: 'ORO EN ESPERA', value: formatWeight(oroEnEspera.fineWeight), sub: `${oroEnEspera.count} barras` },
         { label: 'BALANCE GLOBAL', value: formatWeight(totals.balance), sub: `${formatNumber(oroFundido.eficiencia, 1)}% eficiencia` },
@@ -327,8 +327,7 @@ export default function ReportesPage() {
 
       const cols = [
         { label: 'CLIENTE', x: m + 2, align: 'left' as const },
-        { label: 'FA (g)', x: m + 52, align: 'right' as const },
-        { label: 'FE (g)', x: m + 72, align: 'right' as const },
+        { label: 'PESO FINO (g)', x: m + 52, align: 'right' as const },
         { label: 'R (g)', x: m + 92, align: 'right' as const },
         { label: 'ENTREGADO (g)', x: m + 112, align: 'right' as const },
         { label: 'BALANCE (g)', x: m + 145, align: 'right' as const },
@@ -366,7 +365,6 @@ export default function ReportesPage() {
         const rowData = [
           { text: row.name, x: m + 2, align: 'left' as const, color: '#282828' },
           { text: formatWeight(row.fa), x: m + 52, align: 'right' as const, color: '#282828' },
-          { text: formatWeight(row.fe), x: m + 72, align: 'right' as const, color: '#282828' },
           { text: formatWeight(row.r), x: m + 92, align: 'right' as const, color: '#282828' },
           { text: formatWeight(row.entregado), x: m + 112, align: 'right' as const, color: '#282828' },
           { text: `${isPos ? '+' : ''}${formatWeight(Math.abs(row.balance))}`, x: m + 145, align: 'right' as const, color: isPos ? '#059669' : '#DC2626' },
@@ -392,7 +390,6 @@ export default function ReportesPage() {
       const totalRow = [
         { text: 'TOTALES', x: m + 2, align: 'left' as const },
         { text: formatWeight(totals.fa), x: m + 52, align: 'right' as const },
-        { text: formatWeight(totals.fe), x: m + 72, align: 'right' as const },
         { text: formatWeight(totals.r), x: m + 92, align: 'right' as const },
         { text: formatWeight(totals.entregado), x: m + 112, align: 'right' as const },
         { text: `${totalIsPos ? '+' : ''}${formatWeight(Math.abs(totals.balance))}`, x: m + 145, align: 'right' as const },
@@ -440,7 +437,7 @@ export default function ReportesPage() {
           <span className="text-[var(--pm-accent-gold)] font-semibold ml-1">— Conciliación Metalúrgica</span>
         </h1>
         <p className="text-[11px] font-mono text-[var(--pm-text-dim)] mt-1">
-          Auditoría de trazabilidad — FA · FE · R · Balance por cliente y exportación PDF.
+          Auditoría de trazabilidad — Peso Fino · R · Balance por cliente y exportación PDF.
         </p>
       </motion.div>
 
@@ -546,7 +543,7 @@ export default function ReportesPage() {
           <div className="flex items-center gap-2">
             <TrendingUp className="w-4 h-4 text-[var(--pm-accent-gold)]" />
             <span className="text-[11px] font-semibold text-[var(--pm-text-primary)] uppercase tracking-wider">
-              Balance por Cliente — FA · FE · R
+              Balance por Cliente — Peso Fino · R
             </span>
           </div>
           <button onClick={handleExportPDF} disabled={exporting}
@@ -578,8 +575,7 @@ export default function ReportesPage() {
               <thead>
                 <tr className="border-b border-[var(--pm-border)]/20 text-[10px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider">
                   <th className="py-3 px-4 bg-[var(--pm-bg-base)]/50 text-left sticky left-0 z-10 min-w-[180px]">Cliente</th>
-                  <th className="py-3 px-4 bg-[var(--pm-bg-base)]/50 text-right">FA (g)</th>
-                  <th className="py-3 px-4 bg-[var(--pm-bg-base)]/50 text-right">FE (g)</th>
+                  <th className="py-3 px-4 bg-[var(--pm-bg-base)]/50 text-right">Peso Fino (g)</th>
                   <th className="py-3 px-4 bg-[var(--pm-bg-base)]/50 text-right">R (g)</th>
                   <th className="py-3 px-4 bg-[var(--pm-bg-base)]/50 text-right">Entregado (g)</th>
                   <th className="py-3 px-4 bg-[var(--pm-bg-base)]/50 text-right">Balance (g)</th>
@@ -601,9 +597,6 @@ export default function ReportesPage() {
                       </td>
                       <td className="py-3 px-4 text-right font-mono font-bold text-[var(--pm-accent-emerald)]">
                         {formatWeight(row.fa)}
-                      </td>
-                      <td className="py-3 px-4 text-right font-mono text-[var(--pm-accent-sky)]">
-                        {formatWeight(row.fe)}
                       </td>
                       <td className="py-3 px-4 text-right font-mono text-[var(--pm-accent-amber)]">
                         {formatWeight(row.r)}
@@ -628,9 +621,6 @@ export default function ReportesPage() {
                   </td>
                   <td className="py-4 px-4 text-right font-mono font-bold text-[var(--pm-accent-emerald)] text-sm">
                     {formatWeight(totals.fa)}
-                  </td>
-                  <td className="py-4 px-4 text-right font-mono font-bold text-[var(--pm-accent-sky)] text-sm">
-                    {formatWeight(totals.fe)}
                   </td>
                   <td className="py-4 px-4 text-right font-mono font-bold text-[var(--pm-accent-amber)] text-sm">
                     {formatWeight(totals.r)}
@@ -660,7 +650,7 @@ export default function ReportesPage() {
         </span>
         <HardDrive className="w-3 h-3" />
         <span>{activeClientCount} clientes activos</span>
-        <span className="text-[var(--pm-accent-gold)]">{formatWeight(totalFA)} FA total</span>
+        <span className="text-[var(--pm-accent-gold)]">{formatWeight(totalFA)} Peso Fino total</span>
         <span>{bars.length} barras registradas</span>
       </motion.div>
     </motion.div>

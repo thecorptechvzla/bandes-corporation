@@ -282,9 +282,7 @@ export default function V2EgresosPage() {
     doc.setTextColor(40, 40, 40);
     doc.setFontSize(11);
     doc.setFont('helvetica', 'bold');
-    doc.text(`FA: ${formatWeight(Number(data.totalWeight))}`, m, y); y += 7;
-    const fe = Number(data.totalWeight) * 0.99;
-    doc.text(`FE (FA × 0.99): ${formatWeight(fe)}`, m, y); y += 7;
+    doc.text(`Peso Fino: ${formatWeight(Number(data.totalWeight))}`, m, y); y += 7;
     doc.text(`LOTES: ${data.lotCount}`, m, y); y += 7;
     doc.text(`PROVEEDORES: ${data.providerCount}`, m, y); y += 20;
 
@@ -295,7 +293,7 @@ export default function V2EgresosPage() {
     doc.setFontSize(8);
     doc.setTextColor(100, 100, 100);
     doc.text('_________________________', m, y); y += 5;
-    doc.text('FA', m, y);
+    doc.text('Peso Fino', m, y);
     doc.text('_________________________', pw - m - 40, y - 5);
     doc.text('R', pw - m - 40, y);
 
@@ -445,7 +443,7 @@ export default function V2EgresosPage() {
                             <span className="text-xs font-sans font-semibold text-[var(--pm-text-primary)] truncate block">{lots[0].clientName}</span>
                             <span className="text-[8px] font-mono text-[var(--pm-text-dim)]">{lots[0].clientRif}</span>
                           </div>
-                          <span className="text-[9px] font-mono text-[var(--pm-text-dim)]">{lots.length} lotes · {formatNumber(supplierTotal, 4)} g FA</span>
+                          <span className="text-[9px] font-mono text-[var(--pm-text-dim)]">{lots.length} lotes · {formatNumber(supplierTotal, 4)} g Peso Fino</span>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
@@ -794,29 +792,29 @@ export default function V2EgresosPage() {
                       <div className="premium-table rounded-xl border border-[var(--pm-border)]/30 w-full">
                         <table className="w-full text-sm">
                           <thead>
-                            <tr className="text-[10px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider bg-[var(--pm-bg-base)]/50">
-                              <th className="py-2.5 px-4 text-left font-medium">Código</th>
-                              <th className="py-2.5 px-4 text-right font-medium">Peso Bruto (g)</th>
-                              <th className="py-2.5 px-4 text-right font-medium">Ley Au (‰)</th>
-                              <th className="py-2.5 px-4 text-right font-medium">FA (g)</th>
+                            <tr className="text-[10px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider">
+                              <th className="text-left px-4 py-3 text-[10px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider font-normal border-b border-[var(--pm-border)]/50">Código</th>
+                              <th className="text-right px-4 py-3 text-[10px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider font-normal border-b border-[var(--pm-border)]/50">Peso Bruto (g)</th>
+                              <th className="text-right px-4 py-3 text-[10px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider font-normal border-b border-[var(--pm-border)]/50">Ley Au (‰)</th>
+                              <th className="text-right px-4 py-3 text-[10px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider font-normal border-b border-[var(--pm-border)]/50">Peso Fino (g)</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-[var(--pm-border)]/20">
                             {detailLotBars.map((b, i) => (
                               <tr key={b.id} className={`${i % 2 === 0 ? 'bg-transparent' : 'bg-[var(--pm-bg-base)]/20'} hover:bg-[var(--pm-bg-hover)]/30 transition-colors`}>
-                                <td className="py-3 px-4 text-left font-mono font-bold text-[var(--pm-accent-gold)] tracking-wider">{b.barNumber}</td>
-                                <td className="py-3 px-4 text-right font-mono text-[var(--pm-text-primary)]">{formatNumber(Number(b.grossWeight || 0), 2)}</td>
-                                <td className="py-3 px-4 text-right font-mono text-[var(--pm-text-primary)]">{b.purity}</td>
-                                <td className="py-3 px-4 text-right font-mono font-semibold text-[var(--pm-text-primary)]">{formatNumber(Number(b.fineWeight || 0), 4)}</td>
+                                <td className="text-left px-4 py-3 font-mono font-bold text-[var(--pm-accent-gold)] tracking-wider">{b.barNumber}</td>
+                                <td className="text-right px-4 py-3 font-mono text-[var(--pm-text-primary)]">{formatNumber(Number(b.grossWeight || 0), 2)}</td>
+                                <td className="text-right px-4 py-3 font-mono text-[var(--pm-text-primary)]">{b.purity}</td>
+                                <td className="text-right px-4 py-3 font-mono font-semibold text-[var(--pm-text-primary)]">{formatNumber(Number(b.fineWeight || 0), 4)}</td>
                               </tr>
                             ))}
                           </tbody>
                           <tfoot>
                             <tr className="bg-[var(--pm-bg-deepest)]/50 border-t border-[var(--pm-border)]/50">
-                              <td className="py-3 px-4 text-left text-[10px] font-mono font-bold text-[var(--pm-text-primary)] uppercase tracking-wider">Total</td>
-                              <td className="py-3 px-4 text-right font-mono font-bold text-[var(--pm-text-primary)]">{formatNumber(detailLotTotalGross, 2)}</td>
-                              <td className="py-3 px-4 text-right font-mono text-[var(--pm-text-dim)]">—</td>
-                              <td className="py-3 px-4 text-right font-mono font-bold text-[var(--pm-accent-gold)]">{formatNumber(detailLotTotalFine, 4)}</td>
+                              <td className="text-left px-4 py-3 font-mono font-bold text-[var(--pm-text-primary)] uppercase tracking-wider">Total</td>
+                              <td className="text-right px-4 py-3 font-mono font-bold text-[var(--pm-text-primary)]">{formatNumber(detailLotTotalGross, 2)}</td>
+                              <td className="text-right px-4 py-3 font-mono text-[var(--pm-text-dim)]">—</td>
+                              <td className="text-right px-4 py-3 font-mono font-bold text-[var(--pm-accent-gold)]">{formatNumber(detailLotTotalFine, 4)}</td>
                             </tr>
                           </tfoot>
                         </table>

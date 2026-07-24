@@ -41,7 +41,7 @@ export class DashboardService {
       await Promise.all([
         // 1. ORO RECIBIDO
         this.prisma.bar.aggregate({
-          where: { ...barBaseWhere, status: { not: 'POR_VALIDAR' } },
+          where: { ...barBaseWhere },
           _sum: { fineWeight: true },
           _count: true,
         }),

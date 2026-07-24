@@ -243,9 +243,9 @@ export default function V2HistoricosPage() {
                             <tr className="border-b border-[var(--pm-border)]/30">
                               <th className="text-left py-2 px-3 text-[var(--pm-text-dim)] font-semibold">Barra</th>
                               <th className="text-right py-2 px-3 text-[var(--pm-text-dim)] font-semibold">Peso Bruto</th>
-                              <th className="text-right py-2 px-3 text-[var(--pm-text-dim)] font-semibold">Pureza</th>
+                              <th className="text-right py-2 px-3 text-[var(--pm-text-dim)] font-semibold">Ley Au</th>
                               <th className="text-right py-2 px-3 text-[var(--pm-text-dim)] font-semibold">Peso Fino</th>
-                              <th className="text-right py-2 px-3 text-[var(--pm-text-dim)] font-semibold">Ley Ag</th>
+                              
                               <th className="text-center py-2 px-3 text-[var(--pm-text-dim)] font-semibold">Estado</th>
                             </tr>
                           </thead>
@@ -257,7 +257,7 @@ export default function V2HistoricosPage() {
                                 <td className="py-2 px-3 text-right text-[var(--pm-text-primary)]">{formatNumber(Number(bar.purity), 1)}</td>
                                 <td className="py-2 px-3 text-right text-[var(--pm-accent-gold)] font-semibold">{formatWeight(Number(bar.fineWeight), 2)}</td>
                                 <td className="py-2 px-3 text-right text-[var(--pm-text-dim)]">
-                                  {bar.leyAg != null ? formatNumber(Number(bar.leyAg), 1) : '—'}
+                                  
                                 </td>
                                 <td className="py-2 px-3 text-center">
                                   <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold border ${BAR_STATUS_STYLES[bar.status] ?? ''}`}>

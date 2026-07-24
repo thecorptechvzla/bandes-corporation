@@ -44,8 +44,8 @@ function SparklineArea({ data, color, id }: { data: number[]; color: string; id:
 }
 
 const KPI_COLORS = [
-  { accent: '#D4AF37', label: 'FA' },
-  { accent: '#0EA5E9', label: 'FE' },
+  { accent: '#D4AF37', label: 'PESO FINO' },
+  { accent: '#0EA5E9', label: 'PROCESO' },
   { accent: '#10B981', label: 'R' },
   { accent: '#8B5CF6', label: 'PR' },
 ];
@@ -445,7 +445,7 @@ export default function V2DashboardPage() {
     {
       label: 'Oro Recibido',
       value: metrics?.oroRecibido.fineWeight ?? 0,
-      sublabel: `FA total: ${formatNumber(metrics?.oroRecibido.fineWeight ?? 0, 2)} g`,
+      sublabel: `Peso Fino total: ${formatNumber(metrics?.oroRecibido.fineWeight ?? 0, 2)} g`,
       subicon: Scale,
       accent: KPI_COLORS[0].accent,
       tag: KPI_COLORS[0].label,
@@ -770,8 +770,8 @@ export default function V2DashboardPage() {
             <div className="min-w-[1000px]">
               <div className="grid grid-cols-[180px_repeat(5,120px)_100px_80px] px-6 py-3 border-b border-[var(--pm-border)] text-[10px] font-mono font-bold tracking-[0.1em] uppercase text-[var(--pm-text-dim)]">
                 <div className="text-left">Cliente</div>
-                <div className="text-right">Ingreso Bruto (G)</div>
-                <div className="text-right">FA (G)</div>
+                <div className="text-right">Peso Bruto (G)</div>
+                <div className="text-right">Peso Fino (G)</div>
                 <div className="text-right">R (G)</div>
                 <div className="text-right">Egresos (G)</div>
                 <div className="text-right">Balance (G)</div>
@@ -925,7 +925,6 @@ export default function V2DashboardPage() {
           const bar = bars.find(b => b.id === evidenceBarId);
           if (!bar) return null;
           const srcProxy = `/api/blob/view?url=${encodeURIComponent(bar.photoUrl || '')}`;
-          const fe = Number(bar.fineWeight) * 0.99;
           return (
             <motion.div key="evidence" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[120] flex items-center justify-center p-4"
@@ -985,32 +984,10 @@ export default function V2DashboardPage() {
                       <span className="text-sm font-mono font-bold text-[var(--pm-accent-cyan)] block text-center mt-1">{formatNumber(Number(bar.purity), 1)} ‰</span>
                     </div>
                     <div className="p-3 rounded-xl border border-[var(--pm-accent-gold)]/20 bg-[var(--pm-accent-gold)]/5">
-                      <span className="text-[8px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider block text-center">FA</span>
+                      <span className="text-[8px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider block text-center">Peso Fino</span>
                       <span className="text-sm font-mono font-bold text-[var(--pm-accent-gold)] block text-center mt-1">{formatNumber(Number(bar.fineWeight), 4)} g</span>
                     </div>
-                    <div className="p-3 rounded-xl border border-[var(--pm-accent-cyan)]/20 bg-[var(--pm-accent-cyan)]/5">
-                      <span className="text-[8px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider block text-center">FE</span>
-                      <span className="text-sm font-mono font-bold text-[var(--pm-accent-cyan)] block text-center mt-1">{formatNumber(fe, 4)} g</span>
-                    </div>
                   </div>
-
-                  {/* Ag data row — conditionally shown */}
-                  {(bar.leyAg != null || bar.fineWeightAg != null) && (
-                    <div className="grid grid-cols-2 gap-3">
-                      {bar.leyAg != null && (
-                        <div className="p-3 rounded-xl border border-[var(--pm-border)]/40 bg-[var(--pm-bg-deepest)]/30">
-                          <span className="text-[8px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider block text-center">Ley Ag</span>
-                          <span className="text-sm font-mono font-bold text-[var(--pm-text-primary)] block text-center mt-1">{formatNumber(Number(bar.leyAg), 1)} ‰</span>
-                        </div>
-                      )}
-                      {bar.fineWeightAg != null && (
-                        <div className="p-3 rounded-xl border border-[var(--pm-border)]/40 bg-[var(--pm-bg-deepest)]/30">
-                          <span className="text-[8px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider block text-center">Ag</span>
-                          <span className="text-sm font-mono font-bold text-[var(--pm-text-primary)] block text-center mt-1">{formatNumber(Number(bar.fineWeightAg), 4)} g</span>
-                        </div>
-                      )}
-                    </div>
-                  )}
 
                   {/* Close */}
                   <button type="button" onClick={() => setEvidenceBarId(null)}

@@ -138,9 +138,8 @@ export default function V2IngresosPage() {
     const g = parseFloat(grossWeight);
     if (isNaN(g) || g <= 0) { setFormError('Peso bruto debe ser un número positivo.'); return; }
     const p = parseFloat(purity);
-    if (isNaN(p) || p < 0 || p > 1000) { setFormError('Pureza Au debe estar entre 0 y 1000‰.'); return; }
+    if (isNaN(p) || p < 0 || p > 1000) { setFormError('Ley Au debe estar entre 0 y 1000‰.'); return; }
     const ag = parseFloat(leyAg) || 0;
-    if (ag < 0 || ag > 1000) { setFormError('Ley Ag debe estar entre 0 y 1000‰.'); return; }
 
     const code = barNumber.toUpperCase().trim();
     const existing = bars.find(b => b.clientId === clientId && b.barNumber.toUpperCase() === code);
@@ -183,8 +182,7 @@ export default function V2IngresosPage() {
     ws.columns = [
       { header: 'CÓDIGO', key: 'code', width: 22 },
       { header: 'PESO BRUTO (g)', key: 'grossWeight', width: 18 },
-      { header: 'PUREZA (‰)', key: 'purity', width: 15 },
-      { header: 'LEY Ag (‰)', key: 'leyAg', width: 15 },
+      { header: 'LEY AU (‰)', key: 'purity', width: 15 },
     ];
     const hr = ws.getRow(1);
     hr.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 };
@@ -192,7 +190,7 @@ export default function V2IngresosPage() {
     hr.alignment = { horizontal: 'center' };
     ws.addRow(['', '', '', '']);
     const nr = ws.getRow(2);
-    nr.getCell(1).value = '* CÓDIGO, PESO BRUTO y PUREZA son obligatorios';
+    nr.getCell(1).value = '* CÓDIGO, PESO BRUTO y LEY AU son obligatorios';
     nr.getCell(1).font = { italic: true, color: { argb: 'FF8C8C8C' }, size: 9 };
     const buf = await wb.xlsx.writeBuffer();
     const blob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
@@ -296,23 +294,12 @@ export default function V2IngresosPage() {
                 {/* Purity */}
                 <div className="space-y-1">
                   <label className="text-[10px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider flex items-center gap-1">
-                    <Microscope className="w-3 h-3" /> Pureza Au (‰)
+                    <Microscope className="w-3 h-3" /> Ley Au (‰)
                   </label>
                   <input type="number" min="0" max="1000" step="0.1" placeholder="999.9" value={purity}
                     onChange={e => setPurity(e.target.value)}
                     className="w-full bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] rounded-lg px-3 py-2.5 text-xs font-mono text-[var(--pm-text-primary)] focus:outline-none focus:border-[var(--pm-accent-gold)] transition-colors placeholder:text-[var(--pm-text-dim)]/30"
                     required
-                  />
-                </div>
-
-                {/* Ley Ag */}
-                <div className="space-y-1">
-                  <label className="text-[10px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider">
-                    Ley Ag (‰) <span className="opacity-40">(opcional)</span>
-                  </label>
-                  <input type="number" min="0" max="1000" step="0.1" placeholder="0.00" value={leyAg}
-                    onChange={e => setLeyAg(e.target.value)}
-                    className="w-full bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] rounded-lg px-3 py-2.5 text-xs font-mono text-[var(--pm-text-primary)] focus:outline-none focus:border-[var(--pm-accent-gold)] transition-colors placeholder:text-[var(--pm-text-dim)]/30"
                   />
                 </div>
               </div>
@@ -326,21 +313,10 @@ export default function V2IngresosPage() {
                     <Zap className="w-3.5 h-3.5 text-[var(--pm-accent-gold)]" />
                     <span className="text-[9px] font-mono font-bold text-[var(--pm-accent-gold)] uppercase tracking-wider">Cálculo en Tiempo Real</span>
                   </div>
-                  <div className="grid grid-cols-3 gap-3 text-center">
+                  <div className="grid grid-cols-1 gap-3 text-center">
                     <div>
-                      <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block">FA (Fino)</span>
+                      <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block">Peso Fino</span>
                       <span className="text-sm font-mono font-bold text-[var(--pm-text-primary)]">{formatNumber(liveFA, 4)} g</span>
-
-                    </div>
-                    <div className="border-x border-[var(--pm-border)]">
-                      <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block">FE (Esperado)</span>
-                      <span className="text-sm font-mono font-bold text-[var(--pm-text-primary)]">{formatNumber(liveFE, 4)} g</span>
-                      <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block">FA × 0.99</span>
-                    </div>
-                    <div>
-                      <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block">Ag (Plata)</span>
-                      <span className="text-sm font-mono font-bold text-[var(--pm-text-primary)]">{formatNumber(liveAg, 4)} g</span>
-                      <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block">{liveAg > 0 ? 'calculado' : '—'}</span>
                     </div>
                   </div>
                 </motion.div>
@@ -509,11 +485,9 @@ export default function V2IngresosPage() {
                                 <thead>
                                   <tr>
                                     <th className="text-center">Código</th>
-                                    <th className="text-right">Bruto (g)</th>
-                                    <th className="text-right">FA (g)</th>
-                                    <th className="text-right">FE (g)</th>
-                                    <th className="text-right hidden md:table-cell">Ag (g)</th>
-                                    <th className="text-center">Estado</th>
+                                    <th className="text-right">Peso Bruto</th>
+                                    <th className="text-right">Peso Fino</th>
+                                    <th className="text-right">Estado</th>
                                     <th className="text-center">Acción</th>
                                   </tr>
                                 </thead>
@@ -525,10 +499,8 @@ export default function V2IngresosPage() {
                                     >
                                       <td className="text-center font-mono font-bold text-[var(--pm-accent-gold)] tracking-wider text-[11px]">{bar.barNumber}</td>
                                       <td className="text-right font-mono text-[var(--pm-text-primary)]">{formatNumber(Number(bar.grossWeight), 2)}</td>
-                                      <td className="text-right font-mono text-[var(--pm-text-primary)]">{formatNumber(Number(bar.fineWeight), 4)}</td>
-                                      <td className="text-right font-mono text-[var(--pm-text-dim)]">{formatNumber(Number(bar.fineWeight) * 0.99, 4)}</td>
-                                      <td className="text-right font-mono text-[var(--pm-text-dim)] hidden md:table-cell">{bar.fineWeightAg ? formatNumber(Number(bar.fineWeightAg), 4) : '—'}</td>
-                                      <td className="text-center">
+<td className="text-right font-mono text-[var(--pm-text-primary)]">{formatNumber(Number(bar.fineWeight), 4)}</td>
+                                    <td className="text-center">
                                         <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-[8px] font-mono font-bold border rounded ${STATUS_STYLES[bar.status] || ''}`}>
                                           {STATUS_LABELS[bar.status] || bar.status}
                                         </span>
