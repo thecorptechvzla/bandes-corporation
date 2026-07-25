@@ -18,3 +18,18 @@ export function cleanWeight(val: string): number {
   const num = parseFloat(normalized);
   return isNaN(num) ? 0 : num;
 }
+
+export function formatRif(raw: string): string {
+  if (raw.length !== 10) return raw;
+  return `${raw[0]}-${raw.slice(1, 9)}-${raw[9]}`;
+}
+
+export function formatRifDisplay(digits: string): string {
+  const d = digits.replace(/\D/g, '');
+  if (!d) return 'J-';
+  return d.length < 9 ? `J-${d}` : `J-${d.slice(0, 8)}-${d[8]}`;
+}
+
+export function sanitizeRifInput(val: string): string {
+  return val.replace(/^J/i, '').replace(/\D/g, '').slice(0, 9);
+}

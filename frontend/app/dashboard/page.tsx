@@ -1,487 +1,348 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useBars } from '@/hooks/useBars';
-import { useMaterialExits } from '@/hooks/useExits';
 import { useClients } from '@/hooks/useClients';
+import { useMaterialExits } from '@/hooks/useExits';
+import { useProcesses } from '@/hooks/useProcesses';
 import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
 import {
-  Flame, ClipboardList, Scale, Coins, TrendingDown,
-  ChevronDown, ChevronUp, Table2, Warehouse
+  ClipboardList, Flame, Warehouse, Inbox, TrendingDown,
+  Scale, Pickaxe,
 } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { formatNumber, formatWeight } from '@/lib/format';
-import { useGoldTraceability } from '@/context/GoldTraceabilityContext';
+import { AreaChart, Area, ResponsiveContainer } from 'recharts';
+import { formatNumber } from '@/lib/format';
+import DashboardFilters from '@/components/DashboardFilters';
+import { EvidenceModal } from '@/components/dashboard/EvidenceModal';
+import { SupplierDirectoryModal } from '@/components/dashboard/SupplierDirectoryModal';
+import { KpiCardGrid, KPI_COLORS } from '@/components/dashboard/KpiCardGrid';
+import { BalancesTable } from '@/components/dashboard/BalancesTable';
+import { TreemapPanel } from '@/components/dashboard/TreemapPanel';
 
-interface TreemapRect {
-  id: string; x: number; y: number; w: number; h: number;
-  value: number; item: any;
+function SparklineArea({ data, color, id }: { data: number[]; color: string; id: string }) {
+  const chartData = data.map((v, i) => ({ i, v }));
+  return (
+    <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-[inherit] opacity-40">
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart data={chartData} margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
+          <defs>
+            <linearGradient id={`spark-${id}`} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={color} stopOpacity={0.35} />
+              <stop offset="100%" stopColor={color} stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          <Area
+            type="monotone"
+            dataKey="v"
+            stroke={color}
+            strokeWidth={1.5}
+            fill={`url(#spark-${id})`}
+            isAnimationActive={false}
+          />
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
+  );
 }
 
-function computeTreemap(items: any[], x: number, y: number, w: number, h: number): TreemapRect[] {
-  if (items.length <= 1) {
-    return items.length === 1 ? [{ id: items[0].id, x, y, w, h, value: items[0].value, item: items[0] }] : [];
+const KPI_ICONS = [ClipboardList, Flame, Warehouse, Inbox];
+
+function hashStr(s: string): number {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) {
+    h = ((h << 5) - h) + s.charCodeAt(i);
+    h |= 0;
   }
-  const total = items.reduce((s, i) => s + i.value, 0);
-  if (total === 0) return [];
-  let rs = 0, si = 1;
-  for (let i = 0; i < items.length - 1; i++) { rs += items[i].value; if (rs >= total / 2) { si = i + 1; break; } }
-  const a = items.slice(0, si), b = items.slice(si);
-  const va = a.reduce((s, i) => s + i.value, 0);
-  if (w >= h) {
-    const wA = (va / total) * w;
-    return [...computeTreemap(a, x, y, wA, h), ...computeTreemap(b, x + wA, y, w - wA, h)];
-  } else {
-    const hA = (va / total) * h;
-    return [...computeTreemap(a, x, y, w, hA), ...computeTreemap(b, x, y + hA, w, h - hA)];
-  }
+  return Math.abs(h);
 }
 
-function generateBarsLayout(items: any[], w: number, h: number): TreemapRect[] {
-  const total = items.reduce((s, i) => s + i.value, 0);
-  let cx = 0;
-  return items.map(i => {
-    const bw = (i.value / total) * w;
-    const x = cx; cx += bw;
-    return { id: i.id, x, y: 0, w: bw, h, value: i.value, item: i };
-  });
+function makeCyanColor(name: string, intensity: number): string {
+  const hue = 180 + (hashStr(name) % 16);
+  const sat = 75 + (hashStr(name + 'sat') % 20);
+  const lit = 28 + intensity * 28;
+  return `hsl(${hue}, ${sat}%, ${lit}%)`;
 }
 
-// Componente personalizado para el Tooltip de la gráfica
-const CustomTooltip = ({ active, payload, label }: any) => {
-  if (active && payload && payload.length) {
-    return (
-      <div className="bg-[#1E1E22] border border-[#323238] rounded-xl shadow-[0_10px_25px_-5px_rgba(0,0,0,0.6)] p-3.5 min-w-[150px] backdrop-blur-xs">
-        <p className="text-[#8C8C8C] font-bold text-[10px] uppercase tracking-wider mb-2 font-mono">
-          {label}
-        </p>
-        <div className="space-y-1.5">
-          {payload.map((entry: any) => {
-            const isIn = entry.name === 'in';
-            const labelColor = isIn ? '#22C55E' : '#D5B042';
-            const labelText = isIn ? 'Ingreso' : 'Egreso';
-            return (
-              <div key={entry.name} className="flex justify-between items-center text-xs font-sans gap-4">
-                <span style={{ color: labelColor }} className="font-bold">
-                  {labelText}
-                </span>
-                <span className="text-[#E5E5E5] font-mono">
-                  {`${entry.value.toLocaleString(undefined, { minimumFractionDigits: 1 })} g`}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    );
-  }
-  return null;
-};
+function makeGoldColor(name: string, intensity: number): string {
+  const hue = 37 + (hashStr(name) % 14);
+  const sat = 55 + (hashStr(name + 'sat') % 20);
+  const lit = 28 + intensity * 28;
+  return `hsl(${hue}, ${sat}%, ${lit}%)`;
+}
 
-export default function DashboardPage() {
+export default function V2DashboardPage() {
+  const [filterStartDate, setFilterStartDate] = useState('');
+  const [filterEndDate, setFilterEndDate] = useState('');
+  const [filterSupplierId, setFilterSupplierId] = useState('');
+  const [filterClientId, setFilterClientId] = useState('');
+
+  const filters = {
+    startDate: filterStartDate || undefined,
+    endDate: filterEndDate || undefined,
+    supplierId: filterSupplierId || undefined,
+    clientId: filterClientId || undefined,
+  };
+
   const { data: bars = [] } = useBars();
   const { data: clients = [] } = useClients();
   const { data: exits = [] } = useMaterialExits();
-  const { data: metrics, isLoading } = useDashboardMetrics();
-  const [hoveredSupplier, setHoveredSupplier] = useState<any | null>(null);
-  const [hoveredClient, setHoveredClient] = useState<any | null>(null);
-  const [supplierLayout, setSupplierLayout] = useState<'grid' | 'bars'>('grid');
-  const [clientLayout, setClientLayout] = useState<'grid' | 'bars'>('grid');
-  const [showSupplierTable, setShowSupplierTable] = useState<boolean>(false);
-  const [showClientTable, setShowClientTable] = useState<boolean>(false);
+  const { data: processes = [] } = useProcesses();
+  const { data: metrics, isLoading } = useDashboardMetrics(
+    filterStartDate || filterEndDate || filterSupplierId || filterClientId
+      ? filters
+      : undefined,
+  );
 
-  const supplierData = clients.map(c => {
-    const cBars = bars.filter(b => b.clientId === c.id);
-    const w = cBars.reduce((s, b) => s + Number(b.grossWeight), 0);
-    const cnt = cBars.length;
-    const avgP = cnt > 0 ? Math.round(cBars.reduce((s, b) => s + Number(b.purity), 0) / cnt) : 0;
-    return { id: c.id, name: c.name, code: c.rif.slice(0, 5), value: w, count: cnt, avgPurity: avgP };
-  }).filter(s => s.value > 0).sort((a, b) => b.value - a.value);
+  const [isMounted, setIsMounted] = useState(false);
+  useEffect(() => { setIsMounted(true); }, []);
 
-  const clientData = clients.map(c => {
-    const cExits = exits.filter(e => e.exitDetails.some(d => d.lot?.process?.client?.id === c.id));
-    const totalW = cExits.reduce((s, e) => s + Number(e.totalWeight), 0);
-    return { id: c.id, name: c.name, code: c.rif.slice(0, 5), value: totalW, count: cExits.length };
-  }).filter(c => c.value > 0).sort((a, b) => b.value - a.value);
+  const [showTableIngresos, setShowTableIngresos] = useState(false);
+  const [showTableEgresos, setShowTableEgresos] = useState(false);
+  const [isIngresoModalOpen, setIsIngresoModalOpen] = useState(false);
+  const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
+  const [isClientBarModalOpen, setIsClientBarModalOpen] = useState(false);
+  const [evidenceBarId, setEvidenceBarId] = useState<string | null>(null);
+
+  const filteredBars = useMemo(() => {
+    let result = bars;
+    if (filterSupplierId) result = result.filter((b) => b.clientId === filterSupplierId);
+    if (filterStartDate) result = result.filter((b) => new Date(b.createdAt) >= new Date(filterStartDate));
+    if (filterEndDate) result = result.filter((b) => new Date(b.createdAt) <= new Date(filterEndDate + 'T23:59:59'));
+    return result;
+  }, [bars, filterSupplierId, filterStartDate, filterEndDate]);
+
+  const filteredExits = useMemo(() => {
+    let result = exits;
+    if (filterClientId) {
+      result = result.filter((e) =>
+        e.exitDetails.some((d) => d.lot?.process?.client?.id === filterClientId),
+      );
+    }
+    if (filterStartDate) result = result.filter((e) => new Date(e.createdAt) >= new Date(filterStartDate));
+    if (filterEndDate) result = result.filter((e) => new Date(e.createdAt) <= new Date(filterEndDate + 'T23:59:59'));
+    return result;
+  }, [exits, filterClientId, filterStartDate, filterEndDate]);
+
+  const ingresoBars = useMemo(
+    () => filteredBars.filter((b) => b.status !== 'POR_VALIDAR'),
+    [filteredBars],
+  );
 
   const flowData = useMemo(() => {
-    const days: Record<string, { date: string; dateShort: string; in: number; out: number; weightUnit: string }> = {};
-    bars.forEach(b => {
-      const d = new Date(b.createdAt);
-      const key = d.toISOString().split('T')[0];
-      const short = d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' });
-      if (!days[key]) days[key] = { date: key, dateShort: short, in: 0, out: 0, weightUnit: 'g' };
-      days[key].in += Number(b.fineWeight);
+    const days: Record<string, { in: number; out: number }> = {};
+    filteredBars.forEach(b => {
+      const d = new Date(b.createdAt).toISOString().split('T')[0];
+      if (!days[d]) days[d] = { in: 0, out: 0 };
+      days[d].in += Number(b.fineWeight);
     });
-    exits.forEach(e => {
-      const d = new Date(e.createdAt);
-      const key = d.toISOString().split('T')[0];
-      const short = d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' });
-      if (!days[key]) days[key] = { date: key, dateShort: short, in: 0, out: 0, weightUnit: 'g' };
-      days[key].out += Number(e.totalWeight);
+    filteredExits.forEach(e => {
+      const d = new Date(e.createdAt).toISOString().split('T')[0];
+      if (!days[d]) days[d] = { in: 0, out: 0 };
+      days[d].out += Number(e.totalWeight);
     });
-    return Object.values(days).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()).slice(-7);
-  }, [bars, exits]);
+    return Object.values(days);
+  }, [filteredBars, filteredExits]);
 
-  const colors = [
-    { s1: '#B4941E', s2: '#7E6611' }, { s1: '#A65B17', s2: '#733D0D' },
-    { s1: '#D4AF37', s2: '#996515' }, { s1: '#AA7C11', s2: '#5F4B11' },
-    { s1: '#B38B2D', s2: '#73571A' }, { s1: '#C5A02B', s2: '#7D6211' },
-    { s1: '#A17D23', s2: '#674F11' }, { s1: '#8A6F1D', s2: '#554211' },
+  const sparkIn = useMemo(() => flowData.map(d => d.in).slice(-14), [flowData]);
+  const sparkOut = useMemo(() => flowData.map(d => d.out).slice(-14), [flowData]);
+  const sparkNet = useMemo(() => flowData.map(d => d.in - d.out).slice(-14), [flowData]);
+  const sparkMerma = useMemo(() => flowData.map(d => Math.abs(d.in - d.out) * 0.02).slice(-14), [flowData]);
+  const sparkPorRefundir = useMemo(() => flowData.map(d => d.in).slice(-14), [flowData]);
+
+  const clientBalances = useMemo(() => {
+    if (!clients || !filteredBars) return [];
+    return clients.map(client => {
+      const clientBars = filteredBars.filter(b => b.clientId === client.id);
+      const ingresoBruto = clientBars.reduce((s, b) => s + Number(b.grossWeight), 0);
+      const fa = clientBars.reduce((s, b) => s + Number(b.fineWeight), 0);
+      const clientProcesses = processes.filter(p => p.clientId === client.id);
+      const r = clientProcesses.reduce((s, p) =>
+        s + (p.lots?.reduce((sl, l) => sl + Number(l.recovered ?? 0), 0) ?? 0), 0);
+      const clientExits = filteredExits.filter(e =>
+        e.exitDetails.some(d => d.lot?.process?.client?.id === client.id));
+      const egresos = clientExits.reduce((s, e) => s + Number(e.totalWeight), 0);
+      const balance = fa + r - egresos;
+      const faProcesado = clientBars
+        .filter(b => b.status === 'COMPLETADO' || b.status === 'EXITED')
+        .reduce((s, b) => s + Number(b.fineWeight), 0);
+      const mermaG = Math.max(0, faProcesado - r);
+      const mermaPct = faProcesado > 0 ? (mermaG / faProcesado) * 100 : 0;
+      return { id: client.id, name: client.name, ingresoBruto, fa, r, egresos, balance, mermaG, mermaPct };
+    })
+      .filter(c => c.ingresoBruto > 0 || c.fa > 0 || c.egresos > 0)
+      .sort((a, b) => b.ingresoBruto - a.ingresoBruto);
+  }, [clients, filteredBars, processes, filteredExits]);
+
+  const totalBalance = useMemo(
+    () => clientBalances.reduce((s, c) => s + c.balance, 0),
+    [clientBalances],
+  );
+
+  const ingresosTreemap = useMemo(() => {
+    const map: Record<string, number> = {};
+    filteredBars.forEach(b => {
+      const name = b.client?.name || 'Desconocido';
+      map[name] = (map[name] || 0) + Number(b.grossWeight);
+    });
+    const total = Object.values(map).reduce((s, v) => s + v, 0);
+    const maxVal = Math.max(...Object.values(map), 1);
+    return Object.entries(map)
+      .map(([name, value]) => {
+        const intensity = value / maxVal;
+        return { name, value, pct: total > 0 ? (value / total) * 100 : 0, fill: makeCyanColor(name, intensity) };
+      })
+      .sort((a, b) => b.value - a.value);
+  }, [filteredBars]);
+
+  const egresosTreemap = useMemo(() => {
+    const map: Record<string, number> = {};
+    filteredExits.forEach(e => {
+      e.exitDetails.forEach(d => {
+        const clientName = d.lot?.process?.client?.name || e.destination || 'Desconocido';
+        map[clientName] = (map[clientName] || 0) + Number(d.weightAported);
+      });
+    });
+    const total = Object.values(map).reduce((s, v) => s + v, 0);
+    const maxVal = Math.max(...Object.values(map), 1);
+    return Object.entries(map)
+      .map(([name, value]) => {
+        const intensity = value / maxVal;
+        return { name, value, pct: total > 0 ? (value / total) * 100 : 0, fill: makeGoldColor(name, intensity) };
+      })
+      .sort((a, b) => b.value - a.value);
+  }, [filteredExits]);
+
+  const kpiData = [
+    {
+      label: 'Oro Recibido',
+      value: metrics?.oroRecibido.fineWeight ?? 0,
+      subicon: Scale,
+      sublabel: `Peso Fino total: ${formatNumber(metrics?.oroRecibido.fineWeight ?? 0, 2)} g`,
+      accent: KPI_COLORS[0].accent,
+      tag: KPI_COLORS[0].label,
+      postfix: '',
+      spark: sparkIn,
+    },
+    {
+      label: 'Oro en Proceso',
+      value: metrics?.oroEnProceso.fineWeight ?? 0,
+      subicon: Flame,
+      sublabel: `Barras en horno: ${metrics?.oroEnProceso.barCount ?? 0} u`,
+      accent: KPI_COLORS[1].accent,
+      tag: KPI_COLORS[1].label,
+      postfix: '',
+      spark: sparkOut,
+    },
+    {
+      label: 'Oro en Bóveda',
+      value: metrics?.oroEnBoveda.fineWeight ?? 0,
+      subicon: Warehouse,
+      sublabel: `R neto disponible: ${formatNumber(metrics?.oroEnBoveda.fineWeight ?? 0, 2)} g`,
+      accent: KPI_COLORS[2].accent,
+      tag: KPI_COLORS[2].label,
+      postfix: '',
+      spark: sparkNet,
+    },
+    {
+      label: 'Por Refundir',
+      value: metrics?.porRefundir.fineWeight ?? 0,
+      subicon: Inbox,
+      sublabel: `Barras en stock: ${formatNumber(metrics?.porRefundir.fineWeight ?? 0, 2)} g en espera`,
+      accent: KPI_COLORS[3].accent,
+      tag: KPI_COLORS[3].label,
+      postfix: '',
+      spark: sparkPorRefundir,
+    },
   ];
 
-  const renderTreemap = (data: any[], hovered: any, setHovered: any, colorsOffset: number) => {
-    if (data.length === 0) return (
-      <div className="flex flex-col items-center justify-center h-52 text-[#8C8C8C] border border-dashed border-neutral-800/40 rounded-lg">
-        <Coins className="w-8 h-8 text-[#D5B042]/30 mb-2 animate-pulse" />
-        <span className="text-sm font-sans">Sin datos</span>
-      </div>
-    );
-    const w = 500, h = 240;
-    const rects = (colorsOffset === 0 ? supplierLayout : clientLayout) === 'grid'
-      ? computeTreemap(data, 0, 0, w, h) : generateBarsLayout(data, w, h);
-    const isSupplier = colorsOffset === 0;
-    return (
-      <div className="relative w-full h-[240px]">
-        <svg viewBox={`0 0 ${w} ${h}`} className="w-full h-full rounded-lg overflow-hidden">
-          {rects.map((rect, idx) => {
-            const item = rect.item;
-            const isHov = hovered?.id === item.id;
-            const cs = colors[(idx + colorsOffset) % colors.length];
-            const gradId = `g-${item.id}`;
-            const hasLey = rect.h > 65 && rect.w > 80;
-            const hasGrams = rect.h > 45 && rect.w > 65;
-            const hasCode = rect.h > 25 && rect.w > 35;
-            const tx = rect.x + rect.w / 2, ty = rect.y + rect.h / 2;
-            return (
-              <g key={item.id} onMouseEnter={() => setHovered(item)} onMouseLeave={() => setHovered(null)}
-                className="cursor-pointer transition-all duration-300">
-                <defs>
-                  <linearGradient id={gradId} x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor={cs.s1} stopOpacity={isHov ? 1 : 0.85} />
-                    <stop offset="100%" stopColor={cs.s2} stopOpacity={isHov ? 0.95 : 0.7} />
-                  </linearGradient>
-                </defs>
-                <rect x={rect.x + 1.5} y={rect.y + 1.5} width={Math.max(rect.w - 3, 2)} height={Math.max(rect.h - 3, 2)}
-                  rx={6} fill={`url(#${gradId})`} stroke={isHov ? (isSupplier ? '#D5B042' : '#A65B17') : 'transparent'}
-                  strokeWidth={isHov ? 2 : 1} className="transition-all duration-300"
-                  style={{ filter: isHov ? 'drop-shadow(0 0 8px rgba(213,176,66,0.3))' : 'none' }} />
-                {hasCode && <text x={tx} y={hasGrams ? (hasLey ? ty - 12 : ty - 5) : ty + 4}
-                  textAnchor="middle" fill="#E5E5E5"
-                  className="font-sans font-bold text-xs uppercase tracking-wider fill-current select-none pointer-events-none">{item.code}</text>}
-                {hasGrams && <text x={tx} y={hasLey ? ty + 6 : ty + 10} textAnchor="middle" fill="#D5B042"
-                  className="font-mono text-[10px] font-bold select-none pointer-events-none">
-                  {`${Math.round(item.value).toLocaleString()} g`}
-                </text>}
-                {hasLey && isSupplier && <text x={tx} y={ty + 22} textAnchor="middle" fill="#E5E5E5" fillOpacity={0.8}
-                  className="font-mono text-[9px] select-none pointer-events-none">Pureza {item.avgPurity}‰</text>}
-              </g>
-            );
-          })}
-        </svg>
-        <AnimatePresence>{hovered && (
-          <motion.div key="tip" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}
-            className={`absolute top-2 left-2 z-20 bg-[#161619] border-l-4 ${isSupplier ? 'border-[#D5B042]' : 'border-[#A65B17]'} border-y border-r border-neutral-800/40 p-3 rounded shadow-[0_4px_12px_rgba(0,0,0,0.6)] backdrop-blur-xs max-w-xs`}>
-            <h4 className="text-xs font-bold text-[#E5E5E5] tracking-wide uppercase">{hovered.name}</h4>
-            <div className="grid grid-cols-2 gap-x-4 gap-y-1 mt-2 text-[11px] font-mono">
-              <span className="text-[#8C8C8C]">{isSupplier ? 'Total Ingresado:' : 'Total Despachado:'}</span>
-              <span className="text-[#D5B042] font-bold text-right">
-                {`${Math.round(hovered.value).toLocaleString()} g`}
-              </span>
-              <span className="text-[#8C8C8C]">{isSupplier ? 'Barras:' : 'Operaciones:'}</span>
-              <span className="text-[#E5E5E5] text-right">{hovered.count} {isSupplier ? 'u' : 'envíos'}</span>
-            </div>
-          </motion.div>
-        )}</AnimatePresence>
-      </div>
-    );
-  };
-
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4 }} className="space-y-8">
-      
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        
-        {/* Tarjeta 1: ORO RECIBIDO */}
-        <motion.div initial={{ opacity: 0, y: -80 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08, duration: 0.55 }}
-          className="relative group bg-[#161619] p-4.5 rounded-xl border border-neutral-800/40 shadow-[0_4px_12px_rgba(0,0,0,0.2)] overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,0,0,0.4)] hover:border-[#D5B042]/30">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-[#D5B042]/5 to-transparent rounded-bl-full pointer-events-none"></div>
-          <div className="flex justify-between items-center mb-3">
-            <div className="p-2 bg-black rounded-lg border border-[#D5B042]/20"><ClipboardList className="w-5 h-5 text-[#D5B042]" /></div>
-            <span className="text-[9px] text-[#D5B042] font-mono tracking-wider flex items-center gap-1 bg-black px-1.5 py-0.5 rounded border border-[#D5B042]/20">REGISTRO</span>
-          </div>
-            <div className="space-y-0.5 min-w-0">
-            <span className="text-[10.5px] text-[#8C8C8C] block font-sans truncate">Oro recibido</span>
-            <div className="flex items-baseline gap-1.5 overflow-hidden">
-              <span className="text-xl lg:text-2xl font-mono font-bold text-[#E5E5E5] tracking-tight truncate">
-                {formatWeight(metrics?.oroRecibido.fineWeight ?? 0)}
-              </span>
-            </div>
-            <p className="text-[10px] text-[#8C8C8C] font-mono flex items-center gap-1 pt-1.5 border-t border-neutral-800/20 truncate">
-              <Scale className="w-3 h-3 text-[#D5B042] shrink-0" />FA total: <strong className="text-[#E5E5E5] truncate">{formatWeight(metrics?.oroRecibido.fineWeight ?? 0)}</strong>
-            </p>
-          </div>
-        </motion.div>
-
-        {/* Tarjeta 2: ORO EN PROCESO */}
-        <motion.div initial={{ opacity: 0, y: -80 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18, duration: 0.55 }}
-          className="relative group bg-[#161619] p-4.5 rounded-xl border border-neutral-800/40 shadow-[0_4px_12px_rgba(0,0,0,0.2)] overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,0,0,0.4)] hover:border-[#A65B17]/30">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-[#A65B17]/5 to-transparent rounded-bl-full pointer-events-none"></div>
-          <div className="flex justify-between items-center mb-3">
-            <div className="p-2 bg-black rounded-lg border border-[#A65B17]/20"><Flame className="w-5 h-5 text-[#A65B17] animate-pulse" /></div>
-            <span className="text-[9px] text-[#A65B17] font-mono tracking-wider flex items-center gap-1 bg-black px-1.5 py-0.5 rounded border border-[#A65B17]/20">FUNDICIÓN</span>
-          </div>
-          <div className="space-y-0.5 min-w-0">
-            <span className="text-[10.5px] text-[#8C8C8C] block font-sans truncate">Oro en proceso</span>
-            <div className="flex items-baseline gap-1.5 overflow-hidden">
-              <span className="text-xl lg:text-2xl font-mono font-bold text-[#E5E5E5] tracking-tight truncate">
-                {formatWeight(metrics?.oroEnProceso.fineWeight ?? 0)}
-              </span>
-            </div>
-            <p className="text-[10px] text-[#8C8C8C] font-mono flex items-center gap-1 pt-1.5 border-t border-neutral-800/20 truncate">
-              <Flame className="w-3 h-3 text-[#A65B17] shrink-0" />Barras en horno: <strong className="text-[#E5E5E5] truncate">{metrics?.oroEnProceso.barCount ?? 0} u</strong>
-            </p>
-          </div>
-        </motion.div>
-
-        {/* Tarjeta 3: ORO EN BÓVEDA */}
-        <motion.div initial={{ opacity: 0, y: -80 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.28, duration: 0.55 }}
-          className="relative group bg-[#161619] p-4.5 rounded-xl border border-neutral-800/40 shadow-[0_4px_12px_rgba(0,0,0,0.2)] overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,0,0,0.4)] hover:border-emerald-500/30">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-emerald-500/5 to-transparent rounded-bl-full pointer-events-none"></div>
-          <div className="flex justify-between items-center mb-3">
-            <div className="p-2 bg-black rounded-lg border border-emerald-500/20"><Warehouse className="w-5 h-5 text-emerald-500" /></div>
-            <span className="text-[9px] text-emerald-400 font-mono tracking-wider flex items-center gap-1 bg-black px-1.5 py-0.5 rounded border border-emerald-500/10">DISPONIBLE</span>
-          </div>
-          <div className="space-y-0.5 min-w-0">
-            <span className="text-[10.5px] text-[#8C8C8C] block font-sans truncate">Oro en bóveda</span>
-            <div className="flex items-baseline gap-1.5 overflow-hidden">
-              <span className="text-xl lg:text-2xl font-mono font-bold text-[#E5E5E5] tracking-tight truncate">
-                {formatWeight(metrics?.oroEnBoveda.fineWeight ?? 0)}
-              </span>
-            </div>
-            <p className="text-[10px] text-[#8C8C8C] font-mono flex items-center gap-1 pt-1.5 border-t border-neutral-800/20 truncate">
-              <Warehouse className="w-3 h-3 text-emerald-400 shrink-0" />R neto disponible: <strong className="text-[#E5E5E5] truncate">{formatWeight(metrics?.oroEnBoveda.fineWeight ?? 0)}</strong>
-            </p>
-          </div>
-        </motion.div>
-
-        {/* Tarjeta 4: MERMA */}
-        <motion.div initial={{ opacity: 0, y: -80 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.38, duration: 0.55 }}
-          className="relative group bg-[#161619] p-4.5 rounded-xl border border-neutral-800/40 shadow-[0_4px_12px_rgba(0,0,0,0.2)] overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,0,0,0.4)] hover:border-red-500/30">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-red-500/5 to-transparent rounded-bl-full pointer-events-none"></div>
-          <div className="flex justify-between items-center mb-3">
-            <div className="p-2 bg-black rounded-lg border border-red-500/20"><TrendingDown className="w-5 h-5 text-red-400" /></div>
-            <span className="text-[9px] text-red-400 font-mono tracking-wider flex items-center gap-1 bg-black px-1.5 py-0.5 rounded border border-red-500/10">PÉRDIDA</span>
-          </div>
-          <div className="space-y-0.5 min-w-0">
-            <span className="text-[10.5px] text-[#8C8C8C] block font-sans truncate">Merma</span>
-            <div className="flex items-baseline gap-1.5 overflow-hidden">
-              <span className="text-xl lg:text-2xl font-mono font-bold text-[#E5E5E5] tracking-tight truncate">
-                {formatNumber(metrics?.merma.porcentaje ?? 0, 1)}<span className="text-lg">%</span>
-              </span>
-              <span className="text-[10.5px] text-[#8C8C8C] shrink-0">Merma</span>
-            </div>
-            <p className="text-[10px] text-[#8C8C8C] font-mono flex items-center gap-1 pt-1.5 border-t border-neutral-800/20 truncate">
-              <Scale className="w-3 h-3 text-red-400 shrink-0" />Pérdida Total: <strong className="text-[#E5E5E5] truncate">{formatWeight(metrics?.merma.gramos ?? 0)} Au</strong>
-            </p>
-          </div>
-        </motion.div>
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.35 }}>
+      {/* Filters */}
+      <div className="mb-5">
+        <DashboardFilters
+          startDate={filterStartDate}
+          endDate={filterEndDate}
+          supplierId={filterSupplierId}
+          clientId={filterClientId}
+          onChange={({ startDate, endDate, supplierId, clientId }) => {
+            setFilterStartDate(startDate);
+            setFilterEndDate(endDate);
+            setFilterSupplierId(supplierId);
+            setFilterClientId(clientId);
+          }}
+        />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <motion.div initial={{ opacity: 0, y: 60 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45, duration: 0.5 }}
-          className="bg-[#161619] p-6 rounded-2xl border border-neutral-800/40 shadow-[0_4px_12px_rgba(0,0,0,0.3)] transition-all hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,0,0,0.4)] hover:border-[#D5B042]/30">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-6">
-            <div>
-              <h3 className="font-sans font-semibold text-[#E5E5E5] text-base">Ingresos de Clientes (Proporción de Masa)</h3>
-              <p className="text-[11px] text-[#8C8C8C] font-sans mt-0.5">Distribución de gramos brutos por cliente.</p>
-            </div>
-            <div className="flex bg-black border border-neutral-800/60 p-0.5 rounded-lg text-[10px] font-mono self-start md:self-auto">
-              <button onClick={() => setSupplierLayout('grid')}
-                className={`px-3 py-1 rounded-md transition-all uppercase font-bold tracking-wider cursor-pointer ${supplierLayout === 'grid' ? 'bg-[#D5B042]/10 text-[#D5B042] border border-[#D5B042]/20' : 'text-[#8C8C8C] hover:text-[#E5E5E5]'}`}>Cuadrícula</button>
-              <button onClick={() => setSupplierLayout('bars')}
-                className={`px-3 py-1 rounded-md transition-all uppercase font-bold tracking-wider cursor-pointer ${supplierLayout === 'bars' ? 'bg-[#D5B042]/10 text-[#D5B042] border border-[#D5B042]/20' : 'text-[#8C8C8C] hover:text-[#E5E5E5]'}`}>Barras</button>
-            </div>
-          </div>
-          <div className="bg-black p-4 rounded-xl border border-neutral-800/40 flex items-center justify-center min-h-[250px]">
-            {renderTreemap(supplierData, hoveredSupplier, setHoveredSupplier, 0)}
-          </div>
-          <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 justify-center">
-            {supplierData.map((s, idx) => (
-              <div key={s.id} className="flex items-center gap-1.5 text-[10px] font-mono text-[#8C8C8C]">
-                <span className="w-2.5 h-2.5 rounded" style={{ backgroundColor: colors[idx % colors.length].s1 }}></span>
-                <span>{s.code}: {`${Math.round(s.value).toLocaleString()} g`} ({Math.round((s.value / (supplierData.reduce((x, y) => x + y.value, 0) || 1)) * 100)}%)</span>
-              </div>
-            ))}
-          </div>
-          <button onClick={() => setShowSupplierTable(!showSupplierTable)}
-            className="mt-4 w-full flex items-center justify-center gap-1.5 py-2 bg-black/50 hover:bg-black border border-neutral-800/40 rounded-lg text-[10px] font-mono text-[#8C8C8C] hover:text-[#E5E5E5] transition-colors cursor-pointer">
-            <Table2 className="w-3.5 h-3.5" />
-            {showSupplierTable ? 'Ocultar' : 'Ver'} Detalle por Cliente
-            {showSupplierTable ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-          </button>
-          {showSupplierTable && (
-            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
-              className="mt-2 overflow-x-auto">
-              <table className="w-full text-left text-xs font-sans">
-                <thead>
-                  <tr className="border-b border-neutral-800/40 text-[10px] font-mono text-[#8C8C8C] uppercase tracking-wider">
-                    <th className="py-2">Cliente</th>
-                    <th className="py-2 text-right">Bruto (g)</th>
-                    <th className="py-2 text-right">FA (g)</th>
-                    <th className="py-2 text-right">Barras</th>
-                    <th className="py-2 text-right">Pureza</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-neutral-800/20">
-                  {supplierData.map(s => (
-                    <tr key={s.id} className="hover:bg-black/40 transition-colors">
-                      <td className="py-2 font-medium text-[#E5E5E5]">{s.name}</td>
-                      <td className="py-2 text-right font-mono text-[#8C8C8C]">
-                        {Math.round(s.value).toLocaleString()}
-                      </td>
-                      <td className="py-2 text-right font-mono text-[#D5B042]">
-                        {Math.round(s.value).toLocaleString()}
-                      </td>
-                      <td className="py-2 text-right font-mono text-[#8C8C8C]">{s.count} u</td>
-                      <td className="py-2 text-right font-mono text-[#8C8C8C]">{s.avgPurity}‰</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </motion.div>
-          )}
-        </motion.div>
+      {/* KPI Cards */}
+      <KpiCardGrid kpiData={kpiData} isMounted={isMounted} onCardClick={() => setIsIngresoModalOpen(true)} />
 
-        <motion.div initial={{ opacity: 0, y: 60 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.52, duration: 0.5 }}
-          className="bg-[#161619] p-6 rounded-2xl border border-neutral-800/40 shadow-[0_4px_12px_rgba(0,0,0,0.3)] transition-all hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,0,0,0.4)] hover:border-[#A65B17]/30">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-6">
-            <div>
-              <h3 className="font-sans font-semibold text-[#E5E5E5] text-base">Egresos por Cliente</h3>
-              <p className="text-[11px] text-[#8C8C8C] font-sans mt-0.5">Distribución proporcional de salidas por cliente.</p>
-            </div>
-            <div className="flex bg-black border border-neutral-800/60 p-0.5 rounded-lg text-[10px] font-mono self-start md:self-auto">
-              <button onClick={() => setClientLayout('grid')}
-                className={`px-3 py-1 rounded-md transition-all uppercase font-bold tracking-wider cursor-pointer ${clientLayout === 'grid' ? 'bg-[#A65B17]/10 text-[#A65B17] border border-[#A65B17]/20' : 'text-[#8C8C8C] hover:text-[#E5E5E5]'}`}>Cuadrícula</button>
-              <button onClick={() => setClientLayout('bars')}
-                className={`px-3 py-1 rounded-md transition-all uppercase font-bold tracking-wider cursor-pointer ${clientLayout === 'bars' ? 'bg-[#A65B17]/10 text-[#A65B17] border border-[#A65B17]/20' : 'text-[#8C8C8C] hover:text-[#E5E5E5]'}`}>Barras</button>
-            </div>
-          </div>
-          <div className="bg-black p-4 rounded-xl border border-neutral-800/40 flex items-center justify-center min-h-[250px]">
-            {renderTreemap(clientData, hoveredClient, setHoveredClient, 3)}
-          </div>
-          <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 justify-center">
-            {clientData.map((c, idx) => (
-              <div key={c.id} className="flex items-center gap-1.5 text-[10px] font-mono text-[#8C8C8C]">
-                <span className="w-2.5 h-2.5 rounded" style={{ backgroundColor: colors[(idx + 3) % colors.length].s1 }}></span>
-                <span>{c.code}: {`${Math.round(c.value).toLocaleString()} g`} ({Math.round((c.value / (clientData.reduce((x, y) => x + y.value, 0) || 1)) * 100)}%)</span>
-              </div>
-            ))}
-          </div>
-          <button onClick={() => setShowClientTable(!showClientTable)}
-            className="mt-4 w-full flex items-center justify-center gap-1.5 py-2 bg-black/50 hover:bg-black border border-neutral-800/40 rounded-lg text-[10px] font-mono text-[#8C8C8C] hover:text-[#E5E5E5] transition-colors cursor-pointer">
-            <Table2 className="w-3.5 h-3.5" />
-            {showClientTable ? 'Ocultar' : 'Ver'} Detalle por Cliente
-            {showClientTable ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-          </button>
-          {showClientTable && (
-            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
-              className="mt-2 overflow-x-auto">
-              <table className="w-full text-left text-xs font-sans">
-                <thead>
-                  <tr className="border-b border-neutral-800/40 text-[10px] font-mono text-[#8C8C8C] uppercase tracking-wider">
-                    <th className="py-2">Cliente</th>
-                    <th className="py-2 text-right">Despachado (g)</th>
-                    <th className="py-2 text-right">Envíos</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-neutral-800/20">
-                  {clientData.map(c => (
-                    <tr key={c.id} className="hover:bg-black/40 transition-colors">
-                      <td className="py-2 font-medium text-[#E5E5E5]">{c.name}</td>
-                      <td className="py-2 text-right font-mono text-[#D5B042]">
-                        {Math.round(c.value).toLocaleString()}
-                      </td>
-                      <td className="py-2 text-right font-mono text-[#8C8C8C]">{c.count} envíos</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </motion.div>
-          )}
-        </motion.div>
+      {/* Treemaps Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mt-5">
+        <TreemapPanel
+          title="INGRESOS POR PROVEEDOR"
+          subtitle="Proporción de masa bruta recibida"
+          data={ingresosTreemap}
+          accent="var(--pm-accent-sky)"
+          glowColor="#00E5FF"
+          scaleLabel="PROVEEDOR"
+          isTableMode={showTableIngresos}
+          onToggleView={() => setShowTableIngresos(!showTableIngresos)}
+          emptyIcon={Scale}
+          emptyLabel="SIN DATOS DE INGRESOS"
+        />
+        <TreemapPanel
+          title="EGRESOS POR CLIENTE"
+          subtitle="Proporción de masa despachada"
+          data={egresosTreemap}
+          accent="var(--pm-accent-gold)"
+          glowColor="#D5B042"
+          scaleLabel="CLIENTE"
+          isTableMode={showTableEgresos}
+          onToggleView={() => setShowTableEgresos(!showTableEgresos)}
+          emptyIcon={TrendingDown}
+          emptyLabel="SIN DATOS DE EGRESOS"
+        />
       </div>
 
-      <motion.div initial={{ opacity: 0, y: 60 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6, duration: 0.5 }}
-        className="bg-[#161619] p-6 rounded-2xl border border-neutral-800/40 shadow-[0_4px_12px_rgba(0,0,0,0.3)] transition-all hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,0,0,0.4)] hover:border-[#D5B042]/30">
-        <div className="flex items-center justify-between mb-4 border-b border-neutral-800/20 pb-3">
-          <div>
-            <h3 className="font-sans font-semibold text-[#E5E5E5] text-base">Flujo de Trazabilidad</h3>
-            <p className="text-xs text-[#8C8C8C]">Ingresos vs Egresos (últimos 7 días).</p>
-          </div>
-        </div>
-        <div className="overflow-x-auto">
-          {flowData.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-64 text-[#8C8C8C] border border-dashed border-neutral-800/40 rounded-lg">
-              <Coins className="w-8 h-8 text-[#D5B042]/30 mb-2 animate-pulse" />
-              <span className="text-sm font-sans">No hay transacciones registradas</span>
-            </div>
-          ) : (
-            <ResponsiveContainer width="100%" height={280}>
-              <BarChart data={flowData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
-                <defs>
-                  <linearGradient id="greenGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#22C55E" stopOpacity={0.9} />
-                    <stop offset="100%" stopColor="#166534" stopOpacity={0.7} />
-                  </linearGradient>
-                  <linearGradient id="bronzeGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#D5B042" stopOpacity={0.9} />
-                    <stop offset="100%" stopColor="#A65B17" stopOpacity={0.7} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#2A2A2A" vertical={false} />
-                <XAxis dataKey="dateShort" stroke="#525151" tick={{ fontSize: 10, fill: '#8C8C8C' }} axisLine={{ stroke: '#2A2A2A' }} tickLine={false} />
-                <YAxis stroke="#8C8C8C" tick={{ fontSize: 10, fill: '#8C8C8C' }} axisLine={{ stroke: '#2A2A2A' }} tickLine={false}
-                  tickFormatter={(v: number) => `${v.toFixed(0)} g`} />
-                
-                <Tooltip 
-                  cursor={{ fill: 'rgba(213, 176, 66, 0.04)' }} 
-                  content={<CustomTooltip />} 
-                />
+      {/* Balances Table */}
+      <BalancesTable
+        clientBalances={clientBalances}
+        totalBalance={totalBalance}
+        onClientClick={(id) => { setSelectedClientId(id); setIsClientBarModalOpen(true); }}
+      />
 
-                <Legend 
-                  iconType="circle" 
-                  iconSize={8} 
-                  wrapperStyle={{ fontSize: 11, color: '#8C8C8C', paddingTop: 8 }}
-                  formatter={(value: string) => value === 'in' ? 'Ingreso' : 'Egreso'} 
-                />
-                
-                <Bar 
-                  dataKey="in" 
-                  name="in" 
-                  fill="url(#greenGrad)"
-                  radius={[4, 4, 0, 0]} 
-                  animationDuration={1000} 
-                  animationEasing="ease-out" 
-                  maxBarSize={40} 
-                />
-                
-                <Bar 
-                  dataKey="out" 
-                  name="out" 
-                  fill="url(#bronzeGrad)"
-                  radius={[4, 4, 0, 0]} 
-                  animationDuration={1000} 
-                  animationEasing="ease-out" 
-                  animationBegin={200} 
-                  maxBarSize={40} 
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          )}
-        </div>
-      </motion.div>
+      {/* Footer note */}
+      <p className="text-[9px] text-[var(--pm-text-dim)] font-mono text-center opacity-50 mt-5">
+        Datos actualizados en tiempo real · Bandes v2 Premium
+      </p>
+
+      {/* Client bar detail modal — triggered from balance table row */}
+      <SupplierDirectoryModal
+        isOpen={isClientBarModalOpen && !!selectedClientId}
+        title={clients.find((cl) => cl.id === selectedClientId)?.name ?? 'Detalle de barras'}
+        filterSupplierId={selectedClientId}
+        bars={ingresoBars}
+        clients={clients}
+        onClose={() => setIsClientBarModalOpen(false)}
+        onBarClick={(id) => setEvidenceBarId(id)}
+      />
+
+      {/* Supplier directory modal — triggered from Oro Recibido card */}
+      <SupplierDirectoryModal
+        isOpen={isIngresoModalOpen}
+        title="Material Ingresado"
+        showSearch
+        bars={ingresoBars}
+        clients={clients}
+        onClose={() => setIsIngresoModalOpen(false)}
+        onBarClick={(id) => setEvidenceBarId(id)}
+      />
+
+      {/* Evidence Modal — triggered from SupplierDirectory bar row click */}
+      <AnimatePresence>
+        <EvidenceModal barId={evidenceBarId} bars={bars} onClose={() => setEvidenceBarId(null)} />
+      </AnimatePresence>
     </motion.div>
   );
 }

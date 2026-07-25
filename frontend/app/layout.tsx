@@ -3,9 +3,13 @@
 import React, { useState, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { GoldTraceabilityProvider } from '../src/context/GoldTraceabilityContext';
-import { Sidebar } from '../src/components/Sidebar';
-import { Calendar } from 'lucide-react';
+import { GoldTraceabilityProvider } from '@/context/GoldTraceabilityContext';
+import Link from 'next/link';
+import {
+  LayoutDashboard, Users, Flame,
+  ArrowLeftRight, FileText, FolderUp, Coins, LogOut,
+  Calendar, History,
+} from 'lucide-react';
 import './globals.css';
 
 const queryClient = new QueryClient({
@@ -21,6 +25,16 @@ const queryClient = new QueryClient({
   },
 });
 
+const menuItems = [
+  { id: 'dashboard', name: 'Dashboard', icon: LayoutDashboard },
+  { id: 'clientes', name: 'Proveedores', icon: Users },
+  { id: 'packing', name: 'Packing', icon: FolderUp },
+  { id: 'procesos', name: 'Procesos', icon: Flame },
+  { id: 'egresos', name: 'Egresos', icon: ArrowLeftRight },
+  { id: 'reportes', name: 'Reportes', icon: FileText },
+  { id: 'historicos', name: 'Históricos', icon: History },
+];
+
 export default function RootLayout({
   children,
 }: {
@@ -28,113 +42,120 @@ export default function RootLayout({
 }) {
   const pathname = usePathname();
   const router = useRouter();
-  const isV2 = pathname.startsWith('/v2');
-  const activeTab = pathname.replace('/', '').replace('v2/', '') || 'dashboard';
-  const [systemTime, setSystemTime] = useState<string>('');
-
-  const userName = 'Administrador';
+  const activeTab = pathname.split('/').pop() || 'dashboard';
+  const [sysTime, setSysTime] = useState('');
 
   useEffect(() => {
-    const updateTime = () => {
+    const tick = () => {
       const now = new Date();
-      setSystemTime(
-        now.toLocaleTimeString(undefined, { 
-          hour: '2-digit', 
-          minute: '2-digit', 
-          second: '2-digit',
-          hour12: false 
-        })
-      );
+      setSysTime(now.toLocaleTimeString('es-ES', {
+        hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false,
+      }));
     };
-    updateTime();
-    const interval = setInterval(updateTime, 1000);
+    tick();
+    const interval = setInterval(tick, 1000);
     return () => clearInterval(interval);
   }, []);
-
-  // If v2, render minimal wrapper — v2/layout.tsx handles its own chrome
-  if (isV2) {
-    return (
-      <html lang="es">
-        <head>
-          <title>Control Mining</title>
-          <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        </head>
-        <body>
-          <QueryClientProvider client={queryClient}>
-            <GoldTraceabilityProvider>
-              {children}
-            </GoldTraceabilityProvider>
-          </QueryClientProvider>
-        </body>
-      </html>
-    );
-  }
 
   return (
     <html lang="es">
       <head>
         <title>Control Mining</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
       </head>
       <body>
         <QueryClientProvider client={queryClient}>
           <GoldTraceabilityProvider>
-            <div id="app-root" className="min-h-screen bg-[#141414] text-[#E5E5E5] font-sans flex overflow-hidden">
-              
-              <Sidebar />
+            <div className="v2-premium min-h-screen text-[var(--pm-text-primary)] font-sans flex overflow-hidden">
+              {/* Sidebar */}
+              <aside className="v2-sidebar">
+                {/* Logo */}
+                <div className="flex items-center gap-3 h-16 px-5 shrink-0 border-b border-[var(--pm-border)]">
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[var(--pm-accent-gold)] to-amber-700 flex items-center justify-center">
+                    <Coins className="w-4 h-4 text-[var(--pm-bg-deepest)]" />
+                  </div>
+                  <span className="text-sm font-mono font-bold text-[var(--pm-accent-gold)] tracking-widest">
+                    CONTROL MINING
+                  </span>
+                </div>
 
-              <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden lg:ml-16">
-                
-                {activeTab === 'dashboard' && (
-                  <header className="h-20 border-b border-neutral-800/40 bg-[#121212]/90 backdrop-blur-md flex items-center justify-between px-6 shrink-0 z-30">
-                    
-                    <div className="flex items-center gap-4">
-                      <div className="hidden sm:flex flex-col">
-                        <span className="text-sm font-semibold text-[#D5B042] uppercase tracking-wider flex items-center gap-2">
-                          <span className="w-1.5 h-1.5 rounded-full bg-[#D5B042] animate-pulse"></span>
-                          Bienvenido, {userName}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-4">
-                      <button
-                        onClick={() => {
-                          localStorage.setItem('bandes_ui_mode', 'tactical');
-                          router.push('/v2/dashboard');
-                        }}
-                        className="px-3 py-1.5 text-[10px] font-mono font-bold uppercase tracking-wider border border-[#00E5FF]/40 text-[#00E5FF] bg-black hover:bg-[#00E5FF]/10 active:scale-95 transition-all cursor-pointer"
+                {/* Nav */}
+                <nav className="flex-1 flex flex-col gap-0.5 py-4 overflow-y-auto">
+                  {menuItems.map(item => {
+                    const IconComponent = item.icon;
+                    const isActive = activeTab === item.id;
+                    const href = `/${item.id}`;
+                    return (
+                      <Link
+                        key={item.id}
+                        href={href}
+                        className={`
+                          nav-item group ${isActive ? 'active' : ''}
+                          active:scale-[0.97] transition-all duration-150
+                        `}
                       >
-                        {'>'} MODO TÁCTICO
-                      </button>
+                        <IconComponent className={`w-4 h-4 shrink-0 ${isActive ? 'text-[var(--pm-accent-gold)]' : 'text-[var(--pm-text-dim)] group-hover:text-[var(--pm-text-primary)]'}`} />
+                        <span>{item.name}</span>
+                        {isActive && (
+                          <span className="ml-auto w-1.5 h-1.5 rounded-full bg-[var(--pm-accent-gold)] animate-pulse" />
+                        )}
+                      </Link>
+                    );
+                  })}
+                </nav>
 
-                      <div className="hidden lg:flex items-center gap-2 bg-black border border-neutral-800/40 px-3 py-1.5 rounded-full font-mono text-[11px] text-[#8C8C8C]">
-                        <Calendar className="w-3.5 h-3.5 text-[#D5B042]" />
-                        <span>2026-07-16</span>
-                      </div>
+                {/* Bottom */}
+                <div className="px-3 py-4 border-t border-[var(--pm-border)] space-y-1">
+                  <button className="nav-item w-full text-[10px] active:scale-95">
+                    <LogOut className="w-3.5 h-3.5 shrink-0" />
+                    <span>Salir</span>
+                  </button>
+                </div>
+              </aside>
 
-                      <div className="flex items-center gap-2.5 bg-black border border-neutral-800/40 pl-2.5 pr-4 py-1 rounded-full shadow-inner">
-                        <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-[#8C6D1F] to-[#D5B042] flex items-center justify-center text-black font-bold text-xs">
-                          {userName.charAt(0)}
-                        </div>
-                        <div className="hidden sm:flex flex-col text-left">
-                          <span className="text-[11px] font-bold text-[#E5E5E5] leading-none">{userName}</span>
-                          <span className="text-[9px] text-[#8C8C8C] font-mono mt-0.5 leading-none">Owner</span>
-                        </div>
-                      </div>
+              {/* Main area */}
+              <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
+                {/* Header */}
+                <header className="h-14 shrink-0 flex items-center justify-between px-6 border-b border-[var(--pm-border)] bg-[var(--pm-bg-primary)]/80 backdrop-blur-md">
+                  <div className="flex items-center gap-3">
+                    <span className="text-[10px] font-mono font-bold text-[var(--pm-accent-gold)] uppercase tracking-[0.15em]">
+                      / {activeTab}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-1.5 px-2.5 py-1 border border-[var(--pm-border)] rounded-md">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[var(--pm-accent-emerald)] animate-pulse" />
+                      <span className="text-[10px] font-mono text-[var(--pm-text-dim)]">{sysTime}</span>
                     </div>
-                  </header>
-                )}
+                    <div className="flex items-center gap-2 px-2.5 py-1 border border-[var(--pm-border)] rounded-md">
+                      <Calendar className="w-3 h-3 text-[var(--pm-accent-gold)]" />
+                      <span className="text-[10px] font-mono text-[var(--pm-text-dim)]">
+                        {new Date().toLocaleDateString('es-ES', {
+                          year: 'numeric', month: '2-digit', day: '2-digit',
+                        })}
+                      </span>
+                    </div>
+                  </div>
+                </header>
 
-                <main className="flex-1 overflow-y-auto p-6 md:p-8 bg-[#141414] relative">
-                  <div className="max-w-7xl mx-auto space-y-8">
+                {/* Content */}
+                <main className="flex-1 overflow-y-auto v2-scroll">
+                  <div className="max-w-7xl mx-auto p-6 md:p-8 space-y-8">
                     {children}
                   </div>
                 </main>
 
+                {/* Status bar */}
+                <footer className="h-7 shrink-0 flex items-center px-6 border-t border-[var(--pm-border)] bg-[var(--pm-bg-primary)]">
+                  <div className="flex items-center gap-4 text-[8px] font-mono text-[var(--pm-text-dim)]">
+                    <span className="flex items-center gap-1">
+                      <span className="w-1 h-1 rounded-full bg-[var(--pm-accent-emerald)]" />
+                      SYS ONLINE
+                    </span>
+                    <span className="hidden sm:inline">BANDES Premium</span>
+                    <span className="hidden md:inline">API: localhost:3001</span>
+                  </div>
+                </footer>
               </div>
             </div>
           </GoldTraceabilityProvider>

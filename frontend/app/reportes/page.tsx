@@ -1,502 +1,206 @@
 'use client';
 
 import React, { useState, useMemo, useCallback } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { toPng } from 'html-to-image';
-import { jsPDF } from 'jspdf';
+import { motion } from 'motion/react';
 import {
-  FileText, Download, ArrowDownLeft, ArrowUpRight,
-  Sparkles, Scale, CheckCircle2, Clock, RefreshCw, Info,
-  Flame, TrendingUp, Coins, Filter, X, Check,
+  FileText, Download, RefreshCw,
 } from 'lucide-react';
 import { useBars } from '@/hooks/useBars';
 import { useClients } from '@/hooks/useClients';
 import { useProcesses } from '@/hooks/useProcesses';
 import { useLots } from '@/hooks/useLots';
-import { useMaterialExits } from '@/hooks/useExits';
-import { formatNumber, formatWeight } from '@/lib/format';
-import { useGoldTraceability } from '@/context/GoldTraceabilityContext';
+import { generateReportPDF } from '@/lib/generateReportPDF';
+import { KpiCardGrid } from '@/components/reportes/KpiCardGrid';
+import { FilterBar } from '@/components/reportes/FilterBar';
+import { BalanceTable } from '@/components/reportes/BalanceTable';
+import { StatusFooter } from '@/components/reportes/StatusFooter';
+
+type StatusFilter = 'ALL' | 'IN_STOCK' | 'COMPLETADO' | 'EXITED';
+
+interface ClientRow {
+  id: string;
+  name: string;
+  fa: number;
+  fe: number;
+  r: number;
+  entregado: number;
+  balance: number;
+}
 
 export default function ReportesPage() {
   const { data: bars = [] } = useBars();
   const { data: clients = [] } = useClients();
   const { data: processes = [] } = useProcesses();
   const { data: lots = [] } = useLots();
-  const { data: exits = [] } = useMaterialExits();
-  const [exportingSection, setExportingSection] = useState<string | null>(null);
-  const [filterModalFor, setFilterModalFor] = useState<string | null>(null);
-  const [modalDateFrom, setModalDateFrom] = useState('');
-  const [modalDateTo, setModalDateTo] = useState('');
-  const [modalSelectedIds, setModalSelectedIds] = useState<string[]>([]);
-  const [exportFilters, setExportFilters] = useState<{
-    dateFrom: string; dateTo: string; clientIds: string[];
-  }>({ dateFrom: '', dateTo: '', clientIds: [] });
+  const [exporting, setExporting] = useState(false);
+
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
+  const [filterClientId, setFilterClientId] = useState('');
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('ALL');
+  const [clientSearch, setClientSearch] = useState('');
 
   const filteredBars = useMemo(() => {
     return bars.filter(b => {
-      if (exportFilters.dateFrom && b.createdAt < exportFilters.dateFrom) return false;
-      if (exportFilters.dateTo && b.createdAt > exportFilters.dateTo + 'T23:59:59') return false;
-      if (exportFilters.clientIds.length > 0 && !exportFilters.clientIds.includes(b.clientId)) return false;
+      if (dateFrom && b.createdAt < dateFrom) return false;
+      if (dateTo && b.createdAt > dateTo + 'T23:59:59') return false;
+      if (filterClientId && b.clientId !== filterClientId) return false;
+      if (statusFilter !== 'ALL' && b.status !== statusFilter) return false;
       return true;
     });
-  }, [bars, exportFilters]);
+  }, [bars, dateFrom, dateTo, filterClientId, statusFilter]);
+
+  const clientOptions = useMemo(() => {
+    let filtered = clients;
+    if (clientSearch) {
+      const q = clientSearch.toLowerCase();
+      filtered = filtered.filter(c => c.name.toLowerCase().includes(q));
+    }
+    return filtered;
+  }, [clients, clientSearch]);
 
   const oroRecibido = useMemo(() => {
-    const totalBarras = filteredBars.length;
-    const pesoBruto = filteredBars.reduce((sum, b) => sum + Number(b.grossWeight || 0), 0);
-    const finoTotal = filteredBars.reduce((sum, b) => sum + Number(b.fineWeight || 0), 0);
-    const clientes = new Set(filteredBars.map(b => b.clientId)).size;
-    return { totalBarras, pesoBruto, finoTotal, clientes };
+    const total = filteredBars.reduce((s, b) => s + Number(b.fineWeight || 0), 0);
+    const count = filteredBars.length;
+    const clientsSet = new Set(filteredBars.map(b => b.clientId)).size;
+    return { fineWeight: total, barCount: count, clientCount: clientsSet };
   }, [filteredBars]);
 
-  const oroRefinado = useMemo(() => {
+  const oroFundido = useMemo(() => {
     const closedLots = lots.filter(l => l.recovered != null);
+    const totalRecovered = closedLots.reduce((s, l) => s + Number(l.recovered || 0), 0);
     const completedBars = filteredBars.filter(b => b.status === 'COMPLETADO' || b.status === 'EXITED');
-    const totalRecovered = closedLots.reduce((sum, l) => sum + Number(l.recovered || 0), 0);
     const completedLotIds = new Set(closedLots.map(l => l.id));
     const completedLotsBars = filteredBars.filter(b => b.lotId && completedLotIds.has(b.lotId));
-    const totalExpected = completedLotsBars.reduce((sum, b) => sum + Number(b.fineWeight || 0), 0);
+    const totalExpected = completedLotsBars.reduce((s, b) => s + Number(b.fineWeight || 0), 0);
     const eficiencia = totalExpected > 0 ? (totalRecovered / totalExpected) * 100 : 0;
-    const enProceso = processes.filter(p => p.status === 'OPEN');
-    return {
-      lotsCount: closedLots.length,
-      enProcesoCount: enProceso.length,
-      barrasCount: completedBars.length,
-      totalRecovered,
-      totalExpected,
-      eficiencia,
-    };
-  }, [filteredBars, lots, processes]);
+    return { totalRecovered, lotCount: closedLots.length, barCount: completedBars.length, eficiencia, totalExpected };
+  }, [filteredBars, lots]);
 
   const oroEnEspera = useMemo(() => {
     const waiting = filteredBars.filter(b => b.status === 'IN_STOCK');
-    const pesoBruto = waiting.reduce((sum, b) => sum + Number(b.grossWeight || 0), 0);
-    const finoTotal = waiting.reduce((sum, b) => sum + Number(b.fineWeight || 0), 0);
-    const clientes = new Set(waiting.map(b => b.clientId)).size;
-    return { count: waiting.length, pesoBruto, finoTotal, clientes };
+    const fino = waiting.reduce((s, b) => s + Number(b.fineWeight || 0), 0);
+    return { count: waiting.length, fineWeight: fino, clientCount: new Set(waiting.map(b => b.clientId)).size };
   }, [filteredBars]);
 
-  const clientesReport = useMemo(() => {
-    const map = new Map<string, { name: string; received: number; delivered: number }>();
+  const clientRows: ClientRow[] = useMemo(() => {
+    const map = new Map<string, { name: string; fa: number; entregado: number; r: number }>();
     filteredBars.forEach(b => {
       const clientName = clients.find(c => c.id === b.clientId)?.name || 'Desconocido';
-      const entry = map.get(b.clientId) || { name: clientName, received: 0, delivered: 0 };
-      entry.received += Number(b.fineWeight || 0);
-      if (b.status === 'EXITED') entry.delivered += Number(b.fineWeight || 0);
+      const entry = map.get(b.clientId) || { name: clientName, fa: 0, entregado: 0, r: 0 };
+      entry.fa += Number(b.fineWeight || 0);
+      if (b.status === 'EXITED') entry.entregado += Number(b.fineWeight || 0);
+      if ((b.status === 'COMPLETADO' || b.status === 'EXITED') && b.lotId) {
+        const lot = lots.find(l => l.id === b.lotId);
+        if (lot && lot.recovered != null) {
+          entry.r += Number(lot.recovered || 0) / (filteredBars.filter(x => x.lotId === b.lotId).length || 1);
+        }
+      }
       map.set(b.clientId, entry);
     });
-    return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name));
-  }, [filteredBars, clients]);
+    return Array.from(map.entries()).map(([id, e]) => ({
+      id,
+      name: e.name,
+      fa: e.fa,
+      fe: e.fa * 0.99,
+      r: e.r,
+      entregado: e.entregado,
+      balance: e.fa - e.entregado,
+    })).sort((a, b) => a.name.localeCompare(b.name));
+  }, [filteredBars, clients, lots]);
 
-  const handleExportPDF = useCallback(async (elementId: string, title: string) => {
-    setExportingSection(elementId);
+  const totals = useMemo(() => ({
+    fa: clientRows.reduce((s, r) => s + r.fa, 0),
+    fe: clientRows.reduce((s, r) => s + r.fe, 0),
+    r: clientRows.reduce((s, r) => s + r.r, 0),
+    entregado: clientRows.reduce((s, r) => s + r.entregado, 0),
+    balance: clientRows.reduce((s, r) => s + r.balance, 0),
+  }), [clientRows]);
+
+  const activeClientCount = useMemo(() => new Set(bars.map(b => b.clientId)).size, [bars]);
+  const totalFA = useMemo(() => bars.reduce((s, b) => s + Number(b.fineWeight || 0), 0), [bars]);
+
+  const handleExportPDF = useCallback(async () => {
+    setExporting(true);
     try {
-      const element = document.getElementById(elementId);
-      if (!element) return;
-      const imgData = await toPng(element, { backgroundColor: '#1C1C1C', pixelRatio: 2 });
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const pdfWidth = 190;
-      const img = new Image();
-      img.src = imgData;
-      await img.decode();
-      const pdfHeight = (img.naturalHeight * pdfWidth) / img.naturalWidth;
-      let heightLeft = pdfHeight;
-      let position = 10;
-      pdf.addImage(imgData, 'PNG', 10, position, pdfWidth, pdfHeight);
-      while (heightLeft > 270) {
-        position = heightLeft - 270;
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 10, -position + 10, pdfWidth, pdfHeight);
-        heightLeft -= 270;
-      }
-      pdf.save(`${title.replace(/\s+/g, '_')}.pdf`);
+      await generateReportPDF({
+        oroRecibido,
+        oroFundido,
+        oroEnEspera,
+        totals,
+        clientRows,
+        filters: { dateFrom, dateTo, filterClientId, statusFilter },
+        clients,
+      });
     } catch (err) {
       console.error('Error al generar PDF:', err);
     } finally {
-      setExportingSection(null);
+      setExporting(false);
     }
-  }, []);
+  }, [oroRecibido, oroFundido, oroEnEspera, totals, clientRows, dateFrom, dateTo, filterClientId, statusFilter, clients]);
 
-  const openFilterModal = (reportId: string) => {
-    setModalDateFrom(exportFilters.dateFrom);
-    setModalDateTo(exportFilters.dateTo);
-    setModalSelectedIds(exportFilters.clientIds);
-    setFilterModalFor(reportId);
+  const clearFilters = () => {
+    setDateFrom('');
+    setDateTo('');
+    setFilterClientId('');
+    setStatusFilter('ALL');
   };
 
-  const handleExportWithFilters = () => {
-    if (!filterModalFor) return;
-    setExportFilters({
-      dateFrom: modalDateFrom,
-      dateTo: modalDateTo,
-      clientIds: modalSelectedIds,
-    });
-    setFilterModalFor(null);
-    setTimeout(() => {
-      handleExportPDF(filterModalFor, filterModalFor.replace('report-', 'Reporte_'));
-    }, 300);
-  };
-
-  const toggleClientFilter = (id: string) => {
-    setModalSelectedIds(prev =>
-      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
-    );
-  };
+  const hasActiveFilters = !!(dateFrom || dateTo || filterClientId || statusFilter !== 'ALL');
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }} className="space-y-8">
-      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, ease: 'easeOut' }}>
-        <h1 className="text-2xl md:text-3xl font-sans font-medium text-[#E5E5E5] tracking-tight flex items-center gap-2">
-          <FileText className="w-8 h-8 text-[#D5B042] filter drop-shadow-[0_0_8px_rgba(213,176,66,0.3)]" />
-          Reportes de <span className="text-[#D5B042] font-semibold">Fundición</span>
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }} className="space-y-6">
+      {/* Header */}
+      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
+        <h1 className="text-2xl md:text-3xl font-sans font-medium text-[var(--pm-text-primary)] tracking-tight flex items-center gap-2">
+          <FileText className="w-8 h-8 text-[var(--pm-accent-gold)] drop-shadow-[0_0_8px_rgba(212,175,55,0.3)]" />
+          Reportes
+          <span className="text-[var(--pm-accent-gold)] font-semibold ml-1">— Conciliación Metalúrgica</span>
         </h1>
-        <p className="text-xs text-[#8C8C8C] mt-1">
-          Conciliación metalúrgica — Oro recibido, fundido, en espera y balances por cliente.
+        <p className="text-[11px] font-mono text-[var(--pm-text-dim)] mt-1">
+          Auditoría de trazabilidad — Peso Fino · R · Balance por cliente y exportación PDF.
         </p>
       </motion.div>
 
-      {/* Contenedor Grid con gap reducido de gap-6 a gap-4 */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* Oro Recibido - Modificado a p-4 y space-y-2.5 */}
-        <motion.div
-          initial={{ opacity: 0, y: 25 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.4, ease: 'easeOut' }}
-          id="report-oro-recibido"
-          className="bg-[#1C1C1C] p-4 rounded-2xl border border-neutral-800/40 shadow-[0_4px_12px_rgba(0,0,0,0.3)] space-y-2.5 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,0,0,0.4)] hover:border-emerald-500/30 min-w-0 overflow-hidden"
-        >
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2 min-w-0">
-              <div className="p-1.5 bg-emerald-950/30 rounded-lg border border-emerald-500/15 shrink-0">
-                <ArrowDownLeft className="w-3.5 h-3.5 text-emerald-400" />
-              </div>
-              <div className="min-w-0">
-                <span className="text-[10px] font-mono text-[#8C8C8C] uppercase tracking-wider font-semibold block truncate">Oro Recibido</span>
-                <p className="text-[9px] text-[#8C8C8C]/50 block truncate">Total histórico ingresado</p>
-              </div>
-            </div>
-            <button
-              onClick={() => openFilterModal('report-oro-recibido')}
-              disabled={exportingSection === 'report-oro-recibido'}
-              className="flex items-center gap-1 px-2 py-1 bg-emerald-950/30 hover:bg-emerald-900/50 border border-emerald-500/20 text-emerald-300 text-[9px] font-mono font-bold uppercase tracking-wider rounded-lg transition-colors cursor-pointer disabled:opacity-50 shrink-0"
-            >
-              {exportingSection === 'report-oro-recibido' ? (
-                <RefreshCw className="w-3 h-3 animate-spin" />
-              ) : (
-                <Download className="w-3 h-3" />
-              )}
-              PDF
-            </button>
-          </div>
+      {/* KPIs */}
+      <KpiCardGrid
+        bars={bars}
+        filteredBars={filteredBars}
+        oroRecibido={oroRecibido}
+        oroFundido={oroFundido}
+        oroEnEspera={oroEnEspera}
+        totals={totals}
+      />
 
-          <div className="space-y-0.5 min-w-0">
-            <strong 
-              className="text-2xl sm:text-3xl font-mono font-bold text-[#E5E5E5] block truncate"
-              title={formatWeight(oroRecibido.pesoBruto)}
-            >
-              {formatWeight(oroRecibido.pesoBruto)}
-            </strong>
-            <span className="text-[10px] font-mono text-[#8C8C8C] block truncate">Peso Bruto Total</span>
-          </div>
+      {/* Filters */}
+      <FilterBar
+        dateFrom={dateFrom} dateTo={dateTo}
+        filterClientId={filterClientId} statusFilter={statusFilter}
+        clientSearch={clientSearch} clientOptions={clientOptions}
+        clients={clients} hasActiveFilters={hasActiveFilters}
+        onDateFromChange={setDateFrom} onDateToChange={setDateTo}
+        onFilterClientIdChange={setFilterClientId} onStatusFilterChange={setStatusFilter}
+        onClientSearchChange={setClientSearch} onClearFilters={clearFilters}
+      />
 
-          <div className="grid grid-cols-2 gap-2 pt-2.5 border-t border-neutral-800/20">
-            <div className="min-w-0">
-              <span className="text-xs font-mono font-bold text-[#D5B042] block truncate">{oroRecibido.totalBarras}</span>
-              <span className="text-[9px] text-[#8C8C8C]/50 block truncate">Barras</span>
-            </div>
-            <div className="min-w-0">
-              <span className="text-xs font-mono font-bold text-[#D5B042] block truncate">{oroRecibido.clientes}</span>
-              <span className="text-[9px] text-[#8C8C8C]/50 block truncate">Clientes</span>
-            </div>
-            <div className="col-span-2 min-w-0">
-              <span 
-                className="text-[9px] font-mono text-[#8C8C8C] block truncate"
-                title={`FA (Fino Analítico): ${formatWeight(oroRecibido.finoTotal)}`}
-              >
-                FA (Fino Analítico):{' '}
-                <strong className="text-[#E5E5E5]">{formatWeight(oroRecibido.finoTotal)}</strong>
-              </span>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Oro Fundido - Modificado a p-4 y space-y-2.5 */}
-        <motion.div
-          initial={{ opacity: 0, y: 25 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.35, duration: 0.4, ease: 'easeOut' }}
-          id="report-oro-fundido"
-          className="bg-[#1C1C1C] p-4 rounded-2xl border border-neutral-800/40 shadow-[0_4px_12px_rgba(0,0,0,0.3)] space-y-2.5 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,0,0,0.4)] hover:border-amber-500/30 min-w-0 overflow-hidden"
-        >
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2 min-w-0">
-              <div className="p-1.5 bg-amber-950/30 rounded-lg border border-amber-500/15 shrink-0">
-                <Flame className="w-3.5 h-3.5 text-amber-400" />
-              </div>
-              <div className="min-w-0">
-                <span className="text-[10px] font-mono text-[#8C8C8C] uppercase tracking-wider font-semibold block truncate">Oro Fundido</span>
-                <p className="text-[9px] text-[#8C8C8C]/50 block truncate">Fundiciones completadas</p>
-              </div>
-            </div>
-            <button
-              onClick={() => openFilterModal('report-oro-fundido')}
-              disabled={exportingSection === 'report-oro-fundido'}
-              className="flex items-center gap-1 px-2 py-1 bg-amber-950/30 hover:bg-amber-900/50 border border-amber-500/20 text-amber-300 text-[9px] font-mono font-bold uppercase tracking-wider rounded-lg transition-colors cursor-pointer disabled:opacity-50 shrink-0"
-            >
-              {exportingSection === 'report-oro-fundido' ? (
-                <RefreshCw className="w-3 h-3 animate-spin" />
-              ) : (
-                <Download className="w-3 h-3" />
-              )}
-              PDF
-            </button>
-          </div>
-
-          <div className="space-y-0.5 min-w-0">
-            <strong 
-              className="text-2xl sm:text-3xl font-mono font-bold text-[#E5E5E5] block truncate"
-              title={formatWeight(oroRefinado.totalRecovered)}
-            >
-              {formatWeight(oroRefinado.totalRecovered)}
-            </strong>
-            <span className="text-[10px] font-mono text-[#8C8C8C] block truncate">R (Recuperado)</span>
-          </div>
-
-          <div className="grid grid-cols-3 gap-2 pt-2.5 border-t border-neutral-800/20">
-            <div className="min-w-0">
-              <span className="text-xs font-mono font-bold text-[#D5B042] block truncate">{oroRefinado.lotsCount}</span>
-              <span className="text-[9px] text-[#8C8C8C]/50 block truncate">Lotes</span>
-            </div>
-            <div className="min-w-0">
-              <span className="text-xs font-mono font-bold text-[#D5B042] block truncate">{oroRefinado.barrasCount}</span>
-              <span className="text-[9px] text-[#8C8C8C]/50 block truncate">Barras</span>
-            </div>
-            <div className="min-w-0">
-              <span className={`text-xs font-mono font-bold block truncate ${oroRefinado.eficiencia >= 99 ? 'text-emerald-400' : 'text-amber-400'}`}>
-                {formatNumber(oroRefinado.eficiencia, 1)}%
-              </span>
-              <span className="text-[9px] text-[#8C8C8C]/50 block truncate">Eficiencia</span>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between text-[9px] font-mono text-[#8C8C8C] bg-neutral-900/50 px-2 py-1 rounded border border-neutral-800/20">
-            <span>FE (Fino Esperado): <strong className="text-[#D5B042]">{formatWeight(oroRefinado.totalExpected * 0.99)}</strong></span>
-            <span className="text-[7px] text-[#8C8C8C]/50">FA × 0,99</span>
-          </div>
-          {oroRefinado.enProcesoCount > 0 && (
-            <div className="flex items-center gap-1 text-[9px] font-mono text-amber-500 bg-amber-950/20 px-2 py-0.5 rounded border border-amber-500/10 min-w-0">
-              <RefreshCw className="w-2.5 h-2.5 animate-spin shrink-0" />
-              <span className="block truncate">{oroRefinado.enProcesoCount} activo(s)</span>
-            </div>
+      {/* Balance Table */}
+      <div className="relative">
+        <BalanceTable clientRows={clientRows} totals={totals} hasActiveFilters={hasActiveFilters} />
+        <button onClick={handleExportPDF} disabled={exporting}
+          className="absolute top-5 right-5 flex items-center gap-2 px-4 py-2 bg-[var(--pm-accent-gold)]/10 hover:bg-[var(--pm-accent-gold)]/20
+            border border-[var(--pm-accent-gold)]/30 text-[var(--pm-accent-gold)] text-[10px] font-mono font-bold
+            uppercase tracking-wider rounded-lg transition-all active:scale-95 disabled:opacity-50 cursor-pointer z-10">
+          {exporting ? (
+            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+          ) : (
+            <Download className="w-3.5 h-3.5" />
           )}
-        </motion.div>
-
-        {/* Oro en Espera - Modificado a p-4 y space-y-2.5 */}
-        <motion.div
-          initial={{ opacity: 0, y: 25 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5, duration: 0.4, ease: 'easeOut' }}
-          id="report-oro-espera"
-          className="bg-[#1C1C1C] p-4 rounded-2xl border border-neutral-800/40 shadow-[0_4px_12px_rgba(0,0,0,0.3)] space-y-2.5 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,0,0,0.4)] hover:border-blue-500/30 min-w-0 overflow-hidden"
-        >
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2 min-w-0">
-              <div className="p-1.5 bg-blue-950/30 rounded-lg border border-blue-500/15 shrink-0">
-                <Clock className="w-3.5 h-3.5 text-blue-400" />
-              </div>
-              <div className="min-w-0">
-                <span className="text-[10px] font-mono text-[#8C8C8C] uppercase tracking-wider font-semibold block truncate">Oro en Espera</span>
-                <p className="text-[9px] text-[#8C8C8C]/50 block truncate">Pendiente por procesar</p>
-              </div>
-            </div>
-            <button
-              onClick={() => openFilterModal('report-oro-espera')}
-              disabled={exportingSection === 'report-oro-espera'}
-              className="flex items-center gap-1 px-2 py-1 bg-blue-950/30 hover:bg-blue-900/50 border border-blue-500/20 text-blue-300 text-[9px] font-mono font-bold uppercase tracking-wider rounded-lg transition-colors cursor-pointer disabled:opacity-50 shrink-0"
-            >
-              {exportingSection === 'report-oro-espera' ? (
-                <RefreshCw className="w-3 h-3 animate-spin" />
-              ) : (
-                <Download className="w-3 h-3" />
-              )}
-              PDF
-            </button>
-          </div>
-
-          <div className="space-y-0.5 min-w-0">
-            <strong 
-              className="text-2xl sm:text-3xl font-mono font-bold text-[#E5E5E5] block truncate"
-              title={formatWeight(oroEnEspera.pesoBruto)}
-            >
-              {formatWeight(oroEnEspera.pesoBruto)}
-            </strong>
-            <span className="text-[10px] font-mono text-[#8C8C8C] block truncate">Peso Bruto en Bóveda</span>
-          </div>
-
-          <div className="grid grid-cols-3 gap-2 pt-2.5 border-t border-neutral-800/20">
-            <div className="min-w-0">
-              <span className="text-xs font-mono font-bold text-[#D5B042] block truncate">{oroEnEspera.count}</span>
-              <span className="text-[9px] text-[#8C8C8C]/50 block truncate">Barras</span>
-            </div>
-            <div className="min-w-0">
-              <span className="text-xs font-mono font-bold text-[#D5B042] block truncate">{oroEnEspera.clientes}</span>
-              <span className="text-[9px] text-[#8C8C8C]/50 block truncate">Clientes</span>
-            </div>
-            <div className="min-w-0">
-              <span 
-                className="text-xs font-mono font-bold text-[#E5E5E5] block truncate"
-                title={formatWeight(oroEnEspera.finoTotal)}
-              >
-                {formatWeight(oroEnEspera.finoTotal)}
-              </span>
-              <span className="text-[9px] text-[#8C8C8C]/50 block truncate">FA (Fino Analítico)</span>
-            </div>
-          </div>
-        </motion.div>
+          {exporting ? 'Generando...' : 'Descargar Reporte PDF'}
+        </button>
       </div>
 
-      {/* Balance Section (Sigue igual) */}
-      <motion.div
-        initial={{ opacity: 0, y: 25 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.65, duration: 0.4, ease: 'easeOut' }}
-        id="report-clientes"
-        className="bg-[#1C1C1C] p-6 rounded-2xl border border-neutral-800/40 shadow-[0_4px_12px_rgba(0,0,0,0.3)] space-y-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,0,0,0.4)] hover:border-[#D5B042]/30"
-      >
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-neutral-800/20 pb-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-[#D5B042]/10 rounded-lg border border-[#D5B042]/20">
-              <TrendingUp className="w-5 h-5 text-[#D5B042]" />
-            </div>
-            <div>
-              <h3 className="text-sm font-bold text-[#E5E5E5] uppercase tracking-wider">Oro Recibido por Cliente y Oro Entregado</h3>
-              <p className="text-[10px] text-[#8C8C8C] font-mono mt-0.5">Balance de masa por socio comercial</p>
-            </div>
-          </div>
-          <button
-            onClick={() => openFilterModal('report-clientes')}
-            disabled={exportingSection === 'report-clientes'}
-            className="flex items-center gap-2 px-4 py-2 bg-[#D5B042]/10 hover:bg-[#D5B042]/20 border border-[#D5B042]/30 text-[#D5B042] text-[10px] font-mono font-bold uppercase tracking-wider rounded-lg transition-colors cursor-pointer disabled:opacity-50"
-          >
-            {exportingSection === 'report-clientes' ? (
-              <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-            ) : (
-              <Download className="w-3.5 h-3.5" />
-            )}
-            Descargar PDF
-          </button>
-        </div>
-
-        {clientesReport.length === 0 ? (
-          <div className="text-center py-10 text-[#8C8C8C] text-xs font-sans">
-            No hay transacciones registradas para mostrar balance por cliente.
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="border-b border-neutral-800/40 text-[10px] font-mono text-[#8C8C8C] uppercase tracking-wider">
-                    <th className="py-3 px-4">Cliente</th>
-                    <th className="py-3 px-4 text-right">FA (g)</th>
-                    <th className="py-3 px-4 text-right">Entregado (g)</th>
-                    <th className="py-3 px-4 text-right">Balance (g)</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-neutral-800/20 text-xs font-sans text-[#E5E5E5]">
-                  {clientesReport.map((cliente) => {
-                    const balance = cliente.received - cliente.delivered;
-                    return (
-                      <tr key={cliente.name} className="hover:bg-black/40 transition-colors">
-                        <td className="py-3.5 px-4 font-medium text-[#E5E5E5] flex items-center gap-2">
-                          <Coins className="w-3.5 h-3.5 text-[#D5B042]" />
-                          {cliente.name}
-                        </td>
-                        <td className="py-3.5 px-4 text-right font-mono font-bold text-emerald-400">
-                          {formatWeight(cliente.received)}
-                        </td>
-                        <td className="py-3.5 px-4 text-right font-mono font-bold text-amber-400">
-                          {formatWeight(cliente.delivered)}
-                        </td>
-                        <td className="py-3.5 px-4 text-right">
-                          <span className={`inline-flex items-center gap-1 font-mono font-bold text-sm ${balance >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                            <ArrowUpRight className={`w-3 h-3 ${balance >= 0 ? '' : 'rotate-180'}`} />
-                            {balance >= 0 ? '+' : ''}{formatWeight(balance)}
-                          </span>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-          </div>
-        )}
-      </motion.div>
-
-      <AnimatePresence>
-        {filterModalFor && (
-          <motion.div key="filter-modal" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-[#1C1C1C] border border-neutral-800/40 rounded-2xl w-full max-w-md overflow-hidden shadow-[0_10px_35px_rgba(0,0,0,0.8)]">
-              <div className="p-6 space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Filter className="w-5 h-5 text-[#D5B042]" />
-                    <h3 className="text-sm font-bold text-[#E5E5E5]">Filtrar Reporte</h3>
-                  </div>
-                  <button onClick={() => setFilterModalFor(null)}
-                    className="p-1 hover:bg-neutral-800 rounded-lg transition-colors cursor-pointer">
-                    <X className="w-4 h-4 text-[#8C8C8C]" />
-                  </button>
-                </div>
-
-                <div className="space-y-3">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-mono text-[#8C8C8C] uppercase">Desde</label>
-                      <input type="date" value={modalDateFrom} onChange={(e) => setModalDateFrom(e.target.value)}
-                        className="w-full bg-black border border-neutral-800/40 rounded-lg px-3 py-2 text-xs text-[#E5E5E5] focus:outline-none focus:border-[#D5B042] transition-colors" />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-mono text-[#8C8C8C] uppercase">Hasta</label>
-                      <input type="date" value={modalDateTo} onChange={(e) => setModalDateTo(e.target.value)}
-                        className="w-full bg-black border border-neutral-800/40 rounded-lg px-3 py-2 text-xs text-[#E5E5E5] focus:outline-none focus:border-[#D5B042] transition-colors" />
-                    </div>
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-mono text-[#8C8C8C] uppercase">Clientes</label>
-                    <div className="max-h-40 overflow-y-auto space-y-1 bg-black rounded-lg border border-neutral-800/40 p-2">
-                      {clients.length === 0 ? (
-                        <p className="text-[11px] text-[#8C8C8C] p-2">No hay clientes registrados.</p>
-                      ) : (
-                        clients.map(c => (
-                          <button key={c.id} onClick={() => toggleClientFilter(c.id)}
-                            className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded text-xs transition-colors cursor-pointer
-                              ${modalSelectedIds.includes(c.id) ? 'bg-[#D5B042]/10 text-[#D5B042]' : 'text-[#8C8C8C] hover:text-[#E5E5E5] hover:bg-black/50'}`}>
-                            <span>{c.name}</span>
-                            {modalSelectedIds.includes(c.id) && <Check className="w-3 h-3 shrink-0" />}
-                          </button>
-                        ))
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="p-4 bg-black/20 border-t border-neutral-800/20 flex gap-3 justify-end">
-                <button onClick={() => setFilterModalFor(null)}
-                  className="py-2 px-4 bg-black hover:bg-[#141414] border border-neutral-800/40 text-gray-300 font-semibold text-xs rounded-xl transition-colors cursor-pointer">
-                  Cancelar
-                </button>
-                <button onClick={handleExportWithFilters}
-                  className="py-2 px-4 bg-gradient-to-r from-[#B4941E] to-[#D5B042] text-black font-semibold text-xs uppercase tracking-wider rounded-xl hover:brightness-110 transition-all duration-200 cursor-pointer flex items-center gap-1.5">
-                  <Download className="w-3.5 h-3.5" /> Exportar PDF
-                </button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Status Footer */}
+      <StatusFooter activeClientCount={activeClientCount} totalFA={totalFA} barCount={bars.length} />
     </motion.div>
   );
 }

@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo, useEffect, Fragment } from 'react';
 import { formatNumber } from '@/lib/format';
+import { StatusBadge } from '@/components/ui/StatusBadge';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Building2, ChevronDown, ChevronLeft, ChevronRight, Search,
@@ -17,22 +18,6 @@ interface SupplierDirectoryProps {
   filterSupplierId?: string;
   onBarClick?: (barId: string) => void;
 }
-
-const STATUS_STYLES: Record<string, string> = {
-  POR_VALIDAR: 'text-[var(--pm-accent-amber)] bg-[var(--pm-accent-amber)]/10 border-[var(--pm-accent-amber)]/20',
-  IN_STOCK: 'text-[var(--pm-accent-emerald)] bg-[var(--pm-accent-emerald)]/10 border-[var(--pm-accent-emerald)]/20',
-  PROCESANDO: 'text-[var(--pm-accent-cyan)] bg-[var(--pm-accent-cyan)]/10 border-[var(--pm-accent-cyan)]/20',
-  COMPLETADO: 'text-[var(--pm-accent-emerald)] bg-[var(--pm-accent-emerald)]/10 border-[var(--pm-accent-emerald)]/20',
-  EXITED: 'text-[var(--pm-text-dim)] bg-[var(--pm-bg-tertiary)]/50 border-[var(--pm-border)]/30',
-};
-
-const STATUS_LABELS: Record<string, string> = {
-  POR_VALIDAR: 'POR VALIDAR',
-  IN_STOCK: 'VALIDADO',
-  PROCESANDO: 'EN PROCESO',
-  COMPLETADO: 'VALIDADO',
-  EXITED: 'EGRESADO',
-};
 
 export function SupplierDirectory({
   bars,
@@ -218,9 +203,7 @@ export function SupplierDirectory({
                                   )}
                                   <td className="text-right text-[var(--pm-accent-gold)]">{formatNumber(Number(bar.fineWeight), 4)}</td>
                                   <td className="text-right">
-                                    <span className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border ${STATUS_STYLES[bar.status] || ''}`}>
-                                      {STATUS_LABELS[bar.status] || bar.status}
-                                    </span>
+                                    <StatusBadge status={bar.status} size="sm" />
                                   </td>
                                 </tr>
                               );
