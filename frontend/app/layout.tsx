@@ -61,6 +61,7 @@ export default function RootLayout({
     <html lang="es">
       <head>
         <title>Control Mining</title>
+        <link rel="icon" type="image/png" href="/Bandes.png" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       </head>
       <body>
@@ -71,9 +72,7 @@ export default function RootLayout({
               <aside className="v2-sidebar">
                 {/* Logo */}
                 <div className="flex items-center gap-3 h-16 px-5 shrink-0 border-b border-[var(--pm-border)]">
-                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[var(--pm-accent-gold)] to-amber-700 flex items-center justify-center">
-                    <Coins className="w-4 h-4 text-[var(--pm-bg-deepest)]" />
-                  </div>
+                  <img src="/Bandes.png" alt="Bandes" className="w-8 h-8 rounded-lg object-contain" />
                   <span className="text-sm font-mono font-bold text-[var(--pm-accent-gold)] tracking-widest">
                     CONTROL MINING
                   </span>

@@ -33,3 +33,18 @@ export function formatRifDisplay(digits: string): string {
 export function sanitizeRifInput(val: string): string {
   return val.replace(/^J/i, '').replace(/\D/g, '').slice(0, 9);
 }
+
+let cachedLogoBase64: string | null = null;
+
+export async function fetchLogoAsBase64(): Promise<string> {
+  if (cachedLogoBase64) return cachedLogoBase64;
+  const res = await fetch('/BandesLogo.png');
+  const blob = await res.blob();
+  const base64 = await new Promise<string>((resolve) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result as string);
+    reader.readAsDataURL(blob);
+  });
+  cachedLogoBase64 = base64;
+  return base64;
+}

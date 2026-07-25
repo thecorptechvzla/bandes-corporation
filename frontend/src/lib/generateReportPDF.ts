@@ -1,6 +1,6 @@
 import { toPng } from 'html-to-image';
 import { jsPDF } from 'jspdf';
-import { formatWeight, formatNumber } from '@/lib/format';
+import { formatWeight, formatNumber, fetchLogoAsBase64 } from '@/lib/format';
 
 interface ClientRow {
   id: string;
@@ -40,6 +40,8 @@ export async function generateReportPDF(data: ReportData) {
     height: element.scrollHeight,
   });
 
+  const logoBase64 = await fetchLogoAsBase64();
+
   const pdf = new jsPDF('p', 'mm', 'a4');
   const pw = 210;
   const m = 15;
@@ -53,10 +55,7 @@ export async function generateReportPDF(data: ReportData) {
   pdf.setFillColor(212, 175, 55);
   pdf.rect(0, 40, pw, 2, 'F');
 
-  pdf.setTextColor(212, 175, 55);
-  pdf.setFontSize(22);
-  pdf.setFont('helvetica', 'bold');
-  pdf.text('BANDES', m, y + 10);
+  pdf.addImage(logoBase64, 'PNG', m, 6, 40, 19);
   pdf.setTextColor(200, 200, 200);
   pdf.setFontSize(8);
   pdf.setFont('helvetica', 'normal');

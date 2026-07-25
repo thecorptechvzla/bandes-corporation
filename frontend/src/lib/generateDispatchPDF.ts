@@ -1,5 +1,5 @@
 import { jsPDF } from 'jspdf';
-import { formatWeight } from '@/lib/format';
+import { formatWeight, fetchLogoAsBase64 } from '@/lib/format';
 
 interface BarItem {
   barNumber: string;
@@ -29,10 +29,12 @@ export interface DispatchResult {
   type: 'lots' | 'bars';
 }
 
-export function generateDispatchPDF(data: DispatchResult, destinationClient?: { rif?: string; contactInfo?: string }) {
+export async function generateDispatchPDF(data: DispatchResult, destinationClient?: { rif?: string; contactInfo?: string }) {
   const doc = new jsPDF('p', 'mm', 'a4');
   const pw = 210, m = 15, cw = pw - m * 2;
   let y = 15;
+
+  const logoBase64 = await fetchLogoAsBase64();
 
   const isBarMode = data.type === 'bars';
   const itemLabel = isBarMode ? 'Barras' : 'Lotes';
@@ -43,10 +45,7 @@ export function generateDispatchPDF(data: DispatchResult, destinationClient?: { 
   doc.setFillColor(212, 175, 55);
   doc.rect(0, 46, pw, 2, 'F');
 
-  doc.setTextColor(212, 175, 55);
-  doc.setFontSize(20);
-  doc.setFont('helvetica', 'bold');
-  doc.text('BANDES', m, y + 10);
+  doc.addImage(logoBase64, 'PNG', m, 6, 40, 19);
   doc.setTextColor(200, 200, 200);
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
