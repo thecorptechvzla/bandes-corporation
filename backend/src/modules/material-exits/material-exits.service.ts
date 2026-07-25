@@ -5,21 +5,36 @@ import { PrismaService } from '../../prisma/prisma.service.js';
 export class MaterialExitsService {
   constructor(private prisma: PrismaService) {}
 
-  async create(data: { destination: string; lotIds: string[] }) {
-    if (!data.lotIds?.length) {
-      throw new BadRequestException('Al menos un lote es requerido');
+  async create(data: { destination: string; lotIds?: string[]; barIds?: string[] }) {
+    const hasLots = data.lotIds?.length;
+    const hasBars = data.barIds?.length;
+
+    if (!hasLots && !hasBars) {
+      throw new BadRequestException('Debe proporcionar lotIds o barIds');
     }
 
+    if (hasLots && hasBars) {
+      throw new BadRequestException('No se pueden mezclar lotes y barras en un mismo egreso');
+    }
+
+    if (hasLots) {
+      return this.createFromLots(data.destination, data.lotIds!);
+    }
+
+    return this.createFromBars(data.destination, data.barIds!);
+  }
+
+  private async createFromLots(destination: string, lotIds: string[]) {
     return this.prisma.$transaction(async (tx) => {
       const lots = await tx.lot.findMany({
-        where: { id: { in: data.lotIds } },
+        where: { id: { in: lotIds } },
         include: {
           process: { select: { status: true, clientId: true } },
           bars: { where: { status: { in: ['IN_STOCK', 'COMPLETADO'] } } },
         },
       });
 
-      if (lots.length !== data.lotIds.length) {
+      if (lots.length !== lotIds.length) {
         throw new BadRequestException('Uno o más lotes no existen');
       }
 
@@ -42,7 +57,7 @@ export class MaterialExitsService {
       );
 
       const exit = await tx.materialExit.create({
-        data: { destination: data.destination, totalWeight },
+        data: { destination, totalWeight },
       });
 
       for (const lot of lots) {
@@ -77,6 +92,68 @@ export class MaterialExitsService {
               bars: { select: { id: true, barNumber: true, fineWeight: true } },
             },
           },
+          bars: true,
+        },
+      });
+    });
+  }
+
+  private async createFromBars(destination: string, barIds: string[]) {
+    return this.prisma.$transaction(async (tx) => {
+      const bars = await tx.bar.findMany({
+        where: { id: { in: barIds } },
+        include: { client: { select: { id: true, name: true } } },
+      });
+
+      if (bars.length !== barIds.length) {
+        throw new BadRequestException('Una o más barras no existen');
+      }
+
+      const invalidBars = bars.filter(
+        (b) => b.status !== 'IN_STOCK' && b.status !== 'COMPLETADO',
+      );
+      if (invalidBars.length > 0) {
+        throw new BadRequestException(
+          `Las siguientes barras no están disponibles para egresar: ${invalidBars.map((b) => b.barNumber).join(', ')}`,
+        );
+      }
+
+      const assignedBars = bars.filter((b) => b.lotId);
+      if (assignedBars.length > 0) {
+        throw new BadRequestException(
+          `Las siguientes barras están asignadas a un lote y deben egresarse como parte del lote: ${assignedBars.map((b) => b.barNumber).join(', ')}`,
+        );
+      }
+
+      const totalWeight = bars.reduce((sum, b) => sum + Number(b.fineWeight), 0);
+
+      const exit = await tx.materialExit.create({
+        data: { destination, totalWeight },
+      });
+
+      await tx.bar.updateMany({
+        where: { id: { in: barIds } },
+        data: { status: 'EXITED', exitId: exit.id },
+      });
+
+      return tx.materialExit.findUnique({
+        where: { id: exit.id },
+        include: {
+          exitDetails: {
+            include: {
+              lot: {
+                include: {
+                  process: {
+                    include: { client: { select: { id: true, name: true } } },
+                  },
+                },
+              },
+              bars: { select: { id: true, barNumber: true, fineWeight: true } },
+            },
+          },
+          bars: {
+            include: { client: { select: { id: true, name: true } } },
+          },
         },
       });
     });
@@ -96,6 +173,9 @@ export class MaterialExitsService {
             },
             bars: { select: { barNumber: true, fineWeight: true } },
           },
+        },
+        bars: {
+          include: { client: { select: { id: true, name: true } } },
         },
       },
       orderBy: { createdAt: 'desc' },
@@ -117,6 +197,9 @@ export class MaterialExitsService {
             },
             bars: { select: { barNumber: true, fineWeight: true } },
           },
+        },
+        bars: {
+          include: { client: { select: { id: true, name: true } } },
         },
       },
     });

@@ -96,6 +96,8 @@ model Bar {
   lot          Lot?         @relation(fields: [lotId], references: [id])
   packingId    String?
   packing      Packing?     @relation(fields: [packingId], references: [id])
+  exitId       String?
+  exit         MaterialExit? @relation(fields: [exitId], references: [id])
 
   @@unique([clientId, barNumber])
 }
@@ -124,6 +126,7 @@ model MaterialExit {
   createdAt   DateTime @default(now())
 
   exitDetails ExitDetail[]
+  bars        Bar[]
 }
 
 model ExitDetail {

@@ -10,7 +10,8 @@ export class MaterialExitsController {
     @Body()
     body: {
       destination: string;
-      lotIds: string[];
+      lotIds?: string[];
+      barIds?: string[];
     },
   ) {
     return this.service.create(body);

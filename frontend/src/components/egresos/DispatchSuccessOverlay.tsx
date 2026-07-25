@@ -10,11 +10,14 @@ interface DispatchResult {
   reference: string;
   destination: string;
   totalWeight: number;
-  lotCount: number;
+  lotCount?: number;
+  barCount?: number;
   providerCount: number;
-  lots: { name: string; weight: number; provider: string }[];
-  providers: { name: string; lots: number; weight: number }[];
+  lots?: { name: string; weight: number; provider: string }[];
+  bars?: { barNumber: string; grossWeight: number; purity: number; fineWeight: number; provider: string }[];
+  providers: { name: string; count: number; weight: number }[];
   createdAt: string;
+  type: 'lots' | 'bars';
 }
 
 interface DispatchSuccessOverlayProps {
@@ -28,6 +31,9 @@ interface DispatchSuccessOverlayProps {
 const fmtWeight = (val: number) => `${formatNumber(val, 2)} g`;
 
 export function DispatchSuccessOverlay({ isOpen, result, message, onPDF, onClose }: DispatchSuccessOverlayProps) {
+  const itemCount = result.type === 'bars' ? result.barCount : result.lotCount;
+  const itemLabel = result.type === 'bars' ? 'Barras' : 'Lotes';
+
   return (
     <ModalShell isOpen={onClose ? isOpen : false} onClose={onClose} size="md" hideCloseButton>
       <div className="flex flex-col items-center space-y-4">
@@ -35,7 +41,7 @@ export function DispatchSuccessOverlay({ isOpen, result, message, onPDF, onClose
           className="w-16 h-16 rounded-full flex items-center justify-center" style={{ background: 'rgba(16,185,129,0.1)', border: '2px solid rgba(16,185,129,0.25)' }}>
           <Check className="w-8 h-8 text-[var(--pm-accent-emerald)]" strokeWidth={2.5} />
         </motion.div>
-        <span className="text-sm font-sans font-bold text-[var(--pm-accent-emerald)]">Despacho Global Exitoso</span>
+        <span className="text-sm font-sans font-bold text-[var(--pm-accent-emerald)]">Despacho Exitoso</span>
         <span className="text-xs text-[var(--pm-text-dim)] text-center">{message}</span>
 
         <div className="w-full p-4 rounded-xl border border-[var(--pm-border)] bg-[var(--pm-bg-deepest)]/50 space-y-2 text-[10px] font-mono">
@@ -48,8 +54,8 @@ export function DispatchSuccessOverlay({ isOpen, result, message, onPDF, onClose
             <span className="text-[var(--pm-text-primary)] font-bold">{result.providerCount}</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-[var(--pm-text-dim)]">Lotes:</span>
-            <span className="text-[var(--pm-text-primary)] font-bold">{result.lotCount}</span>
+            <span className="text-[var(--pm-text-dim)]">{itemLabel}:</span>
+            <span className="text-[var(--pm-text-primary)] font-bold">{itemCount}</span>
           </div>
           <div className="border-t border-[var(--pm-border)] pt-2 flex justify-between">
             <span className="text-[var(--pm-text-dim)]">Peso Total:</span>
