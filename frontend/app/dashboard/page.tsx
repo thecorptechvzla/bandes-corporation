@@ -16,6 +16,7 @@ import { formatNumber } from '@/lib/format';
 import DashboardFilters from '@/components/DashboardFilters';
 import { EvidenceModal } from '@/components/dashboard/EvidenceModal';
 import { SupplierDirectoryModal } from '@/components/dashboard/SupplierDirectoryModal';
+import { BovedaLotsModal } from '@/components/dashboard/BovedaLotsModal';
 import { KpiCardGrid, KPI_COLORS } from '@/components/dashboard/KpiCardGrid';
 import { BalancesTable } from '@/components/dashboard/BalancesTable';
 import { TreemapPanel } from '@/components/dashboard/TreemapPanel';
@@ -100,6 +101,9 @@ export default function V2DashboardPage() {
   const [showTableIngresos, setShowTableIngresos] = useState(false);
   const [showTableEgresos, setShowTableEgresos] = useState(false);
   const [isIngresoModalOpen, setIsIngresoModalOpen] = useState(false);
+  const [isProcesoModalOpen, setIsProcesoModalOpen] = useState(false);
+  const [isBovedaModalOpen, setIsBovedaModalOpen] = useState(false);
+  const [isPorRefundirModalOpen, setIsPorRefundirModalOpen] = useState(false);
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
   const [isClientBarModalOpen, setIsClientBarModalOpen] = useState(false);
   const [evidenceBarId, setEvidenceBarId] = useState<string | null>(null);
@@ -128,6 +132,30 @@ export default function V2DashboardPage() {
     () => filteredBars.filter((b) => b.status !== 'POR_VALIDAR'),
     [filteredBars],
   );
+
+  const procesoBars = useMemo(
+    () => filteredBars.filter((b) => b.status === 'PROCESANDO'),
+    [filteredBars],
+  );
+
+  const inStockBars = useMemo(
+    () => filteredBars.filter((b) => b.status === 'IN_STOCK'),
+    [filteredBars],
+  );
+
+  const bovedaLots = useMemo(() => {
+    return processes
+      .filter((p) => p.status === 'CLOSED')
+      .flatMap((p) =>
+        (p.lots ?? [])
+          .filter((l) => l.recovered != null)
+          .map((l) => ({ ...l, process: p, client: p.client })),
+      )
+      .filter((l) => {
+        if (filterClientId) return l.client?.id === filterClientId;
+        return true;
+      });
+  }, [processes, filterClientId]);
 
   const flowData = useMemo(() => {
     const days: Record<string, { in: number; out: number }> = {};
@@ -259,7 +287,7 @@ export default function V2DashboardPage() {
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.35 }}>
       {/* Filters */}
-      <div className="mb-5">
+      <div className="mb-10">
         <DashboardFilters
           startDate={filterStartDate}
           endDate={filterEndDate}
@@ -275,7 +303,16 @@ export default function V2DashboardPage() {
       </div>
 
       {/* KPI Cards */}
-      <KpiCardGrid kpiData={kpiData} isMounted={isMounted} onCardClick={() => setIsIngresoModalOpen(true)} />
+      <KpiCardGrid
+        kpiData={kpiData}
+        isMounted={isMounted}
+        onCardClick={(idx) => {
+          if (idx === 0) setIsIngresoModalOpen(true);
+          else if (idx === 1) setIsProcesoModalOpen(true);
+          else if (idx === 2) setIsBovedaModalOpen(true);
+          else if (idx === 3) setIsPorRefundirModalOpen(true);
+        }}
+      />
 
       {/* Treemaps Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mt-5">
@@ -336,6 +373,36 @@ export default function V2DashboardPage() {
         bars={ingresoBars}
         clients={clients}
         onClose={() => setIsIngresoModalOpen(false)}
+        onBarClick={(id) => setEvidenceBarId(id)}
+      />
+
+      {/* Oro en Proceso modal — triggered from card index 1 */}
+      <SupplierDirectoryModal
+        isOpen={isProcesoModalOpen}
+        title="Oro en Proceso"
+        showSearch
+        bars={procesoBars}
+        clients={clients}
+        onClose={() => setIsProcesoModalOpen(false)}
+        onBarClick={(id) => setEvidenceBarId(id)}
+      />
+
+      {/* Oro en Bóveda modal — triggered from card index 2 */}
+      <BovedaLotsModal
+        isOpen={isBovedaModalOpen}
+        lots={bovedaLots}
+        clients={clients}
+        onClose={() => setIsBovedaModalOpen(false)}
+      />
+
+      {/* Por Refundir modal — triggered from card index 3 */}
+      <SupplierDirectoryModal
+        isOpen={isPorRefundirModalOpen}
+        title="Por Refundir"
+        showSearch
+        bars={inStockBars}
+        clients={clients}
+        onClose={() => setIsPorRefundirModalOpen(false)}
         onBarClick={(id) => setEvidenceBarId(id)}
       />
 

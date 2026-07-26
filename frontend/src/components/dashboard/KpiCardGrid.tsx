@@ -72,8 +72,8 @@ export function KpiCardGrid({ kpiData, isMounted, onCardClick }: KpiCardGridProp
             initial={{ opacity: 0, y: -24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.08 * idx, duration: 0.45 }}
-            className={`premium-card relative overflow-hidden active:scale-[0.97] transition-all duration-150 ${idx === 0 ? 'cursor-pointer' : 'cursor-default'}`}
-            onClick={idx === 0 ? () => onCardClick(idx) : undefined}
+            className="premium-card relative overflow-hidden cursor-pointer hover:border-[var(--pm-accent-gold)]/20 hover:shadow-[0_0_24px_var(--pm-accent-gold)/08] active:scale-[0.97] transition-all duration-150"
+            onClick={() => onCardClick(idx)}
           >
             <SparklineArea data={kpi.spark} color={kpi.accent} id={`kpi-${idx}`} />
 
