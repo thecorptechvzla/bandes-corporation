@@ -130,7 +130,7 @@ export function ExitsTable({
                           onClick={() => onPDFCliente(e)}
                           className="inline-flex items-center gap-1 px-2 py-1 rounded text-[9px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer border"
                           style={{ background: 'rgba(212,175,55,0.08)', color: 'var(--pm-accent-gold)', borderColor: 'rgba(212,175,55,0.2)' }}
-                          title="Descargar Copia Cliente"
+                          title="Descargar Comprobante Cliente"
                         >
                           <User className="w-3 h-3" /> Cliente
                         </button>
@@ -139,7 +139,7 @@ export function ExitsTable({
                           onClick={() => onPDFEmpresa(e)}
                           className="inline-flex items-center gap-1 px-2 py-1 rounded text-[9px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer border"
                           style={{ background: 'rgba(212,175,55,0.04)', color: 'var(--pm-accent-gold)', borderColor: 'rgba(212,175,55,0.12)' }}
-                          title="Descargar Copia Empresa"
+                          title="Descargar Comprobante Empresa"
                         >
                           <Building className="w-3 h-3" /> Empresa
                         </button>

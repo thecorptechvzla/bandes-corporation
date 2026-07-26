@@ -68,12 +68,12 @@ export function DispatchSuccessOverlay({ isOpen, result, message, onPDFCliente, 
           <button type="button" onClick={onPDFCliente}
             className="flex-1 py-2.5 rounded-lg text-[10px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1.5"
             style={{ background: 'linear-gradient(135deg, rgba(212,175,55,0.2), rgba(212,175,55,0.1))', color: 'var(--pm-accent-gold)', border: '1px solid rgba(212,175,55,0.3)' }}>
-            <User className="w-3.5 h-3.5" /> Copia Cliente
+            <User className="w-3.5 h-3.5" /> Comprobante Cliente
           </button>
           <button type="button" onClick={onPDFEmpresa}
             className="flex-1 py-2.5 rounded-lg text-[10px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1.5"
             style={{ background: 'linear-gradient(135deg, rgba(212,175,55,0.12), rgba(212,175,55,0.06))', color: 'var(--pm-accent-gold)', border: '1px solid rgba(212,175,55,0.2)' }}>
-            <Building className="w-3.5 h-3.5" /> Copia Empresa
+            <Building className="w-3.5 h-3.5" /> Comprobante Empresa
           </button>
         </div>
 
