@@ -85,7 +85,7 @@ export default function V2DashboardPage() {
     clientId: filterClientId || undefined,
   };
 
-  const { data: bars = [] } = useBars();
+  const { data: bars = [] } = useBars({ includePorValidar: true });
   const { data: clients = [] } = useClients();
   const { data: exits = [] } = useMaterialExits();
   const { data: processes = [] } = useProcesses();
@@ -128,10 +128,7 @@ export default function V2DashboardPage() {
     return result;
   }, [exits, filterClientId, filterStartDate, filterEndDate]);
 
-  const ingresoBars = useMemo(
-    () => filteredBars.filter((b) => b.status !== 'POR_VALIDAR'),
-    [filteredBars],
-  );
+  const ingresoBars = filteredBars;
 
   const procesoBars = useMemo(
     () => filteredBars.filter((b) => b.status === 'PROCESANDO'),
