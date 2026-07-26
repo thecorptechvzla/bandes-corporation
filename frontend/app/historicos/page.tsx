@@ -1,13 +1,17 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { motion } from 'motion/react';
 import { usePackings, usePacking } from '@/hooks/usePackings';
 import { useMaterialExits } from '@/hooks/useExits';
-import { History, Package, Truck } from 'lucide-react';
+import { useBars } from '@/hooks/useBars';
+import { generateDispatchPDF, convertExitToDispatchResult } from '@/lib/generateDispatchPDF';
+import { formatNumber, formatWeight } from '@/lib/format';
+import { History, Package, Truck, ArrowDownToLine, ArrowUpFromLine, Scale } from 'lucide-react';
 import { HistoryFilters } from '@/components/historicos/HistoryFilters';
 import { PackingsTable } from '@/components/historicos/PackingsTable';
 import { ExitsTable } from '@/components/historicos/ExitsTable';
+import type { MaterialExit } from '@/types/api';
 
 type TabId = 'packings' | 'exits';
 
@@ -23,6 +27,7 @@ export default function V2HistoricosPage() {
   const { data: packings = [], isLoading: loadingPackings } = usePackings();
   const { data: exits = [], isLoading: loadingExits } = useMaterialExits();
   const { data: expandedPacking, isLoading: loadingExpandedPacking } = usePacking(expandedPackingId);
+  const { data: allBars = [] } = useBars();
 
   const switchTab = (tab: TabId) => {
     setActiveTab(tab);
@@ -104,6 +109,55 @@ export default function V2HistoricosPage() {
     });
   }, [exits, searchQuery, dateFrom, dateTo, selectedProvider]);
 
+  const balance = useMemo(() => {
+    let ingresoBruto = 0;
+    let ingresoFino = 0;
+    let ingresoLeySum = 0;
+    let ingresoLeyCount = 0;
+
+    let egresoBruto = 0;
+    let egresoFino = 0;
+    let egresoLeySum = 0;
+    let egresoLeyCount = 0;
+
+    allBars.forEach(bar => {
+      const gw = Number(bar.grossWeight);
+      const fw = Number(bar.fineWeight);
+      const p = Number(bar.purity);
+      ingresoBruto += gw;
+      ingresoFino += fw;
+      if (gw > 0) { ingresoLeySum += p * gw; ingresoLeyCount += gw; }
+
+      if (bar.status === 'EXITED') {
+        egresoBruto += gw;
+        egresoFino += fw;
+        if (gw > 0) { egresoLeySum += p * gw; egresoLeyCount += gw; }
+      }
+    });
+
+    const avgLeyIngreso = ingresoLeyCount > 0 ? ingresoLeySum / ingresoLeyCount : 0;
+    const avgLeyEgreso = egresoLeyCount > 0 ? egresoLeySum / egresoLeyCount : 0;
+
+    return {
+      ingresado: { bruto: ingresoBruto, fino: ingresoFino, ley: avgLeyIngreso },
+      egresado: { bruto: egresoBruto, fino: egresoFino, ley: avgLeyEgreso },
+      balance: {
+        bruto: ingresoBruto - egresoBruto,
+        fino: ingresoFino - egresoFino,
+      },
+    };
+  }, [allBars]);
+
+  const handlePDFCliente = useCallback((exit: MaterialExit) => {
+    const result = convertExitToDispatchResult(exit);
+    generateDispatchPDF(result, undefined, 'CLIENTE');
+  }, []);
+
+  const handlePDFEmpresa = useCallback((exit: MaterialExit) => {
+    const result = convertExitToDispatchResult(exit);
+    generateDispatchPDF(result, undefined, 'EMPRESA');
+  }, []);
+
   const hasAnyFilter = !!(searchQuery || dateFrom || dateTo || selectedProvider);
 
   return (
@@ -117,6 +171,80 @@ export default function V2HistoricosPage() {
           <div>
             <h1 className="text-lg font-bold text-[var(--pm-text-primary)] tracking-tight">Históricos</h1>
             <p className="text-[10px] font-mono text-[var(--pm-text-dim)]">Registro auditable de movimientos del sistema</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Balance Global */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="glass-panel rounded-xl border border-[var(--pm-border)]/40 p-4 space-y-3">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+              <ArrowDownToLine className="w-3.5 h-3.5 text-emerald-400" />
+            </div>
+            <span className="text-[10px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider">Ingresado</span>
+          </div>
+          <div className="space-y-1.5">
+            <div className="flex justify-between text-[11px] font-mono">
+              <span className="text-[var(--pm-text-dim)]">PESO BRUTO</span>
+              <span className="text-[var(--pm-text-primary)] font-semibold">{formatWeight(balance.ingresado.bruto, 2)}</span>
+            </div>
+            <div className="flex justify-between text-[11px] font-mono">
+              <span className="text-[var(--pm-text-dim)]">PESO FINO</span>
+              <span className="text-[var(--pm-accent-gold)] font-semibold">{formatWeight(balance.ingresado.fino, 2)}</span>
+            </div>
+            <div className="flex justify-between text-[11px] font-mono">
+              <span className="text-[var(--pm-text-dim)]">LEY AU</span>
+              <span className="text-[var(--pm-text-primary)] font-semibold">{formatNumber(balance.ingresado.ley, 1)} ‰</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="glass-panel rounded-xl border border-[var(--pm-border)]/40 p-4 space-y-3">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg bg-rose-500/10 border border-rose-500/20 flex items-center justify-center">
+              <ArrowUpFromLine className="w-3.5 h-3.5 text-rose-400" />
+            </div>
+            <span className="text-[10px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider">Egresado</span>
+          </div>
+          <div className="space-y-1.5">
+            <div className="flex justify-between text-[11px] font-mono">
+              <span className="text-[var(--pm-text-dim)]">PESO BRUTO</span>
+              <span className="text-[var(--pm-text-primary)] font-semibold">{formatWeight(balance.egresado.bruto, 2)}</span>
+            </div>
+            <div className="flex justify-between text-[11px] font-mono">
+              <span className="text-[var(--pm-text-dim)]">PESO FINO</span>
+              <span className="text-[var(--pm-accent-gold)] font-semibold">{formatWeight(balance.egresado.fino, 2)}</span>
+            </div>
+            <div className="flex justify-between text-[11px] font-mono">
+              <span className="text-[var(--pm-text-dim)]">LEY AU</span>
+              <span className="text-[var(--pm-text-primary)] font-semibold">{formatNumber(balance.egresado.ley, 1)} ‰</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="glass-panel rounded-xl border border-[var(--pm-border)]/40 p-4 space-y-3">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg bg-[var(--pm-accent-gold)]/10 border border-[var(--pm-accent-gold)]/20 flex items-center justify-center">
+              <Scale className="w-3.5 h-3.5 text-[var(--pm-accent-gold)]" />
+            </div>
+            <span className="text-[10px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider">Balance</span>
+          </div>
+          <div className="space-y-1.5">
+            <div className="flex justify-between text-[11px] font-mono">
+              <span className="text-[var(--pm-text-dim)]">PESO BRUTO</span>
+              <span className="text-[var(--pm-text-primary)] font-semibold">{formatWeight(balance.balance.bruto, 2)}</span>
+            </div>
+            <div className="flex justify-between text-[11px] font-mono">
+              <span className="text-[var(--pm-text-dim)]">PESO FINO</span>
+              <span className={`font-semibold ${balance.balance.fino >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>{formatWeight(balance.balance.fino, 2)}</span>
+            </div>
+            <div className="flex justify-between text-[11px] font-mono">
+              <span className="text-[var(--pm-text-dim)]">REMANENTE</span>
+              <span className="text-[var(--pm-text-primary)] font-semibold">
+                {balance.ingresado.fino > 0 ? formatNumber((balance.balance.fino / balance.ingresado.fino) * 100, 1) : '0.0'}%
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -190,6 +318,8 @@ export default function V2HistoricosPage() {
           exits={filteredExits} isLoading={loadingExits}
           hasAnyFilter={hasAnyFilter} expandedExitId={expandedExitId}
           onExpand={setExpandedExitId} onClearFilters={clearFilters}
+          onPDFCliente={handlePDFCliente}
+          onPDFEmpresa={handlePDFEmpresa}
         />
       )}
     </div>

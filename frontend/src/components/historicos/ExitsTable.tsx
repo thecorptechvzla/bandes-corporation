@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ChevronDown, Truck, FileStack } from 'lucide-react';
+import { ChevronDown, Truck, FileStack, Download, User, Building } from 'lucide-react';
 import { formatNumber, formatWeight } from '@/lib/format';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -29,10 +29,13 @@ interface ExitsTableProps {
   expandedExitId: string | null;
   onExpand: (id: string | null) => void;
   onClearFilters: () => void;
+  onPDFCliente: (exit: ExitItem) => void;
+  onPDFEmpresa: (exit: ExitItem) => void;
 }
 
 export function ExitsTable({
   exits, isLoading, hasAnyFilter, expandedExitId, onExpand, onClearFilters,
+  onPDFCliente, onPDFEmpresa,
 }: ExitsTableProps) {
   if (isLoading) {
     return (
@@ -68,6 +71,7 @@ export function ExitsTable({
               <th className="text-left px-4 py-3 text-[10px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider">Lotes</th>
               <th className="text-left px-4 py-3 text-[10px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider">Peso Total</th>
               <th className="text-left px-4 py-3 text-[10px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider">Fecha</th>
+              <th className="text-center px-4 py-3 text-[10px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider">Comprobantes</th>
               <th className="px-4 py-3 w-10" />
             </tr>
           </thead>
@@ -119,6 +123,28 @@ export function ExitsTable({
                         })}
                       </span>
                     </td>
+                    <td className="px-4 py-3.5">
+                      <div className="flex items-center justify-center gap-1.5" onClick={ev => ev.stopPropagation()}>
+                        <button
+                          type="button"
+                          onClick={() => onPDFCliente(e)}
+                          className="inline-flex items-center gap-1 px-2 py-1 rounded text-[9px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer border"
+                          style={{ background: 'rgba(212,175,55,0.08)', color: 'var(--pm-accent-gold)', borderColor: 'rgba(212,175,55,0.2)' }}
+                          title="Descargar Copia Cliente"
+                        >
+                          <User className="w-3 h-3" /> Cliente
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => onPDFEmpresa(e)}
+                          className="inline-flex items-center gap-1 px-2 py-1 rounded text-[9px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer border"
+                          style={{ background: 'rgba(212,175,55,0.04)', color: 'var(--pm-accent-gold)', borderColor: 'rgba(212,175,55,0.12)' }}
+                          title="Descargar Copia Empresa"
+                        >
+                          <Building className="w-3 h-3" /> Empresa
+                        </button>
+                      </div>
+                    </td>
                     <td className="px-4 py-3.5 text-right">
                       <motion.div animate={{ rotate: isExpanded ? 180 : 0 }} transition={{ duration: 0.2 }}>
                         <ChevronDown className="w-4 h-4 text-[var(--pm-text-dim)] group-hover:text-[var(--pm-accent-gold)] transition-colors" />
@@ -127,7 +153,7 @@ export function ExitsTable({
                   </tr>
                   {isExpanded && (
                     <tr key={`${e.id}-detail`}>
-                      <td colSpan={6} className="px-0 py-0">
+                      <td colSpan={7} className="px-0 py-0">
                         <motion.div
                           initial={{ height: 0, opacity: 0 }}
                           animate={{ height: 'auto', opacity: 1 }}
@@ -140,9 +166,27 @@ export function ExitsTable({
                                 <FileStack className="w-3 h-3 inline mr-1.5" />
                                 Detalle del Despacho
                               </h4>
-                              <span className="text-[10px] font-mono text-[var(--pm-text-dim)]">
-                                Destino: <span className="text-[var(--pm-text-primary)]">{e.destination}</span>
-                              </span>
+                              <div className="flex items-center gap-2" onClick={ev => ev.stopPropagation()}>
+                                <span className="text-[10px] font-mono text-[var(--pm-text-dim)] mr-1">
+                                  Destino: <span className="text-[var(--pm-text-primary)]">{e.destination}</span>
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() => onPDFCliente(e)}
+                                  className="inline-flex items-center gap-1 px-2 py-1 rounded text-[9px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer border"
+                                  style={{ background: 'rgba(212,175,55,0.08)', color: 'var(--pm-accent-gold)', borderColor: 'rgba(212,175,55,0.2)' }}
+                                >
+                                  <Download className="w-3 h-3" /> Cliente
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => onPDFEmpresa(e)}
+                                  className="inline-flex items-center gap-1 px-2 py-1 rounded text-[9px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer border"
+                                  style={{ background: 'rgba(212,175,55,0.04)', color: 'var(--pm-accent-gold)', borderColor: 'rgba(212,175,55,0.12)' }}
+                                >
+                                  <Download className="w-3 h-3" /> Empresa
+                                </button>
+                              </div>
                             </div>
                             <div className="overflow-x-auto">
                               <table className="w-full text-[11px] font-mono">

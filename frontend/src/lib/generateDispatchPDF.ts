@@ -1,5 +1,6 @@
 import { jsPDF } from 'jspdf';
 import { formatWeight, fetchLogoAsBase64 } from '@/lib/format';
+import type { MaterialExit } from '@/types/api';
 
 interface BarItem {
   barNumber: string;
@@ -29,7 +30,69 @@ export interface DispatchResult {
   type: 'lots' | 'bars';
 }
 
-export async function generateDispatchPDF(data: DispatchResult, destinationClient?: { rif?: string; contactInfo?: string }) {
+export type CopyType = 'CLIENTE' | 'EMPRESA';
+
+export function convertExitToDispatchResult(exit: MaterialExit): DispatchResult {
+  const isBarMode = (exit.bars?.length ?? 0) > 0;
+
+  if (isBarMode) {
+    const bars = (exit.bars || []).map(b => ({
+      barNumber: b.barNumber,
+      grossWeight: Number(b.grossWeight),
+      purity: Number(b.purity),
+      fineWeight: Number(b.fineWeight),
+      provider: b.client?.name || 'DESCONOCIDO',
+    }));
+
+    const providerMap = new Map<string, { count: number; weight: number }>();
+    bars.forEach(b => {
+      const prev = providerMap.get(b.provider) || { count: 0, weight: 0 };
+      providerMap.set(b.provider, { count: prev.count + 1, weight: prev.weight + b.fineWeight });
+    });
+
+    return {
+      reference: `DESP-${exit.id.slice(0, 8).toUpperCase()}`,
+      destination: exit.destination,
+      totalWeight: Number(exit.totalWeight),
+      barCount: bars.length,
+      providerCount: providerMap.size,
+      bars,
+      providers: Array.from(providerMap.entries()).map(([name, v]) => ({ name, count: v.count, weight: v.weight })),
+      createdAt: exit.createdAt,
+      type: 'bars',
+    };
+  }
+
+  const lots = (exit.exitDetails || []).map(d => ({
+    name: d.lot?.name || '—',
+    weight: Number(d.weightAported),
+    provider: d.lot?.process?.client?.name || 'DESCONOCIDO',
+  }));
+
+  const providerMap = new Map<string, { count: number; weight: number }>();
+  lots.forEach(l => {
+    const prev = providerMap.get(l.provider) || { count: 0, weight: 0 };
+    providerMap.set(l.provider, { count: prev.count + 1, weight: prev.weight + l.weight });
+  });
+
+  return {
+    reference: `DESP-${exit.id.slice(0, 8).toUpperCase()}`,
+    destination: exit.destination,
+    totalWeight: Number(exit.totalWeight),
+    lotCount: lots.length,
+    providerCount: providerMap.size,
+    lots,
+    providers: Array.from(providerMap.entries()).map(([name, v]) => ({ name, count: v.count, weight: v.weight })),
+    createdAt: exit.createdAt,
+    type: 'lots',
+  };
+}
+
+export async function generateDispatchPDF(
+  data: DispatchResult,
+  destinationClient?: { rif?: string; contactInfo?: string },
+  copyType: CopyType = 'CLIENTE',
+) {
   const doc = new jsPDF('p', 'mm', 'a4');
   const pw = 210, m = 15, cw = pw - m * 2;
   let y = 15;
@@ -39,6 +102,7 @@ export async function generateDispatchPDF(data: DispatchResult, destinationClien
   const isBarMode = data.type === 'bars';
   const itemLabel = isBarMode ? 'Barras' : 'Lotes';
   const itemCount = isBarMode ? data.barCount ?? 0 : data.lotCount ?? 0;
+  const isEmpresa = copyType === 'EMPRESA';
 
   doc.setFillColor(7, 11, 20);
   doc.rect(0, 0, pw, 48, 'F');
@@ -51,13 +115,22 @@ export async function generateDispatchPDF(data: DispatchResult, destinationClien
   doc.setFont('helvetica', 'normal');
   doc.text('Sistema de Trazabilidad de Oro Fino', m, y + 18);
 
+  const titleSuffix = isBarMode ? ' (BARRAS)' : ' GLOBAL';
+  const copyLabel = isEmpresa ? 'COPIA EMPRESA' : 'COPIA CLIENTE';
   doc.setTextColor(212, 175, 55);
   doc.setFontSize(14);
   doc.setFont('helvetica', 'bold');
-  doc.text(isBarMode ? 'COMPROBANTE DE DESPACHO (BARRAS)' : 'COMPROBANTE DE DESPACHO GLOBAL', pw - m, y + 10, { align: 'right' });
+  doc.text(`COMPROBANTE DE DESPACHO${titleSuffix} — ${copyLabel}`, pw - m, y + 10, { align: 'right' });
   doc.setTextColor(160, 160, 160);
   doc.setFontSize(7);
   doc.text(`Ref: ${data.reference}`, pw - m, y + 18, { align: 'right' });
+
+  if (isEmpresa) {
+    doc.setFontSize(48);
+    doc.setTextColor(220, 220, 220);
+    doc.setFont('helvetica', 'bold');
+    doc.text('COPIA INTERNA', pw / 2, 160, { align: 'center', angle: 45 });
+  }
 
   y = 58;
   doc.setDrawColor(212, 175, 55);
@@ -161,7 +234,7 @@ export async function generateDispatchPDF(data: DispatchResult, destinationClien
   doc.setTextColor(40, 40, 40);
   doc.setFontSize(11);
   doc.setFont('helvetica', 'bold');
-  doc.text(`Peso Fino: ${formatWeight(Number(data.totalWeight))}`, m, y); y += 7;
+  doc.text(`PESO FINO: ${formatWeight(Number(data.totalWeight))}`, m, y); y += 7;
   doc.text(`${itemLabel.toUpperCase()}: ${itemCount}`, m, y); y += 7;
   doc.text(`PROVEEDORES: ${data.providerCount}`, m, y); y += 20;
 
@@ -175,5 +248,15 @@ export async function generateDispatchPDF(data: DispatchResult, destinationClien
   doc.text('_________________________', pw - m - 40, y - 5);
   doc.text('R', pw - m - 40, y);
 
-  doc.save(`Comprobante_${data.reference.replace(/[/\\?%*:|"<>]/g, '_')}.pdf`);
+  if (isEmpresa) {
+    y += 12;
+    doc.setFontSize(7);
+    doc.setTextColor(140, 140, 140);
+    doc.text(`Ref completa: ${data.reference}`, m, y); y += 4;
+    doc.text('Elaborado por: Sistema de Trazabilidad Bandes', m, y); y += 4;
+    doc.text(`Fecha generación: ${new Date().toLocaleString('es-ES')}`, m, y);
+  }
+
+  const safeRef = data.reference.replace(/[/\\?%*:|"<>]/g, '_');
+  doc.save(`Despacho_${safeRef}-${copyType}.pdf`);
 }

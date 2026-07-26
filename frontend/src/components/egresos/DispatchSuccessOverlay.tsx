@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { motion } from 'motion/react';
-import { Check, Download } from 'lucide-react';
+import { Check, Download, User, Building } from 'lucide-react';
 import { ModalShell } from '@/components/ui/ModalShell';
 import { formatNumber } from '@/lib/format';
 
@@ -24,13 +24,14 @@ interface DispatchSuccessOverlayProps {
   isOpen: boolean;
   result: DispatchResult;
   message: string;
-  onPDF: () => void;
+  onPDFCliente: () => void;
+  onPDFEmpresa: () => void;
   onClose: () => void;
 }
 
 const fmtWeight = (val: number) => `${formatNumber(val, 2)} g`;
 
-export function DispatchSuccessOverlay({ isOpen, result, message, onPDF, onClose }: DispatchSuccessOverlayProps) {
+export function DispatchSuccessOverlay({ isOpen, result, message, onPDFCliente, onPDFEmpresa, onClose }: DispatchSuccessOverlayProps) {
   const itemCount = result.type === 'bars' ? result.barCount : result.lotCount;
   const itemLabel = result.type === 'bars' ? 'Barras' : 'Lotes';
 
@@ -58,19 +59,26 @@ export function DispatchSuccessOverlay({ isOpen, result, message, onPDF, onClose
             <span className="text-[var(--pm-text-primary)] font-bold">{itemCount}</span>
           </div>
           <div className="border-t border-[var(--pm-border)] pt-2 flex justify-between">
-            <span className="text-[var(--pm-text-dim)]">Peso Total:</span>
+            <span className="text-[var(--pm-text-dim)]">PESO FINO:</span>
             <span className="text-sm font-bold text-[var(--pm-accent-gold)]">{fmtWeight(result.totalWeight)}</span>
           </div>
         </div>
 
-        <div className="flex gap-3 w-full">
-          <button type="button" onClick={onPDF}
-            className="flex-[2] py-2.5 rounded-lg text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2"
+        <div className="flex gap-2 w-full">
+          <button type="button" onClick={onPDFCliente}
+            className="flex-1 py-2.5 rounded-lg text-[10px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1.5"
             style={{ background: 'linear-gradient(135deg, rgba(212,175,55,0.2), rgba(212,175,55,0.1))', color: 'var(--pm-accent-gold)', border: '1px solid rgba(212,175,55,0.3)' }}>
-            <Download className="w-4 h-4" /> Descargar PDF</button>
-          <button type="button" onClick={onClose}
-            className="flex-1 py-2.5 rounded-lg border border-[var(--pm-border)] text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] hover:bg-[var(--pm-bg-tertiary)] text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer">Cerrar</button>
+            <User className="w-3.5 h-3.5" /> Copia Cliente
+          </button>
+          <button type="button" onClick={onPDFEmpresa}
+            className="flex-1 py-2.5 rounded-lg text-[10px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1.5"
+            style={{ background: 'linear-gradient(135deg, rgba(212,175,55,0.12), rgba(212,175,55,0.06))', color: 'var(--pm-accent-gold)', border: '1px solid rgba(212,175,55,0.2)' }}>
+            <Building className="w-3.5 h-3.5" /> Copia Empresa
+          </button>
         </div>
+
+        <button type="button" onClick={onClose}
+          className="w-full py-2.5 rounded-lg border border-[var(--pm-border)] text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] hover:bg-[var(--pm-bg-tertiary)] text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer">Cerrar</button>
       </div>
     </ModalShell>
   );

@@ -7,7 +7,7 @@ import { useProcesses } from '@/hooks/useProcesses';
 import { useBars } from '@/hooks/useBars';
 import { useCreateMaterialExit } from '@/hooks/useExits';
 import { formatNumber } from '@/lib/format';
-import { generateDispatchPDF } from '@/lib/generateDispatchPDF';
+import { generateDispatchPDF, type DispatchResult } from '@/lib/generateDispatchPDF';
 import {
   ArrowLeftRight, X, AlertTriangle, Package,
 } from 'lucide-react';
@@ -28,20 +28,6 @@ interface AvailableLot {
   clientRif: string;
   availableWeight: number;
   barCount: number;
-}
-
-interface DispatchResult {
-  reference: string;
-  destination: string;
-  totalWeight: number;
-  lotCount?: number;
-  barCount?: number;
-  providerCount: number;
-  lots?: { name: string; weight: number; provider: string }[];
-  bars?: { barNumber: string; grossWeight: number; purity: number; fineWeight: number; provider: string }[];
-  providers: { name: string; count: number; weight: number }[];
-  createdAt: string;
-  type: 'lots' | 'bars';
 }
 
 export default function V2EgresosPage() {
@@ -482,7 +468,8 @@ export default function V2EgresosPage() {
           isOpen
           result={dispatchResult}
           message={message}
-          onPDF={() => generateDispatchPDF(dispatchResult, destinationClient ?? undefined)}
+          onPDFCliente={() => generateDispatchPDF(dispatchResult, destinationClient ?? undefined, 'CLIENTE')}
+          onPDFEmpresa={() => generateDispatchPDF(dispatchResult, destinationClient ?? undefined, 'EMPRESA')}
           onClose={() => { setDispatchResult(null); setStatus('idle'); }}
         />
       )}
