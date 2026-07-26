@@ -12,6 +12,17 @@ interface ClientRow {
   balance: number;
 }
 
+const C = {
+  red:       [248, 24, 32] as const,
+  darkBg:    [26, 10, 11] as const,
+  lightBg:   [254, 242, 242] as const,
+  textDark:  [26, 10, 11] as const,
+  textMuted: [107, 114, 128] as const,
+  gray:      [120, 120, 120] as const,
+  lightGray: [200, 200, 200] as const,
+  green:     [5, 150, 105] as const,
+} as const;
+
 interface ReportData {
   oroRecibido: { fineWeight: number; barCount: number; clientCount: number };
   oroFundido: { totalRecovered: number; lotCount: number; barCount: number; eficiencia: number; totalExpected: number };
@@ -50,9 +61,9 @@ export async function generateReportPDF(data: ReportData) {
   let y = 15;
 
   // Header bar
-  pdf.setFillColor(7, 11, 20);
+  pdf.setFillColor(...C.darkBg);
   pdf.rect(0, 0, pw, 42, 'F');
-  pdf.setFillColor(212, 175, 55);
+  pdf.setFillColor(...C.red);
   pdf.rect(0, 40, pw, 2, 'F');
 
   pdf.addImage(logoBase64, 'PNG', m, 6, 40, 19);
@@ -61,7 +72,7 @@ export async function generateReportPDF(data: ReportData) {
   pdf.setFont('helvetica', 'normal');
   pdf.text('Sistema de Trazabilidad de Oro Fino', m, y + 18);
 
-  pdf.setTextColor(212, 175, 55);
+  pdf.setTextColor(...C.red);
   pdf.setFontSize(14);
   pdf.setFont('helvetica', 'bold');
   pdf.text('REPORTE DE CONCILIACION', pw - m, y + 10, { align: 'right' });
@@ -75,12 +86,12 @@ export async function generateReportPDF(data: ReportData) {
 
   // KPIs Section
   y = 52;
-  pdf.setDrawColor(212, 175, 55);
+  pdf.setDrawColor(...C.red);
   pdf.setLineWidth(0.4);
   pdf.line(m, y, pw - m, y);
   y += 10;
 
-  pdf.setTextColor(40, 40, 40);
+  pdf.setTextColor(...C.textDark);
   pdf.setFontSize(11);
   pdf.setFont('helvetica', 'bold');
   pdf.text('RESUMEN EJECUTIVO', m, y);
@@ -96,17 +107,17 @@ export async function generateReportPDF(data: ReportData) {
 
   kpis.forEach((kpi, idx) => {
     const x = m + idx * (kpiW + 4);
-    pdf.setFillColor(245, 245, 245);
+    pdf.setFillColor(...C.lightBg);
     pdf.roundedRect(x, y - 4, kpiW, 28, 2, 2, 'F');
-    pdf.setTextColor(80, 80, 80);
+    pdf.setTextColor(...C.textMuted);
     pdf.setFontSize(6);
     pdf.setFont('helvetica', 'bold');
     pdf.text(kpi.label, x + 3, y + 2);
-    pdf.setTextColor(40, 40, 40);
+    pdf.setTextColor(...C.textDark);
     pdf.setFontSize(12);
     pdf.setFont('helvetica', 'bold');
     pdf.text(kpi.value, x + 3, y + 14);
-    pdf.setTextColor(120, 120, 120);
+    pdf.setTextColor(...C.gray);
     pdf.setFontSize(6);
     pdf.setFont('helvetica', 'normal');
     pdf.text(kpi.sub, x + 3, y + 21);
@@ -121,7 +132,7 @@ export async function generateReportPDF(data: ReportData) {
     pdf.setLineWidth(0.2);
     pdf.line(m, y, pw - m, y);
     y += 8;
-    pdf.setTextColor(80, 80, 80);
+    pdf.setTextColor(...C.textMuted);
     pdf.setFontSize(7);
     pdf.setFont('helvetica', 'normal');
 
@@ -144,22 +155,22 @@ export async function generateReportPDF(data: ReportData) {
 
   // Divider
   y += 4;
-  pdf.setDrawColor(212, 175, 55);
+  pdf.setDrawColor(...C.red);
   pdf.setLineWidth(0.4);
   pdf.line(m, y, pw - m, y);
   y += 10;
 
   // Balance table header
-  pdf.setTextColor(40, 40, 40);
+  pdf.setTextColor(...C.textDark);
   pdf.setFontSize(10);
   pdf.setFont('helvetica', 'bold');
   pdf.text('BALANCE POR CLIENTE', m, y);
   y += 8;
 
   // Table header row
-  pdf.setFillColor(7, 11, 20);
+  pdf.setFillColor(...C.darkBg);
   pdf.rect(m, y - 4, cw, 7, 'F');
-  pdf.setTextColor(212, 175, 55);
+  pdf.setTextColor(...C.red);
   pdf.setFontSize(6);
   pdf.setFont('helvetica', 'bold');
 
@@ -182,9 +193,9 @@ export async function generateReportPDF(data: ReportData) {
     if (y > 260) {
       pdf.addPage();
       y = 20;
-      pdf.setFillColor(7, 11, 20);
+      pdf.setFillColor(...C.darkBg);
       pdf.rect(m, y - 4, cw, 7, 'F');
-      pdf.setTextColor(212, 175, 55);
+      pdf.setTextColor(...C.red);
       pdf.setFontSize(6);
       pdf.setFont('helvetica', 'bold');
       cols.forEach(col => pdf.text(col.label, col.x, y + 0, { align: col.align }));
@@ -192,20 +203,20 @@ export async function generateReportPDF(data: ReportData) {
     }
 
     if (idx % 2 === 0) {
-      pdf.setFillColor(248, 248, 248);
+      pdf.setFillColor(...C.lightBg);
       pdf.rect(m, y - 4, cw, 7, 'F');
     }
-    pdf.setTextColor(40, 40, 40);
+    pdf.setTextColor(...C.textDark);
     pdf.setFontSize(7);
     pdf.setFont('helvetica', 'normal');
 
     const isPos = row.balance >= 0;
     const rowData = [
-      { text: row.name, x: m + 2, align: 'left' as const, color: '#282828' },
-      { text: formatWeight(row.fa), x: m + 52, align: 'right' as const, color: '#282828' },
-      { text: formatWeight(row.r), x: m + 92, align: 'right' as const, color: '#282828' },
-      { text: formatWeight(row.entregado), x: m + 112, align: 'right' as const, color: '#282828' },
-      { text: `${isPos ? '+' : ''}${formatWeight(Math.abs(row.balance))}`, x: m + 145, align: 'right' as const, color: isPos ? '#059669' : '#DC2626' },
+      { text: row.name, x: m + 2, align: 'left' as const, color: '#1A0A0B' },
+      { text: formatWeight(row.fa), x: m + 52, align: 'right' as const, color: '#1A0A0B' },
+      { text: formatWeight(row.r), x: m + 92, align: 'right' as const, color: '#1A0A0B' },
+      { text: formatWeight(row.entregado), x: m + 112, align: 'right' as const, color: '#1A0A0B' },
+      { text: `${isPos ? '+' : ''}${formatWeight(Math.abs(row.balance))}`, x: m + 145, align: 'right' as const, color: isPos ? '#059669' : '#F81820' },
     ];
 
     rowData.forEach(cell => {
@@ -217,13 +228,13 @@ export async function generateReportPDF(data: ReportData) {
 
   // Totals row
   y += 4;
-  pdf.setDrawColor(212, 175, 55);
+  pdf.setDrawColor(...C.red);
   pdf.setLineWidth(0.6);
   pdf.line(m, y, pw - m, y);
   y += 8;
   pdf.setFontSize(9);
   pdf.setFont('helvetica', 'bold');
-  pdf.setTextColor(40, 40, 40);
+  pdf.setTextColor(...C.textDark);
   const totalIsPos = totals.balance >= 0;
   const totalRow = [
     { text: 'TOTALES', x: m + 2, align: 'left' as const },
@@ -242,7 +253,7 @@ export async function generateReportPDF(data: ReportData) {
   y += 8;
   pdf.setFontSize(8);
   pdf.setFont('helvetica', 'normal');
-  pdf.setTextColor(120, 120, 120);
+  pdf.setTextColor(...C.gray);
   pdf.text('_________________________', m, y);
   pdf.text('Responsable de Boveda', m, y + 5);
   pdf.text('_________________________', pw - m - 45, y);
