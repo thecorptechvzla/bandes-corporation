@@ -139,6 +139,7 @@ export default function RootLayout({
               {/* ═══ MOBILE DRAWER ═══ */}
               <aside className={`
                 fixed inset-y-0 left-0 z-50 flex flex-col w-72
+                v2-sidebar
                 bg-gradient-to-b from-[var(--pm-bg-primary)] to-[var(--pm-bg-deepest)]
                 border-r border-[var(--pm-border)]
                 transition-transform duration-300 ease-in-out
