@@ -94,7 +94,7 @@ export class DashboardService {
     const mermaFA = Number(mermaFAAgg._sum.fineWeight ?? 0);
     const porRefundirFA = Number(porRefundirAgg._sum.fineWeight ?? 0);
 
-    const oroEnBovedaFA = Math.max(0, recoveredTotal - exitedFA);
+    const oroEnBovedaFA = recoveredTotal + porRefundirFA;
 
     const mermaG = Math.max(0, mermaFA - recoveredTotal);
     const mermaPct = mermaFA > 0 ? (mermaG / mermaFA) * 100 : 0;
@@ -110,6 +110,8 @@ export class DashboardService {
       },
       oroEnBoveda: {
         fineWeight: oroEnBovedaFA,
+        fundido: recoveredTotal,
+        sinFundir: porRefundirFA,
       },
       porRefundir: {
         fineWeight: porRefundirFA,

@@ -16,7 +16,7 @@ import { formatNumber } from '@/lib/format';
 import DashboardFilters from '@/components/DashboardFilters';
 import { EvidenceModal } from '@/components/dashboard/EvidenceModal';
 import { SupplierDirectoryModal } from '@/components/dashboard/SupplierDirectoryModal';
-import { BovedaLotsModal } from '@/components/dashboard/BovedaLotsModal';
+import { BovedaModal } from '@/components/dashboard/BovedaModal';
 import { KpiCardGrid, KPI_COLORS } from '@/components/dashboard/KpiCardGrid';
 import { BalancesTable } from '@/components/dashboard/BalancesTable';
 import { TreemapPanel } from '@/components/dashboard/TreemapPanel';
@@ -263,11 +263,15 @@ export default function V2DashboardPage() {
       label: 'Oro en Bóveda',
       value: metrics?.oroEnBoveda.fineWeight ?? 0,
       subicon: Warehouse,
-      sublabel: `R neto disponible: ${formatNumber(metrics?.oroEnBoveda.fineWeight ?? 0, 2)} g`,
+      sublabel: '',
       accent: KPI_COLORS[2].accent,
       tag: KPI_COLORS[2].label,
       postfix: '',
       spark: sparkNet,
+      subValues: [
+        { label: 'Fundido', value: metrics?.oroEnBoveda.fundido ?? 0, icon: Warehouse },
+        { label: 'Sin Fundir', value: metrics?.oroEnBoveda.sinFundir ?? 0, icon: Inbox },
+      ],
     },
     {
       label: 'Por Refundir',
@@ -385,11 +389,13 @@ export default function V2DashboardPage() {
       />
 
       {/* Oro en Bóveda modal — triggered from card index 2 */}
-      <BovedaLotsModal
+      <BovedaModal
         isOpen={isBovedaModalOpen}
         lots={bovedaLots}
+        bars={inStockBars}
         clients={clients}
         onClose={() => setIsBovedaModalOpen(false)}
+        onBarClick={(id) => setEvidenceBarId(id)}
       />
 
       {/* Por Refundir modal — triggered from card index 3 */}

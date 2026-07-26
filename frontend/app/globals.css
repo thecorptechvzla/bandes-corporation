@@ -255,8 +255,6 @@ tr:hover > td.sticky {
   width: 220px;
   background: linear-gradient(180deg, #0A0F1A 0%, #080C14 100%);
   border-right: 1px solid var(--pm-border);
-  display: flex;
-  flex-direction: column;
   flex-shrink: 0;
   overflow: hidden;
 }

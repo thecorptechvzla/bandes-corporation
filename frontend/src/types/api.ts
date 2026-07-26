@@ -171,6 +171,8 @@ export interface DashboardMetrics {
   };
   oroEnBoveda: {
     fineWeight: number;
+    fundido: number;
+    sinFundir: number;
   };
   porRefundir: {
     fineWeight: number;

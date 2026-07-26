@@ -15,6 +15,11 @@ interface KpiItem {
   tag: string;
   postfix: string;
   spark: number[];
+  subValues?: {
+    label: string;
+    value: number;
+    icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
+  }[];
 }
 
 const KPI_COLORS = [
@@ -107,10 +112,26 @@ export function KpiCardGrid({ kpiData, isMounted, onCardClick }: KpiCardGridProp
                 </span>
               </div>
 
-              <div className="flex items-center gap-1.5 pt-3 border-t border-[var(--pm-border)]">
-                <KpiSubIcon icon={kpi.subicon} accent={kpi.accent} />
-                <span className="text-[10px] text-[var(--pm-text-dim)] font-mono truncate">{kpi.sublabel}</span>
-              </div>
+              {kpi.subValues ? (
+                <div className="flex items-center gap-3 pt-3 border-t border-[var(--pm-border)]">
+                  {kpi.subValues.map((sv) => (
+                    <div key={sv.label} className="flex items-center gap-1.5">
+                      <sv.icon className="w-3 h-3 shrink-0" style={{ color: kpi.accent }} />
+                      <span className="text-[9px] font-mono text-[var(--pm-text-dim)]">
+                        {sv.label}:
+                      </span>
+                      <span className="text-[10px] font-mono font-bold text-[var(--pm-text-primary)] tabular-nums">
+                        {formatNumber(sv.value, 2)} g
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex items-center gap-1.5 pt-3 border-t border-[var(--pm-border)]">
+                  <KpiSubIcon icon={kpi.subicon} accent={kpi.accent} />
+                  <span className="text-[10px] text-[var(--pm-text-dim)] font-mono truncate">{kpi.sublabel}</span>
+                </div>
+              )}
             </div>
           </motion.div>
         );
