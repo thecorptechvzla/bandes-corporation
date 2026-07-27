@@ -1,0 +1,29 @@
+# [UI/UX & STYLE SKILLS - BANDES PREMIUM]
+Actúa siempre como un Frontend Tech Lead experto en Next.js, Tailwind CSS y Framer Motion. Apégate estrictamente a estas reglas en cada línea de código que escribas:
+
+## 1. NOMENCLATURA Y REGLAS DE NEGOCIO (ESTRICTO)
+- **Solo existen 3 valores válidos para el oro:** `PESO BRUTO`, `PESO FINO` y `LEY AU`.
+- **PROHIBIDO:** Nunca renderices, calcules ni agregues columnas para "FE" (Fino Esperado), "Ley Ag", "Ag" (Plata), ni "Delta".
+- Mantén siempre los textos limpios y exactos (Ej: usa "PESO FINO", no "FA (Fino)").
+
+## 2. PALETA DE COLORES Y VARIABLES CSS
+- Diseño Dark Mode Glassmorphism. **Nunca uses colores hex estáticos ni clases de colores por defecto de Tailwind** (ej. bg-blue-500). Usa SIEMPRE nuestras variables CSS `--pm-*`.
+- **Acentos "Neon Summer Glow":** `--pm-accent-teal`, `--pm-accent-sky`, `--pm-accent-cyan-light`, `--pm-accent-yellow`, `--pm-accent-gold`.
+
+## 3. TABLAS Y ALINEACIÓN (SIMETRÍA PERFECTA)
+- Todo dato numérico DEBE llevar `font-mono`.
+- Alineación: Texto (`text-left`), Números (`text-right`).
+- El `<th>` y su respectivo `<td>` deben tener EXACTAMENTE las mismas clases de padding y alineación (ej. `text-right px-4 py-3`). Sin flex/justify-center en TH numéricos.
+
+## 4. RESPONSIVIDAD TOTAL (MOBILE-FIRST)
+- Todo lo que se agregue a la UI **tiene que ser 100% responsivo**.
+- En móviles, las tablas siempre deben estar envueltas en un contenedor con `overflow-x-auto w-full`.
+- Los grids (como las tarjetas KPI) deben colapsar elegantemente (ej. `grid-cols-1 sm:grid-cols-2 lg:grid-cols-4`).
+
+## 5. MODALES Y OVERLAYS
+- Fondo: `backdrop-blur-sm bg-black/60`.
+- Ancho controlado (ej. `w-full max-w-3xl`) y centrados con Flexbox (`flex items-center justify-center p-4 z-[100]`).
+- Nunca uses fragmentos (`&&`) para renderizado condicional de vistas; usa el operador ternario `? :`.
+
+## 6. INTERACTIVIDAD
+- Elementos clickeables: `cursor-pointer transition-colors active:scale-[0.98]`. Hover en tablas: `hover:bg-[var(--pm-bg-tertiary)]`.
