@@ -222,8 +222,11 @@ tr:hover > td.sticky {
   --pm-border-light: #2A3A5C;
   --pm-text-primary: #E2E8F0;
   --pm-text-dim:     #64748B;
-  --pm-accent-gold:  #D4AF37;
-  --pm-accent-sky:   #0EA5E9;
+  --pm-brand-red:    #E31919;
+  --pm-accent-gold:  #EAB308;
+  --pm-accent-sky:   #D97706;
+  --pm-accent-teal:  #92400E;
+  --pm-accent-orange: #78350F;
   --pm-accent-emerald: #10B981;
   --pm-accent-amber: #F59E0B;
   --pm-accent-red:   #EF4444;
@@ -281,9 +284,9 @@ tr:hover > td.sticky {
 }
 
 .v2-sidebar .nav-item.active {
-  color: var(--pm-accent-gold);
-  background: rgba(212, 175, 55, 0.06);
-  border-left-color: var(--pm-accent-gold);
+  color: #F3F4F6;
+  background: rgba(227, 25, 25, 0.06);
+  border-left-color: var(--pm-brand-red);
 }
 
 /* --- Premium card --- */

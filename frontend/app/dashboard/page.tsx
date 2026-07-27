@@ -58,18 +58,10 @@ function hashStr(s: string): number {
   return Math.abs(h);
 }
 
-function makeCyanColor(name: string, intensity: number): string {
-  const hue = 180 + (hashStr(name) % 16);
-  const sat = 75 + (hashStr(name + 'sat') % 20);
-  const lit = 28 + intensity * 28;
-  return `hsl(${hue}, ${sat}%, ${lit}%)`;
-}
+const NEON_SUMMER_PALETTE = ['#EAB308', '#D97706', '#92400E', '#78350F'];
 
-function makeGoldColor(name: string, intensity: number): string {
-  const hue = 37 + (hashStr(name) % 14);
-  const sat = 55 + (hashStr(name + 'sat') % 20);
-  const lit = 28 + intensity * 28;
-  return `hsl(${hue}, ${sat}%, ${lit}%)`;
+function pickPaletteColor(name: string): string {
+  return NEON_SUMMER_PALETTE[hashStr(name) % NEON_SUMMER_PALETTE.length];
 }
 
 export default function V2DashboardPage() {
@@ -214,8 +206,7 @@ export default function V2DashboardPage() {
     const maxVal = Math.max(...Object.values(map), 1);
     return Object.entries(map)
       .map(([name, value]) => {
-        const intensity = value / maxVal;
-        return { name, value, pct: total > 0 ? (value / total) * 100 : 0, fill: makeCyanColor(name, intensity) };
+        return { name, value, pct: total > 0 ? (value / total) * 100 : 0, fill: pickPaletteColor(name) };
       })
       .sort((a, b) => b.value - a.value);
   }, [filteredBars]);
@@ -232,8 +223,7 @@ export default function V2DashboardPage() {
     const maxVal = Math.max(...Object.values(map), 1);
     return Object.entries(map)
       .map(([name, value]) => {
-        const intensity = value / maxVal;
-        return { name, value, pct: total > 0 ? (value / total) * 100 : 0, fill: makeGoldColor(name, intensity) };
+        return { name, value, pct: total > 0 ? (value / total) * 100 : 0, fill: pickPaletteColor(name) };
       })
       .sort((a, b) => b.value - a.value);
   }, [filteredExits]);
@@ -321,8 +311,8 @@ export default function V2DashboardPage() {
           title="INGRESOS POR PROVEEDOR"
           subtitle="Proporción de masa bruta recibida"
           data={ingresosTreemap}
-          accent="var(--pm-accent-sky)"
-          glowColor="#00E5FF"
+          accent="var(--pm-accent-gold)"
+          glowColor="#EAB308"
           scaleLabel="PROVEEDOR"
           isTableMode={showTableIngresos}
           onToggleView={() => setShowTableIngresos(!showTableIngresos)}
@@ -333,8 +323,8 @@ export default function V2DashboardPage() {
           title="EGRESOS POR CLIENTE"
           subtitle="Proporción de masa despachada"
           data={egresosTreemap}
-          accent="var(--pm-accent-gold)"
-          glowColor="#D5B042"
+          accent="var(--pm-accent-sky)"
+          glowColor="#D97706"
           scaleLabel="CLIENTE"
           isTableMode={showTableEgresos}
           onToggleView={() => setShowTableEgresos(!showTableEgresos)}

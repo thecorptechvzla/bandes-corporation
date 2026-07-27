@@ -15,10 +15,20 @@ function hashStr(s: string): number {
   return Math.abs(h);
 }
 
-function darkenHsl(hsl: string): string {
-  const m = hsl.match(/hsl\((\d+),\s*(\d+)%,\s*(\d+)%\)/);
-  if (!m) return 'rgba(10,15,26,0.85)';
-  return `hsl(${m[1]}, ${m[2]}%, ${Math.max(6, Math.round(parseInt(m[3]) * 0.25))}%)`;
+function darkenHex(hex: string, factor = 0.3): string {
+  const clean = hex.replace('#', '');
+  const r = parseInt(clean.substring(0, 2), 16);
+  const g = parseInt(clean.substring(2, 4), 16);
+  const b = parseInt(clean.substring(4, 6), 16);
+  return `rgb(${Math.round(r * (1 - factor))}, ${Math.round(g * (1 - factor))}, ${Math.round(b * (1 - factor))})`;
+}
+
+function isLightColor(hex: string): boolean {
+  const clean = hex.replace('#', '');
+  const r = parseInt(clean.substring(0, 2), 16);
+  const g = parseInt(clean.substring(2, 4), 16);
+  const b = parseInt(clean.substring(4, 6), 16);
+  return (r * 299 + g * 587 + b * 114) / 1000 > 160;
 }
 
 interface TreemapTooltipProps {
@@ -90,12 +100,17 @@ function CustomTreemapBlock(props: CustomBlockProps) {
   if (width <= 0 || height <= 0) return null;
 
   const uid = name.replace(/[^a-zA-Z0-9]/g, '');
-  const darkFill = darkenHsl(fill);
+  const darkFill = darkenHex(fill, 0.25);
   const weightLabel = `${formatNumber(value, 2)} g`;
+  const lightText = isLightColor(fill);
 
   const showName = width > 50 && height > 40;
   const showWeight = width > 60 && height > 60;
   const showPct = width > 70 && height > 80;
+
+  const nameColor = lightText ? '#0A0F1A' : '#F4F4F5';
+  const weightColor = lightText ? '#1A2340' : '#E2E8F0';
+  const pctColor = lightText ? '#06837F' : accent;
 
   return (
     <g
@@ -108,6 +123,10 @@ function CustomTreemapBlock(props: CustomBlockProps) {
           <stop offset="0%" stopColor={fill} stopOpacity={1} />
           <stop offset="100%" stopColor={darkFill} stopOpacity={1} />
         </linearGradient>
+        <radialGradient id={`txt-${uid}`} cx="50%" cy="50%" r="60%">
+          <stop offset="0%" stopColor="rgba(0,0,0,0.35)" />
+          <stop offset="100%" stopColor="rgba(0,0,0,0)" />
+        </radialGradient>
         <filter id={`glow-${uid}`}>
           <feGaussianBlur stdDeviation="4" result="blur" />
           <feComposite in="SourceGraphic" in2="blur" operator="over" />
@@ -115,8 +134,17 @@ function CustomTreemapBlock(props: CustomBlockProps) {
       </defs>
 
       <rect x={x} y={y} width={width} height={height} fill={`url(#bg-${uid})`} rx={8} />
-      <rect x={x} y={y} width={width} height={height} fill="none" stroke={accent}
-        strokeOpacity={hovered ? 0.5 : 0.2} strokeWidth={hovered ? 1.5 : 0.75} rx={8} />
+
+      {lightText && width > 40 && height > 40 && (
+        <rect x={x + 4} y={y + 4} width={width - 8} height={height - 8}
+          fill={`url(#txt-${uid})`} rx={6} />
+      )}
+
+      <rect x={x + 1} y={y + 1} width={width - 2} height={height - 2}
+        fill="none" stroke="var(--pm-bg-deepest)" strokeWidth={2} rx={7} />
+
+      <rect x={x} y={y} width={width} height={height} fill="none" stroke={fill}
+        strokeOpacity={hovered ? 0.7 : 0.3} strokeWidth={hovered ? 1.5 : 0.75} rx={8} />
 
       {hovered && (
         <>
@@ -130,10 +158,10 @@ function CustomTreemapBlock(props: CustomBlockProps) {
 
       {showName && (
         <text x={x + width / 2} y={y + height / 2 - (showWeight ? 12 : showPct ? 16 : 0)}
-          textAnchor="middle" dominantBaseline="central" fill="#F4F4F5"
+          textAnchor="middle" dominantBaseline="central" fill={nameColor}
           fontFamily="'JetBrains Mono', 'Fira Code', monospace"
           fontSize={height > 100 ? 14 : height > 70 ? 12 : 10} fontWeight={800}
-          style={{ textShadow: '0 2px 8px rgba(0,0,0,0.95), 0 0 4px rgba(0,0,0,0.8)' }}>
+          style={{ textShadow: `0 1px 4px rgba(0,0,0,${lightText ? '0.3' : '0.9'}), 0 0 2px rgba(0,0,0,${lightText ? '0.2' : '0.6'})` }}>
           {name.length > (width > 120 ? 22 : width > 80 ? 16 : 10)
             ? `${name.slice(0, width > 120 ? 22 : width > 80 ? 16 : 10)}…`
             : name}
@@ -142,20 +170,20 @@ function CustomTreemapBlock(props: CustomBlockProps) {
 
       {showWeight && (
         <text x={x + width / 2} y={y + height / 2 + 14}
-          textAnchor="middle" dominantBaseline="central" fill="#E2E8F0"
+          textAnchor="middle" dominantBaseline="central" fill={weightColor}
           fontFamily="'JetBrains Mono', 'Fira Code', monospace"
           fontSize={height > 100 ? 12 : 10} fontWeight={600} opacity={0.9}
-          style={{ textShadow: '0 1px 6px rgba(0,0,0,0.9)' }}>
+          style={{ textShadow: `0 1px 4px rgba(0,0,0,${lightText ? '0.25' : '0.8'})` }}>
           {weightLabel}
         </text>
       )}
 
       {showPct && (
         <text x={x + width / 2} y={y + height / 2 + 30}
-          textAnchor="middle" dominantBaseline="central" fill={accent}
+          textAnchor="middle" dominantBaseline="central" fill={pctColor}
           fontFamily="'JetBrains Mono', 'Fira Code', monospace"
-          fontSize={10} fontWeight={600} opacity={0.7}
-          style={{ textShadow: '0 1px 4px rgba(0,0,0,0.9)' }}>
+          fontSize={10} fontWeight={600} opacity={0.8}
+          style={{ textShadow: `0 1px 3px rgba(0,0,0,${lightText ? '0.2' : '0.7'})` }}>
           {formatNumber(pct, 1)}%
         </text>
       )}
@@ -211,7 +239,6 @@ export function TreemapPanel({
         <Treemap
           data={data}
           dataKey="value"
-          aspectRatio={4 / 3}
           stroke="transparent"
           isAnimationActive={true}
           content={<CustomTreemapBlock accent={accent} glowColor={glowColor} />}
@@ -238,10 +265,10 @@ export function TreemapPanel({
             <tr key={item.name} className="transition-colors duration-100"
               style={{ background: idx % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.02)' }}>
               <td className="px-4 py-2.5 text-[12px] font-mono text-[var(--pm-text-primary)]">
-                <span className="inline-block w-2 h-2 rounded-full mr-2 align-middle" style={{ background: accent, opacity: 0.3 + (item.pct / 100) * 0.7 }} />
+                <span className="inline-block w-2 h-2 rounded-full mr-2 align-middle" style={{ background: item.fill }} />
                 {item.name}
               </td>
-              <td className="px-4 py-2.5 text-[12px] font-mono text-right font-semibold" style={{ color: accent }}>
+              <td className="px-4 py-2.5 text-[12px] font-mono text-right font-semibold" style={{ color: item.fill }}>
                 {formatWeightCell(item.value)}
               </td>
               <td className="px-4 py-2.5 text-[12px] font-mono text-right text-[var(--pm-text-dim)]">

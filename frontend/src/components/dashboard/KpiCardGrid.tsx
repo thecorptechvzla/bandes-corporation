@@ -23,10 +23,10 @@ interface KpiItem {
 }
 
 const KPI_COLORS = [
-  { accent: '#D4AF37', label: 'PESO FINO' },
-  { accent: '#0EA5E9', label: 'PROCESO' },
-  { accent: '#10B981', label: 'R' },
-  { accent: '#8B5CF6', label: 'PR' },
+  { accent: '#EAB308', label: 'PESO FINO' },
+  { accent: '#D97706', label: 'PROCESO' },
+  { accent: '#92400E', label: 'R' },
+  { accent: '#78350F', label: 'PR' },
 ];
 
 const KPI_ICONS = [ClipboardList, Flame, Warehouse, Inbox];

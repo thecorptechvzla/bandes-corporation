@@ -88,10 +88,10 @@ export default function RootLayout({
             active:scale-[0.97] transition-all duration-150
           `}
         >
-          <IconComponent className={`w-4 h-4 shrink-0 ${isActive ? 'text-[var(--pm-accent-gold)]' : 'text-[var(--pm-text-dim)] group-hover:text-[var(--pm-text-primary)]'}`} />
+          <IconComponent className={`w-4 h-4 shrink-0 ${isActive ? 'text-[var(--pm-brand-red)]' : 'text-[var(--pm-text-dim)] group-hover:text-[var(--pm-text-primary)]'}`} />
           <span>{item.name}</span>
           {isActive && (
-            <span className="ml-auto w-1.5 h-1.5 rounded-full bg-[var(--pm-accent-gold)] animate-pulse" />
+            <span className="ml-auto w-1.5 h-1.5 rounded-full bg-[var(--pm-brand-red)] animate-pulse" />
           )}
         </Link>
       );
@@ -113,7 +113,7 @@ export default function RootLayout({
               <aside className="v2-sidebar hidden lg:flex lg:flex-col">
                 <div className="flex items-center gap-3 h-16 px-5 shrink-0 border-b border-[var(--pm-border)]">
                   <img src="/Bandes.png" alt="Bandes" className="w-8 h-8 rounded-lg object-contain" />
-                  <span className="text-sm font-mono font-bold text-[var(--pm-accent-gold)] tracking-widest">
+                  <span className="text-sm font-mono font-bold text-[#F3F4F6] tracking-widest">
                     CONTROL MINING
                   </span>
                 </div>
@@ -149,7 +149,7 @@ export default function RootLayout({
                 <div className="flex items-center justify-between h-16 px-5 shrink-0 border-b border-[var(--pm-border)]">
                   <div className="flex items-center gap-3">
                     <img src="/Bandes.png" alt="Bandes" className="w-8 h-8 rounded-lg object-contain" />
-                    <span className="text-sm font-mono font-bold text-[var(--pm-accent-gold)] tracking-widest">
+                    <span className="text-sm font-mono font-bold text-[#F3F4F6] tracking-widest">
                       CONTROL MINING
                     </span>
                   </div>
