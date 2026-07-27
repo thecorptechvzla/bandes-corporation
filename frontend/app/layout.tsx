@@ -7,8 +7,8 @@ import { GoldTraceabilityProvider } from '@/context/GoldTraceabilityContext';
 import Link from 'next/link';
 import {
   LayoutDashboard, Users, Flame,
-  ArrowLeftRight, FileText, FolderUp, LogOut,
-  Calendar, History, ClipboardList, Menu, X,
+  ArrowLeftRight, FolderUp, LogOut,
+  Calendar, History, Menu, X,
 } from 'lucide-react';
 import './globals.css';
 
@@ -29,10 +29,8 @@ const menuItems = [
   { id: 'dashboard', name: 'Dashboard', icon: LayoutDashboard },
   { id: 'clientes', name: 'Proveedores', icon: Users },
   { id: 'packing', name: 'Packing', icon: FolderUp },
-  { id: 'ingresos', name: 'Ingresos', icon: ClipboardList },
   { id: 'procesos', name: 'Procesos', icon: Flame },
   { id: 'egresos', name: 'Egresos', icon: ArrowLeftRight },
-  { id: 'reportes', name: 'Reportes', icon: FileText },
   { id: 'historicos', name: 'Históricos', icon: History },
 ];
 
@@ -40,10 +38,8 @@ const routeLabels: Record<string, string> = {
   dashboard: 'Dashboard',
   clientes: 'Proveedores',
   packing: 'Packing',
-  ingresos: 'Ingresos de Material',
   procesos: 'Procesos de Fundición',
   egresos: 'Egresos de Material',
-  reportes: 'Reportes',
   historicos: 'Históricos',
 };
 

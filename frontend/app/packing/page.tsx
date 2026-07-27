@@ -22,6 +22,8 @@ import { BarInventoryPanel } from '@/components/packing/BarInventoryPanel';
 import { PackingListSidebar } from '@/components/packing/PackingListSidebar';
 import { ValidationDetailPanel } from '@/components/packing/ValidationDetailPanel';
 import { DeleteStatusOverlay } from '@/components/packing/DeleteStatusOverlay';
+import { PackingsTable } from '@/components/historicos/PackingsTable';
+import { HistoryFilters } from '@/components/historicos/HistoryFilters';
 
 export default function PackingPage() {
   const [activeTab, setActiveTab] = useState<'registro' | 'validacion'>('registro');
@@ -74,6 +76,14 @@ export default function PackingPage() {
   const [evidenceBarId, setEvidenceBarId] = useState<string | null>(null);
   const [barPhotoUrls, setBarPhotoUrls] = useState<Record<string, string>>({});
   const spValuesRef = useRef<Record<string, { grossWeight: number; purity: number; leyAg?: number }>>({});
+
+  const [historySearchQuery, setHistorySearchQuery] = useState('');
+  const [historyDateFrom, setHistoryDateFrom] = useState('');
+  const [historyDateTo, setHistoryDateTo] = useState('');
+  const [historySelectedProvider, setHistorySelectedProvider] = useState('');
+  const [expandedHistoryPackingId, setExpandedHistoryPackingId] = useState<string | null>(null);
+  const { data: expandedHistoryPacking, isLoading: loadingExpandedHistoryPacking } = usePacking(expandedHistoryPackingId);
+
   const createPacking = useCreatePacking();
   const [confirmRegOverlay, setConfirmRegOverlay] = useState<{
     barNumber: string;
@@ -463,6 +473,32 @@ export default function PackingPage() {
     return map;
   }, [packings]);
 
+  const historyPackingProviders = useMemo(() => {
+    const set = new Set<string>();
+    packings.forEach(p => { if (p.client?.name) set.add(p.client.name); });
+    return [...set].sort();
+  }, [packings]);
+
+  const filteredHistoryPackings = useMemo(() => {
+    return packings.filter(p => {
+      if (historySearchQuery) {
+        const q = historySearchQuery.toLowerCase();
+        const clientMatch = p.client?.name?.toLowerCase().includes(q);
+        const numMatch = p.packingNumber?.toString().includes(q);
+        const fileMatch = p.fileName?.toLowerCase().includes(q);
+        if (!clientMatch && !numMatch && !fileMatch) return false;
+      }
+      if (historyDateFrom && new Date(p.createdAt) < new Date(historyDateFrom)) return false;
+      if (historyDateTo) {
+        const end = new Date(historyDateTo);
+        end.setHours(23, 59, 59, 999);
+        if (new Date(p.createdAt) > end) return false;
+      }
+      if (historySelectedProvider && p.client?.name !== historySelectedProvider) return false;
+      return true;
+    });
+  }, [packings, historySearchQuery, historyDateFrom, historyDateTo, historySelectedProvider]);
+
   const handleConfirmFinalize = async () => {
     if (!selectedPacking) return;
     setConfirmFinalizeModal(false);
@@ -540,39 +576,67 @@ export default function PackingPage() {
 
       {/* ═══ TAB: VALIDACIÓN DE PACKING ═══ */}
       {activeTab === 'validacion' && (
-        <div className="grid grid-cols-1 xl:grid-cols-5 gap-6 items-start">
-          <PackingListSidebar
-            pendingPackings={pendingPackings}
-            selectedPackingId={selectedPackingId}
-            onSelectPacking={setSelectedPackingId}
-          />
-          <ValidationDetailPanel
-            selectedPacking={selectedPacking}
-            validationResult={validationResult}
-            validationEdits={validationEdits}
-            selectedBarId={selectedBarId}
-            allBarsValidated={allBarsValidated}
-            validatedCount={validatedCount}
-            totalCount={totalCount}
-            isPending={finalizePacking.isPending}
-            confirmModal={confirmModal}
-            cameraMode={cameraMode}
-            photoPreviewUrl={photoPreviewUrl}
-            photoUploadedUrl={photoUploadedUrl}
-            modalLiveFA={modalLiveFA}
-            onEditChange={handleEditChange}
-            onComputeDelta={computeDelta}
-            onRowSelect={handleRowSelect}
-            onConfirmBar={handleConfirmBar}
-            onSyncValidate={handleSyncValidate}
-            onDeviceClose={handleDeviceClose}
-            onCapture={handleCapture}
-            onRepeatPhoto={handleRepeatPhoto}
-            onDeviceFieldChange={handleDeviceFieldChange}
-            onCameraModeChange={setCameraMode}
-            onSetEvidenceBarId={setEvidenceBarId}
-            onSetConfirmFinalizeModal={setConfirmFinalizeModal}
-          />
+        <div className="flex flex-col gap-6">
+          {/* Parte Superior: Pendientes */}
+          <div className="grid grid-cols-1 xl:grid-cols-5 gap-6 items-start">
+            <PackingListSidebar
+              pendingPackings={pendingPackings}
+              selectedPackingId={selectedPackingId}
+              onSelectPacking={setSelectedPackingId}
+            />
+            <ValidationDetailPanel
+              selectedPacking={selectedPacking}
+              validationResult={validationResult}
+              validationEdits={validationEdits}
+              selectedBarId={selectedBarId}
+              allBarsValidated={allBarsValidated}
+              validatedCount={validatedCount}
+              totalCount={totalCount}
+              isPending={finalizePacking.isPending}
+              confirmModal={confirmModal}
+              cameraMode={cameraMode}
+              photoPreviewUrl={photoPreviewUrl}
+              photoUploadedUrl={photoUploadedUrl}
+              modalLiveFA={modalLiveFA}
+              onEditChange={handleEditChange}
+              onComputeDelta={computeDelta}
+              onRowSelect={handleRowSelect}
+              onConfirmBar={handleConfirmBar}
+              onSyncValidate={handleSyncValidate}
+              onDeviceClose={handleDeviceClose}
+              onCapture={handleCapture}
+              onRepeatPhoto={handleRepeatPhoto}
+              onDeviceFieldChange={handleDeviceFieldChange}
+              onCameraModeChange={setCameraMode}
+              onSetEvidenceBarId={setEvidenceBarId}
+              onSetConfirmFinalizeModal={setConfirmFinalizeModal}
+            />
+          </div>
+
+          {/* Parte Inferior: Historial de Packings */}
+          <div className="mt-10 pt-8 border-t border-[var(--pm-border)]/50 flex flex-col gap-6">
+            <h2 className="text-lg font-mono font-bold text-[var(--pm-text-primary)]">
+              Historial de Packings
+            </h2>
+            <HistoryFilters
+              activeTab="packings" searchQuery={historySearchQuery} dateFrom={historyDateFrom}
+              dateTo={historyDateTo} selectedProvider={historySelectedProvider}
+              providers={historyPackingProviders}
+              hasAnyFilter={!!(historySearchQuery || historyDateFrom || historyDateTo || historySelectedProvider)}
+              onSearchChange={setHistorySearchQuery}
+              onDateFromChange={setHistoryDateFrom} onDateToChange={setHistoryDateTo}
+              onProviderChange={setHistorySelectedProvider}
+              onClear={() => { setHistorySearchQuery(''); setHistoryDateFrom(''); setHistoryDateTo(''); setHistorySelectedProvider(''); }}
+            />
+            <PackingsTable
+              packings={filteredHistoryPackings} isLoading={false}
+              hasAnyFilter={!!(historySearchQuery || historyDateFrom || historyDateTo || historySelectedProvider)}
+              expandedPackingId={expandedHistoryPackingId}
+              expandedPacking={expandedHistoryPacking} loadingExpandedPacking={loadingExpandedHistoryPacking}
+              onExpand={setExpandedHistoryPackingId}
+              onClearFilters={() => { setHistorySearchQuery(''); setHistoryDateFrom(''); setHistoryDateTo(''); setHistorySelectedProvider(''); }}
+            />
+          </div>
         </div>
       )}
 

@@ -2,41 +2,63 @@
 
 import React, { useState, useMemo, useCallback } from 'react';
 import { motion } from 'motion/react';
-import { usePackings, usePacking } from '@/hooks/usePackings';
 import { useMaterialExits } from '@/hooks/useExits';
 import { useBars } from '@/hooks/useBars';
+import { useClients } from '@/hooks/useClients';
+import { useProcesses } from '@/hooks/useProcesses';
+import { useLots } from '@/hooks/useLots';
 import { generateDispatchPDF, convertExitToDispatchResult } from '@/lib/generateDispatchPDF';
+import { generateReportPDF } from '@/lib/generateReportPDF';
 import { formatNumber, formatWeight } from '@/lib/format';
-import { History, Package, Truck, ArrowDownToLine, ArrowUpFromLine, Scale } from 'lucide-react';
-import { HistoryFilters } from '@/components/historicos/HistoryFilters';
-import { PackingsTable } from '@/components/historicos/PackingsTable';
+import { History, Truck, ArrowDownToLine, ArrowUpFromLine, Scale, Download, RefreshCw } from 'lucide-react';
 import { ExitsTable } from '@/components/historicos/ExitsTable';
+import { HistoryFilters } from '@/components/historicos/HistoryFilters';
+import { BalanceTable } from '@/components/reportes/BalanceTable';
+import { FilterBar } from '@/components/reportes/FilterBar';
 import type { MaterialExit } from '@/types/api';
 
-type TabId = 'packings' | 'exits';
+type TabId = 'balance' | 'exits';
+type StatusFilter = 'ALL' | 'IN_STOCK' | 'COMPLETADO' | 'EXITED';
+
+interface ClientRow {
+  id: string;
+  name: string;
+  fa: number;
+  fe: number;
+  r: number;
+  entregado: number;
+  balance: number;
+}
 
 export default function V2HistoricosPage() {
-  const [activeTab, setActiveTab] = useState<TabId>('packings');
+  const [activeTab, setActiveTab] = useState<TabId>('balance');
   const [searchQuery, setSearchQuery] = useState('');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [selectedProvider, setSelectedProvider] = useState('');
-  const [expandedPackingId, setExpandedPackingId] = useState<string | null>(null);
   const [expandedExitId, setExpandedExitId] = useState<string | null>(null);
 
-  const { data: packings = [], isLoading: loadingPackings } = usePackings();
   const { data: exits = [], isLoading: loadingExits } = useMaterialExits();
-  const { data: expandedPacking, isLoading: loadingExpandedPacking } = usePacking(expandedPackingId);
   const { data: allBars = [] } = useBars();
+  const { data: clients = [] } = useClients();
+  const { data: processes = [] } = useProcesses();
+  const { data: lots = [] } = useLots();
+
+  const [filterClientId, setFilterClientId] = useState('');
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('ALL');
+  const [clientSearch, setClientSearch] = useState('');
+  const [exporting, setExporting] = useState(false);
 
   const switchTab = (tab: TabId) => {
     setActiveTab(tab);
-    setExpandedPackingId(null);
     setExpandedExitId(null);
     setSearchQuery('');
     setDateFrom('');
     setDateTo('');
     setSelectedProvider('');
+    setFilterClientId('');
+    setStatusFilter('ALL');
+    setClientSearch('');
   };
 
   const clearFilters = () => {
@@ -44,13 +66,10 @@ export default function V2HistoricosPage() {
     setDateFrom('');
     setDateTo('');
     setSelectedProvider('');
+    setFilterClientId('');
+    setStatusFilter('ALL');
+    setClientSearch('');
   };
-
-  const packingProviders = useMemo(() => {
-    const set = new Set<string>();
-    packings.forEach(p => { if (p.client?.name) set.add(p.client.name); });
-    return [...set].sort();
-  }, [packings]);
 
   const exitProviders = useMemo(() => {
     const set = new Set<string>();
@@ -62,26 +81,6 @@ export default function V2HistoricosPage() {
     });
     return [...set].sort();
   }, [exits]);
-
-  const filteredPackings = useMemo(() => {
-    return packings.filter(p => {
-      if (searchQuery) {
-        const q = searchQuery.toLowerCase();
-        const clientMatch = p.client?.name?.toLowerCase().includes(q);
-        const numMatch = p.packingNumber?.toString().includes(q);
-        const fileMatch = p.fileName?.toLowerCase().includes(q);
-        if (!clientMatch && !numMatch && !fileMatch) return false;
-      }
-      if (dateFrom && new Date(p.createdAt) < new Date(dateFrom)) return false;
-      if (dateTo) {
-        const end = new Date(dateTo);
-        end.setHours(23, 59, 59, 999);
-        if (new Date(p.createdAt) > end) return false;
-      }
-      if (selectedProvider && p.client?.name !== selectedProvider) return false;
-      return true;
-    });
-  }, [packings, searchQuery, dateFrom, dateTo, selectedProvider]);
 
   const filteredExits = useMemo(() => {
     return exits.filter(e => {
@@ -158,7 +157,84 @@ export default function V2HistoricosPage() {
     generateDispatchPDF(result, undefined, 'EMPRESA');
   }, []);
 
-  const hasAnyFilter = !!(searchQuery || dateFrom || dateTo || selectedProvider);
+  const filteredBars = useMemo(() => {
+    return allBars.filter(b => {
+      if (dateFrom && b.createdAt < dateFrom) return false;
+      if (dateTo && b.createdAt > dateTo + 'T23:59:59') return false;
+      if (filterClientId && b.clientId !== filterClientId) return false;
+      if (statusFilter !== 'ALL' && b.status !== statusFilter) return false;
+      return true;
+    });
+  }, [allBars, dateFrom, dateTo, filterClientId, statusFilter]);
+
+  const clientOptions = useMemo(() => {
+    let filtered = clients;
+    if (clientSearch) {
+      const q = clientSearch.toLowerCase();
+      filtered = filtered.filter(c => c.name.toLowerCase().includes(q));
+    }
+    return filtered;
+  }, [clients, clientSearch]);
+
+  const clientRows: ClientRow[] = useMemo(() => {
+    const map = new Map<string, { name: string; fa: number; entregado: number; r: number }>();
+    filteredBars.forEach(b => {
+      const clientName = clients.find(c => c.id === b.clientId)?.name || 'Desconocido';
+      const entry = map.get(b.clientId) || { name: clientName, fa: 0, entregado: 0, r: 0 };
+      entry.fa += Number(b.fineWeight || 0);
+      if (b.status === 'EXITED') entry.entregado += Number(b.fineWeight || 0);
+      if ((b.status === 'COMPLETADO' || b.status === 'EXITED') && b.lotId) {
+        const lot = lots.find(l => l.id === b.lotId);
+        if (lot && lot.recovered != null) {
+          entry.r += Number(lot.recovered || 0) / (filteredBars.filter(x => x.lotId === b.lotId).length || 1);
+        }
+      }
+      map.set(b.clientId, entry);
+    });
+    return Array.from(map.entries()).map(([id, e]) => ({
+      id,
+      name: e.name,
+      fa: e.fa,
+      fe: e.fa * 0.99,
+      r: e.r,
+      entregado: e.entregado,
+      balance: e.fa - e.entregado,
+    })).sort((a, b) => a.name.localeCompare(b.name));
+  }, [filteredBars, clients, lots]);
+
+  const totals = useMemo(() => ({
+    fa: clientRows.reduce((s, r) => s + r.fa, 0),
+    fe: clientRows.reduce((s, r) => s + r.fe, 0),
+    r: clientRows.reduce((s, r) => s + r.r, 0),
+    entregado: clientRows.reduce((s, r) => s + r.entregado, 0),
+    balance: clientRows.reduce((s, r) => s + r.balance, 0),
+  }), [clientRows]);
+
+  const hasAnyFilter = !!(searchQuery || dateFrom || dateTo || selectedProvider || filterClientId || statusFilter !== 'ALL');
+
+  const handleExportPDF = useCallback(async () => {
+    setExporting(true);
+    try {
+      const oroRecibido = { fineWeight: totals.fa, barCount: filteredBars.length, clientCount: new Set(filteredBars.map(b => b.clientId)).size };
+      const closedLots = lots.filter(l => l.recovered != null);
+      const totalRecovered = closedLots.reduce((s, l) => s + Number(l.recovered || 0), 0);
+      const completedLotsBars = filteredBars.filter(b => b.lotId && closedLots.some(l => l.id === b.lotId));
+      const totalExpected = completedLotsBars.reduce((s, b) => s + Number(b.fineWeight || 0), 0);
+      const eficiencia = totalExpected > 0 ? (totalRecovered / totalExpected) * 100 : 0;
+      const oroFundido = { totalRecovered, lotCount: closedLots.length, barCount: filteredBars.filter(b => b.status === 'COMPLETADO' || b.status === 'EXITED').length, eficiencia, totalExpected };
+      const waiting = filteredBars.filter(b => b.status === 'IN_STOCK');
+      const oroEnEspera = { count: waiting.length, fineWeight: waiting.reduce((s, b) => s + Number(b.fineWeight || 0), 0), clientCount: new Set(waiting.map(b => b.clientId)).size };
+
+      await generateReportPDF({
+        oroRecibido, oroFundido, oroEnEspera, totals, clientRows,
+        filters: { dateFrom, dateTo, filterClientId, statusFilter }, clients,
+      });
+    } catch (err) {
+      console.error('Error al generar PDF:', err);
+    } finally {
+      setExporting(false);
+    }
+  }, [totals, filteredBars, lots, clientRows, dateFrom, dateTo, filterClientId, statusFilter, clients]);
 
   return (
     <div className="space-y-6">
@@ -252,14 +328,14 @@ export default function V2HistoricosPage() {
       {/* Tabs */}
       <div className="flex gap-1 glass-panel rounded-xl border border-[var(--pm-border)]/40 p-1 w-fit">
         <button
-          onClick={() => switchTab('packings')}
+          onClick={() => switchTab('balance')}
           className={`relative flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold font-mono tracking-wider transition-all duration-200 cursor-pointer
-            ${activeTab === 'packings'
+            ${activeTab === 'balance'
               ? 'text-[var(--pm-accent-gold)]'
               : 'text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)]'
             }`}
         >
-          {activeTab === 'packings' && (
+          {activeTab === 'balance' && (
             <motion.div
               layoutId="tab-bg"
               className="absolute inset-0 bg-[var(--pm-bg-tertiary)] rounded-lg border border-[var(--pm-border)]"
@@ -267,8 +343,8 @@ export default function V2HistoricosPage() {
             />
           )}
           <span className="relative z-10 flex items-center gap-2">
-            <Package className="w-4 h-4" />
-            Historial de Packings
+            <Scale className="w-4 h-4" />
+            Balance por Cliente
           </span>
         </button>
         <button
@@ -293,34 +369,54 @@ export default function V2HistoricosPage() {
         </button>
       </div>
 
-      {/* Filters */}
-      <HistoryFilters
-        activeTab={activeTab} searchQuery={searchQuery} dateFrom={dateFrom}
-        dateTo={dateTo} selectedProvider={selectedProvider}
-        providers={activeTab === 'packings' ? packingProviders : exitProviders}
-        hasAnyFilter={hasAnyFilter} onSearchChange={setSearchQuery}
-        onDateFromChange={setDateFrom} onDateToChange={setDateTo}
-        onProviderChange={setSelectedProvider} onClear={clearFilters}
-      />
-
-      {/* Content */}
-      {activeTab === 'packings' && (
-        <PackingsTable
-          packings={filteredPackings} isLoading={loadingPackings}
-          hasAnyFilter={hasAnyFilter} expandedPackingId={expandedPackingId}
-          expandedPacking={expandedPacking} loadingExpandedPacking={loadingExpandedPacking}
-          onExpand={setExpandedPackingId} onClearFilters={clearFilters}
-        />
+      {/* Balance Tab */}
+      {activeTab === 'balance' && (
+        <>
+          <FilterBar
+            dateFrom={dateFrom} dateTo={dateTo}
+            filterClientId={filterClientId} statusFilter={statusFilter}
+            clientSearch={clientSearch} clientOptions={clientOptions}
+            clients={clients} hasActiveFilters={hasAnyFilter}
+            onDateFromChange={setDateFrom} onDateToChange={setDateTo}
+            onFilterClientIdChange={setFilterClientId} onStatusFilterChange={setStatusFilter}
+            onClientSearchChange={setClientSearch} onClearFilters={clearFilters}
+          />
+          <div className="relative">
+            <BalanceTable clientRows={clientRows} totals={totals} hasActiveFilters={hasAnyFilter} />
+            <button onClick={handleExportPDF} disabled={exporting}
+              className="absolute top-5 right-5 flex items-center gap-2 px-4 py-2 bg-[var(--pm-accent-gold)]/10 hover:bg-[var(--pm-accent-gold)]/20
+                border border-[var(--pm-accent-gold)]/30 text-[var(--pm-accent-gold)] text-[10px] font-mono font-bold
+                uppercase tracking-wider rounded-lg transition-all active:scale-95 disabled:opacity-50 cursor-pointer z-10">
+              {exporting ? (
+                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Download className="w-3.5 h-3.5" />
+              )}
+              {exporting ? 'Generando...' : 'Descargar Reporte PDF'}
+            </button>
+          </div>
+        </>
       )}
 
+      {/* Exits Tab */}
       {activeTab === 'exits' && (
-        <ExitsTable
-          exits={filteredExits} isLoading={loadingExits}
-          hasAnyFilter={hasAnyFilter} expandedExitId={expandedExitId}
-          onExpand={setExpandedExitId} onClearFilters={clearFilters}
-          onPDFCliente={handlePDFCliente}
-          onPDFEmpresa={handlePDFEmpresa}
-        />
+        <>
+          <HistoryFilters
+            activeTab="exits" searchQuery={searchQuery} dateFrom={dateFrom}
+            dateTo={dateTo} selectedProvider={selectedProvider}
+            providers={exitProviders}
+            hasAnyFilter={hasAnyFilter} onSearchChange={setSearchQuery}
+            onDateFromChange={setDateFrom} onDateToChange={setDateTo}
+            onProviderChange={setSelectedProvider} onClear={clearFilters}
+          />
+          <ExitsTable
+            exits={filteredExits} isLoading={loadingExits}
+            hasAnyFilter={hasAnyFilter} expandedExitId={expandedExitId}
+            onExpand={setExpandedExitId} onClearFilters={clearFilters}
+            onPDFCliente={handlePDFCliente}
+            onPDFEmpresa={handlePDFEmpresa}
+          />
+        </>
       )}
     </div>
   );
