@@ -35,7 +35,6 @@ export function RecoveryModal({ lot, lotBarsMap, processLotsMap, onClose, upload
 
   const [recoveredWeight, setRecoveredWeight] = useState(() => lotFA.toFixed(4));
   const [recoveredLeyAu, setRecoveredLeyAu] = useState('');
-  const [recoveredLeyAg, setRecoveredLeyAg] = useState('');
   const [recoveryError, setRecoveryError] = useState('');
   const [recoverySuccess, setRecoverySuccess] = useState(false);
   const [confirming, setConfirming] = useState(false);
@@ -84,7 +83,7 @@ export function RecoveryModal({ lot, lotBarsMap, processLotsMap, onClose, upload
     setRecoveryError('');
     const rw = parseFloat(recoveredWeight);
     if (isNaN(rw) || rw <= 0) {
-      setRecoveryError('Ingrese un peso recuperado válido.');
+      setRecoveryError('Ingrese un peso bruto válido.');
       return;
     }
     if (!photoUploadedUrl) {
@@ -99,7 +98,6 @@ export function RecoveryModal({ lot, lotBarsMap, processLotsMap, onClose, upload
           recovered: rw,
           recoveryAt: new Date().toISOString(),
           photoUrl: photoUploadedUrl,
-          leyAg: recoveredLeyAg ? parseFloat(recoveredLeyAg) : undefined,
         },
       });
       const pl = processLotsMap[lot.processId] || [];
@@ -162,7 +160,7 @@ export function RecoveryModal({ lot, lotBarsMap, processLotsMap, onClose, upload
               <span className="text-xs font-mono font-bold text-[var(--pm-text-primary)]">{formatNumber(lotGross, 2)} g</span>
             </div>
             <div className="p-2 rounded-lg border border-[var(--pm-border)] bg-[var(--pm-bg-deepest)]/50 text-center">
-              <span className="text-[8px] font-mono text-[var(--pm-text-dim)] block">FA Cargado</span>
+              <span className="text-[8px] font-mono text-[var(--pm-text-dim)] block">Peso Fino</span>
               <span className="text-xs font-mono font-bold text-[var(--pm-accent-gold)]">{formatNumber(lotFA, 4)} g</span>
             </div>
           </div>
@@ -233,9 +231,9 @@ export function RecoveryModal({ lot, lotBarsMap, processLotsMap, onClose, upload
             )}
           </div>
 
-          {/* Peso Recuperado + button */}
+          {/* Peso Bruto + button */}
           <div className="space-y-1">
-            <label className="text-[9px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider">Peso Recuperado (g)</label>
+            <label className="text-[9px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider">Peso Bruto (g)</label>
             <div className="flex gap-2">
               <input type="number" step="0.0001" value={recoveredWeight}
                 onChange={e => setRecoveredWeight(e.target.value)}
@@ -265,15 +263,6 @@ export function RecoveryModal({ lot, lotBarsMap, processLotsMap, onClose, upload
             </div>
           </div>
 
-          {/* Ley Ag */}
-          <div className="space-y-1">
-            <label className="text-[9px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider">Ley Ag (‰)</label>
-            <input type="number" min="0" max="1000" step="0.1" value={recoveredLeyAg}
-              onChange={e => setRecoveredLeyAg(e.target.value)}
-              className="w-full bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] rounded-lg px-3 py-2 text-sm font-mono text-[var(--pm-text-primary)] focus:outline-none focus:border-[var(--pm-accent-amber)] transition-colors"
-            />
-          </div>
-
           {/* Discrepancy */}
           {recWeightNum > 0 && (
             <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }}
@@ -290,11 +279,11 @@ export function RecoveryModal({ lot, lotBarsMap, processLotsMap, onClose, upload
               </div>
               <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-[9px] font-mono">
                 <div className="flex justify-between">
-                  <span className="text-[var(--pm-text-dim)]">Esperado:</span>
+                  <span className="text-[var(--pm-text-dim)]">Peso Fino:</span>
                   <span className="text-[var(--pm-text-primary)]">{formatNumber(lotFA, 4)} g</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-[var(--pm-text-dim)]">Recuperado:</span>
+                  <span className="text-[var(--pm-text-dim)]">Peso Bruto:</span>
                   <span className="text-[var(--pm-accent-amber)]">{formatNumber(recWeightNum, 4)} g</span>
                 </div>
                 <div className="flex justify-between">

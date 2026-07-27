@@ -50,6 +50,7 @@ export class LotsService {
       moldCode?: string;
       recovered?: number | null;
       recoveryAt?: string | null;
+      photoUrl?: string | null;
     },
   ) {
     const lot = await this.findOne(id);

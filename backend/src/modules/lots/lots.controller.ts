@@ -45,6 +45,7 @@ export class LotsController {
       moldCode?: string;
       recovered?: number | null;
       recoveryAt?: string | null;
+      photoUrl?: string | null;
     },
   ) {
     return this.service.update(id, body);
