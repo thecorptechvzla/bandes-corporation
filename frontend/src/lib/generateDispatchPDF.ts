@@ -228,69 +228,13 @@ export async function generateDispatchPDF(
       y += 4;
     });
   } else {
-    doc.text('DETALLE DE PIEZAS ENTREGADAS', m, y); y += 8;
+    doc.text('RESUMEN DEL DESPACHO', m, y); y += 8;
 
-    if (isBarMode) {
-      const allBars = data.bars || [];
-      if (allBars.length > 0) {
-        if (y > 255) { doc.addPage(); y = 20; }
-        doc.setFillColor(212, 175, 55);
-        doc.rect(m, y - 4, cw, 7, 'F');
-        doc.setTextColor(7, 11, 20);
-        doc.setFontSize(6);
-        doc.setFont('helvetica', 'bold');
-        const barColsW = [35, 40, 30, cw - 105];
-        doc.text('CÓDIGO', m + 3, y + 1);
-        doc.text('PESO BRUTO (g)', m + 3 + barColsW[0], y + 1);
-        doc.text('LEY AU (‰)', m + 3 + barColsW[0] + barColsW[1], y + 1);
-        doc.text('FA (g)', m + 3 + barColsW[0] + barColsW[1] + barColsW[2], y + 1);
-        y += 7;
-
-        allBars.forEach((bar, idx) => {
-          if (y > 260) { doc.addPage(); y = 20; }
-          if (idx % 2 === 0) {
-            doc.setFillColor(248, 248, 248);
-            doc.rect(m, y - 4, cw, 7, 'F');
-          }
-          doc.setTextColor(80, 80, 80);
-          doc.setFontSize(7);
-          doc.setFont('helvetica', 'normal');
-          doc.text(bar.barNumber, m + 3, y + 1);
-          doc.text(formatWeight(bar.grossWeight), m + 3 + barColsW[0], y + 1);
-          doc.text(String(bar.purity), m + 3 + barColsW[0] + barColsW[1], y + 1);
-          doc.text(formatWeight(bar.fineWeight), m + 3 + barColsW[0] + barColsW[1] + barColsW[2], y + 1);
-          y += 7;
-        });
-      }
-    } else {
-      const allLots = data.lots || [];
-      if (allLots.length > 0) {
-        if (y > 255) { doc.addPage(); y = 20; }
-        doc.setFillColor(212, 175, 55);
-        doc.rect(m, y - 4, cw, 7, 'F');
-        doc.setTextColor(7, 11, 20);
-        doc.setFontSize(6);
-        doc.setFont('helvetica', 'bold');
-        const lotColsW = [cw * 0.6, cw * 0.4];
-        doc.text('LOTE', m + 3, y + 1);
-        doc.text('PESO FINO (g)', m + 3 + lotColsW[0], y + 1);
-        y += 7;
-
-        allLots.forEach((lot, idx) => {
-          if (y > 260) { doc.addPage(); y = 20; }
-          if (idx % 2 === 0) {
-            doc.setFillColor(248, 248, 248);
-            doc.rect(m, y - 4, cw, 7, 'F');
-          }
-          doc.setTextColor(80, 80, 80);
-          doc.setFontSize(7);
-          doc.setFont('helvetica', 'normal');
-          doc.text(lot.name, m + 3, y + 1);
-          doc.text(formatWeight(Number(lot.weight)), m + 3 + lotColsW[0], y + 1);
-          y += 7;
-        });
-      }
-    }
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(80, 80, 80);
+    doc.text(`Total de ${isBarMode ? 'barras' : 'lotes'}: ${itemCount}`, m, y); y += 5;
+    doc.text(`Peso Fino Total: ${formatWeight(Number(data.totalWeight))}`, m, y); y += 5;
   }
 
   y += 4;

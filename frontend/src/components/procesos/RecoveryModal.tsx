@@ -1,13 +1,14 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Microscope, AlertTriangle, CheckCircle2, Zap, X } from 'lucide-react';
+import { Microscope, AlertTriangle, CheckCircle2, Zap, X, Camera, ImagePlus, RefreshCw } from 'lucide-react';
 import { HudButton } from '@/components/tactical/HudButton';
 import { formatNumber } from '@/lib/format';
 import { ModalShell } from '@/components/ui/ModalShell';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { HardwareSyncOverlay } from './HardwareSyncOverlay';
+import { CameraTerminal } from '@/components/tactical/CameraTerminal';
 import { useUpdateLot } from '@/hooks/useLots';
 import { useUpdateProcess } from '@/hooks/useProcesses';
 import { useUpdateBar } from '@/hooks/useBars';
@@ -18,9 +19,12 @@ interface RecoveryModalProps {
   lotBarsMap: Record<string, Bar[]>;
   processLotsMap: Record<string, Lot[]>;
   onClose: () => void;
+  uploadPhoto: (blob: Blob) => Promise<string>;
 }
 
-export function RecoveryModal({ lot, lotBarsMap, processLotsMap, onClose }: RecoveryModalProps) {
+type CameraMode = 'idle' | 'camera' | 'preview';
+
+export function RecoveryModal({ lot, lotBarsMap, processLotsMap, onClose, uploadPhoto }: RecoveryModalProps) {
   const updateLot = useUpdateLot();
   const updateProcess = useUpdateProcess();
   const updateBar = useUpdateBar();
@@ -31,6 +35,7 @@ export function RecoveryModal({ lot, lotBarsMap, processLotsMap, onClose }: Reco
 
   const [recoveredWeight, setRecoveredWeight] = useState(() => lotFA.toFixed(4));
   const [recoveredLeyAu, setRecoveredLeyAu] = useState('');
+  const [recoveredLeyAg, setRecoveredLeyAg] = useState('');
   const [recoveryError, setRecoveryError] = useState('');
   const [recoverySuccess, setRecoverySuccess] = useState(false);
   const [confirming, setConfirming] = useState(false);
@@ -39,10 +44,41 @@ export function RecoveryModal({ lot, lotBarsMap, processLotsMap, onClose }: Reco
   const [hwWeight, setHwWeight] = useState(recoveredWeight);
   const [hwLeyAu, setHwLeyAu] = useState(recoveredLeyAu);
 
+  const [cameraMode, setCameraMode] = useState<CameraMode>('idle');
+  const [photoPreviewUrl, setPhotoPreviewUrl] = useState<string | null>(null);
+  const [photoUploadedUrl, setPhotoUploadedUrl] = useState<string | null>(null);
+  const [photoUploading, setPhotoUploading] = useState(false);
+  const previewUrlRef = useRef<string | null>(null);
+
   const recWeightNum = parseFloat(recoveredWeight) || 0;
   const discrepancy = lotFA > 0 ? ((recWeightNum - lotFA) / lotFA) * 100 : 0;
   const mermaGramos = lotFA - recWeightNum;
   const mermaPct = lotFA > 0 ? (mermaGramos / lotFA) * 100 : 0;
+
+  const handleCapture = useCallback(async (blob: Blob) => {
+    const localUrl = URL.createObjectURL(blob);
+    if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
+    previewUrlRef.current = localUrl;
+    setPhotoPreviewUrl(localUrl);
+    setCameraMode('preview');
+    setPhotoUploading(true);
+    try {
+      const url = await uploadPhoto(blob);
+      setPhotoUploadedUrl(url);
+    } catch (err) {
+      console.error('Auto-upload failed:', err);
+    } finally {
+      setPhotoUploading(false);
+    }
+  }, [uploadPhoto]);
+
+  const handleRepeatPhoto = useCallback(() => {
+    if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
+    previewUrlRef.current = null;
+    setPhotoPreviewUrl(null);
+    setPhotoUploadedUrl(null);
+    setCameraMode('camera');
+  }, []);
 
   const handleConfirmRecovery = async () => {
     setRecoveryError('');
@@ -51,11 +87,20 @@ export function RecoveryModal({ lot, lotBarsMap, processLotsMap, onClose }: Reco
       setRecoveryError('Ingrese un peso recuperado válido.');
       return;
     }
+    if (!photoUploadedUrl) {
+      setRecoveryError('Se requiere foto de evidencia para cerrar la colada.');
+      return;
+    }
     setConfirming(true);
     try {
       await updateLot.mutateAsync({
         id: lot.id,
-        data: { recovered: rw, recoveryAt: new Date().toISOString() },
+        data: {
+          recovered: rw,
+          recoveryAt: new Date().toISOString(),
+          photoUrl: photoUploadedUrl,
+          leyAg: recoveredLeyAg ? parseFloat(recoveredLeyAg) : undefined,
+        },
       });
       const pl = processLotsMap[lot.processId] || [];
       const allDone = pl.every(l =>
@@ -122,6 +167,72 @@ export function RecoveryModal({ lot, lotBarsMap, processLotsMap, onClose }: Reco
             </div>
           </div>
 
+          {/* Photo Evidence — mandatory */}
+          <div className="space-y-2">
+            <label className="text-[9px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider flex items-center gap-1.5">
+              <Camera className="w-3 h-3 text-[var(--pm-accent-cyan)]" />
+              Foto de Evidencia
+              <span className="text-[var(--pm-accent-red)]">*</span>
+            </label>
+
+            {cameraMode === 'idle' && (
+              <button
+                type="button"
+                onClick={() => setCameraMode('camera')}
+                className="w-full p-4 rounded-xl border-2 border-dashed border-[var(--pm-accent-cyan)]/30 bg-[var(--pm-accent-cyan)]/5 hover:bg-[var(--pm-accent-cyan)]/10 transition-all flex flex-col items-center gap-2 cursor-pointer"
+              >
+                <ImagePlus className="w-6 h-6 text-[var(--pm-accent-cyan)]/50" />
+                <span className="text-[10px] font-mono text-[var(--pm-accent-cyan)] font-bold uppercase tracking-wider">
+                  Capturar Foto
+                </span>
+                <span className="text-[9px] font-mono text-[var(--pm-text-dim)]">
+                  Obligatorio para cerrar la colada
+                </span>
+              </button>
+            )}
+
+            {cameraMode === 'camera' && (
+              <div className="rounded-xl overflow-hidden border border-[var(--pm-border)]">
+                <CameraTerminal
+                  onCapture={handleCapture}
+                  onClose={() => setCameraMode('idle')}
+                />
+              </div>
+            )}
+
+            {cameraMode === 'preview' && photoPreviewUrl && (
+              <div className="relative rounded-xl overflow-hidden border border-[var(--pm-border)]">
+                <img src={photoPreviewUrl} alt="Evidencia" className="w-full max-h-48 object-contain bg-black" />
+                {photoUploading && (
+                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                    <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[var(--pm-bg-deepest)]/90 border border-[var(--pm-border)]">
+                      <LoadingSpinner size="sm" className="text-[var(--pm-accent-cyan)]" />
+                      <span className="text-[10px] font-mono text-[var(--pm-text-dim)]">Subiendo foto...</span>
+                    </div>
+                  </div>
+                )}
+                <div className="absolute bottom-2 right-2 flex gap-2">
+                  <button
+                    type="button"
+                    onClick={handleRepeatPhoto}
+                    disabled={photoUploading}
+                    className="p-2 rounded-lg bg-[var(--pm-bg-deepest)]/80 border border-[var(--pm-border)] hover:bg-[var(--pm-bg-tertiary)] transition-all cursor-pointer disabled:opacity-40"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5 text-[var(--pm-accent-cyan)]" />
+                  </button>
+                </div>
+                {photoUploadedUrl && (
+                  <div className="absolute top-2 right-2">
+                    <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-[var(--pm-accent-emerald)]/15 border border-[var(--pm-accent-emerald)]/30">
+                      <CheckCircle2 className="w-3 h-3 text-[var(--pm-accent-emerald)]" />
+                      <span className="text-[8px] font-mono text-[var(--pm-accent-emerald)] font-bold">SUBIDA</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
           {/* Peso Recuperado + button */}
           <div className="space-y-1">
             <label className="text-[9px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider">Peso Recuperado (g)</label>
@@ -152,6 +263,15 @@ export function RecoveryModal({ lot, lotBarsMap, processLotsMap, onClose }: Reco
                 🔬 Leyes
               </HudButton>
             </div>
+          </div>
+
+          {/* Ley Ag */}
+          <div className="space-y-1">
+            <label className="text-[9px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider">Ley Ag (‰)</label>
+            <input type="number" min="0" max="1000" step="0.1" value={recoveredLeyAg}
+              onChange={e => setRecoveredLeyAg(e.target.value)}
+              className="w-full bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] rounded-lg px-3 py-2 text-sm font-mono text-[var(--pm-text-primary)] focus:outline-none focus:border-[var(--pm-accent-amber)] transition-colors"
+            />
           </div>
 
           {/* Discrepancy */}
@@ -203,12 +323,18 @@ export function RecoveryModal({ lot, lotBarsMap, processLotsMap, onClose }: Reco
             <button type="button" onClick={onClose} disabled={confirming}
               className="flex-1 py-2.5 rounded-lg border border-[var(--pm-border)] text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] hover:bg-[var(--pm-bg-tertiary)] text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer disabled:opacity-40"
             >Cancelar</button>
-            <button type="button" onClick={handleConfirmRecovery} disabled={confirming}
+            <button type="button" onClick={handleConfirmRecovery} disabled={confirming || !photoUploadedUrl}
               className="flex-1 py-2.5 rounded-lg text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer disabled:opacity-40 flex items-center justify-center gap-2"
               style={{
-                background: Math.abs(discrepancy) > 5 ? 'rgba(239,68,68,0.15)' : 'rgba(16,185,129,0.15)',
-                color: Math.abs(discrepancy) > 5 ? 'var(--pm-accent-red)' : 'var(--pm-accent-emerald)',
-                border: `1px solid ${Math.abs(discrepancy) > 5 ? 'rgba(239,68,68,0.3)' : 'rgba(16,185,129,0.3)'}`,
+                background: !photoUploadedUrl
+                  ? 'rgba(100,100,100,0.15)'
+                  : Math.abs(discrepancy) > 5 ? 'rgba(239,68,68,0.15)' : 'rgba(16,185,129,0.15)',
+                color: !photoUploadedUrl
+                  ? 'var(--pm-text-dim)'
+                  : Math.abs(discrepancy) > 5 ? 'var(--pm-accent-red)' : 'var(--pm-accent-emerald)',
+                border: `1px solid ${!photoUploadedUrl
+                  ? 'rgba(100,100,100,0.3)'
+                  : Math.abs(discrepancy) > 5 ? 'rgba(239,68,68,0.3)' : 'rgba(16,185,129,0.3)'}`,
               }}
             >
               {confirming ? (

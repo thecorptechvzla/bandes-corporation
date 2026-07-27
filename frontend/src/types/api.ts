@@ -30,6 +30,8 @@ export interface Lot {
   moldCode?: string;
   recovered?: number | null;
   recoveryAt?: string | null;
+  photoUrl?: string | null;
+  leyAg?: number | null;
   createdAt: string;
   updatedAt: string;
   process?: Process;
@@ -151,6 +153,8 @@ export interface UpdateLotRequest {
   moldCode?: string;
   recovered?: number | null;
   recoveryAt?: string | null;
+  photoUrl?: string | null;
+  leyAg?: number | null;
 }
 
 export interface CreateClientRequest {

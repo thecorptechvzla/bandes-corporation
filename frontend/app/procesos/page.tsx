@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { motion } from 'motion/react';
 import { Flame, Layers } from 'lucide-react';
 import { useClients } from '@/hooks/useClients';
@@ -33,6 +33,15 @@ export default function V2ProcesosPage() {
   const [showCompleted, setShowCompleted] = useState(false);
 
   const [activeLot, setActiveLot] = useState<Lot | null>(null);
+
+  const uploadPhoto = useCallback(async (blob: Blob): Promise<string> => {
+    const fd = new FormData();
+    fd.append('file', blob, `photo-${Date.now()}.jpg`);
+    const res = await fetch('/api/blob/upload', { method: 'POST', body: fd });
+    if (!res.ok) throw new Error('Error al subir la foto');
+    const data = await res.json();
+    return data.url as string;
+  }, []);
 
   const availableBars = useMemo(
     () => bars.filter(b => b.status === 'IN_STOCK' && !b.lotId),
@@ -265,6 +274,7 @@ export default function V2ProcesosPage() {
           lotBarsMap={lotBarsMap}
           processLotsMap={processLotsMap}
           onClose={() => setActiveLot(null)}
+          uploadPhoto={uploadPhoto}
         />
       )}
 
