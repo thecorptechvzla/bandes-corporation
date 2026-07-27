@@ -263,16 +263,23 @@ export default function DashboardFilters({
   return (
     <>
       {/* Desktop */}
-      <div className="hidden md:flex items-center justify-center gap-6 flex-wrap glass-panel px-6 py-5 rounded-xl border border-[var(--pm-border)]">
-        {content}
+      <div className="hidden lg:flex items-center w-full gap-6 glass-panel px-6 py-5 rounded-xl border border-[var(--pm-border)]">
+        <div className="w-full lg:w-[250px] flex justify-start shrink-0">
+          <img src="/Bandes2.png" alt="Bandes" className="h-15 w-auto rounded-lg object-contain border border-white/10" />
+        </div>
+        <div className="flex-1 flex flex-wrap items-end justify-center gap-4 sm:gap-6 w-full">
+          {content}
+        </div>
+        <div className="hidden lg:block lg:w-[250px] shrink-0" />
       </div>
 
-      {/* Mobile trigger */}
-      <div className="md:hidden">
+      {/* Mobile */}
+      <div className="md:hidden flex items-center gap-3">
+        <img src="/Bandes2.png" alt="Bandes" className="h-7 w-auto shrink-0 rounded-lg object-contain border border-white/10" />
         <button
           type="button"
           onClick={() => setMobileOpen(true)}
-          className="glass-panel w-full flex items-center justify-between px-4 py-3 rounded-xl border border-[var(--pm-border)] text-[11px] font-mono text-[var(--pm-text-dim)]"
+          className="glass-panel flex-1 flex items-center justify-between px-4 py-3 rounded-xl border border-[var(--pm-border)] text-[11px] font-mono text-[var(--pm-text-dim)]"
         >
           <div className="flex items-center gap-2">
             <SlidersHorizontal className="w-4 h-4" />

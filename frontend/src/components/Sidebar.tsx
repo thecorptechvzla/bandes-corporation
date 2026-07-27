@@ -108,7 +108,7 @@ export const Sidebar: React.FC = () => {
         {/* Logout */}
         <div className="px-3 py-3 border-t border-[#2F353E] shrink-0">
           <button
-            className="flex items-center gap-3 w-full px-2.5 py-2.5 rounded-lg text-[#94A3B8] hover:text-red-400 hover:bg-red-500/10 transition-all duration-200 cursor-pointer whitespace-nowrap"
+            className="flex items-center gap-3 w-full px-2.5 py-2.5 rounded-lg text-[#94A3B8] hover:text-green-400 hover:bg-green-500/10 transition-all duration-200 cursor-pointer whitespace-nowrap"
             title="Cerrar sesión"
           >
             <LogOut className="w-5 h-5 shrink-0" />
@@ -161,7 +161,7 @@ export const Sidebar: React.FC = () => {
         </nav>
 
         <div className="px-3 py-3 border-t border-[#2F353E] shrink-0">
-          <button className="flex items-center gap-3 w-full px-2.5 py-2.5 rounded-lg text-[#94A3B8] hover:text-red-400 hover:bg-red-500/10 transition-all duration-200 cursor-pointer">
+          <button className="flex items-center gap-3 w-full px-2.5 py-2.5 rounded-lg text-[#94A3B8] hover:text-green-400 hover:bg-green-500/10 transition-all duration-200 cursor-pointer">
             <LogOut className="w-5 h-5 shrink-0" />
             <span className="text-xs font-semibold tracking-wide truncate">Cerrar Sesión</span>
           </button>

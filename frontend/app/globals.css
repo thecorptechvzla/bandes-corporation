@@ -285,8 +285,8 @@ tr:hover > td.sticky {
 
 .v2-sidebar .nav-item.active {
   color: #F3F4F6;
-  background: rgba(227, 25, 25, 0.06);
-  border-left-color: var(--pm-brand-red);
+  background: rgba(16, 185, 129, 0.06);
+  border-left-color: var(--pm-accent-emerald);
 }
 
 /* --- Premium card --- */

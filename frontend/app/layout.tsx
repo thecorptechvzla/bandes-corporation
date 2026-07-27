@@ -84,10 +84,10 @@ export default function RootLayout({
             active:scale-[0.97] transition-all duration-150
           `}
         >
-          <IconComponent className={`w-4 h-4 shrink-0 ${isActive ? 'text-[var(--pm-brand-red)]' : 'text-[var(--pm-text-dim)] group-hover:text-[var(--pm-text-primary)]'}`} />
+          <IconComponent className={`w-4 h-4 shrink-0 ${isActive ? 'text-[var(--pm-accent-emerald)]' : 'text-[var(--pm-text-dim)] group-hover:text-[var(--pm-text-primary)]'}`} />
           <span>{item.name}</span>
           {isActive && (
-            <span className="ml-auto w-1.5 h-1.5 rounded-full bg-[var(--pm-brand-red)] animate-pulse" />
+            <span className="ml-auto w-1.5 h-1.5 rounded-full bg-[var(--pm-accent-emerald)] animate-pulse" />
           )}
         </Link>
       );
