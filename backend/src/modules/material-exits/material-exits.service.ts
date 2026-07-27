@@ -14,7 +14,7 @@ export class MaterialExitsService {
     }
 
     if (hasLots && hasBars) {
-      throw new BadRequestException('No se pueden mezclar lotes y barras en un mismo egreso');
+      return this.createFromMixed(data.destination, data.lotIds!, data.barIds!);
     }
 
     if (hasLots) {
@@ -130,6 +130,114 @@ export class MaterialExitsService {
       const exit = await tx.materialExit.create({
         data: { destination, totalWeight },
       });
+
+      await tx.bar.updateMany({
+        where: { id: { in: barIds } },
+        data: { status: 'EXITED', exitId: exit.id },
+      });
+
+      return tx.materialExit.findUnique({
+        where: { id: exit.id },
+        include: {
+          exitDetails: {
+            include: {
+              lot: {
+                include: {
+                  process: {
+                    include: { client: { select: { id: true, name: true } } },
+                  },
+                },
+              },
+              bars: { select: { id: true, barNumber: true, fineWeight: true } },
+            },
+          },
+          bars: {
+            include: { client: { select: { id: true, name: true } } },
+          },
+        },
+      });
+    });
+  }
+
+  private async createFromMixed(destination: string, lotIds: string[], barIds: string[]) {
+    return this.prisma.$transaction(async (tx) => {
+      const lots = await tx.lot.findMany({
+        where: { id: { in: lotIds } },
+        include: {
+          process: { select: { status: true, clientId: true } },
+          bars: { where: { status: { in: ['IN_STOCK', 'COMPLETADO'] } } },
+        },
+      });
+
+      if (lots.length !== lotIds.length) {
+        throw new BadRequestException('Uno o más lotes no existen');
+      }
+
+      for (const lot of lots) {
+        if (lot.process.status !== 'CLOSED') {
+          throw new BadRequestException(
+            `El lote ${lot.name} pertenece a un proceso no cerrado`,
+          );
+        }
+        if (lot.bars.length === 0) {
+          throw new BadRequestException(
+            `El lote ${lot.name} no tiene barras disponibles para egresar`,
+          );
+        }
+      }
+
+      const bars = await tx.bar.findMany({
+        where: { id: { in: barIds } },
+        include: { client: { select: { id: true, name: true } } },
+      });
+
+      if (bars.length !== barIds.length) {
+        throw new BadRequestException('Una o más barras no existen');
+      }
+
+      const invalidBars = bars.filter(
+        (b) => b.status !== 'IN_STOCK' && b.status !== 'COMPLETADO',
+      );
+      if (invalidBars.length > 0) {
+        throw new BadRequestException(
+          `Las siguientes barras no están disponibles para egresar: ${invalidBars.map((b) => b.barNumber).join(', ')}`,
+        );
+      }
+
+      const assignedBars = bars.filter((b) => b.lotId);
+      if (assignedBars.length > 0) {
+        throw new BadRequestException(
+          `Las siguientes barras están asignadas a un lote y deben egresarse como parte del lote: ${assignedBars.map((b) => b.barNumber).join(', ')}`,
+        );
+      }
+
+      const lotsWeight = lots.reduce(
+        (sum, lot) => sum + lot.bars.reduce((s, b) => s + Number(b.fineWeight), 0),
+        0,
+      );
+      const barsWeight = bars.reduce((sum, b) => sum + Number(b.fineWeight), 0);
+      const totalWeight = lotsWeight + barsWeight;
+
+      const exit = await tx.materialExit.create({
+        data: { destination, totalWeight },
+      });
+
+      for (const lot of lots) {
+        const lotWeight = lot.bars.reduce((s, b) => s + Number(b.fineWeight), 0);
+
+        const detail = await tx.exitDetail.create({
+          data: {
+            exitId: exit.id,
+            lotId: lot.id,
+            weightAported: lotWeight,
+          },
+        });
+
+        await tx.bar.updateMany({
+          where: { id: { in: lot.bars.map((b) => b.id) } },
+          data: { status: 'EXITED', exitDetailId: detail.id },
+        });
+      }
 
       await tx.bar.updateMany({
         where: { id: { in: barIds } },

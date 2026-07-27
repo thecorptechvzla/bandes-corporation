@@ -23,7 +23,6 @@ interface ConfirmDispatchModalProps {
   isOpen: boolean;
   destinationClient: DestinationClient | null;
   clientCount: number;
-  isBarMode: boolean;
   selectedBars: Bar[];
   selectedLots: AvailableLot[];
   totalWeight: number;
@@ -37,15 +36,15 @@ export function ConfirmDispatchModal({
   isOpen,
   destinationClient,
   clientCount,
-  isBarMode,
   selectedBars,
   selectedLots,
   totalWeight,
   onConfirm,
   onCancel,
 }: ConfirmDispatchModalProps) {
-  const itemCount = isBarMode ? selectedBars.length : selectedLots.length;
-  const itemLabel = isBarMode ? 'barras' : 'lotes';
+  const lotCount = selectedLots.length;
+  const barCount = selectedBars.length;
+  const itemCount = lotCount + barCount;
 
   return (
     <ModalShell
@@ -90,15 +89,19 @@ export function ConfirmDispatchModal({
           <span className="text-[var(--pm-text-primary)] font-bold">{clientCount}</span>
         </div>
         <div className="flex justify-between">
-          <span className="text-[var(--pm-text-dim)]">{isBarMode ? 'Barras:' : 'Lotes:'}</span>
-          <span className="text-[var(--pm-text-primary)] font-bold">{itemCount}</span>
+          <span className="text-[var(--pm-text-dim)]">Ítems:</span>
+          <span className="text-[var(--pm-text-primary)] font-bold">
+            {lotCount > 0 && `${lotCount} lote(s)`}
+            {lotCount > 0 && barCount > 0 && ' + '}
+            {barCount > 0 && `${barCount} barra(s)`}
+          </span>
         </div>
         <div className="border-t border-[var(--pm-border)] pt-2 flex justify-between">
           <span className="text-[var(--pm-text-dim)]">Peso Total:</span>
           <span className="text-lg font-bold text-[var(--pm-accent-gold)]">{fmtWeight(totalWeight)}</span>
         </div>
         <div className="pt-1 text-[9px] text-[var(--pm-text-dim)]">
-          Se entregarán {itemCount} {itemLabel} de {clientCount} proveedor{clientCount !== 1 ? 'es' : ''} con un peso total de {fmtWeight(totalWeight)} a <strong className="text-[var(--pm-text-primary)]">{destinationClient?.name?.toUpperCase()}</strong>.
+          Se entregarán {lotCount > 0 && `${lotCount} lote(s)`}{lotCount > 0 && barCount > 0 && ' + '}{barCount > 0 && `${barCount} barra(s)`} de {clientCount} proveedor{clientCount !== 1 ? 'es' : ''} con un peso total de {fmtWeight(totalWeight)} a <strong className="text-[var(--pm-text-primary)]">{destinationClient?.name?.toUpperCase()}</strong>.
         </div>
       </div>
     </ModalShell>

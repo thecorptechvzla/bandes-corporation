@@ -28,7 +28,6 @@ interface BuyerClient {
 interface CheckoutSummaryPanelProps {
   selectedLots: AvailableLot[];
   selectedBars: Bar[];
-  isBarMode: boolean;
   groupedByClient: Record<string, any[]>;
   totalWeight: number;
   clientCount: number;
@@ -40,13 +39,13 @@ interface CheckoutSummaryPanelProps {
 }
 
 export function CheckoutSummaryPanel({
-  selectedLots, selectedBars, isBarMode, groupedByClient, totalWeight, clientCount,
+  selectedLots, selectedBars, groupedByClient, totalWeight, clientCount,
   destinationClient, onDestinationChange, buyerClients, status, onOpenConfirm,
 }: CheckoutSummaryPanelProps) {
   const fmtWeightDisplay = (val: number) => `${formatNumber(val, 2)} g`;
-  const itemCount = isBarMode ? selectedBars.length : selectedLots.length;
-  const itemLabel = isBarMode ? 'barra' : 'lote';
-  const itemLabelPl = isBarMode ? 'barras' : 'lotes';
+  const lotCount = selectedLots.length;
+  const barCount = selectedBars.length;
+  const itemCount = lotCount + barCount;
 
   return (
     <motion.div initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.15, duration: 0.4 }}
@@ -63,10 +62,10 @@ export function CheckoutSummaryPanel({
           <div className="flex flex-col items-center justify-center py-10 text-[var(--pm-text-dim)]">
             <Package className="w-8 h-8 text-[var(--pm-text-dim)]/30 mb-2" />
             <span className="text-[11px] font-mono text-center">
-              Seleccione {isBarMode ? 'barras' : 'lotes'} del panel izquierdo
+              Seleccione lotes o barras del panel izquierdo
             </span>
             <p className="text-[9px] font-mono mt-1 text-center">
-              Puede seleccionar {isBarMode ? 'barras de diferentes proveedores' : 'lotes de diferentes proveedores'}.
+              Puede mezclar lotes refundidos y barras individuales en un solo despacho.
             </p>
           </div>
         ) : (
@@ -80,7 +79,7 @@ export function CheckoutSummaryPanel({
                 {fmtWeightDisplay(totalWeight)}
               </span>
               <span className="text-[10px] font-mono text-[var(--pm-text-dim)] block mt-1">
-                {clientCount} proveedor{clientCount !== 1 ? 'es' : ''} involucrado{clientCount !== 1 ? 's' : ''} · {itemCount} {itemLabel}{itemCount !== 1 ? itemLabelPl : ''}
+                {clientCount} proveedor{clientCount !== 1 ? 'es' : ''} · {lotCount > 0 && `${lotCount} lote(s)`}{lotCount > 0 && barCount > 0 && ' + '}{barCount > 0 && `${barCount} barra(s)`}
               </span>
             </div>
 
@@ -92,7 +91,7 @@ export function CheckoutSummaryPanel({
               {Object.entries(groupedByClient).map(([cId, items]) => {
                 const first = items[0];
                 const clientName = first.clientName || first.client?.name || 'DESCONOCIDO';
-                const clientTotal = items.reduce((s: number, item: any) => s + (item.availableWeight || Number(item.fineWeight)), 0);
+                const clientTotal = items.reduce((s: number, item: any) => s + (item.pesoFino || item.availableWeight || Number(item.fineWeight)), 0);
                 return (
                   <div key={cId} className="p-3 rounded-lg border border-[var(--pm-border)] bg-[var(--pm-bg-deepest)]/40">
                     <div className="flex items-center justify-between mb-2">
@@ -104,12 +103,18 @@ export function CheckoutSummaryPanel({
                     </div>
                     <div className="space-y-1">
                       {items.map((item: any) => {
-                        const itemLabel = isBarMode ? item.barNumber : item.name;
-                        const itemWeight = isBarMode ? Number(item.fineWeight) : item.availableWeight;
+                        const label = item.type === 'lot' ? item.code || item.name : item.code || item.barNumber;
+                        const weight = item.pesoFino || item.availableWeight || Number(item.fineWeight);
+                        const badge = item.type === 'lot' ? 'REF' : 'SIN-REF';
                         return (
                           <div key={item.id} className="flex items-center justify-between text-[10px] font-mono">
-                            <span className="text-[var(--pm-text-dim)]">{itemLabel}</span>
-                            <span className="text-[var(--pm-text-primary)]">{formatNumber(itemWeight, 4)} g</span>
+                            <span className="text-[var(--pm-text-dim)] flex items-center gap-1.5">
+                              <span className={`text-[8px] font-bold px-1 py-0.5 rounded ${
+                                item.type === 'lot' ? 'bg-[var(--pm-accent-amber)]/10 text-[var(--pm-accent-amber)]' : 'bg-[var(--pm-accent-teal)]/10 text-[var(--pm-accent-teal)]'
+                              }`}>{badge}</span>
+                              {label}
+                            </span>
+                            <span className="text-[var(--pm-text-primary)]">{formatNumber(weight, 4)} g</span>
                           </div>
                         );
                       })}
@@ -133,7 +138,7 @@ export function CheckoutSummaryPanel({
                 border: `1px solid ${itemCount > 0 && destinationClient ? 'rgba(212,175,55,0.3)' : 'var(--pm-border)'}`,
               }}>
               <Send className="w-4 h-4" />
-              Ejecutar Despacho ({clientCount} proveedor{clientCount !== 1 ? 'es' : ''}, {itemCount} {itemLabel}{itemCount !== 1 ? 's' : ''})
+              Ejecutar Despacho ({lotCount > 0 && `${lotCount}L`}{lotCount > 0 && barCount > 0 && '+'}{barCount > 0 && `${barCount}B`})
             </button>
           </>
         )}

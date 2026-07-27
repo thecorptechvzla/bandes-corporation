@@ -17,7 +17,7 @@ interface DispatchResult {
   bars?: { barNumber: string; grossWeight: number; purity: number; fineWeight: number; provider: string }[];
   providers: { name: string; count: number; weight: number }[];
   createdAt: string;
-  type: 'lots' | 'bars';
+  type: 'lots' | 'bars' | 'mixed';
 }
 
 interface DispatchSuccessOverlayProps {
