@@ -101,7 +101,7 @@ export default function RootLayout({
     <html lang="es">
       <head>
         <title>Control Mining</title>
-        <link rel="icon" type="image/png" href="/Bandes.png" />
+        <link rel="icon" type="image/png" href="/Bandes2.png" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       </head>
       <body>
@@ -112,7 +112,7 @@ export default function RootLayout({
               {/* ═══ DESKTOP SIDEBAR ═══ */}
               <aside className="v2-sidebar hidden lg:flex lg:flex-col">
                 <div className="flex items-center gap-3 h-16 px-5 shrink-0 border-b border-[var(--pm-border)]">
-                  <img src="/Bandes.png" alt="Bandes" className="w-8 h-8 rounded-lg object-contain" />
+                  <img src="/Bandes2.png" alt="Bandes" className="w-8 h-8 rounded-lg object-contain" />
                   <span className="text-sm font-mono font-bold text-[#F3F4F6] tracking-widest">
                     CONTROL MINING
                   </span>
@@ -148,7 +148,7 @@ export default function RootLayout({
               `}>
                 <div className="flex items-center justify-between h-16 px-5 shrink-0 border-b border-[var(--pm-border)]">
                   <div className="flex items-center gap-3">
-                    <img src="/Bandes.png" alt="Bandes" className="w-8 h-8 rounded-lg object-contain" />
+                    <img src="/Bandes2.png" alt="Bandes" className="w-8 h-8 rounded-lg object-contain" />
                     <span className="text-sm font-mono font-bold text-[#F3F4F6] tracking-widest">
                       CONTROL MINING
                     </span>
