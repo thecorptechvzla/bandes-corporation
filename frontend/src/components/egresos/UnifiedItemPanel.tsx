@@ -114,16 +114,16 @@ export function UnifiedItemPanel({
                 <AnimatePresence>
                   {isOpen && (
                     <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }}>
-                      <div className="overflow-x-auto premium-table border-t border-[var(--pm-border)]/20">
-                        <table className="w-full text-xs font-sans border-collapse">
+                      <div className="overflow-x-auto border-t border-[var(--pm-border)]/20">
+                        <table className="w-full table-fixed border-collapse text-xs font-sans">
                           <thead>
                             <tr className="text-[10px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider">
-                              <th className="w-10 text-center px-4 py-3 bg-[var(--pm-bg-base)]/50"></th>
-                              <th className="px-4 py-3 bg-[var(--pm-bg-base)]/50">Tipo</th>
-                              <th className="px-4 py-3 bg-[var(--pm-bg-base)]/50">Código</th>
-                              <th className="text-right font-normal px-4 py-3 bg-[var(--pm-bg-base)]/50">Peso Bruto (g)</th>
-                              <th className="text-right font-normal px-4 py-3 bg-[var(--pm-bg-base)]/50">Ley Au (‰)</th>
-                              <th className="text-right font-normal px-4 py-3 bg-[var(--pm-bg-base)]/50">Peso Fino (g)</th>
+                              <th className="w-12 text-center px-4 py-3 bg-[var(--pm-bg-base)]/50"></th>
+                              <th className="w-[18%] px-4 py-3 bg-[var(--pm-bg-base)]/50">Tipo</th>
+                              <th className="w-[20%] px-4 py-3 bg-[var(--pm-bg-base)]/50">Código</th>
+                              <th className="w-[20%] text-right px-4 py-3 font-sans font-normal bg-[var(--pm-bg-base)]/50">Peso Bruto (g)</th>
+                              <th className="w-[20%] text-right px-4 py-3 font-sans font-normal bg-[var(--pm-bg-base)]/50">Ley Au (‰)</th>
+                              <th className="w-[22%] text-right px-4 py-3 font-sans font-normal bg-[var(--pm-bg-base)]/50">Peso Fino (g)</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-[var(--pm-border)]/20">
@@ -146,13 +146,13 @@ export function UnifiedItemPanel({
                                   </span>
                                 </td>
                                 <td className="px-4 py-3 font-mono font-bold text-[var(--pm-accent-gold)] tracking-wider text-[11px]">{item.code}</td>
-                                <td className="px-4 py-3 text-right font-mono text-[var(--pm-text-primary)] text-[11px]">
+                                <td className="text-right px-4 py-3 font-mono text-[var(--pm-text-primary)] text-[11px]">
                                   {item.pesoBruto !== null ? formatNumber(item.pesoBruto, 2) : '—'}
                                 </td>
-                                <td className="px-4 py-3 text-right font-mono text-[var(--pm-text-primary)] text-[11px]">
+                                <td className="text-right px-4 py-3 font-mono text-[var(--pm-text-primary)] text-[11px]">
                                   {item.leyAu !== null ? formatNumber(Number(item.leyAu), 2) : '—'}
                                 </td>
-                                <td className="px-4 py-3 text-right font-mono text-[var(--pm-text-primary)] text-[11px]">
+                                <td className="text-right px-4 py-3 font-mono text-[var(--pm-text-primary)] text-[11px]">
                                   {formatNumber(item.pesoFino, 2)}
                                 </td>
                               </tr>

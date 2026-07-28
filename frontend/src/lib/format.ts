@@ -2,6 +2,7 @@ const LOCALE = 'es-ES';
 
 export function formatNumber(value: number, decimals: number = 2): string {
   return value.toLocaleString(LOCALE, {
+    useGrouping: true,
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
   });
