@@ -1,4 +1,4 @@
-const LOCALE = 'es-AR';
+const LOCALE = 'es-ES';
 
 export function formatNumber(value: number, decimals: number = 2): string {
   return value.toLocaleString(LOCALE, {

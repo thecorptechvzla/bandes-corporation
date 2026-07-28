@@ -115,15 +115,15 @@ export function UnifiedItemPanel({
                   {isOpen && (
                     <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }}>
                       <div className="overflow-x-auto premium-table border-t border-[var(--pm-border)]/20">
-                        <table className="w-full text-left text-xs font-sans">
+                        <table className="w-full text-xs font-sans border-collapse">
                           <thead>
                             <tr className="text-[10px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider">
-                              <th className="w-10 text-center py-2.5 px-2 bg-[var(--pm-bg-base)]/50"></th>
-                              <th className="py-2.5 bg-[var(--pm-bg-base)]/50">Tipo</th>
-                              <th className="py-2.5 bg-[var(--pm-bg-base)]/50">Código</th>
-                              <th className="py-2.5 bg-[var(--pm-bg-base)]/50 text-right">Peso Bruto (g)</th>
-                              <th className="py-2.5 bg-[var(--pm-bg-base)]/50 text-right">Ley Au (‰)</th>
-                              <th className="py-2.5 bg-[var(--pm-bg-base)]/50 text-right">Peso Fino (g)</th>
+                              <th className="w-10 text-center px-4 py-3 bg-[var(--pm-bg-base)]/50"></th>
+                              <th className="px-4 py-3 bg-[var(--pm-bg-base)]/50">Tipo</th>
+                              <th className="px-4 py-3 bg-[var(--pm-bg-base)]/50">Código</th>
+                              <th className="text-right font-normal px-4 py-3 bg-[var(--pm-bg-base)]/50">Peso Bruto (g)</th>
+                              <th className="text-right font-normal px-4 py-3 bg-[var(--pm-bg-base)]/50">Ley Au (‰)</th>
+                              <th className="text-right font-normal px-4 py-3 bg-[var(--pm-bg-base)]/50">Peso Fino (g)</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-[var(--pm-border)]/20">
@@ -131,12 +131,12 @@ export function UnifiedItemPanel({
                               <tr key={item.id}
                                 onClick={() => item.type === 'lot' && onSetDetailLotId ? onSetDetailLotId(item.id) : undefined}
                                 className={`group transition-all duration-150 ${item.type === 'lot' ? 'cursor-pointer' : ''} ${idx % 2 === 0 ? 'bg-transparent' : 'bg-[var(--pm-bg-base)]/20'} hover:bg-[var(--pm-bg-hover)]/40 ${selectedIds.has(item.id) ? 'bg-[var(--pm-accent-gold)]/8' : ''}`}>
-                                <td className="py-2.5 px-2 text-center" onClick={e => { e.stopPropagation(); onToggleItem(item.id); }}>
+                                <td className="px-4 py-3 text-center" onClick={e => { e.stopPropagation(); onToggleItem(item.id); }}>
                                   <input type="checkbox" checked={selectedIds.has(item.id)}
                                     readOnly
                                     className="accent-[var(--pm-accent-gold)] cursor-pointer active:scale-90" />
                                 </td>
-                                <td className="py-2.5">
+                                <td className="px-4 py-3">
                                   <span className={`text-[9px] font-mono font-bold px-2 py-0.5 rounded border ${
                                     item.type === 'lot'
                                       ? 'text-[var(--pm-accent-amber)] bg-[var(--pm-accent-amber)]/10 border-[var(--pm-accent-amber)]/25'
@@ -145,15 +145,15 @@ export function UnifiedItemPanel({
                                     {item.type === 'lot' ? 'REFUNDIDA' : 'SIN REFUNDIR'}
                                   </span>
                                 </td>
-                                <td className="py-2.5 font-mono font-bold text-[var(--pm-accent-gold)] tracking-wider text-[11px]">{item.code}</td>
-                                <td className="py-2.5 text-right font-mono text-[var(--pm-text-primary)] text-[11px]">
-                                  {item.pesoBruto !== null ? formatNumber(item.pesoBruto, 4) : '—'}
+                                <td className="px-4 py-3 font-mono font-bold text-[var(--pm-accent-gold)] tracking-wider text-[11px]">{item.code}</td>
+                                <td className="px-4 py-3 text-right font-mono text-[var(--pm-text-primary)] text-[11px]">
+                                  {item.pesoBruto !== null ? formatNumber(item.pesoBruto, 2) : '—'}
                                 </td>
-                                <td className="py-2.5 text-right font-mono text-[var(--pm-text-primary)] text-[11px]">
-                                  {item.leyAu !== null ? String(item.leyAu) : '—'}
+                                <td className="px-4 py-3 text-right font-mono text-[var(--pm-text-primary)] text-[11px]">
+                                  {item.leyAu !== null ? formatNumber(Number(item.leyAu), 2) : '—'}
                                 </td>
-                                <td className="py-2.5 text-right font-mono text-[var(--pm-text-primary)] text-[11px]">
-                                  {formatNumber(item.pesoFino, 4)}
+                                <td className="px-4 py-3 text-right font-mono text-[var(--pm-text-primary)] text-[11px]">
+                                  {formatNumber(item.pesoFino, 2)}
                                 </td>
                               </tr>
                             ))}
