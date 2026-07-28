@@ -133,7 +133,7 @@ export function UnifiedItemPanel({
                                 className={`group transition-all duration-150 ${item.type === 'lot' ? 'cursor-pointer' : ''} ${idx % 2 === 0 ? 'bg-transparent' : 'bg-[var(--pm-bg-base)]/20'} hover:bg-[var(--pm-bg-hover)]/40 ${selectedIds.has(item.id) ? 'bg-[var(--pm-accent-gold)]/8' : ''}`}>
                                 <td className="py-2.5 px-2 text-center" onClick={e => { e.stopPropagation(); onToggleItem(item.id); }}>
                                   <input type="checkbox" checked={selectedIds.has(item.id)}
-                                    onChange={() => onToggleItem(item.id)}
+                                    readOnly
                                     className="accent-[var(--pm-accent-gold)] cursor-pointer active:scale-90" />
                                 </td>
                                 <td className="py-2.5">
