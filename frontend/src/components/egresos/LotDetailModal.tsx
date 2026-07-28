@@ -63,14 +63,14 @@ export function LotDetailModal({ lot, bars, onClose }: LotDetailModalProps) {
               <span>{lotBars.length} barra{lotBars.length !== 1 ? 's' : ''}</span>
             </div>
             <div className="overflow-x-auto w-full">
-              <div className="premium-table rounded-xl border border-[var(--pm-border)]/30 w-full">
-                <table className="w-full text-sm">
+              <div className="rounded-xl border border-[var(--pm-border)]/30 w-full">
+                <table className="w-full table-fixed border-collapse text-xs font-sans">
                   <thead>
                     <tr className="text-[10px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider">
-                      <th className="text-left px-4 py-3 text-[10px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider font-normal border-b border-[var(--pm-border)]/50">Código</th>
-                      <th className="text-right px-4 py-3 text-[10px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider font-normal border-b border-[var(--pm-border)]/50">Peso Bruto (g)</th>
-                      <th className="text-right px-4 py-3 text-[10px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider font-normal border-b border-[var(--pm-border)]/50">Ley Au (‰)</th>
-                      <th className="text-right px-4 py-3 text-[10px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider font-normal border-b border-[var(--pm-border)]/50">Peso Fino (g)</th>
+                      <th className="w-[25%] text-left px-4 py-3 border-b border-[var(--pm-border)]/50">Código</th>
+                      <th className="w-[25%] text-right px-4 py-3 border-b border-[var(--pm-border)]/50">Peso Bruto (g)</th>
+                      <th className="w-[25%] text-right px-4 py-3 border-b border-[var(--pm-border)]/50">Ley Au (‰)</th>
+                      <th className="w-[25%] text-right px-4 py-3 border-b border-[var(--pm-border)]/50">Peso Fino (g)</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[var(--pm-border)]/20">
@@ -79,7 +79,7 @@ export function LotDetailModal({ lot, bars, onClose }: LotDetailModalProps) {
                         <td className="text-left px-4 py-3 font-mono font-bold text-[var(--pm-accent-gold)] tracking-wider">{b.barNumber}</td>
                         <td className="text-right px-4 py-3 font-mono text-[var(--pm-text-primary)]">{formatNumber(Number(b.grossWeight || 0), 2)}</td>
                         <td className="text-right px-4 py-3 font-mono text-[var(--pm-text-primary)]">{b.purity}</td>
-                        <td className="text-right px-4 py-3 font-mono font-semibold text-[var(--pm-text-primary)]">{formatNumber(Number(b.fineWeight || 0), 4)}</td>
+                        <td className="text-right px-4 py-3 font-mono font-semibold text-[var(--pm-text-primary)]">{formatNumber(Number(b.fineWeight || 0), 2)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -88,7 +88,7 @@ export function LotDetailModal({ lot, bars, onClose }: LotDetailModalProps) {
                       <td className="text-left px-4 py-3 font-mono font-bold text-[var(--pm-text-primary)] uppercase tracking-wider">Total</td>
                       <td className="text-right px-4 py-3 font-mono font-bold text-[var(--pm-text-primary)]">{formatNumber(totalGross, 2)}</td>
                       <td className="text-right px-4 py-3 font-mono text-[var(--pm-text-dim)]">—</td>
-                      <td className="text-right px-4 py-3 font-mono font-bold text-[var(--pm-accent-gold)]">{formatNumber(totalFine, 4)}</td>
+                      <td className="text-right px-4 py-3 font-mono font-bold text-[var(--pm-accent-gold)]">{formatNumber(totalFine, 2)}</td>
                     </tr>
                   </tfoot>
                 </table>
@@ -101,7 +101,7 @@ export function LotDetailModal({ lot, bars, onClose }: LotDetailModalProps) {
                 </div>
                 <div className="min-w-0">
                   <span className="text-[9px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider">R (Recuperado)</span>
-                  <p className="text-sm font-mono font-bold text-[var(--pm-text-primary)]">{formatNumber(Number(lot.availableWeight || 0), 4)} g</p>
+                  <p className="text-sm font-mono font-bold text-[var(--pm-text-primary)]">{formatNumber(Number(lot.availableWeight || 0), 2)} g</p>
                 </div>
               </div>
               <div className="p-4 rounded-xl border bg-[var(--pm-bg-deepest)]/40 flex items-center gap-3"

@@ -119,8 +119,8 @@ export function UnifiedItemPanel({
                           <thead>
                             <tr className="text-[10px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider">
                               <th className="w-12 text-center px-4 py-3 bg-[var(--pm-bg-base)]/50"></th>
-                              <th className="w-[18%] px-4 py-3 bg-[var(--pm-bg-base)]/50">Tipo</th>
-                              <th className="w-[20%] px-4 py-3 bg-[var(--pm-bg-base)]/50">Código</th>
+                              <th className="w-[18%] text-left px-4 py-3 bg-[var(--pm-bg-base)]/50">Tipo</th>
+                              <th className="w-[20%] text-left px-4 py-3 bg-[var(--pm-bg-base)]/50">Código</th>
                               <th className="w-[20%] text-right px-4 py-3 font-sans font-normal bg-[var(--pm-bg-base)]/50">Peso Bruto (g)</th>
                               <th className="w-[20%] text-right px-4 py-3 font-sans font-normal bg-[var(--pm-bg-base)]/50">Ley Au (‰)</th>
                               <th className="w-[22%] text-right px-4 py-3 font-sans font-normal bg-[var(--pm-bg-base)]/50">Peso Fino (g)</th>
@@ -145,7 +145,7 @@ export function UnifiedItemPanel({
                                     {item.type === 'lot' ? 'REFUNDIDA' : 'SIN REFUNDIR'}
                                   </span>
                                 </td>
-                                <td className="px-4 py-3 font-mono font-bold text-[var(--pm-accent-gold)] tracking-wider text-[11px]">{item.code}</td>
+                                <td className="text-left px-4 py-3 font-mono font-bold text-[var(--pm-accent-gold)] tracking-wider text-[11px]">{item.code}</td>
                                 <td className="text-right px-4 py-3 font-mono text-[var(--pm-text-primary)] text-[11px]">
                                   {item.pesoBruto !== null ? formatNumber(item.pesoBruto, 2) : '—'}
                                 </td>
