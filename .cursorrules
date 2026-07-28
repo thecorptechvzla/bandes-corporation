@@ -10,10 +10,15 @@ Actúa siempre como un Frontend Tech Lead experto en Next.js, Tailwind CSS y Fra
 - Diseño Dark Mode Glassmorphism. **Nunca uses colores hex estáticos ni clases de colores por defecto de Tailwind** (ej. bg-blue-500). Usa SIEMPRE nuestras variables CSS `--pm-*`.
 - **Acentos "Neon Summer Glow":** `--pm-accent-teal`, `--pm-accent-sky`, `--pm-accent-cyan-light`, `--pm-accent-yellow`, `--pm-accent-gold`.
 
-## 3. TABLAS Y ALINEACIÓN (SIMETRÍA PERFECTA)
-- Todo dato numérico DEBE llevar `font-mono`.
-- Alineación: Texto (`text-left`), Números (`text-right`).
-- El `<th>` y su respectivo `<td>` deben tener EXACTAMENTE las mismas clases de padding y alineación (ej. `text-right px-4 py-3`). Sin flex/justify-center en TH numéricos.
+## 3. ESTÁNDAR DE ALINEACIÓN Y MAQUETACIÓN DE TABLAS (TAILWIND CSS)
+- **Estructura Estricta:** Todas las tablas deben usar `<table className="w-full table-fixed border-collapse font-sans text-xs">` (o el tamaño de texto correspondiente al contexto).
+- **Prohibición de Clases Globales:** NUNCA envuelvas las tablas en clases CSS globales heredadas (como `premium-table`) que fuercen estilos o sobreescriban las utilidades de Tailwind.
+- **Definición de Anchos:** Los anchos de las columnas deben definirse EXCLUSIVAMENTE en las etiquetas `<th>` usando porcentajes o anchos fijos de Tailwind (ej. `w-[25%]`, `w-12`). Nunca declarar anchos en los `<td>`.
+- **Espejo de Alineación (CRÍTICO):** La clase de alineación de texto (`text-left`, `text-right`, `text-center`) utilizada en un `<th>` DEBE ser replicada exactamente en todos los `<td>` de esa misma columna. No asumas el comportamiento por defecto del navegador.
+- **Estándar por Tipo de Dato:**
+  - Columnas de Texto/Códigos/Identificadores: Siempre alineadas a la izquierda (`text-left`).
+  - Columnas Numéricas/Métricas/Totales: Siempre alineadas a la derecha (`text-right`). Los valores numéricos DEBEN llevar `font-mono`.
+- **Consistencia de Padding:** Los `<th>` y los `<td>` deben compartir el mismo padding horizontal y vertical (por defecto `px-4 py-3`) para garantizar una cuadrícula perfecta.
 
 ## 4. RESPONSIVIDAD TOTAL (MOBILE-FIRST)
 - Todo lo que se agregue a la UI **tiene que ser 100% responsivo**.

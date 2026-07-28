@@ -174,15 +174,15 @@ export function SupplierDirectory({
                     <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }}
                       className="px-4 sm:px-5 pb-4 sm:pb-5 overflow-hidden">
                       <div className="overflow-x-auto rounded-xl border border-[var(--pm-border)]/20">
-                        <table className="premium-table w-full text-[11px] font-mono">
+                        <table className="w-full table-fixed border-collapse text-xs font-sans">
                           <thead>
                             <tr>
-                              <th className="sticky left-0 bg-[var(--pm-bg-primary)] z-10" style={{ minWidth: 120 }}>Código</th>
-                              {purityFirst && <th className="text-right">Ley Au</th>}
-                              <th className="text-right">Peso Bruto</th>
-                              {!purityFirst && <th className="text-right">Ley Au</th>}
-                              <th className="text-right">Peso Fino</th>
-                              <th className="text-right">Estado</th>
+                              <th className="w-[25%] text-left px-4 py-3 bg-[var(--pm-bg-primary)]">Código</th>
+                              {purityFirst && <th className="w-[15%] text-right px-4 py-3">Ley Au</th>}
+                              <th className="w-[25%] text-right px-4 py-3">Peso Bruto</th>
+                              {!purityFirst && <th className="w-[15%] text-right px-4 py-3">Ley Au</th>}
+                              <th className="w-[25%] text-right px-4 py-3">Peso Fino</th>
+                              <th className="w-[10%] text-right px-4 py-3">Estado</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -191,18 +191,18 @@ export function SupplierDirectory({
                                 <tr key={bar.id}
                                   onClick={() => onBarClick?.(bar.id)}
                                   className={`${idx % 2 === 1 ? 'bg-[var(--pm-bg-deepest)]/30' : ''} hover:bg-[var(--pm-accent-gold)]/[0.03] transition-colors${onBarClick ? ' cursor-pointer' : ''}`}>
-                                  <td className="sticky left-0 bg-[var(--pm-bg-primary)] font-semibold text-[var(--pm-accent-gold)]" style={{ minWidth: 120 }}>
+                                  <td className="text-left px-4 py-3 sticky left-0 bg-[var(--pm-bg-primary)] font-semibold text-[var(--pm-accent-gold)]">
                                     <span className="text-[11px]">{bar.barNumber}</span>
                                   </td>
                                   {purityFirst && (
-                                    <td className="text-right text-[var(--pm-text-primary)]">{formatNumber(Number(bar.purity), 1)}</td>
+                                    <td className="text-right px-4 py-3 font-mono text-[var(--pm-text-primary)]">{formatNumber(Number(bar.purity), 2)}</td>
                                   )}
-                                  <td className="text-right text-[var(--pm-text-primary)]">{formatNumber(Number(bar.grossWeight), 2)}</td>
+                                  <td className="text-right px-4 py-3 font-mono text-[var(--pm-text-primary)]">{formatNumber(Number(bar.grossWeight), 2)}</td>
                                   {!purityFirst && (
-                                    <td className="text-right text-[var(--pm-text-primary)]">{formatNumber(Number(bar.purity), 1)}</td>
+                                    <td className="text-right px-4 py-3 font-mono text-[var(--pm-text-primary)]">{formatNumber(Number(bar.purity), 2)}</td>
                                   )}
-                                  <td className="text-right text-[var(--pm-accent-gold)]">{formatNumber(Number(bar.fineWeight), 4)}</td>
-                                  <td className="text-right">
+                                  <td className="text-right px-4 py-3 font-mono text-[var(--pm-accent-gold)]">{formatNumber(Number(bar.fineWeight), 2)}</td>
+                                  <td className="text-right px-4 py-3">
                                     <StatusBadge status={bar.status} size="sm" />
                                   </td>
                                 </tr>
@@ -216,9 +216,9 @@ export function SupplierDirectory({
                                   Total {client.name}
                                 </td>
                                 {purityFirst && <td />}
-                                <td className="text-right text-xs text-[var(--pm-text-primary)]">{formatNumber(clientTotals.grossWeight, 2)}</td>
+                                <td className="text-right px-4 py-3 font-mono text-xs text-[var(--pm-text-primary)]">{formatNumber(clientTotals.grossWeight, 2)}</td>
                                 {!purityFirst && <td />}
-                                <td className="text-right text-xs text-[var(--pm-accent-gold)]">{formatNumber(clientTotals.fa, 4)}</td>
+                                <td className="text-right px-4 py-3 font-mono text-xs text-[var(--pm-accent-gold)]">{formatNumber(clientTotals.fa, 2)}</td>
                                 <td colSpan={1} />
                               </tr>
                             </tfoot>
@@ -289,7 +289,7 @@ export function SupplierDirectory({
               <span className="text-xs font-mono text-[var(--pm-text-dim)]">
                 Peso Fino:{' '}
                 <span className="text-[var(--pm-accent-gold)] font-bold text-sm">
-                  {formatNumber(grandTotal.fa, 4)}
+                  {formatNumber(grandTotal.fa, 2)}
                 </span>{' '}
                 <span className="text-[10px] text-[var(--pm-text-dim)]">g</span>
               </span>
@@ -311,7 +311,7 @@ export function SupplierDirectory({
               <div>
                 <div className="text-[9px] text-[var(--pm-text-dim)] uppercase tracking-wider">Peso Fino</div>
                 <div className="text-[13px] font-mono font-bold text-[var(--pm-accent-gold)] leading-tight whitespace-nowrap">
-                  {formatNumber(grandTotal.fa, 4)}{' '}
+                  {formatNumber(grandTotal.fa, 2)}{' '}
                   <span className="text-[10px] font-normal text-[var(--pm-text-dim)]">g</span>
                 </div>
               </div>
