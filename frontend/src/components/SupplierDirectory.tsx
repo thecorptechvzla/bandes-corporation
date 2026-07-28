@@ -156,6 +156,9 @@ export function SupplierDirectory({
                         </div>
                       </div>
                       <div className="flex items-center gap-3 flex-shrink-0">
+                        <span className="text-[10px] font-mono text-[var(--pm-text-dim)] whitespace-nowrap">
+                          Bruto: {formatNumber(clientTotals.grossWeight, 2)} g · Fino: {formatNumber(clientTotals.fa, 2)} g
+                        </span>
                         <span className="text-[10px] font-mono text-[var(--pm-text-dim)] bg-[var(--pm-bg-deepest)]/50 px-2 py-0.5 border border-[var(--pm-border)] rounded whitespace-nowrap">
                           {clientBars.length} BARRAS
                         </span>
