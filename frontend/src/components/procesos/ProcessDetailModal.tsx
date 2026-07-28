@@ -58,27 +58,27 @@ export function ProcessDetailModal({ process, lots, lotBarsMap, clients, onClose
                     {formatNumber(lots.reduce((s, l) => {
                       const lb = lotBarsMap[l.id] || [];
                       return s + lb.reduce((sb, b) => sb + Number(b.fineWeight), 0);
-                    }, 0), 4)} g
+                    }, 0), 2)} g
                   </span>
                 </div>
                 <div className="p-3 rounded-xl border border-[var(--pm-border)] bg-[var(--pm-bg-deepest)]/50 text-center">
-                  <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block">R (Recuperado)</span>
+                  <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block">Recuperado</span>
                   <span className="text-sm font-mono font-bold text-[var(--pm-accent-emerald)]">
-                    {formatNumber(lots.reduce((s, l) => s + Number(l.recovered ?? 0), 0), 4)} g
+                    {formatNumber(lots.reduce((s, l) => s + Number(l.recovered ?? 0), 0), 2)} g
                   </span>
                 </div>
               </div>
 
               {/* Lots table */}
               <div className="overflow-x-auto rounded-xl border border-[var(--pm-border)] v2-scroll">
-                <table className="premium-table w-full text-[11px] font-mono">
+                <table className="w-full table-fixed border-collapse font-sans text-xs">
                   <thead>
-                    <tr>
-                      <th className="sticky left-0 bg-[var(--pm-bg-primary)] z-10" style={{ minWidth: 140 }}>Lote</th>
-                      <th className="text-right">Peso Fino (g)</th>
-                      <th className="text-right">R (g)</th>
-                      <th className="text-right">DIF (g)</th>
-                      <th className="text-right">% RECUP</th>
+                    <tr className="border-b border-[var(--pm-border)]">
+                      <th className="w-[30%] sticky left-0 bg-[var(--pm-bg-primary)] z-10 text-left px-4 py-3 text-[var(--pm-text-dim)] font-semibold uppercase tracking-wider">Lote</th>
+                      <th className="w-[17.5%] text-right px-4 py-3 text-[var(--pm-text-dim)] font-semibold uppercase tracking-wider">Peso Fino (g)</th>
+                      <th className="w-[17.5%] text-right px-4 py-3 text-[var(--pm-text-dim)] font-semibold uppercase tracking-wider">R (g)</th>
+                      <th className="w-[17.5%] text-right px-4 py-3 text-[var(--pm-text-dim)] font-semibold uppercase tracking-wider">DIF (g)</th>
+                      <th className="w-[17.5%] text-right px-4 py-3 text-[var(--pm-text-dim)] font-semibold uppercase tracking-wider">% RECUP</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -99,7 +99,7 @@ export function ProcessDetailModal({ process, lots, lotBarsMap, clients, onClose
                             `}
                             onClick={() => setExpandedLotId(isExpanded ? null : lot.id)}
                           >
-                            <td className="sticky left-0 bg-[var(--pm-bg-primary)] font-semibold text-[var(--pm-text-primary)] z-10" style={{ minWidth: 140 }}>
+                            <td className="sticky left-0 bg-[var(--pm-bg-primary)] font-semibold text-[var(--pm-text-primary)] z-10 text-left px-4 py-3">
                               <div className="flex items-center gap-2">
                                 {isExpanded ? (
                                   <ChevronDown className="w-3.5 h-3.5 text-[var(--pm-accent-gold)] flex-shrink-0 transition-transform duration-200" />
@@ -110,12 +110,12 @@ export function ProcessDetailModal({ process, lots, lotBarsMap, clients, onClose
                                 {lot.moldCode && <span className="text-[9px] text-[var(--pm-text-dim)] ml-0.5">({lot.moldCode})</span>}
                               </div>
                             </td>
-                            <td className="text-right text-[var(--pm-accent-gold)]">{formatNumber(fa, 4)}</td>
-                            <td className="text-right text-[var(--pm-accent-emerald)]">{formatNumber(r, 4)}</td>
-                            <td className={`text-right ${dif >= 0 ? 'text-[var(--pm-accent-emerald)]' : 'text-[var(--pm-accent-red)]'}`}>
-                              {dif >= 0 ? '+' : ''}{formatNumber(dif, 4)}
+                            <td className="text-right px-4 py-3 font-mono text-[var(--pm-accent-gold)]">{formatNumber(fa, 2)}</td>
+                            <td className="text-right px-4 py-3 font-mono text-[var(--pm-accent-emerald)]">{formatNumber(r, 2)}</td>
+                            <td className={`text-right px-4 py-3 font-mono ${dif >= 0 ? 'text-[var(--pm-accent-emerald)]' : 'text-[var(--pm-accent-red)]'}`}>
+                              {dif >= 0 ? '+' : ''}{formatNumber(dif, 2)}
                             </td>
-                            <td className="text-right">
+                            <td className="text-right px-4 py-3">
                               <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${Math.abs(pctRecup - 100) <= 5 ? 'text-[var(--pm-accent-emerald)]' : 'text-[var(--pm-accent-red)]'}`}>
                                 {formatNumber(pctRecup, 2)}%
                               </span>
@@ -132,13 +132,13 @@ export function ProcessDetailModal({ process, lots, lotBarsMap, clients, onClose
                                   className="overflow-hidden"
                                 >
                                   <div className="border-l-2 border-[var(--pm-accent-gold)]/30 ml-4 mr-4 mb-3 mt-1 rounded-r-xl bg-black/30 overflow-x-auto">
-                                    <table className="premium-table w-full text-[10px] font-mono">
+                                    <table className="w-full table-fixed border-collapse font-sans text-[10px]">
                                       <thead>
-                                        <tr>
-                                          <th className="sticky left-0 bg-[var(--pm-bg-deepest)] z-10 text-left" style={{ minWidth: 120, paddingLeft: 16 }}>CÓDIGO</th>
-                                          <th className="text-right">Peso Bruto (g)</th>
-                                          <th className="text-right">Ley Au (‰)</th>
-                                          <th className="text-right">Peso Fino (g)</th>
+                                        <tr className="border-b border-[var(--pm-border)]">
+                                          <th className="w-[25%] sticky left-0 bg-[var(--pm-bg-deepest)] z-10 text-left px-4 py-2.5 text-[var(--pm-text-dim)] font-semibold uppercase tracking-wider">Código</th>
+                                          <th className="w-[25%] text-right px-4 py-2.5 text-[var(--pm-text-dim)] font-semibold uppercase tracking-wider">Peso Bruto (g)</th>
+                                          <th className="w-[25%] text-right px-4 py-2.5 text-[var(--pm-text-dim)] font-semibold uppercase tracking-wider">Ley Au (‰)</th>
+                                          <th className="w-[25%] text-right px-4 py-2.5 text-[var(--pm-text-dim)] font-semibold uppercase tracking-wider">Peso Fino (g)</th>
                                         </tr>
                                       </thead>
                                       <tbody>
@@ -146,12 +146,12 @@ export function ProcessDetailModal({ process, lots, lotBarsMap, clients, onClose
                                           <tr key={bar.id}
                                             className={`${bi % 2 === 1 ? 'bg-black/20' : ''} hover:bg-[var(--pm-accent-gold)]/[0.03] transition-colors`}
                                           >
-                                            <td className="sticky left-0 bg-[var(--pm-bg-primary)] font-semibold text-[var(--pm-accent-gold)] z-10" style={{ paddingLeft: 16 }}>
+                                            <td className="sticky left-0 bg-[var(--pm-bg-primary)] font-semibold text-[var(--pm-accent-gold)] z-10 text-left px-4 py-2.5">
                                               {bar.barNumber}
                                             </td>
-                                            <td className="text-right text-[var(--pm-text-primary)]">{formatNumber(Number(bar.grossWeight), 2)}</td>
-                                            <td className="text-right text-[var(--pm-text-primary)]">{formatNumber(Number(bar.purity), 1)}</td>
-                                            <td className="text-right text-[var(--pm-accent-gold)]">{formatNumber(Number(bar.fineWeight), 4)}</td>
+                                            <td className="text-right px-4 py-2.5 font-mono text-[var(--pm-text-primary)]">{formatNumber(Number(bar.grossWeight), 2)}</td>
+                                            <td className="text-right px-4 py-2.5 font-mono text-[var(--pm-text-primary)]">{formatNumber(Number(bar.purity), 2)}</td>
+                                            <td className="text-right px-4 py-2.5 font-mono text-[var(--pm-accent-gold)]">{formatNumber(Number(bar.fineWeight), 2)}</td>
                                           </tr>
                                         ))}
                                         {lb.length === 0 && (
