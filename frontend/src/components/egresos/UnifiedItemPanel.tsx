@@ -140,7 +140,7 @@ export function UnifiedItemPanel({
                                   <span className={`text-[9px] font-mono font-bold px-2 py-0.5 rounded border ${
                                     item.type === 'lot'
                                       ? 'text-[var(--pm-accent-amber)] bg-[var(--pm-accent-amber)]/10 border-[var(--pm-accent-amber)]/25'
-                                      : 'text-[var(--pm-accent-teal)] bg-[var(--pm-accent-teal)]/10 border-[var(--pm-accent-teal)]/25'
+                                      : 'text-[var(--pm-accent-teal)] bg-[var(--pm-accent-teal)]/10 border-[var(--pm-accent-teal)]/25' 
                                   }`}>
                                     {item.type === 'lot' ? 'REFUNDIDA' : 'SIN REFUNDIR'}
                                   </span>

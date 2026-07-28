@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { CheckCircle2, ChevronDown, ChevronRight, Eye } from 'lucide-react';
 import type { Process, Lot } from '@/types/api';
 import type { Client } from '@/types/api';
+import { formatNumber } from '@/lib/format';
 
 interface CompletedProcessesSectionProps {
   completedProcesses: Process[];
@@ -47,17 +48,46 @@ export function CompletedProcessesSection({
                   </span>
                   {procs.map(proc => {
                     const pLots = processLotsMap[proc.id] || [];
+                    const firstLot = pLots[0];
+                    const totalRecovered = pLots
+                      .filter(l => l.recovered)
+                      .reduce((s, l) => s + Number(l.recovered), 0);
                     return (
                       <div key={proc.id} onClick={() => onViewDetail(proc.id)}
-                        className="flex items-center justify-between py-1.5 px-1 text-[10px] font-mono cursor-pointer active:scale-[0.99] transition-all rounded-lg hover:bg-[var(--pm-bg-tertiary)]/40 group"
+                        className="grid grid-cols-4 gap-4 items-center py-2 px-1 text-[10px] font-mono cursor-pointer active:scale-[0.99] transition-all rounded-lg hover:bg-[var(--pm-bg-tertiary)]/40 group"
                       >
-                        <span className="text-[var(--pm-text-dim)]">{proc.name}</span>
-                        <span className="flex items-center gap-2">
-                          <span className="text-[var(--pm-accent-emerald)]">
-                            {pLots.filter(l => l.recovered).reduce((s, l) => s + Number(l.recovered), 0).toFixed(2)} g recuperados
-                          </span>
-                          <Eye className="w-3.5 h-3.5 text-[var(--pm-text-dim)]/40 group-hover:text-[var(--pm-accent-gold)] transition-colors" />
-                        </span>
+                        <div className="flex flex-col">
+                          <span className="text-[var(--pm-text-dim)] font-bold">{proc.name}</span>
+                        </div>
+                        <div className="col-span-2 grid grid-cols-3 gap-2">
+                          <div className="flex flex-col">
+                            <span className="text-[9px] text-gray-500 uppercase tracking-wider">Operador</span>
+                            <span className="text-xs text-[var(--pm-text-primary)] truncate">
+                              {firstLot?.operator || '—'}
+                            </span>
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="text-[9px] text-gray-500 uppercase tracking-wider">Crisol/Molde</span>
+                            <span className="text-xs text-[var(--pm-text-primary)] truncate">
+                              {firstLot?.moldCode || '—'}
+                            </span>
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="text-[9px] text-gray-500 uppercase tracking-wider">Temp. Colada</span>
+                            <span className="text-xs text-[var(--pm-text-primary)] truncate">
+                              {firstLot?.castingTemp ? `${firstLot.castingTemp}°C` : '—'}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-end gap-3">
+                          <div className="flex flex-col items-end">
+                            <span className="text-[9px] text-gray-500 uppercase tracking-wider">Recuperado</span>
+                            <span className="text-xs font-mono font-bold text-[var(--pm-accent-emerald)]">
+                              {formatNumber(totalRecovered, 2)} g
+                            </span>
+                          </div>
+                          <Eye className="w-3.5 h-3.5 text-[var(--pm-text-dim)]/40 group-hover:text-[var(--pm-accent-gold)] transition-colors shrink-0" />
+                        </div>
                       </div>
                     );
                   })}
