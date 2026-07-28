@@ -177,12 +177,12 @@ export function SupplierDirectory({
                         <table className="w-full table-fixed border-collapse text-xs font-sans">
                           <thead>
                             <tr>
-                              <th className="w-[25%] text-left px-4 py-3 bg-[var(--pm-bg-primary)]">Código</th>
+                              <th className="w-[15%] text-left px-4 py-3 bg-[var(--pm-bg-primary)]">Código</th>
                               {purityFirst && <th className="w-[15%] text-right px-4 py-3">Ley Au</th>}
                               <th className="w-[25%] text-right px-4 py-3">Peso Bruto</th>
                               {!purityFirst && <th className="w-[15%] text-right px-4 py-3">Ley Au</th>}
                               <th className="w-[25%] text-right px-4 py-3">Peso Fino</th>
-                              <th className="w-[10%] text-right px-4 py-3">Estado</th>
+                              <th className="w-[20%] text-right px-4 py-3">Estado</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -202,7 +202,7 @@ export function SupplierDirectory({
                                     <td className="text-right px-4 py-3 font-mono text-[var(--pm-text-primary)]">{formatNumber(Number(bar.purity), 2)}</td>
                                   )}
                                   <td className="text-right px-4 py-3 font-mono text-[var(--pm-accent-gold)]">{formatNumber(Number(bar.fineWeight), 2)}</td>
-                                  <td className="text-right px-4 py-3">
+                                  <td className="text-right px-4 py-3 whitespace-nowrap">
                                     <StatusBadge status={bar.status} size="sm" />
                                   </td>
                                 </tr>
