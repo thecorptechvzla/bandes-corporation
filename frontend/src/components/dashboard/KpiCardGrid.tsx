@@ -30,18 +30,18 @@ interface KpiItem {
 }
 
 const KPI_COLORS = [
-  { accent: '#EAB308', label: 'PESO FINO' },
-  { accent: '#D97706', label: 'PROCESO' },
-  { accent: '#92400E', label: 'R' },
-  { accent: '#78350F', label: 'PR' },
+  { accent: '#EAB308', label: 'PESO FINO' },      // Dorado/Amarillo - Oro Recibido
+  { accent: '#F97316', label: 'PROCESO' },       // Naranja vibrante - Oro en Proceso
+  { accent: '#10B981', label: 'R' },             // Verde Esmeralda - Oro en Bóveda
+  { accent: '#3B82F6', label: 'PR' },            // Azul/Índigo - Por Refundir
 ];
 
 const KPI_ICONS = [ClipboardList, Flame, Warehouse, Inbox];
 
 function SparklineArea({ data, color, id }: { data: number[]; color: string; id: string }) {
-  const raw = data.length > 1
+  const raw = data.length >= 5
     ? data
-    : data.length === 1
+    : data.length > 0
       ? [data[0] * 0.1, data[0] * 0.4, data[0] * 0.3, data[0] * 0.7, data[0]]
       : [0.1, 0.4, 0.3, 0.7, 1];
   const chartData = raw.map((v, i) => ({ i, v }));
@@ -144,7 +144,7 @@ export function KpiCardGrid({ kpiData, isMounted, onCardClick }: KpiCardGridProp
               </div>
 
               {kpi.proportion ? (
-                <div className="mb-3 h-12 flex items-end pb-2">
+                <div className="mb-3 h-12 flex items-end">
                   <ProportionBar items={kpi.proportion} />
                 </div>
               ) : (

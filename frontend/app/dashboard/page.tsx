@@ -260,7 +260,7 @@ export default function V2DashboardPage() {
       spark: sparkNet,
       proportion: [
         { label: 'Fundido', value: metrics?.oroEnBoveda.fundido ?? 0, color: '#10B981' },
-        { label: 'Sin Fundir', value: metrics?.oroEnBoveda.sinFundir ?? 0, color: '#F59E0B' },
+        { label: 'Sin Fundir', value: metrics?.oroEnBoveda.sinFundir ?? 0, color: '#F97316' },
       ],
       subValues: [
         { label: 'Fundido', value: metrics?.oroEnBoveda.fundido ?? 0, icon: Warehouse },
