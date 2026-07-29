@@ -230,9 +230,10 @@ tr:hover > td.sticky {
   --pm-accent-emerald: #10B981;
   --pm-accent-amber: #F59E0B;
   --pm-accent-red:   #EF4444;
-  --pm-glass-bg:     rgba(15, 20, 32, 0.72);
-  --pm-glass-border: rgba(30, 42, 69, 0.25);
-  --pm-shadow:       0 8px 32px rgba(0, 0, 0, 0.5);
+  --pm-glass-bg:     rgba(10, 15, 28, 0.60);
+  --pm-glass-border: rgba(255, 255, 255, 0.06);
+  --pm-glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  --pm-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
 /* --- Technical grid background --- */
@@ -247,10 +248,12 @@ tr:hover > td.sticky {
 /* --- Glass panel --- */
 .glass-panel {
   background: var(--pm-glass-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--pm-glass-border);
-  box-shadow: var(--pm-shadow);
+  box-shadow: var(--pm-glass-shadow);
+  border-radius: 16px;
+  transition: all 300ms ease;
 }
 
 /* --- Premium sidebar --- */
@@ -292,17 +295,17 @@ tr:hover > td.sticky {
 /* --- Premium card --- */
 .premium-card {
   background: var(--pm-glass-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--pm-glass-border);
   border-radius: 16px;
-  box-shadow: var(--pm-shadow);
-  transition: all 250ms ease;
+  box-shadow: var(--pm-glass-shadow);
+  transition: all 300ms ease;
 }
 
 .premium-card:hover {
-  border-color: rgba(212, 175, 55, 0.25);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55);
+  transform: translateY(-2px);
+  box-shadow: var(--pm-glass-shadow), 0 0 25px -5px rgba(16, 185, 129, 0.15);
 }
 
 /* --- Premium table --- */

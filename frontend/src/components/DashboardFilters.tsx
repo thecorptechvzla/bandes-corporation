@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, SlidersHorizontal, RotateCcw, Search, Calendar } from 'lucide-react';
+import { X, SlidersHorizontal, RotateCcw, Search } from 'lucide-react';
 import type { Client, ClientRole } from '@/types/api';
 import { useClients } from '@/hooks/useClients';
 
@@ -152,7 +152,7 @@ export default function DashboardFilters({
   onChange,
 }: DashboardFiltersProps) {
   const { data: allClients = [] } = useClients();
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const [advancedOpen, setAdvancedOpen] = useState(false);
   const [preset, setPreset] = useState<Preset>('custom');
 
   const suppliers = useMemo(
@@ -178,122 +178,83 @@ export default function DashboardFilters({
 
   const hasFilters = startDate || endDate || supplierId || clientId;
 
-  const content = (
-    <>
-      {/* Date range */}
-      <div className="flex flex-col gap-1.5">
-        <span className="text-[9px] font-mono font-bold tracking-[0.1em] uppercase text-[var(--pm-text-dim)] flex items-center gap-1.5">
-          <Calendar className="w-3 h-3" /> RANGO DE FECHA
-        </span>
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1.5">
-            <input
-              type="date"
-              value={startDate}
-              onChange={(e) => onChange({ startDate: e.target.value, endDate, supplierId, clientId })}
-              className="w-32 px-2.5 py-1.5 bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] rounded-lg text-[10px] font-mono text-[var(--pm-text-primary)] outline-none transition-colors focus:border-[var(--pm-accent-gold)]/40 [color-scheme:dark]"
-            />
-            <span className="text-[10px] text-[var(--pm-text-dim)]">—</span>
-            <input
-              type="date"
-              value={endDate}
-              onChange={(e) => onChange({ startDate, endDate: e.target.value, supplierId, clientId })}
-              className="w-32 px-2.5 py-1.5 bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] rounded-lg text-[10px] font-mono text-[var(--pm-text-primary)] outline-none transition-colors focus:border-[var(--pm-accent-gold)]/40 [color-scheme:dark]"
-            />
-          </div>
-          <div className="flex gap-1">
-            {([
-              ['Hoy', 'today'],
-              ['7D', '7d'],
-              ['Mes', 'month'],
-            ] as const).map(([lbl, val]) => (
-              <button
-                key={val}
-                type="button"
-                onClick={() => applyPreset(val)}
-                className={`px-2 py-1 text-[9px] font-mono font-bold tracking-wider rounded-md transition-all ${
-                  preset === val
-                    ? 'bg-[var(--pm-accent-gold)]/15 text-[var(--pm-accent-gold)] border border-[var(--pm-accent-gold)]/20'
-                    : 'bg-[var(--pm-bg-deepest)] text-[var(--pm-text-dim)] border border-[var(--pm-border)] hover:border-[var(--pm-accent-gold)]/20 hover:text-[var(--pm-text-primary)]'
-                }`}
-              >
-                {lbl}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Entity filters */}
-      <div className="flex items-end gap-3">
-        <div className="w-48">
-          <AutocompleteSelect
-            label="Proveedor"
-            items={suppliers}
-            value={supplierId}
-            onChange={(id) => onChange({ startDate, endDate, supplierId: id, clientId })}
-            placeholder="Todos los proveedores"
-          />
-        </div>
-        <div className="w-48">
-          <AutocompleteSelect
-            label="Cliente"
-            items={clients}
-            value={clientId}
-            onChange={(id) => onChange({ startDate, endDate, supplierId, clientId: id })}
-            placeholder="Todos los clientes"
-          />
-        </div>
-      </div>
-
-      {/* Clear */}
-      {hasFilters && (
-        <button
-          type="button"
-          onClick={handleClear}
-          className="flex items-center gap-1.5 px-3 py-2 bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] rounded-lg text-[10px] font-mono text-[var(--pm-text-dim)] hover:text-[var(--pm-accent-gold)] hover:border-[var(--pm-accent-gold)]/20 transition-all self-end"
-        >
-          <RotateCcw className="w-3 h-3" />
-          Limpiar
-        </button>
-      )}
-    </>
-  );
-
   return (
     <>
-      {/* Desktop */}
-      <div className="hidden lg:flex items-center w-full gap-6 glass-panel px-6 py-5 rounded-xl border border-[var(--pm-border)]">
-        <div className="w-full lg:w-[250px] flex justify-start shrink-0">
-          <img src="/Bandes2.png" alt="Bandes" className="h-15 w-auto rounded-lg object-contain border border-white/10" />
+      {/* Floating pill */}
+      <div className="inline-flex flex-wrap items-center justify-center gap-4 bg-[var(--pm-bg-primary)]/40 backdrop-blur-md border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.4)] px-6 py-3 rounded-full max-md:rounded-2xl max-md:flex-col w-full md:w-fit mx-auto overflow-x-auto [&::-webkit-scrollbar]:hidden">
+        {/* Date inputs */}
+        <div className="flex items-center gap-1.5 shrink-0">
+          <input
+            type="date"
+            value={startDate}
+            onChange={(e) => onChange({ startDate: e.target.value, endDate, supplierId, clientId })}
+            className="w-24 md:w-28 px-2 py-1 bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] rounded-lg text-[10px] font-mono text-[var(--pm-text-primary)] outline-none transition-colors focus:border-emerald-500/40 [color-scheme:dark]"
+          />
+          <span className="text-[10px] text-[var(--pm-text-dim)]">—</span>
+          <input
+            type="date"
+            value={endDate}
+            onChange={(e) => onChange({ startDate, endDate: e.target.value, supplierId, clientId })}
+            className="w-24 md:w-28 px-2 py-1 bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] rounded-lg text-[10px] font-mono text-[var(--pm-text-primary)] outline-none transition-colors focus:border-emerald-500/40 [color-scheme:dark]"
+          />
         </div>
-        <div className="flex-1 flex flex-wrap items-end justify-center gap-4 sm:gap-6 w-full">
-          {content}
-        </div>
-        <div className="hidden lg:block lg:w-[250px] shrink-0" />
-      </div>
 
-      {/* Mobile */}
-      <div className="md:hidden flex items-center gap-3">
-        <img src="/Bandes2.png" alt="Bandes" className="h-7 w-auto shrink-0 rounded-lg object-contain border border-white/10" />
+        <div className="w-px h-5 bg-white/[0.06] shrink-0" />
+
+        {/* Presets */}
+        <div className="flex gap-1 shrink-0">
+          {([
+            ['Hoy', 'today'],
+            ['7D', '7d'],
+            ['Mes', 'month'],
+          ] as const).map(([lbl, val]) => (
+            <button
+              key={val}
+              type="button"
+              onClick={() => applyPreset(val)}
+              className={`px-2.5 py-1 text-[9px] font-mono font-bold tracking-wider rounded-full transition-all ${
+                preset === val
+                  ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20'
+                  : 'bg-transparent text-[var(--pm-text-dim)] border border-transparent hover:border-white/[0.06] hover:text-[var(--pm-text-primary)]'
+              }`}
+            >
+              {lbl}
+            </button>
+          ))}
+        </div>
+
+        <div className="w-px h-5 bg-white/[0.06] shrink-0" />
+
+        {/* Advanced filters toggle */}
         <button
           type="button"
-          onClick={() => setMobileOpen(true)}
-          className="glass-panel flex-1 flex items-center justify-between px-4 py-3 rounded-xl border border-[var(--pm-border)] text-[11px] font-mono text-[var(--pm-text-dim)]"
+          onClick={() => setAdvancedOpen(true)}
+          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[9px] font-mono font-bold tracking-wider transition-all shrink-0 ${
+            supplierId || clientId
+              ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20'
+              : 'bg-transparent text-[var(--pm-text-dim)] border border-transparent hover:border-white/[0.06] hover:text-[var(--pm-text-primary)]'
+          }`}
         >
-          <div className="flex items-center gap-2">
-            <SlidersHorizontal className="w-4 h-4" />
-            <span>Filtros</span>
-          </div>
-          {hasFilters && (
-            <span className="w-2 h-2 rounded-full bg-[var(--pm-accent-gold)]" />
-          )}
+          <SlidersHorizontal className="w-3 h-3" />
+          <span className="hidden md:inline">Filtros</span>
         </button>
+
+        {/* Clear */}
+        {hasFilters && (
+          <button
+            type="button"
+            onClick={handleClear}
+            className="flex items-center gap-1 px-2 py-1 text-[9px] font-mono text-[var(--pm-text-dim)] hover:text-emerald-400 transition-all shrink-0"
+          >
+            <RotateCcw className="w-3 h-3" />
+            <span className="hidden md:inline">Limpiar</span>
+          </button>
+        )}
       </div>
 
-      {/* Mobile modal */}
+      {/* Advanced Filters Drawer */}
       <AnimatePresence>
-        {mobileOpen && (
+        {advancedOpen && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -302,29 +263,45 @@ export default function DashboardFilters({
             className="fixed inset-0 z-[100] flex items-center justify-center p-4"
           >
             <div
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-              onClick={() => setMobileOpen(false)}
+              className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+              onClick={() => setAdvancedOpen(false)}
             />
             <motion.div
-              initial={{ scale: 0.94, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.94, opacity: 0 }}
+              initial={{ scale: 0.94, opacity: 0, y: 10 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.94, opacity: 0, y: 10 }}
               transition={{ duration: 0.2 }}
-              className="relative glass-panel w-full max-w-sm rounded-2xl border border-[var(--pm-border)] p-5 space-y-5"
+              className="relative bg-[#0A0F1C]/80 backdrop-blur-xl border border-white/[0.06] rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] p-6 w-full max-w-md space-y-5"
             >
               <div className="flex items-center justify-between">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-[var(--pm-text-primary)]">
-                  Configurar Filtros
+                  Filtros Avanzados
                 </h3>
                 <button
                   type="button"
-                  onClick={() => setMobileOpen(false)}
-                  className="w-7 h-7 rounded-lg bg-[var(--pm-bg-deepest)]/50 border border-[var(--pm-border)] flex items-center justify-center text-[var(--pm-text-dim)]"
+                  onClick={() => setAdvancedOpen(false)}
+                  className="w-7 h-7 rounded-lg bg-white/[0.04] border border-white/[0.06] flex items-center justify-center text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] transition-colors"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
               </div>
-              {content}
+
+              <div className="space-y-4">
+                <AutocompleteSelect
+                  label="Proveedor"
+                  items={suppliers}
+                  value={supplierId}
+                  onChange={(id) => onChange({ startDate, endDate, supplierId: id, clientId })}
+                  placeholder="Todos los proveedores"
+                />
+                <AutocompleteSelect
+                  label="Cliente"
+                  items={clients}
+                  value={clientId}
+                  onChange={(id) => onChange({ startDate, endDate, supplierId, clientId: id })}
+                  placeholder="Todos los clientes"
+                />
+              </div>
             </motion.div>
           </motion.div>
         )}

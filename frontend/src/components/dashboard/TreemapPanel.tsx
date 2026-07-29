@@ -6,23 +6,6 @@ import { LayoutGrid, Table2 } from 'lucide-react';
 import { Treemap, ResponsiveContainer, Tooltip } from 'recharts';
 import { formatNumber } from '@/lib/format';
 
-function hashStr(s: string): number {
-  let h = 0;
-  for (let i = 0; i < s.length; i++) {
-    h = ((h << 5) - h) + s.charCodeAt(i);
-    h |= 0;
-  }
-  return Math.abs(h);
-}
-
-function darkenHex(hex: string, factor = 0.3): string {
-  const clean = hex.replace('#', '');
-  const r = parseInt(clean.substring(0, 2), 16);
-  const g = parseInt(clean.substring(2, 4), 16);
-  const b = parseInt(clean.substring(4, 6), 16);
-  return `rgb(${Math.round(r * (1 - factor))}, ${Math.round(g * (1 - factor))}, ${Math.round(b * (1 - factor))})`;
-}
-
 function isLightColor(hex: string): boolean {
   const clean = hex.replace('#', '');
   const r = parseInt(clean.substring(0, 2), 16);
@@ -99,8 +82,6 @@ function CustomTreemapBlock(props: CustomBlockProps) {
 
   if (width <= 0 || height <= 0) return null;
 
-  const uid = name.replace(/[^a-zA-Z0-9]/g, '');
-  const darkFill = darkenHex(fill, 0.25);
   const weightLabel = `${formatNumber(value, 2)} g`;
   const lightText = isLightColor(fill);
 
@@ -108,9 +89,8 @@ function CustomTreemapBlock(props: CustomBlockProps) {
   const showWeight = width > 60 && height > 60;
   const showPct = width > 70 && height > 80;
 
-  const nameColor = lightText ? '#0A0F1A' : '#F4F4F5';
-  const weightColor = lightText ? '#1A2340' : '#E2E8F0';
-  const pctColor = lightText ? '#06837F' : accent;
+  const textColor = lightText ? '#0A0F1A' : '#F4F4F5';
+  const shadowIntensity = lightText ? 0.5 : 0.95;
 
   return (
     <g
@@ -118,27 +98,7 @@ function CustomTreemapBlock(props: CustomBlockProps) {
       onMouseLeave={() => setHovered(false)}
       style={{ cursor: 'pointer' }}
     >
-      <defs>
-        <linearGradient id={`bg-${uid}`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={fill} stopOpacity={1} />
-          <stop offset="100%" stopColor={darkFill} stopOpacity={1} />
-        </linearGradient>
-        <radialGradient id={`txt-${uid}`} cx="50%" cy="50%" r="60%">
-          <stop offset="0%" stopColor="rgba(0,0,0,0.35)" />
-          <stop offset="100%" stopColor="rgba(0,0,0,0)" />
-        </radialGradient>
-        <filter id={`glow-${uid}`}>
-          <feGaussianBlur stdDeviation="4" result="blur" />
-          <feComposite in="SourceGraphic" in2="blur" operator="over" />
-        </filter>
-      </defs>
-
-      <rect x={x} y={y} width={width} height={height} fill={`url(#bg-${uid})`} rx={8} />
-
-      {lightText && width > 40 && height > 40 && (
-        <rect x={x + 4} y={y + 4} width={width - 8} height={height - 8}
-          fill={`url(#txt-${uid})`} rx={6} />
-      )}
+      <rect x={x} y={y} width={width} height={height} fill={fill} rx={8} />
 
       <rect x={x + 1} y={y + 1} width={width - 2} height={height - 2}
         fill="none" stroke="var(--pm-bg-deepest)" strokeWidth={2} rx={7} />
@@ -149,7 +109,8 @@ function CustomTreemapBlock(props: CustomBlockProps) {
       {hovered && (
         <>
           <rect x={x - 1} y={y - 1} width={width + 2} height={height + 2}
-            fill="none" stroke={glowColor} strokeWidth={2} rx={9} opacity={0.6} filter={`url(#glow-${uid})`} />
+            fill="none" stroke={glowColor} strokeWidth={2} rx={9} opacity={0.7}
+            style={{ filter: 'drop-shadow(0 0 6px ' + glowColor + ')' }} />
           <rect x={x - 1} y={y - 1} width={width + 2} height={height + 2}
             fill="none" stroke={glowColor} strokeWidth={6} rx={10} opacity={0.15}
             style={{ filter: 'blur(5px)' }} />
@@ -158,10 +119,10 @@ function CustomTreemapBlock(props: CustomBlockProps) {
 
       {showName && (
         <text x={x + width / 2} y={y + height / 2 - (showWeight ? 12 : showPct ? 16 : 0)}
-          textAnchor="middle" dominantBaseline="central" fill={nameColor}
+          textAnchor="middle" dominantBaseline="central" fill={textColor}
           fontFamily="'JetBrains Mono', 'Fira Code', monospace"
           fontSize={height > 100 ? 14 : height > 70 ? 12 : 10} fontWeight={800}
-          style={{ textShadow: `0 1px 4px rgba(0,0,0,${lightText ? '0.3' : '0.9'}), 0 0 2px rgba(0,0,0,${lightText ? '0.2' : '0.6'})` }}>
+          style={{ textShadow: `0 2px 8px rgba(0,0,0,${shadowIntensity}), 0 0 4px rgba(0,0,0,${shadowIntensity})` }}>
           {name.length > (width > 120 ? 22 : width > 80 ? 16 : 10)
             ? `${name.slice(0, width > 120 ? 22 : width > 80 ? 16 : 10)}…`
             : name}
@@ -170,20 +131,20 @@ function CustomTreemapBlock(props: CustomBlockProps) {
 
       {showWeight && (
         <text x={x + width / 2} y={y + height / 2 + 14}
-          textAnchor="middle" dominantBaseline="central" fill={weightColor}
+          textAnchor="middle" dominantBaseline="central" fill={textColor}
           fontFamily="'JetBrains Mono', 'Fira Code', monospace"
           fontSize={height > 100 ? 12 : 10} fontWeight={600} opacity={0.9}
-          style={{ textShadow: `0 1px 4px rgba(0,0,0,${lightText ? '0.25' : '0.8'})` }}>
+          style={{ textShadow: `0 2px 6px rgba(0,0,0,${shadowIntensity})` }}>
           {weightLabel}
         </text>
       )}
 
       {showPct && (
         <text x={x + width / 2} y={y + height / 2 + 30}
-          textAnchor="middle" dominantBaseline="central" fill={pctColor}
+          textAnchor="middle" dominantBaseline="central" fill={textColor}
           fontFamily="'JetBrains Mono', 'Fira Code', monospace"
-          fontSize={10} fontWeight={600} opacity={0.8}
-          style={{ textShadow: `0 1px 3px rgba(0,0,0,${lightText ? '0.2' : '0.7'})` }}>
+          fontSize={10} fontWeight={600} opacity={0.85}
+          style={{ textShadow: `0 2px 6px rgba(0,0,0,${shadowIntensity})` }}>
           {formatNumber(pct, 1)}%
         </text>
       )}
@@ -293,7 +254,7 @@ export function TreemapPanel({
       initial={{ opacity: 0, x: 0 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: 0.2, duration: 0.45 }}
-      className="glass-panel rounded-2xl border border-[var(--pm-border)]/40 overflow-hidden"
+      className="bg-[#0A0F1C]/60 backdrop-blur-md border border-white/[0.06] rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] overflow-hidden"
     >
       <div className="flex items-center justify-between px-5 pt-4 pb-2 border-b border-[var(--pm-border)]/30">
         <div>
@@ -319,9 +280,9 @@ export function TreemapPanel({
       </div>
 
       {data.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 text-[var(--pm-text-dim)]">
-          <EmptyIcon className="w-8 h-8 mb-2" />
-          <span className="text-xs font-mono">{emptyLabel}</span>
+        <div className="flex flex-col items-center justify-center py-16">
+          <EmptyIcon className="w-12 h-12 text-gray-500/30 mb-3" />
+          <span className="text-xs font-mono text-gray-500/50">{emptyLabel}</span>
         </div>
       ) : isTableMode ? (
         renderDetailTable()

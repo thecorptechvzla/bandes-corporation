@@ -31,7 +31,7 @@ export function BalancesTable({ clientBalances, totalBalance, onClientClick }: B
       initial={{ opacity: 0, y: 32 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.35, duration: 0.45 }}
-      className="premium-card overflow-hidden mt-5"
+      className="bg-[#0A0F1C]/60 backdrop-blur-md border border-white/[0.06] rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] overflow-hidden mt-5"
     >
       <div className="flex items-center justify-between px-6 pt-5 pb-3 border-b border-[var(--pm-border)]">
         <div>
@@ -54,9 +54,9 @@ export function BalancesTable({ clientBalances, totalBalance, onClientClick }: B
       </div>
 
       {clientBalances.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 text-[var(--pm-text-dim)]">
-          <Coins className="w-10 h-10 text-[var(--pm-accent-gold)]/20 mb-3 animate-pulse" />
-          <span className="text-sm font-sans">No hay datos de clientes</span>
+        <div className="flex flex-col items-center justify-center py-16">
+          <Coins className="w-12 h-12 text-gray-500/30 mb-3" />
+          <span className="text-sm font-mono text-gray-500/50">No hay datos de clientes</span>
         </div>
       ) : (
         <div className="overflow-x-auto">

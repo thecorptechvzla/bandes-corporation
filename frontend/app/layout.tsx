@@ -100,7 +100,7 @@ export default function RootLayout({
         <link rel="icon" type="image/png" href="/Bandes2.png" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       </head>
-      <body>
+      <body className="bg-[radial-gradient(ellipse_at_top,_rgba(6,131,127,0.15)_0%,_rgba(5,5,5,1)_100%)]">
         <QueryClientProvider client={queryClient}>
           <GoldTraceabilityProvider>
             <div className="v2-premium min-h-screen text-[var(--pm-text-primary)] font-sans flex overflow-hidden">

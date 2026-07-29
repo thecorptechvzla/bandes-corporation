@@ -58,11 +58,7 @@ function hashStr(s: string): number {
   return Math.abs(h);
 }
 
-const NEON_SUMMER_PALETTE = ['#EAB308', '#D97706', '#92400E', '#78350F'];
-
-function pickPaletteColor(name: string): string {
-  return NEON_SUMMER_PALETTE[hashStr(name) % NEON_SUMMER_PALETTE.length];
-}
+const NEON_SUMMER_PALETTE = ['#06837F', '#02CECB', '#B4FFFF', '#FED811', '#FDC100'];
 
 export default function V2DashboardPage() {
   const [filterStartDate, setFilterStartDate] = useState('');
@@ -227,10 +223,13 @@ export default function V2DashboardPage() {
     const total = Object.values(map).reduce((s, v) => s + v, 0);
     const maxVal = Math.max(...Object.values(map), 1);
     return Object.entries(map)
-      .map(([name, value]) => {
-        return { name, value, pct: total > 0 ? (value / total) * 100 : 0, fill: pickPaletteColor(name) };
-      })
-      .sort((a, b) => b.value - a.value);
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value)
+      .map(({ name, value }, idx) => ({
+        name, value,
+        pct: total > 0 ? (value / total) * 100 : 0,
+        fill: NEON_SUMMER_PALETTE[idx % NEON_SUMMER_PALETTE.length],
+      }));
   }, [filteredBars]);
 
   const egresosTreemap = useMemo(() => {
@@ -244,10 +243,13 @@ export default function V2DashboardPage() {
     const total = Object.values(map).reduce((s, v) => s + v, 0);
     const maxVal = Math.max(...Object.values(map), 1);
     return Object.entries(map)
-      .map(([name, value]) => {
-        return { name, value, pct: total > 0 ? (value / total) * 100 : 0, fill: pickPaletteColor(name) };
-      })
-      .sort((a, b) => b.value - a.value);
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value)
+      .map(({ name, value }, idx) => ({
+        name, value,
+        pct: total > 0 ? (value / total) * 100 : 0,
+        fill: NEON_SUMMER_PALETTE[idx % NEON_SUMMER_PALETTE.length],
+      }));
   }, [filteredExits]);
 
   const kpiData = [

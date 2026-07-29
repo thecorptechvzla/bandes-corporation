@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { ClipboardList, Flame, Warehouse, Inbox } from 'lucide-react';
 import { AreaChart, Area, ResponsiveContainer } from 'recharts';
@@ -98,6 +98,7 @@ interface KpiCardGridProps {
 }
 
 export function KpiCardGrid({ kpiData, isMounted, onCardClick }: KpiCardGridProps) {
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const icons = KPI_ICONS;
   const colors = KPI_COLORS;
 
@@ -110,8 +111,16 @@ export function KpiCardGrid({ kpiData, isMounted, onCardClick }: KpiCardGridProp
             key={kpi.label}
             initial={{ opacity: 0, y: -24 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.08 * idx, duration: 0.45 }}
-            className="premium-card relative overflow-hidden cursor-pointer hover:border-[var(--pm-accent-gold)]/20 hover:shadow-[0_0_24px_var(--pm-accent-gold)/08] active:scale-[0.97] transition-all duration-150"
+            transition={{ delay: 0.1 * idx, duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+            onMouseEnter={() => setHoveredIndex(idx)}
+            onMouseLeave={() => setHoveredIndex(null)}
+            className="relative overflow-hidden cursor-pointer bg-[#0A0F1C]/60 backdrop-blur-md border rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] hover:-translate-y-1.5 active:scale-[0.97] transition-all duration-300 ease-out"
+            style={{
+              borderColor: hoveredIndex === idx ? `${kpi.accent}40` : 'rgba(255,255,255,0.06)',
+              boxShadow: hoveredIndex === idx
+                ? `0 10px 40px -10px ${kpi.accent}, 0 8px 32px rgba(0,0,0,0.4)`
+                : '0 8px 32px rgba(0,0,0,0.4)',
+            }}
             onClick={() => onCardClick(idx)}
           >
             <div className="relative z-10 p-5">
@@ -132,7 +141,7 @@ export function KpiCardGrid({ kpiData, isMounted, onCardClick }: KpiCardGridProp
 
               <span className="text-[11px] text-[var(--pm-text-dim)] font-sans block mb-1">{kpi.label}</span>
               <div className="flex items-baseline gap-1.5 mb-2">
-                <span className="text-2xl font-mono font-bold text-[var(--pm-text-primary)] tracking-tight">
+                <span className="text-2xl font-mono font-bold text-[var(--pm-text-primary)] tracking-tight" style={{ filter: `drop-shadow(0 0 8px ${kpi.accent}80)` }}>
                   {!isMounted
                     ? '0,00'
                     : kpi.postfix === '%'
