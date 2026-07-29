@@ -6,6 +6,12 @@ import { ClipboardList, Flame, Warehouse, Inbox } from 'lucide-react';
 import { AreaChart, Area, ResponsiveContainer } from 'recharts';
 import { formatNumber } from '@/lib/format';
 
+interface ProportionItem {
+  label: string;
+  value: number;
+  color: string;
+}
+
 interface KpiItem {
   label: string;
   value: number;
@@ -15,6 +21,7 @@ interface KpiItem {
   tag: string;
   postfix: string;
   spark: number[];
+  proportion?: ProportionItem[];
   subValues?: {
     label: string;
     value: number;
@@ -32,14 +39,19 @@ const KPI_COLORS = [
 const KPI_ICONS = [ClipboardList, Flame, Warehouse, Inbox];
 
 function SparklineArea({ data, color, id }: { data: number[]; color: string; id: string }) {
-  const chartData = data.map((v, i) => ({ i, v }));
+  const raw = data.length > 1
+    ? data
+    : data.length === 1
+      ? [data[0] * 0.1, data[0] * 0.4, data[0] * 0.3, data[0] * 0.7, data[0]]
+      : [0.1, 0.4, 0.3, 0.7, 1];
+  const chartData = raw.map((v, i) => ({ i, v }));
   return (
-    <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-[inherit] opacity-40">
+    <div className="w-full h-12 overflow-hidden">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={chartData} margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
           <defs>
             <linearGradient id={`spark-${id}`} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={color} stopOpacity={0.35} />
+              <stop offset="0%" stopColor={color} stopOpacity={0.3} />
               <stop offset="100%" stopColor={color} stopOpacity={0} />
             </linearGradient>
           </defs>
@@ -47,12 +59,33 @@ function SparklineArea({ data, color, id }: { data: number[]; color: string; id:
             type="monotone"
             dataKey="v"
             stroke={color}
-            strokeWidth={1.5}
+            strokeWidth={1}
+            strokeOpacity={0.7}
             fill={`url(#spark-${id})`}
+            dot={false}
+            activeDot={false}
             isAnimationActive={false}
           />
         </AreaChart>
       </ResponsiveContainer>
+    </div>
+  );
+}
+
+function ProportionBar({ items }: { items: ProportionItem[] }) {
+  const total = items.reduce((s, i) => s + i.value, 0);
+  return (
+    <div className="w-full h-1.5 rounded-full overflow-hidden flex" style={{ background: 'var(--pm-bg-deepest)' }}>
+      {items.map(item => (
+        <div
+          key={item.label}
+          className="h-full transition-all duration-500 first:rounded-l-full last:rounded-r-full"
+          style={{
+            width: total > 0 ? `${(item.value / total) * 100}%` : '0%',
+            background: item.color,
+          }}
+        />
+      ))}
     </div>
   );
 }
@@ -80,8 +113,6 @@ export function KpiCardGrid({ kpiData, isMounted, onCardClick }: KpiCardGridProp
             className="premium-card relative overflow-hidden cursor-pointer hover:border-[var(--pm-accent-gold)]/20 hover:shadow-[0_0_24px_var(--pm-accent-gold)/08] active:scale-[0.97] transition-all duration-150"
             onClick={() => onCardClick(idx)}
           >
-            <SparklineArea data={kpi.spark} color={kpi.accent} id={`kpi-${idx}`} />
-
             <div className="relative z-10 p-5">
               <div className="flex items-center justify-between mb-4">
                 <div
@@ -99,7 +130,7 @@ export function KpiCardGrid({ kpiData, isMounted, onCardClick }: KpiCardGridProp
               </div>
 
               <span className="text-[11px] text-[var(--pm-text-dim)] font-sans block mb-1">{kpi.label}</span>
-              <div className="flex items-baseline gap-1.5 mb-3">
+              <div className="flex items-baseline gap-1.5 mb-2">
                 <span className="text-2xl font-mono font-bold text-[var(--pm-text-primary)] tracking-tight">
                   {!isMounted
                     ? '0,00'
@@ -112,26 +143,36 @@ export function KpiCardGrid({ kpiData, isMounted, onCardClick }: KpiCardGridProp
                 </span>
               </div>
 
-              {kpi.subValues ? (
-                <div className="flex items-center gap-3 pt-3 border-t border-[var(--pm-border)]">
-                  {kpi.subValues.map((sv) => (
-                    <div key={sv.label} className="flex items-center gap-1.5">
-                      <sv.icon className="w-3 h-3 shrink-0" style={{ color: kpi.accent }} />
-                      <span className="text-[9px] font-mono text-[var(--pm-text-dim)]">
-                        {sv.label}:
-                      </span>
-                      <span className="text-[10px] font-mono font-bold text-[var(--pm-text-primary)] tabular-nums">
-                        {formatNumber(sv.value, 2)} g
-                      </span>
-                    </div>
-                  ))}
+              {kpi.proportion ? (
+                <div className="mb-3 h-12 flex items-end pb-2">
+                  <ProportionBar items={kpi.proportion} />
                 </div>
               ) : (
-                <div className="flex items-center gap-1.5 pt-3 border-t border-[var(--pm-border)]">
-                  <KpiSubIcon icon={kpi.subicon} accent={kpi.accent} />
-                  <span className="text-[10px] text-[var(--pm-text-dim)] font-mono truncate">{kpi.sublabel}</span>
-                </div>
+                isMounted && <div className="mb-3"><SparklineArea data={kpi.spark} color={kpi.accent} id={`kpi-${idx}`} /></div>
               )}
+
+              <div className="pt-3 border-t border-[var(--pm-border)]">
+                {kpi.subValues ? (
+                  <div className="flex items-center gap-3">
+                    {kpi.subValues.map((sv) => (
+                      <div key={sv.label} className="flex items-center gap-1.5">
+                        <sv.icon className="w-3 h-3 shrink-0" style={{ color: kpi.accent }} />
+                        <span className="text-[9px] font-mono text-[var(--pm-text-dim)]">
+                          {sv.label}:
+                        </span>
+                        <span className="text-[10px] font-mono font-bold text-[var(--pm-text-primary)] tabular-nums">
+                          {formatNumber(sv.value, 2)} g
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1.5">
+                    <KpiSubIcon icon={kpi.subicon} accent={kpi.accent} />
+                    <span className="text-[10px] text-[var(--pm-text-dim)] font-mono truncate">{kpi.sublabel}</span>
+                  </div>
+                )}
+              </div>
             </div>
           </motion.div>
         );

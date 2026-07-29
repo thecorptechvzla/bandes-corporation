@@ -216,6 +216,7 @@ interface TreemapPanelProps {
   glowColor: string;
   scaleLabel: string;
   isTableMode: boolean;
+  isMounted: boolean;
   onToggleView: () => void;
   emptyIcon: React.ComponentType<{ className?: string }>;
   emptyLabel: string;
@@ -229,6 +230,7 @@ export function TreemapPanel({
   glowColor,
   scaleLabel,
   isTableMode,
+  isMounted,
   onToggleView,
   emptyIcon: EmptyIcon,
   emptyLabel,
@@ -239,6 +241,7 @@ export function TreemapPanel({
         <Treemap
           data={data}
           dataKey="value"
+          aspectRatio={4 / 3}
           stroke="transparent"
           isAnimationActive={true}
           content={<CustomTreemapBlock accent={accent} glowColor={glowColor} />}
@@ -322,8 +325,12 @@ export function TreemapPanel({
         </div>
       ) : isTableMode ? (
         renderDetailTable()
-      ) : (
+      ) : isMounted ? (
         renderTreemap()
+      ) : (
+        <div className="flex items-center justify-center py-20 text-[var(--pm-text-dim)]">
+          <span className="text-xs font-mono">Cargando gráfica...</span>
+        </div>
       )}
     </motion.div>
   );

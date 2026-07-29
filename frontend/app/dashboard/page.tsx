@@ -258,6 +258,10 @@ export default function V2DashboardPage() {
       tag: KPI_COLORS[2].label,
       postfix: '',
       spark: sparkNet,
+      proportion: [
+        { label: 'Fundido', value: metrics?.oroEnBoveda.fundido ?? 0, color: '#10B981' },
+        { label: 'Sin Fundir', value: metrics?.oroEnBoveda.sinFundir ?? 0, color: '#F59E0B' },
+      ],
       subValues: [
         { label: 'Fundido', value: metrics?.oroEnBoveda.fundido ?? 0, icon: Warehouse },
         { label: 'Sin Fundir', value: metrics?.oroEnBoveda.sinFundir ?? 0, icon: Inbox },
@@ -315,6 +319,7 @@ export default function V2DashboardPage() {
           glowColor="#EAB308"
           scaleLabel="PROVEEDOR"
           isTableMode={showTableIngresos}
+          isMounted={isMounted}
           onToggleView={() => setShowTableIngresos(!showTableIngresos)}
           emptyIcon={Scale}
           emptyLabel="SIN DATOS DE INGRESOS"
@@ -327,6 +332,7 @@ export default function V2DashboardPage() {
           glowColor="#D97706"
           scaleLabel="CLIENTE"
           isTableMode={showTableEgresos}
+          isMounted={isMounted}
           onToggleView={() => setShowTableEgresos(!showTableEgresos)}
           emptyIcon={TrendingDown}
           emptyLabel="SIN DATOS DE EGRESOS"
