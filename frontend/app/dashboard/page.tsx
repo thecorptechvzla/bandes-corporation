@@ -167,6 +167,28 @@ export default function V2DashboardPage() {
   const sparkMerma = useMemo(() => flowData.map(d => Math.abs(d.in - d.out) * 0.02).slice(-14), [flowData]);
   const sparkPorRefundir = useMemo(() => flowData.map(d => d.in).slice(-14), [flowData]);
 
+  const sparkFundido = useMemo(() => {
+    const days: Record<string, number> = {};
+    filteredBars
+      .filter(b => b.status === 'COMPLETADO' || b.status === 'EXITED')
+      .forEach(b => {
+        const d = new Date(b.createdAt).toISOString().split('T')[0];
+        days[d] = (days[d] || 0) + Number(b.fineWeight);
+      });
+    return Object.values(days).slice(-14);
+  }, [filteredBars]);
+
+  const sparkSinFundir = useMemo(() => {
+    const days: Record<string, number> = {};
+    filteredBars
+      .filter(b => b.status === 'IN_STOCK')
+      .forEach(b => {
+        const d = new Date(b.createdAt).toISOString().split('T')[0];
+        days[d] = (days[d] || 0) + Number(b.fineWeight);
+      });
+    return Object.values(days).slice(-14);
+  }, [filteredBars]);
+
   const clientBalances = useMemo(() => {
     if (!clients || !filteredBars) return [];
     return clients.map(client => {
@@ -258,9 +280,9 @@ export default function V2DashboardPage() {
       tag: KPI_COLORS[2].label,
       postfix: '',
       spark: sparkNet,
-      proportion: [
-        { label: 'Fundido', value: metrics?.oroEnBoveda.fundido ?? 0, color: '#10B981' },
-        { label: 'Sin Fundir', value: metrics?.oroEnBoveda.sinFundir ?? 0, color: '#F97316' },
+      sparks: [
+        { data: sparkFundido, color: '#10B981', label: 'Fundido' },
+        { data: sparkSinFundir, color: '#F97316', label: 'Sin Fundir' },
       ],
       subValues: [
         { label: 'Fundido', value: metrics?.oroEnBoveda.fundido ?? 0, icon: Warehouse },

@@ -21,6 +21,7 @@ interface KpiItem {
   tag: string;
   postfix: string;
   spark: number[];
+  sparks?: { data: number[]; color: string; label: string }[];
   proportion?: ProportionItem[];
   subValues?: {
     label: string;
@@ -143,7 +144,21 @@ export function KpiCardGrid({ kpiData, isMounted, onCardClick }: KpiCardGridProp
                 </span>
               </div>
 
-              {kpi.proportion ? (
+              {kpi.sparks ? (
+                <div className="mb-3 h-14 flex flex-col justify-end gap-1">
+                  {kpi.sparks.map((sp, i) => (
+                    <div key={i} className="h-6">
+                      {isMounted && (
+                        <SparklineArea
+                          data={sp.data}
+                          color={sp.color}
+                          id={`kpi-${idx}-${i}`}
+                        />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : kpi.proportion ? (
                 <div className="mb-3 h-12 flex items-end">
                   <ProportionBar items={kpi.proportion} />
                 </div>
