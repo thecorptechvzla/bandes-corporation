@@ -78,16 +78,16 @@ export function ClientTable({
         </div>
       ) : (
         <div className="overflow-x-auto">
-          <table className="premium-table w-full">
-            <thead>
-              <tr>
-                <th className="text-center">RIF</th>
-                <th>Nombre</th>
-                <th className="text-center">Rol</th>
-                <th className="hidden sm:table-cell">Contacto</th>
-                <th className="text-center">Acciones</th>
-              </tr>
-            </thead>
+          <table className="w-full table-fixed border-collapse font-sans text-xs">
+             <thead>
+               <tr className="border-b border-[var(--pm-border)]">
+                 <th className="w-[20%] text-center px-4 py-3 text-[var(--pm-text-dim)] font-semibold uppercase tracking-wider">RIF</th>
+                 <th className="w-[35%] text-left px-4 py-3 text-[var(--pm-text-dim)] font-semibold uppercase tracking-wider">Nombre</th>
+                 <th className="w-[15%] text-center px-4 py-3 text-[var(--pm-text-dim)] font-semibold uppercase tracking-wider">Rol</th>
+                 <th className="w-[20%] text-left px-4 py-3 text-[var(--pm-text-dim)] font-semibold uppercase tracking-wider hidden sm:table-cell">Contacto</th>
+                 <th className="w-[10%] text-center px-4 py-3 text-[var(--pm-text-dim)] font-semibold uppercase tracking-wider">Acciones</th>
+               </tr>
+             </thead>
             <tbody>
               {clients.map((client, idx) => (
                 <motion.tr
@@ -97,21 +97,21 @@ export function ClientTable({
                   transition={{ delay: 0.2 + idx * 0.03, duration: 0.25 }}
                   className="odd:bg-[var(--pm-bg-deepest)]/40 hover:bg-[var(--pm-bg-tertiary)]/60 transition-all duration-150 hover:shadow-[inset_0_0_20px_rgba(212,175,55,0.04)]"
                 >
-                  <td className="text-center font-mono font-bold text-[var(--pm-accent-gold)] tracking-wider text-[11px]">
+                  <td className="text-center px-4 py-3 font-mono font-bold text-[var(--pm-accent-gold)] tracking-wider">
                     {formatRif(client.rif)}
                   </td>
-                  <td className="font-sans font-bold text-[var(--pm-text-primary)]">
+                  <td className="text-left px-4 py-3 font-sans font-bold text-[var(--pm-text-primary)]">
                     {client.name}
                   </td>
-                  <td className="text-center">
-                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-[9px] font-mono font-bold border rounded ${ROLE_STYLES[client.role] || ''}`}>
+                  <td className="text-center px-4 py-3">
+                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-[9px] font-mono font-bold border rounded whitespace-nowrap ${ROLE_STYLES[client.role] || ''}`}>
                       {ROLE_LABELS[client.role] || client.role}
                     </span>
                   </td>
-                  <td className="text-[var(--pm-text-dim)] text-xs hidden sm:table-cell">
+                  <td className="text-left px-4 py-3 font-mono text-[var(--pm-text-dim)] hidden sm:table-cell">
                     {client.contactInfo || <span className="opacity-30">&mdash;</span>}
                   </td>
-                  <td className="text-center">
+                  <td className="text-center px-4 py-3">
                     <div className="flex items-center justify-center gap-1">
                       <button
                         onClick={() => onEdit(client)}
