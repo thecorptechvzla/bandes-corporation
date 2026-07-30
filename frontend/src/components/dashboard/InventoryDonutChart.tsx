@@ -90,7 +90,7 @@ export function InventoryDonutChart({ fundido, sinFundir, isMounted }: Inventory
           </ResponsiveContainer>
 
           {/* Center label */}
-          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none" style={{ top: 24 }}>
+          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
             <span className="text-[9px] font-mono text-[var(--hud-text-muted)] uppercase tracking-[0.18em]">
               En Bóveda
             </span>

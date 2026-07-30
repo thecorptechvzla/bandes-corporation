@@ -281,7 +281,7 @@ export function TreemapPanel({
       initial={{ opacity: 0, x: 0 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: 0.2, duration: 0.45 }}
-      className="hud-card overflow-hidden"
+      className="hud-card overflow-hidden flex flex-col flex-1"
     >
       <div className="flex items-center justify-between px-5 pt-4 pb-2 border-b border-white/5">
         <div>

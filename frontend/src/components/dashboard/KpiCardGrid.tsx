@@ -56,7 +56,7 @@ function SparklineArea({ data, color, id }: { data: number[]; color: string; id:
       : [0.1, 0.4, 0.3, 0.7, 1];
   const chartData = raw.map((v, i) => ({ i, v }));
   return (
-    <div className="w-full h-14 overflow-hidden">
+    <div className="w-full h-14 overflow-hidden relative z-0">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={chartData} margin={{ top: 2, right: 0, bottom: 0, left: 0 }}>
           <defs>
@@ -145,21 +145,24 @@ export function KpiCardGrid({ kpiData, isMounted, onCardClick }: KpiCardGridProp
               className="absolute top-0 left-0 right-0 h-[2px] rounded-t-2xl z-20"
               style={{ background: kpi.accent }}
             />
-            <div className="relative z-10 p-6">
+            <div className="relative z-10 p-7">
               <div className="flex items-center justify-between mb-4">
-                <div
-                  className="w-10 h-10 rounded-xl flex items-center justify-center"
-                  style={{ background: `${kpi.accent}15` }}
-                >
-                  <Icon className="w-5 h-5" style={{ color: kpi.accent }} />
-                </div>
                 <div className="flex items-center gap-2">
+                  <div
+                    className="w-10 h-10 rounded-xl flex items-center justify-center"
+                    style={{ background: `${kpi.accent}15` }}
+                  >
+                    <Icon className="w-5 h-5" style={{ color: kpi.accent }} />
+                  </div>
+                  <span className="text-[11px] text-[var(--hud-text-dim)] font-sans">{kpi.label}</span>
+                </div>
+                <div className="flex items-center gap-2.5">
                   {(() => {
                     const trend = calcTrend(kpi.spark);
                     if (!trend || trend.direction === 'flat') return null;
                     return (
                       <span
-                        className={`inline-flex items-center gap-0.5 text-[9px] font-mono font-bold px-2 py-0.5 rounded-lg ${
+                        className={`inline-flex items-center gap-0.5 text-[9px] font-mono font-bold px-2.5 py-1 rounded-lg ${
                           trend.direction === 'up'
                             ? 'text-emerald-400 bg-emerald-500/10'
                             : 'text-red-400 bg-red-500/10'
@@ -174,7 +177,7 @@ export function KpiCardGrid({ kpiData, isMounted, onCardClick }: KpiCardGridProp
                     );
                   })()}
                   <span
-                    className="text-[9px] font-mono font-bold tracking-wider px-2.5 py-1 rounded-lg"
+                    className="text-[9px] font-mono font-bold tracking-wider px-3 py-1 rounded-lg"
                     style={{ background: `${kpi.accent}12`, color: kpi.accent, border: `1px solid ${kpi.accent}25` }}
                   >
                     {kpi.tag}
@@ -182,7 +185,6 @@ export function KpiCardGrid({ kpiData, isMounted, onCardClick }: KpiCardGridProp
                 </div>
               </div>
 
-              <span className="text-[11px] text-[var(--hud-text-dim)] font-sans block mb-1">{kpi.label}</span>
               <div className="flex items-baseline gap-1.5 mb-2">
                 <span className="text-3xl font-mono font-bold text-[var(--hud-text-primary)] tracking-tight" style={{ filter: `drop-shadow(0 0 12px ${kpi.accent}60)` }}>
                   {!isMounted
@@ -191,7 +193,7 @@ export function KpiCardGrid({ kpiData, isMounted, onCardClick }: KpiCardGridProp
                       ? `${formatNumber(kpi.value, 1)}`
                       : formatNumber(kpi.value, 2)}
                 </span>
-                <span className="text-[11px] text-[var(--hud-text-dim)] font-mono">
+                <span className="text-sm text-[var(--hud-text-dim)] font-mono self-end mb-0.5">
                   {kpi.postfix || 'g'}
                 </span>
               </div>

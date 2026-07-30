@@ -341,7 +341,7 @@ export default function V2DashboardPage() {
         </div>
 
         {/* ── Fila 3: Treemap Ingresos (6) + Treemap Egresos (6) ── */}
-        <div className="col-span-12 lg:col-span-6">
+        <div className="col-span-12 lg:col-span-6 flex flex-col">
           <TreemapPanel
             title="INGRESOS POR PROVEEDOR"
             subtitle="Proporción de masa bruta recibida"
@@ -357,7 +357,7 @@ export default function V2DashboardPage() {
             treemapId="ingresos"
           />
         </div>
-        <div className="col-span-12 lg:col-span-6">
+        <div className="col-span-12 lg:col-span-6 flex flex-col">
           <TreemapPanel
             title="EGRESOS POR CLIENTE"
             subtitle="Proporción de masa despachada"
