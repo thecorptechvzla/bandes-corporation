@@ -326,16 +326,14 @@ export default function PackingPage() {
     setDetailBar(bar);
   };
 
-  const handleDetailValidate = async (barId: string) => {
+  const handleDetailValidate = async (barId: string, data: { grossWeight: number; purity: number; photoUrl?: string }) => {
     if (!selectedPacking) return;
-    const bar = selectedPacking.bars?.find(b => b.id === barId);
-    if (!bar) return;
 
     setDetailSaving(true);
     try {
       await validatePacking.mutateAsync({
         id: selectedPacking.id,
-        bars: [{ barId, grossWeight: Number(bar.grossWeight), purity: Number(bar.purity) }],
+        bars: [{ barId, grossWeight: data.grossWeight, purity: data.purity, photoUrl: data.photoUrl }],
       });
       setDetailBar(null);
     } catch (err) {
@@ -345,14 +343,14 @@ export default function PackingPage() {
     }
   };
 
-  const handleDetailSave = async (barId: string, data: { grossWeight: number; purity: number }) => {
+  const handleDetailSave = async (barId: string, data: { grossWeight: number; purity: number; photoUrl?: string }) => {
     if (!selectedPacking) return;
 
     setDetailSaving(true);
     try {
       await validatePacking.mutateAsync({
         id: selectedPacking.id,
-        bars: [{ barId, grossWeight: data.grossWeight, purity: data.purity }],
+        bars: [{ barId, grossWeight: data.grossWeight, purity: data.purity, photoUrl: data.photoUrl }],
       });
       setDetailBar(null);
     } catch (err) {

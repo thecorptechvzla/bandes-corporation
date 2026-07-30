@@ -1,19 +1,21 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { ClipboardCheck, Camera, Check, Pencil, X, Zap } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { ClipboardCheck, Camera, Check, Pencil, X, Zap, Scale, Microscope } from 'lucide-react';
 import { formatNumber } from '@/lib/format';
 import { StatusBadge } from '@/components/ui/StatusBadge';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { ModalShell } from '@/components/ui/ModalShell';
 import { PinPadModal } from '@/components/packing/PinPadModal';
+import { CameraTerminal } from '@/components/tactical/CameraTerminal';
 import type { Bar } from '@/types/api';
 
 interface BarDetailModalProps {
   bar: Bar;
   spValues?: { grossWeight: number; purity: number; leyAg?: number };
   onClose: () => void;
-  onValidate?: (barId: string) => void;
-  onSave?: (barId: string, data: { grossWeight: number; purity: number }) => void;
+  onValidate?: (barId: string, data: { grossWeight: number; purity: number; photoUrl?: string }) => void;
+  onSave?: (barId: string, data: { grossWeight: number; purity: number; photoUrl?: string }) => void;
   isSaving?: boolean;
 }
 
@@ -30,6 +32,11 @@ export function BarDetailModal({
   const [grossWeight, setGrossWeight] = useState(String(Number(bar.grossWeight)));
   const [purity, setPurity] = useState(String(Number(bar.purity)));
 
+  const [cameraMode, setCameraMode] = useState<'idle' | 'camera' | 'preview'>('idle');
+  const [photoBlob, setPhotoBlob] = useState<Blob | null>(null);
+  const [photoPreviewUrl, setPhotoPreviewUrl] = useState<string | null>(null);
+  const [photoUploadedUrl, setPhotoUploadedUrl] = useState<string | null>(null);
+
   const isPorValidar = bar.status === 'POR_VALIDAR';
 
   useEffect(() => {
@@ -37,18 +44,53 @@ export function BarDetailModal({
     setPurity(String(Number(bar.purity)));
     setIsEditing(false);
     setShowPinPad(false);
+    setCameraMode('idle');
+    setPhotoBlob(null);
+    if (photoPreviewUrl) URL.revokeObjectURL(photoPreviewUrl);
+    setPhotoPreviewUrl(null);
+    setPhotoUploadedUrl(null);
   }, [bar]);
 
-  const photoUrl = bar.photoUrl || null;
+  const photoUrl = bar.photoUrl || photoUploadedUrl || null;
   const srcProxy = photoUrl
     ? `/api/blob/view?url=${encodeURIComponent(photoUrl)}`
     : null;
 
   const spGross = spValues?.grossWeight ?? Number(bar.grossWeight);
   const spPurity = spValues?.purity ?? Number(bar.purity);
-  const displayGross = Number(bar.grossWeight);
-  const displayPurity = Number(bar.purity);
+  const displayGross = grossWeight ? parseFloat(grossWeight) : 0;
+  const displayPurity = purity ? parseFloat(purity) : 0;
   const fa = displayGross * (displayPurity / 1000);
+
+  const uploadPhoto = useCallback(async (blob: Blob): Promise<string> => {
+    const fd = new FormData();
+    fd.append('file', blob, `photo-${Date.now()}.jpg`);
+    const res = await fetch('/api/blob/upload', { method: 'POST', body: fd });
+    if (!res.ok) throw new Error('Error al subir la foto');
+    const data = await res.json();
+    return data.url as string;
+  }, []);
+
+  const handleCapture = useCallback(async (blob: Blob) => {
+    const localUrl = URL.createObjectURL(blob);
+    setPhotoBlob(blob);
+    setPhotoPreviewUrl(localUrl);
+    setCameraMode('preview');
+    try {
+      const url = await uploadPhoto(blob);
+      setPhotoUploadedUrl(url);
+    } catch (err) {
+      console.error('Auto-upload failed:', err);
+    }
+  }, [uploadPhoto]);
+
+  const handleRepeat = useCallback(() => {
+    if (photoPreviewUrl) URL.revokeObjectURL(photoPreviewUrl);
+    setPhotoBlob(null);
+    setPhotoPreviewUrl(null);
+    setPhotoUploadedUrl(null);
+    setCameraMode('camera');
+  }, [photoPreviewUrl]);
 
   const handleEditClick = () => {
     setShowPinPad(true);
@@ -61,7 +103,10 @@ export function BarDetailModal({
 
   const handleValidate = () => {
     if (!onValidate) return;
-    onValidate(bar.id);
+    const bw = parseFloat(grossWeight);
+    const la = parseFloat(purity);
+    if (isNaN(bw) || isNaN(la)) return;
+    onValidate(bar.id, { grossWeight: bw, purity: la, photoUrl: photoUploadedUrl || undefined });
   };
 
   const handleSaveChanges = () => {
@@ -69,7 +114,7 @@ export function BarDetailModal({
     const bw = parseFloat(grossWeight);
     const la = parseFloat(purity);
     if (isNaN(bw) || isNaN(la)) return;
-    onSave(bar.id, { grossWeight: bw, purity: la });
+    onSave(bar.id, { grossWeight: bw, purity: la, photoUrl: photoUploadedUrl || undefined });
   };
 
   const handleCancelEdit = () => {
@@ -77,6 +122,8 @@ export function BarDetailModal({
     setGrossWeight(String(Number(bar.grossWeight)));
     setPurity(String(Number(bar.purity)));
   };
+
+  const canValidate = !isNaN(displayGross) && !isNaN(displayPurity) && displayGross > 0 && displayPurity > 0;
 
   return (
     <>
@@ -111,7 +158,39 @@ export function BarDetailModal({
         <div className="p-6 space-y-5">
           {/* Photo */}
           <div className="rounded-xl overflow-hidden border border-[var(--pm-border)] bg-black/60 flex items-center justify-center min-h-[160px]">
-            {srcProxy ? (
+            {cameraMode === 'camera' ? (
+              <div className="w-full">
+                <CameraTerminal
+                  onCapture={handleCapture}
+                  onClose={() => setCameraMode('idle')}
+                />
+              </div>
+            ) : cameraMode === 'preview' && photoPreviewUrl ? (
+              <div className="w-full p-3 space-y-3">
+                <div className="rounded-lg overflow-hidden border-2 border-[var(--pm-accent-cyan)]/30 bg-black">
+                  <img src={photoPreviewUrl} alt="Preview" className="w-full object-cover max-h-48" />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    {photoUploadedUrl ? (
+                      <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[var(--pm-accent-emerald)]/10 border border-[var(--pm-accent-emerald)]/20">
+                        <Check className="w-3 h-3 text-[var(--pm-accent-emerald)]" />
+                        <span className="text-[9px] font-mono font-bold text-[var(--pm-accent-emerald)]">Foto lista</span>
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[var(--pm-accent-amber)]/10 border border-[var(--pm-accent-amber)]/20">
+                        <LoadingSpinner size="xs" className="text-[var(--pm-accent-amber)]" />
+                        <span className="text-[9px] font-mono font-bold text-[var(--pm-accent-amber)]">Subiendo...</span>
+                      </span>
+                    )}
+                  </div>
+                  <button type="button" onClick={handleRepeat}
+                    className="px-3 py-1.5 rounded-lg border border-[var(--pm-border)] text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] hover:bg-[var(--pm-bg-tertiary)] text-[10px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer">
+                    REPETIR
+                  </button>
+                </div>
+              </div>
+            ) : srcProxy ? (
               <img
                 src={srcProxy}
                 alt={`Barra ${bar.barNumber}`}
@@ -200,6 +279,30 @@ export function BarDetailModal({
             </div>
           </div>
 
+          {/* Device Capture Buttons */}
+          {(isPorValidar || isEditing) && cameraMode === 'idle' && (
+            <div className="flex gap-2">
+              <button type="button" onClick={() => {}}
+                className="flex-1 py-2 rounded-lg border border-[var(--pm-border)]/60 text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] hover:bg-[var(--pm-bg-hover)]/60 text-[10px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1.5"
+                style={{ WebkitTapHighlightColor: 'transparent' }}>
+                <Scale className="w-3 h-3 text-[var(--pm-accent-gold)]" />
+                OBTENER PESO
+              </button>
+              <button type="button" onClick={() => {}}
+                className="flex-1 py-2 rounded-lg border border-[var(--pm-border)]/60 text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] hover:bg-[var(--pm-bg-hover)]/60 text-[10px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1.5"
+                style={{ WebkitTapHighlightColor: 'transparent' }}>
+                <Microscope className="w-3 h-3 text-[var(--pm-accent-gold)]" />
+                OBTENER LEYES
+              </button>
+              <button type="button" onClick={() => setCameraMode('camera')}
+                className="flex-1 py-2 rounded-lg border border-[var(--pm-border)]/60 text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] hover:bg-[var(--pm-bg-hover)]/60 text-[10px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1.5"
+                style={{ WebkitTapHighlightColor: 'transparent' }}>
+                <Camera className="w-3 h-3 text-[var(--pm-accent-cyan)]" />
+                ADJUNTAR FOTO
+              </button>
+            </div>
+          )}
+
           {/* Fine Weight */}
           <div className="p-3 rounded-xl border border-[var(--pm-accent-gold)]/20 bg-[var(--pm-accent-gold)]/5">
             <span className="text-[8px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider block text-center">PESO FINO</span>
@@ -211,11 +314,11 @@ export function BarDetailModal({
             {isEditing ? (
               <>
                 <button type="button" onClick={handleCancelEdit}
-                  className="flex-1 py-2.5 rounded-lg border border-[var(--pm-border)] text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] hover:bg-[var(--pm-bg-tertiary)] text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer">
+                  className="py-2.5 px-4 rounded-lg border border-[var(--pm-border)] text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] hover:bg-[var(--pm-bg-tertiary)] text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer">
                   Cancelar
                 </button>
                 <button type="button" onClick={handleSaveChanges} disabled={isSaving}
-                  className="flex-[2] py-2.5 rounded-lg text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="flex-1 py-2.5 rounded-lg text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   style={{
                     background: 'linear-gradient(135deg, rgba(212,175,55,0.2), rgba(212,175,55,0.1))',
                     color: 'var(--pm-accent-gold)',
@@ -252,8 +355,8 @@ export function BarDetailModal({
                   EDITAR
                 </button>
                 {isPorValidar && onValidate && (
-                  <button type="button" onClick={handleValidate} disabled={isSaving}
-                    className="flex-[2] py-2.5 rounded-lg text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  <button type="button" onClick={handleValidate} disabled={isSaving || !canValidate}
+                    className="flex-1 py-2.5 rounded-lg text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     style={{
                       background: 'linear-gradient(135deg, rgba(16,185,129,0.2), rgba(16,185,129,0.1))',
                       color: 'var(--pm-accent-emerald)',
