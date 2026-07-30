@@ -37,7 +37,7 @@ export class DashboardService {
 
     const barBaseWhere = { ...dateFilter, ...supplierFilter };
 
-    const [recibidoAgg, procesoAgg, recoveredAgg, exitedAgg, mermaFAAgg, porRefundirAgg] =
+    const [recibidoAgg, procesoAgg, recoveredAgg, exitedAgg, mermaFAAgg, porRefundirAgg, dailyFlow] =
       await Promise.all([
         // 1. ORO RECIBIDO
         this.prisma.bar.aggregate({
@@ -84,6 +84,9 @@ export class DashboardService {
           where: { ...barBaseWhere, ...clientFilter, status: 'IN_STOCK' },
           _sum: { fineWeight: true },
         }),
+
+        // 7. DAILY FLOW — last 30 days (or filtered range)
+        this.getDailyFlow(filters),
       ]);
 
     const oroRecibidoFA = Number(recibidoAgg._sum.fineWeight ?? 0);
@@ -120,6 +123,50 @@ export class DashboardService {
         gramos: mermaG,
         porcentaje: mermaPct,
       },
+      dailyFlow,
     };
+  }
+
+  private async getDailyFlow(filters: MetricsFilters) {
+    const start = filters.startDate || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    const end = filters.endDate || new Date().toISOString().split('T')[0];
+
+    const barWhereClauses: string[] = [`b."createdAt" >= '${start}'::timestamp`, `b."createdAt" <= '${end}'::timestamp + interval '1 day'`];
+    const exitWhereClauses: string[] = [`e."createdAt" >= '${start}'::timestamp`, `e."createdAt" <= '${end}'::timestamp + interval '1 day'`];
+
+    if (filters.supplierId) {
+      barWhereClauses.push(`b."clientId" = '${filters.supplierId}'`);
+    }
+
+    const rows = await this.prisma.$queryRawUnsafe<{ date: string; ingresos: string; egresos: string }[]>(`
+      SELECT
+        d.date::text,
+        COALESCE(ing.ingresos, 0) AS ingresos,
+        COALESCE(eg.egresos, 0) AS egresos
+      FROM generate_series(
+        '${start}'::date,
+        '${end}'::date,
+        '1 day'::interval
+      ) AS d(date)
+      LEFT JOIN (
+        SELECT DATE(b."createdAt") AS date, SUM(b."fineWeight") AS ingresos
+        FROM "Bar" b
+        WHERE ${barWhereClauses.join(' AND ')}
+        GROUP BY DATE(b."createdAt")
+      ) ing ON ing.date = d.date
+      LEFT JOIN (
+        SELECT DATE(e."createdAt") AS date, SUM(e."totalWeight") AS egresos
+        FROM "MaterialExit" e
+        WHERE ${exitWhereClauses.join(' AND ')}
+        GROUP BY DATE(e."createdAt")
+      ) eg ON eg.date = d.date
+      ORDER BY d.date
+    `);
+
+    return rows.map(r => ({
+      date: r.date,
+      ingresos: Number(r.ingresos),
+      egresos: Number(r.egresos),
+    }));
   }
 }

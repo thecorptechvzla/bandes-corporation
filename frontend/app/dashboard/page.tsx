@@ -19,6 +19,9 @@ import { BovedaModal } from '@/components/dashboard/BovedaModal';
 import { KpiCardGrid, KPI_COLORS } from '@/components/dashboard/KpiCardGrid';
 import { BalancesTable } from '@/components/dashboard/BalancesTable';
 import { TreemapPanel } from '@/components/dashboard/TreemapPanel';
+import { FlowAreaChart } from '@/components/dashboard/FlowAreaChart';
+import { InventoryDonutChart } from '@/components/dashboard/InventoryDonutChart';
+import { ClientBalancesBarChart } from '@/components/dashboard/ClientBalancesBarChart';
 
 function SparklineArea({ data, color, id }: { data: number[]; color: string; id: string }) {
   const chartData = data.map((v, i) => ({ i, v }));
@@ -45,8 +48,6 @@ function SparklineArea({ data, color, id }: { data: number[]; color: string; id:
     </div>
   );
 }
-
-
 
 const GREEN_PALETTE = ['#10b981', '#059669', '#047857', '#065f46'];
 
@@ -150,7 +151,6 @@ export default function V2DashboardPage() {
   const sparkIn = useMemo(() => flowData.map(d => d.in).slice(-14), [flowData]);
   const sparkOut = useMemo(() => flowData.map(d => d.out).slice(-14), [flowData]);
   const sparkNet = useMemo(() => flowData.map(d => d.in - d.out).slice(-14), [flowData]);
-  const sparkMerma = useMemo(() => flowData.map(d => Math.abs(d.in - d.out) * 0.02).slice(-14), [flowData]);
   const sparkPorRefundir = useMemo(() => flowData.map(d => d.in).slice(-14), [flowData]);
 
   const sparkFundido = useMemo(() => {
@@ -211,7 +211,6 @@ export default function V2DashboardPage() {
       map[name] = (map[name] || 0) + Number(b.grossWeight);
     });
     const total = Object.values(map).reduce((s, v) => s + v, 0);
-    const maxVal = Math.max(...Object.values(map), 1);
     return Object.entries(map)
       .map(([name, value]) => ({ name, value }))
       .sort((a, b) => b.value - a.value)
@@ -232,7 +231,6 @@ export default function V2DashboardPage() {
       });
     });
     const total = Object.values(map).reduce((s, v) => s + v, 0);
-    const maxVal = Math.max(...Object.values(map), 1);
     return Object.entries(map)
       .map(([name, value]) => ({ name, value }))
       .sort((a, b) => b.value - a.value)
@@ -298,7 +296,7 @@ export default function V2DashboardPage() {
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.35 }}>
       {/* Filters */}
-      <div className="mb-10">
+      <div className="mb-8">
         <DashboardFilters
           startDate={filterStartDate}
           endDate={filterEndDate}
@@ -313,63 +311,90 @@ export default function V2DashboardPage() {
         />
       </div>
 
-      {/* KPI Cards */}
-      <KpiCardGrid
-        kpiData={kpiData}
-        isMounted={isMounted}
-        onCardClick={(idx) => {
-          if (idx === 0) setIsIngresoModalOpen(true);
-          else if (idx === 1) setIsProcesoModalOpen(true);
-          else if (idx === 2) setIsBovedaModalOpen(true);
-          else if (idx === 3) setIsPorRefundirModalOpen(true);
-        }}
-      />
+      {/* ═══ MEGA GRID — 12 COL ═══ */}
+      <div className="grid gap-5" style={{ gridTemplateColumns: 'repeat(12, 1fr)' }}>
 
-      {/* Treemaps Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mt-5">
-        <TreemapPanel
-          title="INGRESOS POR PROVEEDOR"
-          subtitle="Proporción de masa bruta recibida"
-          data={ingresosTreemap}
-          accent="var(--hud-accent-gold)"
-          glowColor="#EAB308"
-          scaleLabel="PROVEEDOR"
-          isTableMode={showTableIngresos}
-          isMounted={isMounted}
-          onToggleView={() => setShowTableIngresos(!showTableIngresos)}
-          emptyIcon={Scale}
-          emptyLabel="SIN DATOS DE INGRESOS"
-          treemapId="ingresos"
-        />
-        <TreemapPanel
-          title="EGRESOS POR CLIENTE"
-          subtitle="Proporción de masa despachada"
-          data={egresosTreemap}
-          accent="var(--hud-accent-sky)"
-          glowColor="#D97706"
-          scaleLabel="CLIENTE"
-          isTableMode={showTableEgresos}
-          isMounted={isMounted}
-          onToggleView={() => setShowTableEgresos(!showTableEgresos)}
-          emptyIcon={TrendingDown}
-          emptyLabel="SIN DATOS DE EGRESOS"
-          treemapId="egresos"
-        />
+        {/* ── Fila 1: KPIs (full width) ── */}
+        <div className="col-span-12">
+          <KpiCardGrid
+            kpiData={kpiData}
+            isMounted={isMounted}
+            onCardClick={(idx) => {
+              if (idx === 0) setIsIngresoModalOpen(true);
+              else if (idx === 1) setIsProcesoModalOpen(true);
+              else if (idx === 2) setIsBovedaModalOpen(true);
+              else if (idx === 3) setIsPorRefundirModalOpen(true);
+            }}
+          />
+        </div>
+
+        {/* ── Fila 2: Flujo (8 col) + Donut Bóveda (4 col) ── */}
+        <div className="col-span-12 lg:col-span-8">
+          <FlowAreaChart data={metrics?.dailyFlow ?? []} isMounted={isMounted} />
+        </div>
+        <div className="col-span-12 lg:col-span-4">
+          <InventoryDonutChart
+            fundido={metrics?.oroEnBoveda.fundido ?? 0}
+            sinFundir={metrics?.oroEnBoveda.sinFundir ?? 0}
+            isMounted={isMounted}
+          />
+        </div>
+
+        {/* ── Fila 3: Treemap Ingresos (6) + Treemap Egresos (6) ── */}
+        <div className="col-span-12 lg:col-span-6">
+          <TreemapPanel
+            title="INGRESOS POR PROVEEDOR"
+            subtitle="Proporción de masa bruta recibida"
+            data={ingresosTreemap}
+            accent="var(--hud-accent-gold)"
+            glowColor="#EAB308"
+            scaleLabel="PROVEEDOR"
+            isTableMode={showTableIngresos}
+            isMounted={isMounted}
+            onToggleView={() => setShowTableIngresos(!showTableIngresos)}
+            emptyIcon={Scale}
+            emptyLabel="SIN DATOS DE INGRESOS"
+            treemapId="ingresos"
+          />
+        </div>
+        <div className="col-span-12 lg:col-span-6">
+          <TreemapPanel
+            title="EGRESOS POR CLIENTE"
+            subtitle="Proporción de masa despachada"
+            data={egresosTreemap}
+            accent="var(--hud-accent-sky)"
+            glowColor="#D97706"
+            scaleLabel="CLIENTE"
+            isTableMode={showTableEgresos}
+            isMounted={isMounted}
+            onToggleView={() => setShowTableEgresos(!showTableEgresos)}
+            emptyIcon={TrendingDown}
+            emptyLabel="SIN DATOS DE EGRESOS"
+            treemapId="egresos"
+          />
+        </div>
+
+        {/* ── Fila 4: Tabla Balances (8 col) + Top Balances Chart (4 col) ── */}
+        <div className="col-span-12 lg:col-span-8">
+          <BalancesTable
+            clientBalances={clientBalances}
+            totalBalance={totalBalance}
+            onClientClick={(id) => { setSelectedClientId(id); setIsClientBarModalOpen(true); }}
+          />
+        </div>
+        <div className="col-span-12 lg:col-span-4">
+          <ClientBalancesBarChart clientBalances={clientBalances} isMounted={isMounted} />
+        </div>
       </div>
-
-      {/* Balances Table */}
-      <BalancesTable
-        clientBalances={clientBalances}
-        totalBalance={totalBalance}
-        onClientClick={(id) => { setSelectedClientId(id); setIsClientBarModalOpen(true); }}
-      />
 
       {/* Footer note */}
       <p className="text-[9px] text-[var(--hud-text-dim)] font-mono text-center opacity-50 mt-5">
         Datos actualizados en tiempo real · Bandes HUD
       </p>
 
-      {/* Client bar detail modal — triggered from balance table row */}
+      {/* ═══ MODALS ═══ */}
+
+      {/* Client bar detail modal */}
       <SupplierDirectoryModal
         isOpen={isClientBarModalOpen && !!selectedClientId}
         title={clients.find((cl) => cl.id === selectedClientId)?.name ?? 'Detalle de barras'}
@@ -380,7 +405,7 @@ export default function V2DashboardPage() {
         onBarClick={(id) => setEvidenceBarId(id)}
       />
 
-      {/* Supplier directory modal — triggered from Oro Recibido card */}
+      {/* Supplier directory modal — Oro Recibido */}
       <SupplierDirectoryModal
         isOpen={isIngresoModalOpen}
         title="Material Ingresado"
@@ -391,7 +416,7 @@ export default function V2DashboardPage() {
         onBarClick={(id) => setEvidenceBarId(id)}
       />
 
-      {/* Oro en Proceso modal — triggered from card index 1 */}
+      {/* Oro en Proceso modal */}
       <SupplierDirectoryModal
         isOpen={isProcesoModalOpen}
         title="Oro en Proceso"
@@ -402,7 +427,7 @@ export default function V2DashboardPage() {
         onBarClick={(id) => setEvidenceBarId(id)}
       />
 
-      {/* Oro en Bóveda modal — triggered from card index 2 */}
+      {/* Oro en Bóveda modal */}
       <BovedaModal
         isOpen={isBovedaModalOpen}
         lots={bovedaLots}
@@ -412,7 +437,7 @@ export default function V2DashboardPage() {
         onBarClick={(id) => setEvidenceBarId(id)}
       />
 
-      {/* Por Refundir modal — triggered from card index 3 */}
+      {/* Por Refundir modal */}
       <SupplierDirectoryModal
         isOpen={isPorRefundirModalOpen}
         title="Por Refundir"
@@ -423,7 +448,7 @@ export default function V2DashboardPage() {
         onBarClick={(id) => setEvidenceBarId(id)}
       />
 
-      {/* Evidence Modal — triggered from SupplierDirectory bar row click */}
+      {/* Evidence Modal */}
       <AnimatePresence>
         <EvidenceModal barId={evidenceBarId} bars={bars} onClose={() => setEvidenceBarId(null)} />
       </AnimatePresence>

@@ -185,6 +185,7 @@ export interface DashboardMetrics {
     gramos: number;
     porcentaje: number;
   };
+  dailyFlow: { date: string; ingresos: number; egresos: number }[];
 }
 
 export interface BulkUploadRecord {
