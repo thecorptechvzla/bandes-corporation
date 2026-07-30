@@ -101,9 +101,9 @@ export function BarInventoryPanel({
                                   transition={{ delay: idx * 0.02, duration: 0.15 }}
                                   onClick={() => { if (isPackingValidated) onSetEvidenceBarId(bar.id); }}
                                   className={`${idx % 2 === 0 ? 'bg-transparent' : 'bg-[var(--pm-bg-deepest)]/30'} transition-all duration-150 ${isPackingValidated ? 'cursor-pointer hover:bg-white/[0.04] active:scale-[0.98]' : 'cursor-default'}`}>
-                                  <td className="text-center font-mono font-bold text-[var(--pm-accent-gold)] tracking-wider text-[11px]">{bar.barNumber}</td>
-                                  <td className="text-right font-mono text-[var(--pm-text-primary)]">{formatNumber(Number(bar.grossWeight), 2)}</td>
-                                  <td className="text-right font-mono text-[var(--pm-text-primary)]">{formatNumber(Number(bar.fineWeight), 4)}</td>
+                                  <td className="px-4 py-3 text-center font-mono font-bold text-[var(--pm-accent-gold)] tracking-wider text-[11px]">{bar.barNumber}</td>
+                                  <td className="px-4 py-3 text-right font-mono font-medium text-slate-200">{formatNumber(Number(bar.grossWeight), 2)}</td>
+                                  <td className="px-4 py-3 text-right font-mono font-medium text-slate-200">{formatNumber(Number(bar.fineWeight), 4)}</td>
                                   <td className="text-center">
                                     <StatusBadge status={bar.status} size="sm" />
                                   </td>

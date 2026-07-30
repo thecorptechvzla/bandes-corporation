@@ -83,9 +83,9 @@ export function ActiveProcessesMatrix({ groupedProcesses, clients, lotBarsMap, p
                                 <span>{lb.length} barra{lb.length !== 1 ? 's' : ''}</span>
                               </div>
                               <div className="flex items-center gap-3 text-[9px] font-mono">
-                                <span className="text-[var(--pm-text-dim)]">Peso Bruto: <strong className="text-[var(--pm-text-primary)]">{formatNumber(lotGross, 2)} g</strong></span>
-                                <span>Peso Fino <strong className="text-[var(--pm-accent-gold)]">{formatNumber(lotFA, 4)} g</strong></span>
-                                {lot.recovered && <span>R: <strong className="text-[var(--pm-accent-emerald)]">{formatNumber(Number(lot.recovered), 4)} g</strong></span>}
+                                <span className="text-[var(--pm-text-dim)]">Peso Bruto: <span className="font-medium text-slate-200">{formatNumber(lotGross, 2)} g</span></span>
+                                <span>Peso Fino <span className="font-medium text-[var(--pm-accent-gold)]">{formatNumber(lotFA, 4)} g</span></span>
+                                {lot.recovered && <span>R: <span className="font-medium text-[var(--pm-accent-emerald)]">{formatNumber(Number(lot.recovered), 4)} g</span></span>}
                               </div>
                             </div>
                           );

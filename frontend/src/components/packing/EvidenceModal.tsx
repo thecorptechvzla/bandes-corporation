@@ -78,11 +78,11 @@ export function EvidenceModal({ barId, bars, packingBars, spValues, barPhotoUrls
             <div className="mt-2 space-y-1 text-center">
               <div>
                 <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block">Bruto</span>
-                <span className="text-sm font-mono font-bold text-[var(--pm-text-primary)]">{formatNumber(spGross, 2)} g</span>
+                <span className="text-sm font-mono font-medium text-slate-200">{formatNumber(spGross, 2)} g</span>
               </div>
               <div>
                 <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block">Ley Au</span>
-                <span className="text-sm font-mono font-bold text-[var(--pm-text-primary)]">{formatNumber(spPurity, 1)} ‰</span>
+                <span className="text-sm font-mono font-medium text-slate-200">{formatNumber(spPurity, 1)} ‰</span>
               </div>
             </div>
           </div>
@@ -91,11 +91,11 @@ export function EvidenceModal({ barId, bars, packingBars, spValues, barPhotoUrls
             <div className="mt-2 space-y-1 text-center">
               <div>
                 <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block">Bruto</span>
-                <span className="text-sm font-mono font-bold text-[var(--pm-accent-cyan)]">{formatNumber(validatedGross, 2)} g</span>
+                <span className="text-sm font-mono font-medium text-[var(--pm-accent-cyan)]">{formatNumber(validatedGross, 2)} g</span>
               </div>
               <div>
                 <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block">Ley Au</span>
-                <span className="text-sm font-mono font-bold text-[var(--pm-accent-cyan)]">{formatNumber(validatedPurity, 1)} ‰</span>
+                <span className="text-sm font-mono font-medium text-[var(--pm-accent-cyan)]">{formatNumber(validatedPurity, 1)} ‰</span>
               </div>
             </div>
           </div>
@@ -103,7 +103,7 @@ export function EvidenceModal({ barId, bars, packingBars, spValues, barPhotoUrls
 
         <div className="p-3 rounded-xl border border-[var(--pm-accent-gold)]/20 bg-[var(--pm-accent-gold)]/5">
           <span className="text-[8px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider block text-center">PESO FINO</span>
-          <span className="text-sm font-mono font-bold text-[var(--pm-accent-gold)] block text-center">{formatNumber(fa, 4)} g</span>
+          <span className="text-sm font-mono font-medium text-[var(--pm-accent-gold)] block text-center">{formatNumber(fa, 4)} g</span>
         </div>
 
         <button type="button" onClick={onClose}

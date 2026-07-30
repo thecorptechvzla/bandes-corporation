@@ -21,17 +21,13 @@ export default function V2ProcesosPage() {
   const { data: lots = [] } = useLots();
   const createProcess = useCreateProcess();
 
-  const [operator, setOperator] = useState('');
-  const [moldCode, setMoldCode] = useState('');
-  const [castingTemp, setCastingTemp] = useState('1064');
-  const [selectedClientId, setSelectedClientId] = useState('');
+  const [selectedClientIds, setSelectedClientIds] = useState<string[]>([]);
   const [selectedBarIds, setSelectedBarIds] = useState<string[]>([]);
   const [formError, setFormError] = useState('');
   const [formSuccess, setFormSuccess] = useState('');
   const [creating, setCreating] = useState(false);
 
   const [showCompleted, setShowCompleted] = useState(false);
-
   const [activeLot, setActiveLot] = useState<Lot | null>(null);
 
   const uploadPhoto = useCallback(async (blob: Blob): Promise<string> => {
@@ -109,42 +105,53 @@ export default function V2ProcesosPage() {
     [selectedProcessId, processLotsMap],
   );
 
-  const clientFilteredBars = useMemo(() => {
-    if (!selectedClientId) return availableBars;
-    return availableBars.filter(b => b.clientId === selectedClientId);
-  }, [availableBars, selectedClientId]);
+  const handleToggleClient = (clientId: string) => {
+    setSelectedClientIds(prev => {
+      const next = prev.includes(clientId)
+        ? prev.filter(id => id !== clientId)
+        : [...prev, clientId];
+      // Remove bars of deselected clients
+      if (prev.includes(clientId)) {
+        setSelectedBarIds(ids =>
+          ids.filter(id => {
+            const bar = bars.find(b => b.id === id);
+            return bar && next.includes(bar.clientId);
+          }),
+        );
+      }
+      return next;
+    });
+  };
 
-  const clientsWithAvailableBars = useMemo(
-    () => clients.filter(c => availableBars.some(b => b.clientId === c.id)),
-    [clients, availableBars],
-  );
+  const handleSelectAllClients = () => {
+    const clientsWithBars = clients.filter(c => availableBars.some(b => b.clientId === c.id));
+    const allSelected = selectedClientIds.length === clientsWithBars.length;
+    if (allSelected) {
+      setSelectedClientIds([]);
+      setSelectedBarIds([]);
+    } else {
+      setSelectedClientIds(clientsWithBars.map(c => c.id));
+    }
+  };
 
-  const selectedMetrics = useMemo(() => {
-    const sel = bars.filter(b => selectedBarIds.includes(b.id));
-    return {
-      count: sel.length,
-      gross: sel.reduce((s, b) => s + Number(b.grossWeight), 0),
-      fa: sel.reduce((s, b) => s + Number(b.fineWeight), 0),
-    };
-  }, [bars, selectedBarIds]);
-
-  const handleBarToggle = (id: string) => {
+  const handleBarToggle = (barId: string) => {
     setSelectedBarIds(prev =>
-      prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id],
+      prev.includes(barId) ? prev.filter(id => id !== barId) : [...prev, barId],
     );
   };
 
-  const handleClientChange = (cId: string) => {
-    setSelectedClientId(cId);
-    setSelectedBarIds([]);
-  };
-
-  const handleSelectAllBars = () => {
-    setSelectedBarIds(
-      selectedBarIds.length === clientFilteredBars.length
-        ? []
-        : clientFilteredBars.map(b => b.id),
-    );
+  const handleSelectAllBarsOfClient = (clientId: string) => {
+    const clientBarIds = availableBars
+      .filter(b => b.clientId === clientId)
+      .map(b => b.id);
+    const allSelected = clientBarIds.every(id => selectedBarIds.includes(id));
+    setSelectedBarIds(prev => {
+      if (allSelected) {
+        return prev.filter(id => !clientBarIds.includes(id));
+      } else {
+        return [...new Set([...prev, ...clientBarIds])];
+      }
+    });
   };
 
   const handleStartSmelting = async (e: React.FormEvent) => {
@@ -156,37 +163,35 @@ export default function V2ProcesosPage() {
       setFormError('Seleccione al menos una barra disponible.');
       return;
     }
-    if (!moldCode.trim()) {
-      setFormError('Asigne un código de crisol/molde.');
-      return;
-    }
-    if (!operator.trim()) {
-      setFormError('Registre el nombre del operador.');
-      return;
-    }
 
-    const selected = bars.filter(b => selectedBarIds.includes(b.id));
-    const uniqueClients = [...new Set(selected.map(b => b.clientId))];
-    if (uniqueClients.length > 1) {
-      setFormError('No se pueden fundir juntos oros de distintos clientes.');
-      return;
-    }
+    // Group selected bars by client
+    const selectedBars = bars.filter(b => selectedBarIds.includes(b.id));
+    const barsByClient: Record<string, string[]> = {};
+    selectedBars.forEach(b => {
+      if (!barsByClient[b.clientId]) barsByClient[b.clientId] = [];
+      barsByClient[b.clientId].push(b.id);
+    });
 
+    const clientIds = Object.keys(barsByClient);
     setCreating(true);
     try {
-      const clientId = uniqueClients[0];
-      await createProcess.mutateAsync({
-        clientId,
-        barIds: selectedBarIds,
-        operator: operator.trim(),
-        moldCode: moldCode.trim(),
-        castingTemp: parseInt(castingTemp) || 1064,
-      });
-      setFormSuccess(`Fundición iniciada — ${selectedBarIds.length} barra(s) en crisol.`);
+      // Create one process per client (API constraint: single clientId per process)
+      const results = await Promise.all(
+        clientIds.map(clientId =>
+          createProcess.mutateAsync({
+            clientId,
+            barIds: barsByClient[clientId],
+            operator: 'SISTEMA',
+            moldCode: `FND-${Date.now().toString(36).toUpperCase()}`,
+          }),
+        ),
+      );
+      const processCount = results.length;
+      setFormSuccess(
+        `Fundición iniciada — ${selectedBarIds.length} barra(s) en ${processCount} proceso(s).`,
+      );
       setSelectedBarIds([]);
-      setMoldCode('');
-      setOperator('');
-      setCastingTemp('1064');
+      setSelectedClientIds([]);
     } catch (err: any) {
       setFormError(err?.response?.data?.message || err?.message || 'Error al iniciar la fundición.');
     } finally {
@@ -224,25 +229,19 @@ export default function V2ProcesosPage() {
 
       {/* Split pane */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
-        {/* ═══ LEFT: Form ═══ */}
+        {/* ═══ LEFT: Multi-Provider Selection ═══ */}
         <SmeltingConfigForm
-          clients={clientsWithAvailableBars}
-          clientFilteredBars={clientFilteredBars}
-          selectedClientId={selectedClientId}
+          clients={clients}
+          bars={bars}
+          selectedClientIds={selectedClientIds}
           selectedBarIds={selectedBarIds}
-          selectedMetrics={selectedMetrics}
-          operator={operator}
-          moldCode={moldCode}
-          castingTemp={castingTemp}
           formError={formError}
           formSuccess={formSuccess}
           creating={creating}
-          onOperatorChange={setOperator}
-          onMoldCodeChange={setMoldCode}
-          onCastingTempChange={setCastingTemp}
-          onClientChange={handleClientChange}
+          onToggleClient={handleToggleClient}
+          onSelectAllClients={handleSelectAllClients}
           onBarToggle={handleBarToggle}
-          onSelectAllBars={handleSelectAllBars}
+          onSelectAllBarsOfClient={handleSelectAllBarsOfClient}
           onSubmit={handleStartSmelting}
         />
 

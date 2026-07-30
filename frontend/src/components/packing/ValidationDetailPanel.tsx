@@ -103,13 +103,13 @@ export function ValidationDetailPanel({
             <table className="w-full text-left text-[10px] font-mono">
               <thead>
                 <tr className="border-b border-[var(--pm-border)]/20 text-[9px] text-[var(--pm-text-dim)] uppercase tracking-wider">
-                  <th className="py-2.5 px-3 text-center min-w-[120px]">Código</th>
-                  <th className="py-2.5 px-3 text-right">Según Packing (SP)</th>
-                  <th className="py-2.5 px-3 text-right min-w-[110px]">Peso Físico (g)</th>
-                  <th className="py-2.5 px-3 text-right">Ley SP (‰)</th>
-                  <th className="py-2.5 px-3 text-right min-w-[100px]">Ley Física (‰)</th>
-                  <th className="py-2.5 px-3 text-center">Estado</th>
-                  <th className="py-2.5 px-3 text-center w-12">Acción</th>
+                  <th className="px-4 py-3 text-center min-w-[120px]">Código</th>
+                  <th className="px-4 py-3 text-right">Según Packing (SP)</th>
+                  <th className="px-4 py-3 text-right min-w-[110px]">Peso Físico (g)</th>
+                  <th className="px-4 py-3 text-right">Ley SP (‰)</th>
+                  <th className="px-4 py-3 text-right min-w-[100px]">Ley Física (‰)</th>
+                  <th className="px-4 py-3 text-center">Estado</th>
+                  <th className="px-4 py-3 text-center w-12">Acción</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[var(--pm-border)]/20">
@@ -129,11 +129,11 @@ export function ValidationDetailPanel({
                         ${bar.status === 'IN_STOCK' || bar.status === 'COMPLETADO' ? 'hover:bg-[var(--pm-accent-emerald)]/5' : ''}
                         ${isValidated ? 'opacity-70' : ''}
                       `}>
-                      <td className="py-2.5 px-3 text-center font-mono font-bold text-[var(--pm-accent-gold)] tracking-wider text-[11px]">
+                      <td className="px-4 py-3 text-center font-mono font-bold text-[var(--pm-accent-gold)] tracking-wider text-[11px]">
                         {bar.barNumber}
                       </td>
-                      <td className="py-2.5 px-3 text-right font-mono text-[var(--pm-text-primary)]">{formatNumber(origGross, 2)}</td>
-                      <td className="py-2.5 px-3 text-right">
+                      <td className="px-4 py-3 text-right font-mono font-medium text-slate-200">{formatNumber(origGross, 2)}</td>
+                      <td className="px-4 py-3 text-right">
                         {isPorValidar ? (
                           <div className="flex items-center justify-end gap-1.5">
                             <Lock className="w-3 h-3 text-[var(--pm-text-dim)]/30" />
@@ -142,11 +142,11 @@ export function ValidationDetailPanel({
                             </span>
                           </div>
                         ) : (
-                          <span className="text-[var(--pm-text-dim)]">{formatNumber(isValidated ? Number(edit?.grossWeight ?? origGross) : origGross, 2)}</span>
+                          <span className="font-mono font-medium text-slate-200">{formatNumber(isValidated ? Number(edit?.grossWeight ?? origGross) : origGross, 2)}</span>
                         )}
                       </td>
-                      <td className="py-2.5 px-3 text-right font-mono text-[var(--pm-text-primary)]">{formatNumber(origPurity, 1)}</td>
-                      <td className="py-2.5 px-3 text-right">
+                      <td className="px-4 py-3 text-right font-mono font-medium text-slate-200">{formatNumber(origPurity, 1)}</td>
+                      <td className="px-4 py-3 text-right">
                         {isPorValidar ? (
                           <div className="flex items-center justify-end gap-1.5">
                             <Lock className="w-3 h-3 text-[var(--pm-text-dim)]/30" />
@@ -155,13 +155,13 @@ export function ValidationDetailPanel({
                             </span>
                           </div>
                         ) : (
-                          <span className="text-[var(--pm-text-dim)]">{formatNumber(isValidated ? Number(edit?.purity ?? origPurity) : origPurity, 1)}</span>
+                          <span className="font-mono font-medium text-slate-200">{formatNumber(isValidated ? Number(edit?.purity ?? origPurity) : origPurity, 1)}</span>
                         )}
                       </td>
-                      <td className="py-2.5 px-3 text-center">
+                      <td className="px-4 py-3 text-center">
                         <StatusBadge status={bar.status} size="sm" />
                       </td>
-                      <td className="py-2.5 px-3 text-center">
+                      <td className="px-4 py-3 text-center">
                         {isPorValidar ? (
                           <Shield className="w-3.5 h-3.5 text-[var(--pm-accent-gold)]/40 mx-auto" />
                         ) : isValidated ? (

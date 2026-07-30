@@ -201,11 +201,11 @@ export function BarDetailModal({
               <div className="mt-2 space-y-1 text-center">
                 <div>
                   <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block">Bruto</span>
-                  <span className="text-sm font-mono font-bold text-[var(--pm-text-primary)]">{formatNumber(spGross, 2)} g</span>
+                  <span className="text-sm font-mono font-medium text-slate-200">{formatNumber(spGross, 2)} g</span>
                 </div>
                 <div>
                   <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block">Ley Au</span>
-                  <span className="text-sm font-mono font-bold text-[var(--pm-text-primary)]">{formatNumber(spPurity, 1)} ‰</span>
+                  <span className="text-sm font-mono font-medium text-slate-200">{formatNumber(spPurity, 1)} ‰</span>
                 </div>
               </div>
             </div>
@@ -227,7 +227,7 @@ export function BarDetailModal({
                       className="w-full bg-[var(--pm-bg-deepest)] border-2 border-[var(--pm-accent-gold)]/30 rounded-lg px-2 py-1 text-sm font-mono font-bold text-[var(--pm-accent-gold)] text-center focus:outline-none focus:border-[var(--pm-accent-gold)] transition-all"
                     />
                   ) : (
-                    <span className="text-sm font-mono font-bold text-[var(--pm-accent-cyan)]">{formatNumber(displayGross, 2)} g</span>
+                    <span className="text-sm font-mono font-medium text-[var(--pm-accent-cyan)]">{formatNumber(displayGross, 2)} g</span>
                   )}
                 </div>
                 <div>
@@ -243,7 +243,7 @@ export function BarDetailModal({
                       className="w-full bg-[var(--pm-bg-deepest)] border-2 border-[var(--pm-accent-gold)]/30 rounded-lg px-2 py-1 text-sm font-mono font-bold text-[var(--pm-accent-gold)] text-center focus:outline-none focus:border-[var(--pm-accent-gold)] transition-all"
                     />
                   ) : (
-                    <span className="text-sm font-mono font-bold text-[var(--pm-accent-cyan)]">{formatNumber(displayPurity, 1)} ‰</span>
+                    <span className="text-sm font-mono font-medium text-[var(--pm-accent-cyan)]">{formatNumber(displayPurity, 1)} ‰</span>
                   )}
                 </div>
               </div>
