@@ -140,7 +140,7 @@ body {
    ═══════════════════════════════════════════════════════ */
 
 .hud-sidebar {
-  width: 220px;
+  width: 255px;
   grid-row: 1 / -1;
   background-color: var(--hud-bg-base);
   border-right: 1px solid var(--hud-border);
@@ -150,10 +150,10 @@ body {
 .nav-item {
   display: flex;
   align-items: center;
-  gap: 0.625rem;
-  padding: 0.5rem 0.75rem;
-  border-radius: 12px;
-  font-size: 11px;
+  gap: 0.69rem;
+  padding: 0.875rem 1.125rem;
+  border-radius: 14px;
+  font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;

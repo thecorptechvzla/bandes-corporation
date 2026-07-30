@@ -144,7 +144,7 @@ export default function RootLayout({
 
               {/* ═══ MOBILE DRAWER ═══ */}
               <aside className={`
-                fixed inset-y-0 left-0 z-50 flex flex-col w-72
+                fixed inset-y-0 left-0 z-50 flex flex-col w-[300px]
                 bg-[var(--hud-bg-base)] border-r border-[var(--hud-border)]
                 transition-transform duration-300 ease-in-out
                 lg:hidden
