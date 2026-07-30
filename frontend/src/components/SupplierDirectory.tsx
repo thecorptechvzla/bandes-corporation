@@ -91,8 +91,8 @@ export function SupplierDirectory({
     return (
       <div className="flex items-center justify-center py-16">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-6 h-6 border-2 border-[var(--pm-accent-gold)]/30 border-t-[var(--pm-accent-gold)] animate-spin rounded-full" />
-          <span className="text-xs text-[var(--pm-text-dim)]">Cargando barras...</span>
+          <div className="w-6 h-6 border-2 border-[var(--hud-accent-gold)]/30 border-t-[var(--hud-accent-gold)] animate-spin rounded-full" />
+          <span className="text-xs text-[var(--hud-text-dim)]">Cargando barras...</span>
         </div>
       </div>
     );
@@ -101,18 +101,18 @@ export function SupplierDirectory({
   return (
     <div className="flex flex-col min-h-0 flex-1">
       {showSearch && (
-        <div className="px-4 sm:px-5 py-3 border-b border-[var(--pm-border)]/10 flex items-center justify-end gap-2">
+        <div className="px-4 sm:px-5 py-3 border-b border-[var(--hud-border)]/10 flex items-center justify-end gap-2">
           <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[var(--pm-text-dim)]" />
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[var(--hud-text-dim)]" />
             <input
               type="text"
               value={searchCode}
               onChange={(e) => { setSearchCode(e.target.value); setCurrentPage(1); }}
               placeholder="Buscar por código..."
-              className="w-36 pl-7 pr-2 py-1.5 bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] text-[var(--pm-text-dim)] text-[10px] placeholder:text-[var(--pm-text-dim)]/30 outline-none transition-all focus:border-[var(--pm-accent-gold)]/40 rounded-lg"
+              className="w-36 pl-7 pr-2 py-1.5 bg-[var(--hud-bg-deepest)] border border-[var(--hud-border)] text-[var(--hud-text-dim)] text-[10px] placeholder:text-[var(--hud-text-dim)]/30 outline-none transition-all focus:border-[var(--hud-accent-gold)]/40 rounded-lg"
             />
           </div>
-          <span className="text-[10px] font-mono text-[var(--pm-text-dim)] bg-[var(--pm-bg-deepest)]/50 px-2 py-0.5 border border-[var(--pm-border)] rounded">
+          <span className="text-[10px] font-mono text-[var(--hud-text-dim)] bg-[var(--hud-bg-deepest)]/50 px-2 py-0.5 border border-[var(--hud-border)] rounded">
             {String(visibleClients.length).padStart(2, '0')}
           </span>
         </div>
@@ -138,32 +138,32 @@ export function SupplierDirectory({
               <Fragment key={client.id}>
                 <div className="px-4 sm:px-5 pt-4 sm:pt-5 first:pt-0">
                   <div
-                    className="glass-panel cursor-pointer active:scale-[0.98] transition-all hover:bg-[var(--pm-accent-gold)]/[0.04] rounded-xl border border-[var(--pm-border)]/40 overflow-hidden"
+                    className="glass-panel cursor-pointer active:scale-[0.98] transition-all hover:bg-[var(--hud-accent-gold)]/[0.04] rounded-xl border border-[var(--hud-border)]/40 overflow-hidden"
                     onClick={() =>
                       setExpandedSupplierId((prev) => (prev === client.id ? null : client.id))
                     }
                   >
                     <div className="p-4 flex items-center justify-between gap-3">
                       <div className="flex items-center gap-3 min-w-0">
-                        <Building2 className="w-5 h-5 text-[var(--pm-accent-gold)] flex-shrink-0" />
+                        <Building2 className="w-5 h-5 text-[var(--hud-accent-gold)] flex-shrink-0" />
                         <div className="min-w-0">
-                          <p className="text-sm font-bold text-[var(--pm-text-primary)] uppercase tracking-wider truncate">
+                          <p className="text-sm font-bold text-[var(--hud-text-primary)] uppercase tracking-wider truncate">
                             {client.name}
                           </p>
-                          <p className="text-[10px] text-[var(--pm-text-dim)] font-mono truncate">
+                          <p className="text-[10px] text-[var(--hud-text-dim)] font-mono truncate">
                             RIF: {client.rif}
                           </p>
                         </div>
                       </div>
                       <div className="flex items-center gap-3 flex-shrink-0">
-                        <span className="text-[10px] font-mono text-[var(--pm-text-dim)] whitespace-nowrap">
+                        <span className="text-[10px] font-mono text-[var(--hud-text-dim)] whitespace-nowrap">
                           Bruto: {formatNumber(clientTotals.grossWeight, 2)} g · Fino: {formatNumber(clientTotals.fa, 2)} g
                         </span>
-                        <span className="text-[10px] font-mono text-[var(--pm-text-dim)] bg-[var(--pm-bg-deepest)]/50 px-2 py-0.5 border border-[var(--pm-border)] rounded whitespace-nowrap">
+                        <span className="text-[10px] font-mono text-[var(--hud-text-dim)] bg-[var(--hud-bg-deepest)]/50 px-2 py-0.5 border border-[var(--hud-border)] rounded whitespace-nowrap">
                           {clientBars.length} BARRAS
                         </span>
                         <ChevronDown
-                          className={`w-4 h-4 text-[var(--pm-text-dim)] transition-transform flex-shrink-0 ${
+                          className={`w-4 h-4 text-[var(--hud-text-dim)] transition-transform flex-shrink-0 ${
                             expandedSupplierId === client.id ? 'rotate-180' : ''
                           }`}
                         />
@@ -176,11 +176,11 @@ export function SupplierDirectory({
                   {expandedSupplierId === client.id && (
                     <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }}
                       className="px-4 sm:px-5 pb-4 sm:pb-5 overflow-hidden">
-                      <div className="overflow-x-auto rounded-xl border border-[var(--pm-border)]/20">
+                      <div className="overflow-x-auto rounded-xl border border-[var(--hud-border)]/20">
                         <table className="w-full table-fixed border-collapse text-xs font-sans">
                           <thead>
                             <tr>
-                              <th className="w-[15%] text-left px-4 py-3 bg-[var(--pm-bg-primary)]">Código</th>
+                              <th className="w-[15%] text-left px-4 py-3 bg-[var(--hud-bg-primary)]">Código</th>
                               {purityFirst && <th className="w-[15%] text-right px-4 py-3">Ley Au</th>}
                               <th className="w-[25%] text-right px-4 py-3">Peso Bruto</th>
                               {!purityFirst && <th className="w-[15%] text-right px-4 py-3">Ley Au</th>}
@@ -193,18 +193,18 @@ export function SupplierDirectory({
                               return (
                                 <tr key={bar.id}
                                   onClick={() => onBarClick?.(bar.id)}
-                                  className={`${idx % 2 === 1 ? 'bg-[var(--pm-bg-deepest)]/30' : ''} hover:bg-[var(--pm-accent-gold)]/[0.03] transition-colors${onBarClick ? ' cursor-pointer' : ''}`}>
-                                  <td className="text-left px-4 py-3 sticky left-0 bg-[var(--pm-bg-primary)] font-semibold text-[var(--pm-accent-gold)]">
+                                  className={`${idx % 2 === 1 ? 'bg-[var(--hud-bg-deepest)]/30' : ''} hover:bg-[var(--hud-accent-gold)]/[0.03] transition-colors${onBarClick ? ' cursor-pointer' : ''}`}>
+                                  <td className="text-left px-4 py-3 sticky left-0 bg-[var(--hud-bg-primary)] font-semibold text-[var(--hud-accent-gold)]">
                                     <span className="text-[11px]">{bar.barNumber}</span>
                                   </td>
                                   {purityFirst && (
-                                    <td className="text-right px-4 py-3 font-mono text-[var(--pm-text-primary)]">{formatNumber(Number(bar.purity), 2)}</td>
+                                    <td className="text-right px-4 py-3 font-mono text-[var(--hud-text-primary)]">{formatNumber(Number(bar.purity), 2)}</td>
                                   )}
-                                  <td className="text-right px-4 py-3 font-mono text-[var(--pm-text-primary)]">{formatNumber(Number(bar.grossWeight), 2)}</td>
+                                  <td className="text-right px-4 py-3 font-mono text-[var(--hud-text-primary)]">{formatNumber(Number(bar.grossWeight), 2)}</td>
                                   {!purityFirst && (
-                                    <td className="text-right px-4 py-3 font-mono text-[var(--pm-text-primary)]">{formatNumber(Number(bar.purity), 2)}</td>
+                                    <td className="text-right px-4 py-3 font-mono text-[var(--hud-text-primary)]">{formatNumber(Number(bar.purity), 2)}</td>
                                   )}
-                                  <td className="text-right px-4 py-3 font-mono text-[var(--pm-accent-gold)]">{formatNumber(Number(bar.fineWeight), 2)}</td>
+                                  <td className="text-right px-4 py-3 font-mono text-[var(--hud-accent-gold)]">{formatNumber(Number(bar.fineWeight), 2)}</td>
                                   <td className="text-right px-4 py-3 whitespace-nowrap">
                                     <StatusBadge status={bar.status} size="sm" />
                                   </td>
@@ -214,14 +214,14 @@ export function SupplierDirectory({
                           </tbody>
                           {clientBars.length > 0 && (
                             <tfoot>
-                              <tr className="border-t border-[var(--pm-border)] bg-[var(--pm-bg-deepest)]/50">
-                                <td className="sticky left-0 bg-[var(--pm-bg-deepest)]/50 px-3 py-2 text-[9px] font-bold text-[var(--pm-text-dim)] uppercase tracking-widest">
+                              <tr className="border-t border-[var(--hud-border)] bg-[var(--hud-bg-deepest)]/50">
+                                <td className="sticky left-0 bg-[var(--hud-bg-deepest)]/50 px-3 py-2 text-[9px] font-bold text-[var(--hud-text-dim)] uppercase tracking-widest">
                                   Total {client.name}
                                 </td>
                                 {purityFirst && <td />}
-                                <td className="text-right px-4 py-3 font-mono text-xs text-[var(--pm-text-primary)]">{formatNumber(clientTotals.grossWeight, 2)}</td>
+                                <td className="text-right px-4 py-3 font-mono text-xs text-[var(--hud-text-primary)]">{formatNumber(clientTotals.grossWeight, 2)}</td>
                                 {!purityFirst && <td />}
-                                <td className="text-right px-4 py-3 font-mono text-xs text-[var(--pm-accent-gold)]">{formatNumber(clientTotals.fa, 2)}</td>
+                                <td className="text-right px-4 py-3 font-mono text-xs text-[var(--hud-accent-gold)]">{formatNumber(clientTotals.fa, 2)}</td>
                                 <td colSpan={1} />
                               </tr>
                             </tfoot>
@@ -230,7 +230,7 @@ export function SupplierDirectory({
                       </div>
                       {barTotalPages > 1 && (
                         <div className="flex items-center justify-center gap-3 pt-2">
-                          <span className="text-[9px] font-mono text-[var(--pm-text-dim)]">
+                          <span className="text-[9px] font-mono text-[var(--hud-text-dim)]">
                             Página {safeBarPage} de {barTotalPages}
                           </span>
                           <div className="flex items-center gap-1">
@@ -242,7 +242,7 @@ export function SupplierDirectory({
                                 }))
                               }
                               disabled={safeBarPage <= 1}
-                              className="p-1 text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] disabled:text-[var(--pm-text-dim)]/30 disabled:cursor-not-allowed transition-all"
+                              className="p-1 text-[var(--hud-text-dim)] hover:text-[var(--hud-text-primary)] disabled:text-[var(--hud-text-dim)]/30 disabled:cursor-not-allowed transition-all"
                             >
                               <ChevronLeft className="w-3 h-3" />
                             </button>
@@ -254,7 +254,7 @@ export function SupplierDirectory({
                                 }))
                               }
                               disabled={safeBarPage >= barTotalPages}
-                              className="p-1 text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] disabled:text-[var(--pm-text-dim)]/30 disabled:cursor-not-allowed transition-all"
+                              className="p-1 text-[var(--hud-text-dim)] hover:text-[var(--hud-text-primary)] disabled:text-[var(--hud-text-dim)]/30 disabled:cursor-not-allowed transition-all"
                             >
                               <ChevronRight className="w-3 h-3" />
                             </button>
@@ -270,52 +270,52 @@ export function SupplierDirectory({
         </div>
       ) : (
         <div className="flex-1 flex items-center justify-center">
-          <p className="text-sm text-[var(--pm-text-dim)]">No hay barras registradas.</p>
+          <p className="text-sm text-[var(--hud-text-dim)]">No hay barras registradas.</p>
         </div>
       )}
 
       {visibleClients.length > 0 && (
-        <div className="flex-shrink-0 border-t border-[var(--pm-accent-gold)]/30 bg-[var(--pm-bg-deepest)]">
+        <div className="flex-shrink-0 border-t border-[var(--hud-accent-gold)]/30 bg-[var(--hud-bg-deepest)]">
           <div className="hidden sm:flex items-center justify-between px-4 sm:px-5 py-3 sm:py-3.5">
-            <span className="text-xs font-bold text-[var(--pm-text-primary)] uppercase tracking-widest">
+            <span className="text-xs font-bold text-[var(--hud-text-primary)] uppercase tracking-widest">
               GRAN TOTAL
             </span>
             <div className="flex items-center gap-5">
-              <span className="text-xs font-mono text-[var(--pm-text-dim)]">
+              <span className="text-xs font-mono text-[var(--hud-text-dim)]">
                 Peso Bruto:{' '}
-                <span className="text-[var(--pm-accent-gold)] font-bold text-sm">
+                <span className="text-[var(--hud-accent-gold)] font-bold text-sm">
                   {formatNumber(grandTotal.grossWeight, 2)}
                 </span>{' '}
-                <span className="text-[10px] text-[var(--pm-text-dim)]">g</span>
+                <span className="text-[10px] text-[var(--hud-text-dim)]">g</span>
               </span>
-              <span className="text-[10px] text-[var(--pm-text-dim)]/30">|</span>
-              <span className="text-xs font-mono text-[var(--pm-text-dim)]">
+              <span className="text-[10px] text-[var(--hud-text-dim)]/30">|</span>
+              <span className="text-xs font-mono text-[var(--hud-text-dim)]">
                 Peso Fino:{' '}
-                <span className="text-[var(--pm-accent-gold)] font-bold text-sm">
+                <span className="text-[var(--hud-accent-gold)] font-bold text-sm">
                   {formatNumber(grandTotal.fa, 2)}
                 </span>{' '}
-                <span className="text-[10px] text-[var(--pm-text-dim)]">g</span>
+                <span className="text-[10px] text-[var(--hud-text-dim)]">g</span>
               </span>
             </div>
           </div>
 
           <div className="sm:hidden px-4 py-3">
-            <div className="text-[10px] font-bold text-[var(--pm-text-primary)] uppercase tracking-widest mb-2">
+            <div className="text-[10px] font-bold text-[var(--hud-text-primary)] uppercase tracking-widest mb-2">
               GRAN TOTAL
             </div>
             <div className="grid grid-cols-2 gap-x-4 gap-y-2">
               <div>
-                <div className="text-[9px] text-[var(--pm-text-dim)] uppercase tracking-wider">Peso Bruto</div>
-                <div className="text-[13px] font-mono font-bold text-[var(--pm-accent-gold)] leading-tight whitespace-nowrap">
+                <div className="text-[9px] text-[var(--hud-text-dim)] uppercase tracking-wider">Peso Bruto</div>
+                <div className="text-[13px] font-mono font-bold text-[var(--hud-accent-gold)] leading-tight whitespace-nowrap">
                   {formatNumber(grandTotal.grossWeight, 2)}{' '}
-                  <span className="text-[10px] font-normal text-[var(--pm-text-dim)]">g</span>
+                  <span className="text-[10px] font-normal text-[var(--hud-text-dim)]">g</span>
                 </div>
               </div>
               <div>
-                <div className="text-[9px] text-[var(--pm-text-dim)] uppercase tracking-wider">Peso Fino</div>
-                <div className="text-[13px] font-mono font-bold text-[var(--pm-accent-gold)] leading-tight whitespace-nowrap">
+                <div className="text-[9px] text-[var(--hud-text-dim)] uppercase tracking-wider">Peso Fino</div>
+                <div className="text-[13px] font-mono font-bold text-[var(--hud-accent-gold)] leading-tight whitespace-nowrap">
                   {formatNumber(grandTotal.fa, 2)}{' '}
-                  <span className="text-[10px] font-normal text-[var(--pm-text-dim)]">g</span>
+                  <span className="text-[10px] font-normal text-[var(--hud-text-dim)]">g</span>
                 </div>
               </div>
             </div>
@@ -324,22 +324,22 @@ export function SupplierDirectory({
       )}
 
       {supplierTotalPages > 1 && (
-        <div className="px-4 sm:px-5 py-3 border-t border-[var(--pm-border)]/10 flex items-center justify-center gap-4">
-          <span className="text-[10px] font-mono text-[var(--pm-text-dim)]">
+        <div className="px-4 sm:px-5 py-3 border-t border-[var(--hud-border)]/10 flex items-center justify-center gap-4">
+          <span className="text-[10px] font-mono text-[var(--hud-text-dim)]">
             Página {safeSupplierPage} de {supplierTotalPages}
           </span>
           <div className="flex items-center gap-1">
             <button
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               disabled={safeSupplierPage <= 1}
-              className="p-1.5 text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] disabled:text-[var(--pm-text-dim)]/30 disabled:cursor-not-allowed transition-all"
+              className="p-1.5 text-[var(--hud-text-dim)] hover:text-[var(--hud-text-primary)] disabled:text-[var(--hud-text-dim)]/30 disabled:cursor-not-allowed transition-all"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
             <button
               onClick={() => setCurrentPage((p) => Math.min(supplierTotalPages, p + 1))}
               disabled={safeSupplierPage >= supplierTotalPages}
-              className="p-1.5 text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] disabled:text-[var(--pm-text-dim)]/30 disabled:cursor-not-allowed transition-all"
+              className="p-1.5 text-[var(--hud-text-dim)] hover:text-[var(--hud-text-primary)] disabled:text-[var(--hud-text-dim)]/30 disabled:cursor-not-allowed transition-all"
             >
               <ChevronRight className="w-4 h-4" />
             </button>

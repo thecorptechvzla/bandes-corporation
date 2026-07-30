@@ -62,18 +62,18 @@ export function SupplierDirectoryModal({
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.94, opacity: 0 }}
             transition={springTransition}
-            className="relative glass-panel w-full max-w-4xl h-[80vh] max-h-[800px] rounded-2xl border border-[var(--pm-border)] flex flex-col overflow-hidden"
+            className="relative w-full max-w-4xl h-[80vh] max-h-[800px] rounded-xl border border-[rgba(30,41,59,0.5)] bg-[var(--hud-bg-card)] shadow-[0_4px_20px_rgba(0,0,0,0.6)] flex flex-col overflow-hidden"
           >
-            <div className="flex items-center justify-between p-4 sm:p-5 border-b border-[var(--pm-border)]">
+            <div className="flex items-center justify-between p-4 sm:p-5 border-b border-[var(--hud-border)]">
               <div className="flex items-center gap-3">
-                <Building2 className="w-5 h-5 text-[var(--pm-accent-gold)]" />
-                <h2 className="text-sm font-bold uppercase tracking-wider text-[var(--pm-text-primary)]">
+                <Building2 className="w-5 h-5 text-[var(--hud-accent-gold)]" />
+                <h2 className="text-sm font-bold uppercase tracking-wider text-[var(--hud-text-primary)]">
                   {title}
                 </h2>
               </div>
               <button
                 onClick={onClose}
-                className="w-7 h-7 rounded-lg bg-[var(--pm-bg-deepest)]/50 border border-[var(--pm-border)] flex items-center justify-center text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] transition-all"
+                className="w-7 h-7 rounded-lg bg-[var(--hud-bg-deepest)]/50 border border-[var(--hud-border)] flex items-center justify-center text-[var(--hud-text-dim)] hover:text-[var(--hud-text-primary)] transition-all"
               >
                 <X className="w-3.5 h-3.5" />
               </button>

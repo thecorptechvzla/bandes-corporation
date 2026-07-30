@@ -98,16 +98,16 @@ function AutocompleteSelect({
 
   return (
     <div ref={ref} className="relative">
-      <span className="text-[9px] font-mono font-bold tracking-[0.1em] uppercase text-[var(--pm-text-dim)] block mb-1">
+      <span className="text-[9px] font-mono font-bold tracking-[0.1em] uppercase text-[var(--hud-text-dim)] block mb-1">
         {label}
       </span>
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center gap-2 px-3 py-2 bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] rounded-lg text-[11px] font-mono text-left transition-colors hover:border-[var(--pm-accent-gold)]/30"
-      >
-        <Search className="w-3 h-3 text-[var(--pm-text-dim)] shrink-0" />
-        <span className={selected ? 'text-[var(--pm-text-primary)]' : 'text-[var(--pm-text-dim)]'}>
+          className="w-full flex items-center gap-2 px-3 py-2 bg-[var(--hud-bg-deepest)] border border-[var(--hud-border)] rounded-lg text-[11px] font-mono text-left transition-colors hover:border-[var(--hud-accent-gold)]/30"
+        >
+          <Search className="w-3 h-3 text-[var(--hud-text-dim)] shrink-0" />
+          <span className={selected ? 'text-[var(--hud-text-primary)]' : 'text-[var(--hud-text-dim)]'}>
           {selected ? selected.name : placeholder}
         </span>
       </button>
@@ -118,21 +118,21 @@ function AutocompleteSelect({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
             transition={{ duration: 0.12 }}
-            className="absolute top-full left-0 right-0 z-50 mt-1 bg-[var(--pm-bg-secondary)] border border-[var(--pm-border)] rounded-xl shadow-xl max-h-56 overflow-hidden flex flex-col"
+            className="absolute top-full left-0 right-0 z-50 mt-1 bg-[var(--hud-bg-card)] border border-[var(--hud-border)] rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.6)] max-h-56 overflow-hidden flex flex-col"
           >
-            <div className="p-2 border-b border-[var(--pm-border)]">
+            <div className="p-2 border-b border-[var(--hud-border)]">
               <input
                 autoFocus
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Buscar..."
-                className="w-full px-2.5 py-1.5 bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] rounded-lg text-[11px] font-mono text-[var(--pm-text-primary)] placeholder:text-[var(--pm-text-dim)]/30 outline-none"
+                className="w-full px-2.5 py-1.5 bg-[var(--hud-bg-deepest)] border border-[var(--hud-border)] rounded-lg text-[11px] font-mono text-[var(--hud-text-primary)] placeholder:text-[var(--hud-text-dim)]/30 outline-none"
               />
             </div>
             <div className="overflow-y-auto flex-1">
               {filtered.length === 0 ? (
-                <div className="p-3 text-[10px] text-[var(--pm-text-dim)] text-center">Sin resultados</div>
+                <div className="p-3 text-[10px] text-[var(--hud-text-dim)] text-center">Sin resultados</div>
               ) : (
                 filtered.map((item) => (
                   <button
@@ -143,8 +143,8 @@ function AutocompleteSelect({
                       setOpen(false);
                       setQuery('');
                     }}
-                    className={`w-full text-left px-3 py-2 text-[11px] font-mono transition-colors hover:bg-white/[0.04] ${
-                      item.id === value ? 'text-[var(--pm-accent-gold)]' : 'text-[var(--pm-text-primary)]'
+                    className={`w-full text-left px-3 py-2 text-[11px] font-mono transition-colors hover:bg-[var(--hud-bg-hover)] ${
+                      item.id === value ? 'text-[var(--hud-accent-gold)]' : 'text-[var(--hud-text-primary)]'
                     }`}
                   >
                     {item.name}
@@ -198,21 +198,21 @@ export default function DashboardFilters({
   return (
     <>
       {/* Floating pill */}
-      <div className="inline-flex flex-wrap items-center justify-center gap-4 bg-[var(--pm-bg-primary)]/40 backdrop-blur-md border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.4)] px-6 py-3 rounded-full max-md:rounded-2xl max-md:flex-col w-full md:w-fit mx-auto overflow-x-auto [&::-webkit-scrollbar]:hidden">
+      <div className="inline-flex flex-wrap items-center justify-center gap-4 bg-[var(--hud-bg-card)]/80 border border-[rgba(30,41,59,0.5)] shadow-[0_4px_20px_rgba(0,0,0,0.6)] px-6 py-3 rounded-full max-md:rounded-2xl max-md:flex-col w-full md:w-fit mx-auto overflow-x-auto [&::-webkit-scrollbar]:hidden">
         {/* Date inputs */}
         <div className="flex items-center gap-1.5 shrink-0">
           <input
             type="date"
             value={startDate}
             onChange={(e) => onChange({ startDate: e.target.value, endDate, supplierId, clientId })}
-            className="w-24 md:w-28 px-2 py-1 bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] rounded-lg text-[10px] font-mono text-[var(--pm-text-primary)] outline-none transition-colors focus:border-emerald-500/40 [color-scheme:dark]"
+            className="w-24 md:w-28 px-2 py-1 bg-[var(--hud-bg-deepest)] border border-[var(--hud-border)] rounded-lg text-[10px] font-mono text-[var(--hud-text-primary)] outline-none transition-colors focus:border-emerald-500/40 [color-scheme:dark]"
           />
-          <span className="text-[10px] text-[var(--pm-text-dim)]">—</span>
+          <span className="text-[10px] text-[var(--hud-text-dim)]">—</span>
           <input
             type="date"
             value={endDate}
             onChange={(e) => onChange({ startDate, endDate: e.target.value, supplierId, clientId })}
-            className="w-24 md:w-28 px-2 py-1 bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] rounded-lg text-[10px] font-mono text-[var(--pm-text-primary)] outline-none transition-colors focus:border-emerald-500/40 [color-scheme:dark]"
+            className="w-24 md:w-28 px-2 py-1 bg-[var(--hud-bg-deepest)] border border-[var(--hud-border)] rounded-lg text-[10px] font-mono text-[var(--hud-text-primary)] outline-none transition-colors focus:border-emerald-500/40 [color-scheme:dark]"
           />
         </div>
 
@@ -232,7 +232,7 @@ export default function DashboardFilters({
               className={`px-2.5 py-1 text-[9px] font-mono font-bold tracking-wider rounded-full transition-all ${
                 preset === val
                   ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20'
-                  : 'bg-transparent text-[var(--pm-text-dim)] border border-transparent hover:border-white/[0.06] hover:text-[var(--pm-text-primary)]'
+                  : 'bg-transparent text-[var(--hud-text-dim)] border border-transparent hover:border-[var(--hud-border)] hover:text-[var(--hud-text-primary)]'
               }`}
             >
               {lbl}
@@ -249,7 +249,7 @@ export default function DashboardFilters({
           className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[9px] font-mono font-bold tracking-wider transition-all shrink-0 ${
             supplierId || clientId
               ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20'
-              : 'bg-transparent text-[var(--pm-text-dim)] border border-transparent hover:border-white/[0.06] hover:text-[var(--pm-text-primary)]'
+              : 'bg-transparent text-[var(--hud-text-dim)] border border-transparent hover:border-[var(--hud-border)] hover:text-[var(--hud-text-primary)]'
           }`}
         >
           <SlidersHorizontal className="w-3 h-3" />
@@ -261,7 +261,7 @@ export default function DashboardFilters({
           <button
             type="button"
             onClick={handleClear}
-            className="flex items-center gap-1 px-2 py-1 text-[9px] font-mono text-[var(--pm-text-dim)] hover:text-emerald-400 transition-all shrink-0"
+            className="flex items-center gap-1 px-2 py-1 text-[9px] font-mono text-[var(--hud-text-dim)] hover:text-emerald-400 transition-all shrink-0"
           >
             <RotateCcw className="w-3 h-3" />
             <span className="hidden md:inline">Limpiar</span>
@@ -288,16 +288,16 @@ export default function DashboardFilters({
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.94, opacity: 0, y: 10 }}
               transition={springTransition}
-              className="relative bg-[#0A0F1C]/80 backdrop-blur-xl border border-white/[0.06] rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] p-6 w-full max-w-md space-y-5"
+              className="relative bg-[var(--hud-bg-card)]/90 border border-[rgba(30,41,59,0.5)] rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.6)] p-6 w-full max-w-md space-y-5"
             >
               <div className="flex items-center justify-between">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-[var(--pm-text-primary)]">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-[var(--hud-text-primary)]">
                   Filtros Avanzados
                 </h3>
                 <button
                   type="button"
                   onClick={() => setAdvancedOpen(false)}
-                  className="w-7 h-7 rounded-lg bg-white/[0.04] border border-white/[0.06] flex items-center justify-center text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] transition-colors"
+                  className="w-7 h-7 rounded-lg bg-[var(--hud-bg-hover)] border border-[var(--hud-border)] flex items-center justify-center text-[var(--hud-text-dim)] hover:text-[var(--hud-text-primary)] transition-colors"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>

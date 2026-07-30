@@ -31,21 +31,21 @@ export function BalancesTable({ clientBalances, totalBalance, onClientClick }: B
       initial={{ opacity: 0, y: 32 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.35, duration: 0.45 }}
-      className="bg-[#0A0F1C]/60 backdrop-blur-md border border-white/[0.06] rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] overflow-hidden mt-5"
+      className="hud-card overflow-hidden mt-5"
     >
-      <div className="flex items-center justify-between px-6 pt-5 pb-3 border-b border-[var(--pm-border)]">
+      <div className="flex items-center justify-between px-6 pt-5 pb-3 border-b border-[var(--hud-border)]">
         <div>
-          <h3 className="text-sm font-semibold text-[var(--pm-text-primary)] font-sans">
+          <h3 className="text-sm font-semibold text-[var(--hud-text-primary)] font-sans">
             Resumen de Balances
           </h3>
-          <p className="text-[11px] text-[var(--pm-text-dim)] font-sans mt-0.5">
+          <p className="text-[11px] text-[var(--hud-text-dim)] font-sans mt-0.5">
             Ingresos, recuperación y egresos por cliente.
           </p>
         </div>
         <div className="text-right">
-          <span className="text-[10px] text-[var(--pm-text-dim)] font-mono block">BALANCE TOTAL</span>
+          <span className="text-[10px] text-[var(--hud-text-dim)] font-mono block">BALANCE TOTAL</span>
           <span
-            className={`text-sm font-mono font-bold ${totalBalance >= 0 ? 'text-[var(--pm-accent-emerald)]' : 'text-[var(--pm-accent-red)]'}`}
+            className={`text-sm font-mono font-bold ${totalBalance >= 0 ? 'text-[var(--hud-accent-emerald)]' : 'text-[var(--hud-accent-red)]'}`}
           >
             {fmtG(Math.abs(totalBalance))}
             {totalBalance < 0 ? ' (negativo)' : ''}
@@ -61,7 +61,7 @@ export function BalancesTable({ clientBalances, totalBalance, onClientClick }: B
       ) : (
         <div className="overflow-x-auto">
           <div className="min-w-[1000px]">
-            <div className="grid grid-cols-[180px_repeat(5,120px)_100px_80px] px-6 py-3 border-b border-[var(--pm-border)] text-[10px] font-mono font-bold tracking-[0.1em] uppercase text-[var(--pm-text-dim)]">
+            <div className="grid grid-cols-[180px_repeat(5,120px)_100px_80px] px-4 py-2.5 border-b border-[var(--hud-border)] text-[9px] font-mono font-bold tracking-[0.1em] uppercase text-[var(--hud-text-muted)]">
               <div className="text-left">Cliente</div>
               <div className="text-right">Peso Bruto (G)</div>
               <div className="text-right">Peso Fino (G)</div>
@@ -78,32 +78,32 @@ export function BalancesTable({ clientBalances, totalBalance, onClientClick }: B
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.45 + idx * 0.04, duration: 0.3 }}
                 onClick={() => onClientClick(c.id)}
-                className="grid grid-cols-[180px_repeat(5,120px)_100px_80px] px-6 py-3 border-b border-[rgba(30,42,69,0.15)] text-[12px] font-mono transition-all duration-100 hover:bg-white/[0.04] active:scale-[0.98] cursor-pointer"
+                className="grid grid-cols-[180px_repeat(5,120px)_100px_80px] px-4 py-2.5 border-b border-[rgba(30,41,59,0.15)] text-[12px] font-mono transition-all duration-100 hover:bg-[var(--hud-bg-hover)] active:scale-[0.98] cursor-pointer"
                 style={{ background: idx % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.015)' }}
               >
-                <div className="text-left font-sans font-semibold text-[var(--pm-text-primary)] truncate">
+                <div className="text-left font-sans font-semibold text-[var(--hud-text-primary)] truncate">
                   {c.name}
                 </div>
-                <div className="text-right text-[var(--pm-text-dim)]">
+                <div className="text-right text-[var(--hud-text-dim)]">
                   {fmtG(c.ingresoBruto)}
                 </div>
-                <div className="text-right text-[var(--pm-accent-gold)]">
+                <div className="text-right text-[var(--hud-accent-gold)]">
                   {fmtG(c.fa)}
                 </div>
-                <div className="text-right text-[var(--pm-accent-amber)]">
+                <div className="text-right text-[var(--hud-accent-amber)]">
                   {fmtG(c.r)}
                 </div>
-                <div className="text-right text-[var(--pm-accent-red)]">
+                <div className="text-right text-[var(--hud-accent-red)]">
                   {fmtG(c.egresos)}
                 </div>
-                <div className={`text-right font-bold ${c.balance >= 0 ? 'text-[var(--pm-accent-emerald)]' : 'text-[var(--pm-accent-red)]'}`}>
+                <div className={`text-right font-bold ${c.balance >= 0 ? 'text-[var(--hud-accent-emerald)]' : 'text-[var(--hud-accent-red)]'}`}>
                   {fmtG(Math.abs(c.balance))}
                   {c.balance < 0 ? ' −' : ''}
                 </div>
-                <div className="text-right text-[var(--pm-accent-red)]">
+                <div className="text-right text-[var(--hud-accent-red)]">
                   {formatNumber(c.mermaG, 2)}
                 </div>
-                <div className="text-right text-[var(--pm-accent-rose)]">
+                <div className="text-right text-[var(--hud-accent-red)]">
                   {formatNumber(c.mermaPct, 1)}%
                 </div>
               </motion.div>

@@ -20,27 +20,26 @@ function TreemapTooltip({ active, payload, accent, scaleLabel }: TreemapTooltipP
     <div
       className="rounded-lg border px-3.5 py-2.5 text-[10px] font-mono space-y-1 min-w-[170px]"
       style={{
-        background: 'rgba(10, 15, 26, 0.88)',
-        backdropFilter: 'blur(8px)',
+        background: 'var(--hud-bg-card)',
         borderColor: `${accent}40`,
         borderWidth: 1,
-        boxShadow: `0 0 20px ${accent}15, 0 4px 16px rgba(0,0,0,0.5)`,
+        boxShadow: `0 0 20px ${accent}15, 0 4px 20px rgba(0,0,0,0.6)`,
       }}
     >
-      <div className="flex items-center gap-2 text-[9px] text-[var(--pm-text-dim)] uppercase tracking-[0.12em] font-bold">
+      <div className="flex items-center gap-2 text-[9px] text-[var(--hud-text-dim)] uppercase tracking-[0.12em] font-bold">
         <span className="w-2 h-2 rounded-full" style={{ background: accent }} />
         {scaleLabel}
       </div>
-      <p className="text-[13px] font-bold text-[var(--pm-text-primary)]">{data.name}</p>
-      <div className="border-t border-[var(--pm-border)] pt-1.5 mt-1.5 space-y-1">
+      <p className="text-[13px] font-bold text-[var(--hud-text-primary)]">{data.name}</p>
+      <div className="border-t border-[var(--hud-border)] pt-1.5 mt-1.5 space-y-1">
         <p className="flex justify-between items-center">
-          <span className="text-[var(--pm-text-dim)] text-[10px]">MASA TOTAL</span>
+          <span className="text-[var(--hud-text-dim)] text-[10px]">MASA TOTAL</span>
           <span className="font-semibold text-[12px]" style={{ color: accent }}>
             {formatNumber(data.value, 2)} g
           </span>
         </p>
         <p className="flex justify-between items-center">
-          <span className="text-[var(--pm-text-dim)] text-[10px]">PROPORCIÓN</span>
+          <span className="text-[var(--hud-text-dim)] text-[10px]">PROPORCIÓN</span>
           <span className="font-semibold text-[12px]" style={{ color: accent }}>
             {formatNumber(data.pct, 1)}%
           </span>
@@ -158,13 +157,13 @@ function CustomTreemapBlock(props: CustomBlockProps) {
 
 function TreemapLegend({ data }: { data: { name: string; value: number; pct: number; fill: string }[] }) {
   return (
-    <div className="flex flex-wrap gap-x-5 gap-y-1 px-4 pb-3 pt-2.5 border-t border-[var(--pm-border)]/30 text-[9px] font-mono">
+    <div className="flex flex-wrap gap-x-5 gap-y-1 px-4 pb-3 pt-2.5 border-t border-[var(--hud-border)]/30 text-[9px] font-mono">
       {data.map(item => (
         <div key={item.name} className="flex items-center gap-1.5 whitespace-nowrap">
           <span className="w-2 h-2 rounded-full shrink-0" style={{ background: item.fill }} />
-          <span className="text-[var(--pm-text-primary)] font-semibold">{item.name}:</span>
-          <span className="text-[var(--pm-text-dim)]">{formatNumber(item.value, 2)} g</span>
-          <span className="text-[var(--pm-text-dim)] opacity-60">({formatNumber(item.pct, 1)}%)</span>
+          <span className="text-[var(--hud-text-primary)] font-semibold">{item.name}:</span>
+          <span className="text-[var(--hud-text-dim)]">{formatNumber(item.value, 2)} g</span>
+          <span className="text-[var(--hud-text-dim)] opacity-60">({formatNumber(item.pct, 1)}%)</span>
         </div>
       ))}
     </div>
@@ -223,25 +222,25 @@ export function TreemapPanel({
   const renderDetailTable = () => (
     <div className="overflow-x-auto max-h-[340px] overflow-y-auto v2-scroll">
       <table className="w-full">
-        <thead className="sticky top-0" style={{ background: 'var(--pm-bg-secondary)' }}>
+        <thead className="sticky top-0" style={{ background: 'var(--hud-bg-base)' }}>
           <tr>
-            <th className="text-[9px] font-mono font-bold tracking-[0.1em] uppercase text-[var(--pm-text-dim)] text-left px-4 py-2.5 border-b border-[var(--pm-border)]">ENTIDAD</th>
-            <th className="text-[9px] font-mono font-bold tracking-[0.1em] uppercase text-[var(--pm-text-dim)] text-right px-4 py-2.5 border-b border-[var(--pm-border)]">MASA TOTAL</th>
-            <th className="text-[9px] font-mono font-bold tracking-[0.1em] uppercase text-[var(--pm-text-dim)] text-right px-4 py-2.5 border-b border-[var(--pm-border)]">PROPORCIÓN</th>
+            <th className="text-[9px] font-mono font-bold tracking-[0.1em] uppercase text-[var(--hud-text-muted)] text-left px-4 py-2.5 border-b border-[var(--hud-border)]">ENTIDAD</th>
+            <th className="text-[9px] font-mono font-bold tracking-[0.1em] uppercase text-[var(--hud-text-muted)] text-right px-4 py-2.5 border-b border-[var(--hud-border)]">MASA TOTAL</th>
+            <th className="text-[9px] font-mono font-bold tracking-[0.1em] uppercase text-[var(--hud-text-muted)] text-right px-4 py-2.5 border-b border-[var(--hud-border)]">PROPORCIÓN</th>
           </tr>
         </thead>
         <tbody>
           {data.map((item, idx) => (
-            <tr key={item.name} className="transition-colors duration-100"
-              style={{ background: idx % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.02)' }}>
-              <td className="px-4 py-2.5 text-[12px] font-mono text-[var(--pm-text-primary)]">
+            <tr key={item.name} className="transition-colors duration-100 hover:bg-[var(--hud-bg-hover)]"
+              style={{ background: idx % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.015)' }}>
+              <td className="px-4 py-2.5 text-[12px] font-mono text-[var(--hud-text-primary)]">
                 <span className="inline-block w-2 h-2 rounded-full mr-2 align-middle" style={{ background: item.fill }} />
                 {item.name}
               </td>
               <td className="px-4 py-2.5 text-[12px] font-mono text-right font-semibold" style={{ color: item.fill }}>
                 {formatWeightCell(item.value)}
               </td>
-              <td className="px-4 py-2.5 text-[12px] font-mono text-right text-[var(--pm-text-dim)]">
+              <td className="px-4 py-2.5 text-[12px] font-mono text-right text-[var(--hud-text-dim)]">
                 {formatNumber(item.pct, 1)}%
               </td>
             </tr>
@@ -260,14 +259,14 @@ export function TreemapPanel({
       initial={{ opacity: 0, x: 0 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: 0.2, duration: 0.45 }}
-      className="bg-[#0A0F1C]/60 backdrop-blur-md border border-white/[0.06] rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] overflow-hidden"
+      className="hud-card overflow-hidden"
     >
-      <div className="flex items-center justify-between px-5 pt-4 pb-2 border-b border-[var(--pm-border)]/30">
+      <div className="flex items-center justify-between px-5 pt-4 pb-2 border-b border-[var(--hud-border)]/30">
         <div>
-          <h3 className="text-[11px] font-semibold text-[var(--pm-text-primary)] font-mono tracking-wider">
+          <h3 className="text-[11px] font-semibold text-[var(--hud-text-primary)] font-mono tracking-wider">
             {title}
           </h3>
-          <p className="text-[9px] text-[var(--pm-text-dim)] font-mono mt-0.5">
+          <p className="text-[9px] text-[var(--hud-text-dim)] font-mono mt-0.5">
             {subtitle}
           </p>
         </div>
@@ -295,8 +294,8 @@ export function TreemapPanel({
       ) : isMounted ? (
         renderTreemap()
       ) : (
-        <div className="flex items-center justify-center py-20 text-[var(--pm-text-dim)]">
-          <span className="text-xs font-mono">Cargando gráfica...</span>
+        <div className="flex items-center justify-center py-20 text-[var(--hud-text-dim)]">
+          <span className="text-xs font-mono text-[var(--hud-text-dim)]">Cargando gráfica...</span>
         </div>
       )}
     </motion.div>

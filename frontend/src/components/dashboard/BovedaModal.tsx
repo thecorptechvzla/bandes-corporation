@@ -89,34 +89,34 @@ export function BovedaModal({ isOpen, lots, bars, clients, onClose, onBarClick }
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.94, opacity: 0 }}
             transition={springTransition}
-            className="relative glass-panel w-full max-w-5xl h-[80vh] max-h-[850px] rounded-2xl border border-[var(--pm-border)] flex flex-col overflow-hidden"
+            className="relative w-full max-w-5xl h-[80vh] max-h-[850px] rounded-xl border border-[rgba(30,41,59,0.5)] bg-[var(--hud-bg-card)] shadow-[0_4px_20px_rgba(0,0,0,0.6)] flex flex-col overflow-hidden"
           >
             {/* Header */}
-            <div className="flex items-center justify-between p-4 sm:p-5 border-b border-[var(--pm-border)]">
+            <div className="flex items-center justify-between p-4 sm:p-5 border-b border-[var(--hud-border)]">
               <div className="flex items-center gap-3">
-                <Warehouse className="w-5 h-5 text-[var(--pm-accent-gold)]" />
-                <h2 className="text-sm font-bold uppercase tracking-wider text-[var(--pm-text-primary)]">
+                <Warehouse className="w-5 h-5 text-[var(--hud-accent-gold)]" />
+                <h2 className="text-sm font-bold uppercase tracking-wider text-[var(--hud-text-primary)]">
                   Oro en Bóveda
                 </h2>
               </div>
               <button
                 onClick={onClose}
-                className="w-7 h-7 rounded-lg bg-[var(--pm-bg-deepest)]/50 border border-[var(--pm-border)] flex items-center justify-center text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] transition-all"
+                className="w-7 h-7 rounded-lg bg-[var(--hud-bg-deepest)]/50 border border-[var(--hud-border)] flex items-center justify-center text-[var(--hud-text-dim)] hover:text-[var(--hud-text-primary)] transition-all"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
             </div>
 
             {/* Tabs */}
-            <div className="flex items-center gap-1 px-4 sm:px-5 pt-3 border-b border-[var(--pm-border)]">
+            <div className="flex items-center gap-1 px-4 sm:px-5 pt-3 border-b border-[var(--hud-border)]">
               {tabDefs.map((t) => (
                 <button
                   key={t.key}
                   onClick={() => setTab(t.key)}
                   className={`px-4 py-2 text-[10px] font-mono font-bold tracking-wider rounded-t-lg transition-all border-b-2 ${
                     tab === t.key
-                      ? 'bg-[var(--pm-bg-deepest)]/50 text-[var(--pm-accent-gold)] border-[var(--pm-accent-gold)]'
-                      : 'text-[var(--pm-text-dim)] border-transparent hover:text-[var(--pm-text-primary)] hover:bg-[var(--pm-bg-deepest)]/30'
+                      ? 'bg-[var(--hud-bg-deepest)]/50 text-[var(--hud-accent-gold)] border-[var(--hud-accent-gold)]'
+                      : 'text-[var(--hud-text-dim)] border-transparent hover:text-[var(--hud-text-primary)] hover:bg-[var(--hud-bg-deepest)]/30'
                   }`}
                 >
                   {t.label}
@@ -131,8 +131,8 @@ export function BovedaModal({ isOpen, lots, bars, clients, onClose, onBarClick }
                 <div className="p-4 sm:p-5 space-y-5">
                   {grouped.length === 0 && (
                     <div className="flex flex-col items-center justify-center h-full min-h-[200px] text-center">
-                      <Warehouse className="w-10 h-10 text-[var(--pm-text-dim)] mb-3 opacity-40" />
-                      <p className="text-[11px] font-mono text-[var(--pm-text-dim)]">
+                      <Warehouse className="w-10 h-10 text-[var(--hud-text-dim)] mb-3 opacity-40" />
+                      <p className="text-[11px] font-mono text-[var(--hud-text-dim)]">
                         No hay lotes refinados en bóveda
                       </p>
                     </div>
@@ -141,32 +141,32 @@ export function BovedaModal({ isOpen, lots, bars, clients, onClose, onBarClick }
                   {grouped.map(({ id, clientName, lots: clientLots }) => (
                     <div key={id}>
                       <div className="flex items-center gap-2 mb-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-[var(--pm-accent-gold)]" />
-                        <span className="text-[10px] font-mono font-bold tracking-wider uppercase text-[var(--pm-text-primary)]">
+                        <div className="w-1.5 h-1.5 rounded-full bg-[var(--hud-accent-gold)]" />
+                        <span className="text-[10px] font-mono font-bold tracking-wider uppercase text-[var(--hud-text-primary)]">
                           {clientName}
                         </span>
-                        <span className="text-[9px] font-mono text-[var(--pm-text-dim)]">
+                        <span className="text-[9px] font-mono text-[var(--hud-text-dim)]">
                           ({formatNumber(clientLots.reduce((s, l) => s + Number(l.recovered ?? 0), 0), 2)} g)
                         </span>
                       </div>
 
-                      <div className="rounded-xl border border-[var(--pm-border)] overflow-hidden">
+                      <div className="rounded-xl border border-[var(--hud-border)] overflow-hidden">
                         <table className="w-full">
                           <thead>
-                            <tr className="bg-[var(--pm-bg-deepest)]/50">
-                              <th className="text-[9px] font-mono font-bold tracking-[0.1em] uppercase text-[var(--pm-text-dim)] text-left px-3 py-2">
+                            <tr className="bg-[var(--hud-bg-deepest)]/50">
+                              <th className="text-[9px] font-mono font-bold tracking-[0.1em] uppercase text-[var(--hud-text-muted)] text-left px-3 py-2">
                                 Proceso
                               </th>
-                              <th className="text-[9px] font-mono font-bold tracking-[0.1em] uppercase text-[var(--pm-text-dim)] text-left px-3 py-2">
+                              <th className="text-[9px] font-mono font-bold tracking-[0.1em] uppercase text-[var(--hud-text-muted)] text-left px-3 py-2">
                                 Lote
                               </th>
-                              <th className="text-[9px] font-mono font-bold tracking-[0.1em] uppercase text-[var(--pm-text-dim)] text-left px-3 py-2">
+                              <th className="text-[9px] font-mono font-bold tracking-[0.1em] uppercase text-[var(--hud-text-muted)] text-left px-3 py-2">
                                 Operador
                               </th>
-                              <th className="text-[9px] font-mono font-bold tracking-[0.1em] uppercase text-[var(--pm-text-dim)] text-right px-3 py-2">
+                              <th className="text-[9px] font-mono font-bold tracking-[0.1em] uppercase text-[var(--hud-text-muted)] text-right px-3 py-2">
                                 Peso Recuperado (g)
                               </th>
-                              <th className="text-[9px] font-mono font-bold tracking-[0.1em] uppercase text-[var(--pm-text-dim)] text-right px-3 py-2">
+                              <th className="text-[9px] font-mono font-bold tracking-[0.1em] uppercase text-[var(--hud-text-muted)] text-right px-3 py-2">
                                 Fecha
                               </th>
                             </tr>
@@ -175,21 +175,21 @@ export function BovedaModal({ isOpen, lots, bars, clients, onClose, onBarClick }
                             {clientLots.map((lot) => (
                               <tr
                                 key={lot.id}
-                                className="border-t border-[var(--pm-border)] hover:bg-white/[0.02] transition-colors"
+                                className="border-t border-[var(--hud-border)] hover:bg-[var(--hud-bg-hover)] transition-colors"
                               >
-                                <td className="px-3 py-2 text-[10px] font-mono text-[var(--pm-text-primary)]">
+                                <td className="px-3 py-2 text-[10px] font-mono text-[var(--hud-text-primary)]">
                                   {lot.process?.name ?? '—'}
                                 </td>
-                                <td className="px-3 py-2 text-[10px] font-mono text-[var(--pm-text-primary)]">
+                                <td className="px-3 py-2 text-[10px] font-mono text-[var(--hud-text-primary)]">
                                   {lot.name}
                                 </td>
-                                <td className="px-3 py-2 text-[10px] font-mono text-[var(--pm-text-dim)]">
+                                <td className="px-3 py-2 text-[10px] font-mono text-[var(--hud-text-dim)]">
                                   {lot.operator ?? '—'}
                                 </td>
-                                <td className="px-3 py-2 text-[10px] font-mono text-[var(--pm-text-primary)] text-right tabular-nums">
+                                <td className="px-3 py-2 text-[10px] font-mono text-[var(--hud-text-primary)] text-right tabular-nums">
                                   {formatNumber(Number(lot.recovered ?? 0), 2)}
                                 </td>
-                                <td className="px-3 py-2 text-[10px] font-mono text-[var(--pm-text-dim)] text-right">
+                                <td className="px-3 py-2 text-[10px] font-mono text-[var(--hud-text-dim)] text-right">
                                   {lot.recoveryAt
                                     ? new Date(lot.recoveryAt).toLocaleDateString('es-AR')
                                     : '—'}
@@ -206,8 +206,8 @@ export function BovedaModal({ isOpen, lots, bars, clients, onClose, onBarClick }
                 <div className="p-4 sm:p-5">
                   {bars.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-full min-h-[200px] text-center">
-                      <Warehouse className="w-10 h-10 text-[var(--pm-text-dim)] mb-3 opacity-40" />
-                      <p className="text-[11px] font-mono text-[var(--pm-text-dim)]">
+                      <Warehouse className="w-10 h-10 text-[var(--hud-text-dim)] mb-3 opacity-40" />
+                      <p className="text-[11px] font-mono text-[var(--hud-text-dim)]">
                         No hay barras en stock para refundir
                       </p>
                     </div>
@@ -225,31 +225,31 @@ export function BovedaModal({ isOpen, lots, bars, clients, onClose, onBarClick }
             </div>
 
             {/* Footer */}
-            <div className="flex items-center justify-between px-4 sm:px-5 py-3 border-t border-[var(--pm-border)] bg-[var(--pm-bg-deepest)]/30">
+            <div className="flex items-center justify-between px-4 sm:px-5 py-3 border-t border-[var(--hud-border)] bg-[var(--hud-bg-deepest)]/30">
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[9px] font-mono font-bold tracking-wider uppercase text-[var(--pm-text-dim)]">
+                  <span className="text-[9px] font-mono font-bold tracking-wider uppercase text-[var(--hud-text-dim)]">
                     Fundido:
                   </span>
-                  <span className="text-[10px] font-mono font-bold text-[var(--pm-text-primary)] tabular-nums">
+                  <span className="text-[10px] font-mono font-bold text-[var(--hud-text-primary)] tabular-nums">
                     {formatNumber(totalFundido, 2)} g
                   </span>
                 </div>
-                <div className="w-px h-3 bg-[var(--pm-border)]" />
+                <div className="w-px h-3 bg-[var(--hud-border)]" />
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[9px] font-mono font-bold tracking-wider uppercase text-[var(--pm-text-dim)]">
+                  <span className="text-[9px] font-mono font-bold tracking-wider uppercase text-[var(--hud-text-dim)]">
                     Sin Fundir:
                   </span>
-                  <span className="text-[10px] font-mono font-bold text-[var(--pm-text-primary)] tabular-nums">
+                  <span className="text-[10px] font-mono font-bold text-[var(--hud-text-primary)] tabular-nums">
                     {formatNumber(totalSinFundir, 2)} g
                   </span>
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-[9px] font-mono font-bold tracking-[0.1em] uppercase text-[var(--pm-text-dim)]">
+                <span className="text-[9px] font-mono font-bold tracking-[0.1em] uppercase text-[var(--hud-text-dim)]">
                   GRAN TOTAL
                 </span>
-                <span className="text-[11px] font-mono font-bold text-[var(--pm-text-primary)] tabular-nums">
+                <span className="text-[11px] font-mono font-bold text-[var(--hud-text-primary)] tabular-nums">
                   {formatNumber(totalFundido + totalSinFundir, 2)} g
                 </span>
               </div>

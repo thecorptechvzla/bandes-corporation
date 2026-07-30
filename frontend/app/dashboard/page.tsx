@@ -29,7 +29,7 @@ function SparklineArea({ data, color, id }: { data: number[]; color: string; id:
         <AreaChart data={chartData} margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
           <defs>
             <linearGradient id={`spark-${id}`} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={color} stopOpacity={0.35} />
+              <stop offset="0%" stopColor={color} stopOpacity={0.15} />
               <stop offset="100%" stopColor={color} stopOpacity={0} />
             </linearGradient>
           </defs>
@@ -341,7 +341,7 @@ export default function V2DashboardPage() {
           title="INGRESOS POR PROVEEDOR"
           subtitle="Proporción de masa bruta recibida"
           data={ingresosTreemap}
-          accent="var(--pm-accent-gold)"
+          accent="var(--hud-accent-gold)"
           glowColor="#EAB308"
           scaleLabel="PROVEEDOR"
           isTableMode={showTableIngresos}
@@ -355,7 +355,7 @@ export default function V2DashboardPage() {
           title="EGRESOS POR CLIENTE"
           subtitle="Proporción de masa despachada"
           data={egresosTreemap}
-          accent="var(--pm-accent-sky)"
+          accent="var(--hud-accent-sky)"
           glowColor="#D97706"
           scaleLabel="CLIENTE"
           isTableMode={showTableEgresos}
@@ -375,8 +375,8 @@ export default function V2DashboardPage() {
       />
 
       {/* Footer note */}
-      <p className="text-[9px] text-[var(--pm-text-dim)] font-mono text-center opacity-50 mt-5">
-        Datos actualizados en tiempo real · Bandes v2 Premium
+      <p className="text-[9px] text-[var(--hud-text-dim)] font-mono text-center opacity-50 mt-5">
+        Datos actualizados en tiempo real · Bandes HUD
       </p>
 
       {/* Client bar detail modal — triggered from balance table row */}

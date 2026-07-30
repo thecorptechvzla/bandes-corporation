@@ -19,11 +19,11 @@ const BAR_STATUS_LABELS: Record<string, string> = {
 };
 
 const BAR_STATUS_STYLES: Record<string, string> = {
-  POR_VALIDAR: 'text-[var(--pm-accent-amber)] bg-[var(--pm-accent-amber)]/10 border-[var(--pm-accent-amber)]/25',
+  POR_VALIDAR: 'text-[var(--hud-accent-amber)] bg-[var(--hud-accent-amber)]/10 border-[var(--hud-accent-amber)]/25',
   IN_STOCK: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/25',
   PROCESANDO: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/25',
   COMPLETADO: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/25',
-  EXITED: 'text-[var(--pm-text-dim)] bg-[var(--pm-bg-tertiary)] border-[var(--pm-border)]',
+  EXITED: 'text-[var(--hud-text-dim)] bg-[var(--hud-bg-hover)] border-[var(--hud-border)]',
 };
 
 const PACKING_STATUS_LABELS: Record<string, string> = {

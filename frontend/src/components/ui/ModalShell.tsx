@@ -62,13 +62,13 @@ export function ModalShell({
 
     if (header) {
       return (
-        <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-[var(--pm-border)]">
+        <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-[var(--hud-border)]">
           {header}
           {!hideCloseButton && (
             <button
               type="button"
               onClick={onClose}
-              className="p-1.5 rounded-lg hover:bg-[var(--pm-bg-tertiary)] text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] active:scale-90 transition-all cursor-pointer"
+              className="p-1.5 rounded-lg hover:bg-[var(--hud-bg-card)] text-[var(--hud-text-dim)] hover:text-[var(--hud-text-primary)] active:scale-90 transition-all cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
@@ -79,15 +79,15 @@ export function ModalShell({
 
     if (title || subtitle) {
       return (
-        <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-[var(--pm-border)]">
+        <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-[var(--hud-border)]">
           <div>
             {title && (
-              <h3 className="text-sm font-sans font-semibold text-[var(--pm-text-primary)]">
+              <h3 className="text-sm font-sans font-semibold text-[var(--hud-text-primary)]">
                 {title}
               </h3>
             )}
             {subtitle && (
-              <p className="text-[10px] font-mono text-[var(--pm-text-dim)] mt-0.5">
+              <p className="text-[10px] font-mono text-[var(--hud-text-dim)] mt-0.5">
                 {subtitle}
               </p>
             )}
@@ -96,7 +96,7 @@ export function ModalShell({
             <button
               type="button"
               onClick={onClose}
-              className="p-1.5 rounded-lg hover:bg-[var(--pm-bg-tertiary)] text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] active:scale-90 transition-all cursor-pointer"
+              className="p-1.5 rounded-lg hover:bg-[var(--hud-bg-card)] text-[var(--hud-text-dim)] hover:text-[var(--hud-text-primary)] active:scale-90 transition-all cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>

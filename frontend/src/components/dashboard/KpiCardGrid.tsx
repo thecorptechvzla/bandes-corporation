@@ -31,10 +31,10 @@ interface KpiItem {
 }
 
 const KPI_COLORS = [
-  { accent: '#EAB308', label: 'PESO FINO' },      // Dorado/Amarillo - Oro Recibido
-  { accent: '#F97316', label: 'PROCESO' },       // Naranja vibrante - Oro en Proceso
-  { accent: '#10B981', label: 'R' },             // Verde Esmeralda - Oro en Bóveda
-  { accent: '#3B82F6', label: 'PR' },            // Azul/Índigo - Por Refundir
+  { accent: '#EAB308', label: 'PESO FINO' },      // Gold - Oro Recibido
+  { accent: '#F59E0B', label: 'PROCESO' },        // Amber - Oro en Proceso
+  { accent: '#10B981', label: 'R' },              // Emerald - Oro en Bóveda
+  { accent: '#06B6D4', label: 'PR' },             // Sky - Por Refundir
 ];
 
 const KPI_ICONS = [ClipboardList, Flame, Warehouse, Inbox];
@@ -52,7 +52,7 @@ function SparklineArea({ data, color, id }: { data: number[]; color: string; id:
         <AreaChart data={chartData} margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
           <defs>
             <linearGradient id={`spark-${id}`} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={color} stopOpacity={0.3} />
+              <stop offset="0%" stopColor={color} stopOpacity={0.15} />
               <stop offset="100%" stopColor={color} stopOpacity={0} />
             </linearGradient>
           </defs>
@@ -60,8 +60,8 @@ function SparklineArea({ data, color, id }: { data: number[]; color: string; id:
             type="monotone"
             dataKey="v"
             stroke={color}
-            strokeWidth={1}
-            strokeOpacity={0.7}
+            strokeWidth={1.5}
+            strokeOpacity={1}
             fill={`url(#spark-${id})`}
             dot={false}
             activeDot={false}
@@ -76,7 +76,7 @@ function SparklineArea({ data, color, id }: { data: number[]; color: string; id:
 function ProportionBar({ items }: { items: ProportionItem[] }) {
   const total = items.reduce((s, i) => s + i.value, 0);
   return (
-    <div className="w-full h-1.5 rounded-full overflow-hidden flex" style={{ background: 'var(--pm-bg-deepest)' }}>
+    <div className="w-full h-1.5 rounded-full overflow-hidden flex" style={{ background: 'var(--hud-bg-deepest)' }}>
       {items.map(item => (
         <div
           key={item.label}
@@ -114,12 +114,12 @@ export function KpiCardGrid({ kpiData, isMounted, onCardClick }: KpiCardGridProp
             transition={{ delay: 0.1 * idx, duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
             onMouseEnter={() => setHoveredIndex(idx)}
             onMouseLeave={() => setHoveredIndex(null)}
-            className="relative overflow-hidden cursor-pointer bg-[#0A0F1C]/60 backdrop-blur-md border rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] hover:-translate-y-1.5 active:scale-[0.97] transition-all duration-300 ease-out"
+            className="relative overflow-hidden cursor-pointer bg-[var(--hud-bg-card)] border border-[rgba(30,41,59,0.5)] rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.6)] hover:-translate-y-1.5 active:scale-[0.97] transition-all duration-300 ease-out"
             style={{
-              borderColor: hoveredIndex === idx ? `${kpi.accent}40` : 'rgba(255,255,255,0.06)',
+              borderColor: hoveredIndex === idx ? `${kpi.accent}40` : 'rgba(30,41,59,0.5)',
               boxShadow: hoveredIndex === idx
-                ? `0 10px 40px -10px ${kpi.accent}, 0 8px 32px rgba(0,0,0,0.4)`
-                : '0 8px 32px rgba(0,0,0,0.4)',
+                ? `0 0 25px -5px ${kpi.accent}, 0 4px 20px rgba(0,0,0,0.6)`
+                : '0 4px 20px rgba(0,0,0,0.6)',
             }}
             onClick={() => onCardClick(idx)}
           >
@@ -139,16 +139,16 @@ export function KpiCardGrid({ kpiData, isMounted, onCardClick }: KpiCardGridProp
                 </span>
               </div>
 
-              <span className="text-[11px] text-[var(--pm-text-dim)] font-sans block mb-1">{kpi.label}</span>
+              <span className="text-[11px] text-[var(--hud-text-dim)] font-sans block mb-1">{kpi.label}</span>
               <div className="flex items-baseline gap-1.5 mb-2">
-                <span className="text-2xl font-mono font-bold text-[var(--pm-text-primary)] tracking-tight" style={{ filter: `drop-shadow(0 0 8px ${kpi.accent}80)` }}>
+                <span className="text-2xl font-mono font-bold text-[var(--hud-text-primary)] tracking-tight" style={{ filter: `drop-shadow(0 0 8px ${kpi.accent}80)` }}>
                   {!isMounted
                     ? '0,00'
                     : kpi.postfix === '%'
                       ? `${formatNumber(kpi.value, 1)}`
                       : formatNumber(kpi.value, 2)}
                 </span>
-                <span className="text-[11px] text-[var(--pm-text-dim)] font-mono">
+                <span className="text-[11px] text-[var(--hud-text-dim)] font-mono">
                   {kpi.postfix || 'g'}
                 </span>
               </div>
@@ -175,16 +175,16 @@ export function KpiCardGrid({ kpiData, isMounted, onCardClick }: KpiCardGridProp
                 isMounted && <div className="mb-3"><SparklineArea data={kpi.spark} color={kpi.accent} id={`kpi-${idx}`} /></div>
               )}
 
-              <div className="pt-3 border-t border-[var(--pm-border)]">
+              <div className="pt-3 border-t border-[var(--hud-border)]">
                 {kpi.subValues ? (
                   <div className="flex items-center gap-3">
                     {kpi.subValues.map((sv) => (
                       <div key={sv.label} className="flex items-center gap-1.5">
                         <sv.icon className="w-3 h-3 shrink-0" style={{ color: kpi.accent }} />
-                        <span className="text-[9px] font-mono text-[var(--pm-text-dim)]">
+                        <span className="text-[9px] font-mono text-[var(--hud-text-dim)]">
                           {sv.label}:
                         </span>
-                        <span className="text-[10px] font-mono font-bold text-[var(--pm-text-primary)] tabular-nums">
+                        <span className="text-[10px] font-mono font-bold text-[var(--hud-text-primary)] tabular-nums">
                           {formatNumber(sv.value, 2)} g
                         </span>
                       </div>
@@ -193,7 +193,7 @@ export function KpiCardGrid({ kpiData, isMounted, onCardClick }: KpiCardGridProp
                 ) : (
                   <div className="flex items-center gap-1.5">
                     <KpiSubIcon icon={kpi.subicon} accent={kpi.accent} />
-                    <span className="text-[10px] text-[var(--pm-text-dim)] font-mono truncate">{kpi.sublabel}</span>
+                    <span className="text-[10px] text-[var(--hud-text-dim)] font-mono truncate">{kpi.sublabel}</span>
                   </div>
                 )}
               </div>
