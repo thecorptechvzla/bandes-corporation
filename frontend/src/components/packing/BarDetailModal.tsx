@@ -373,7 +373,7 @@ export function BarDetailModal({
               </button>
             </div>
             {/* Camera viewfinder */}
-            <div className="relative h-[360px] bg-black">
+            <div className="relative min-h-[440px] h-[60vh] max-h-[500px] flex flex-col bg-black">
               <CameraTerminal
                 onCapture={handleCapture}
                 onClose={() => setShowCameraModal(false)}
