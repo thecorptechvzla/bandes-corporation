@@ -32,8 +32,7 @@ export function BarDetailModal({
   const [grossWeight, setGrossWeight] = useState(String(Number(bar.grossWeight)));
   const [purity, setPurity] = useState(String(Number(bar.purity)));
 
-  const [cameraMode, setCameraMode] = useState<'idle' | 'camera' | 'preview'>('idle');
-  const [photoBlob, setPhotoBlob] = useState<Blob | null>(null);
+  const [showCameraModal, setShowCameraModal] = useState(false);
   const [photoPreviewUrl, setPhotoPreviewUrl] = useState<string | null>(null);
   const [photoUploadedUrl, setPhotoUploadedUrl] = useState<string | null>(null);
 
@@ -44,8 +43,7 @@ export function BarDetailModal({
     setPurity(String(Number(bar.purity)));
     setIsEditing(false);
     setShowPinPad(false);
-    setCameraMode('idle');
-    setPhotoBlob(null);
+    setShowCameraModal(false);
     if (photoPreviewUrl) URL.revokeObjectURL(photoPreviewUrl);
     setPhotoPreviewUrl(null);
     setPhotoUploadedUrl(null);
@@ -73,9 +71,8 @@ export function BarDetailModal({
 
   const handleCapture = useCallback(async (blob: Blob) => {
     const localUrl = URL.createObjectURL(blob);
-    setPhotoBlob(blob);
     setPhotoPreviewUrl(localUrl);
-    setCameraMode('preview');
+    setShowCameraModal(false);
     try {
       const url = await uploadPhoto(blob);
       setPhotoUploadedUrl(url);
@@ -84,13 +81,9 @@ export function BarDetailModal({
     }
   }, [uploadPhoto]);
 
-  const handleRepeat = useCallback(() => {
-    if (photoPreviewUrl) URL.revokeObjectURL(photoPreviewUrl);
-    setPhotoBlob(null);
-    setPhotoPreviewUrl(null);
-    setPhotoUploadedUrl(null);
-    setCameraMode('camera');
-  }, [photoPreviewUrl]);
+  const handleRepeatPhoto = useCallback(() => {
+    setShowCameraModal(true);
+  }, []);
 
   const handleEditClick = () => {
     setShowPinPad(true);
@@ -124,6 +117,7 @@ export function BarDetailModal({
   };
 
   const canValidate = !isNaN(displayGross) && !isNaN(displayPurity) && displayGross > 0 && displayPurity > 0;
+  const hasPhoto = !!photoUploadedUrl || !!bar.photoUrl;
 
   return (
     <>
@@ -156,68 +150,45 @@ export function BarDetailModal({
 
         {/* Body */}
         <div className="p-6 space-y-5">
-          {/* Photo */}
-          <div className="rounded-xl overflow-hidden border border-[var(--pm-border)] bg-black/60 flex items-center justify-center min-h-[160px]">
-            {cameraMode === 'camera' ? (
-              <div className="w-full">
-                <CameraTerminal
-                  onCapture={handleCapture}
-                  onClose={() => setCameraMode('idle')}
+          {/* Photo Area — fixed height, read-only display */}
+          <div className="rounded-xl overflow-hidden border border-[var(--pm-border)] bg-black/60 h-[180px] relative">
+            {srcProxy ? (
+              <>
+                <img
+                  src={srcProxy}
+                  alt={`Barra ${bar.barNumber}`}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                  }}
                 />
-              </div>
-            ) : cameraMode === 'preview' && photoPreviewUrl ? (
-              <div className="w-full p-3 space-y-3">
-                <div className="rounded-lg overflow-hidden border-2 border-[var(--pm-accent-cyan)]/30 bg-black">
-                  <img src={photoPreviewUrl} alt="Preview" className="w-full object-cover max-h-48" />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    {photoUploadedUrl ? (
-                      <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[var(--pm-accent-emerald)]/10 border border-[var(--pm-accent-emerald)]/20">
-                        <Check className="w-3 h-3 text-[var(--pm-accent-emerald)]" />
-                        <span className="text-[9px] font-mono font-bold text-[var(--pm-accent-emerald)]">Foto lista</span>
-                      </span>
-                    ) : (
-                      <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[var(--pm-accent-amber)]/10 border border-[var(--pm-accent-amber)]/20">
-                        <LoadingSpinner size="xs" className="text-[var(--pm-accent-amber)]" />
-                        <span className="text-[9px] font-mono font-bold text-[var(--pm-accent-amber)]">Subiendo...</span>
-                      </span>
-                    )}
-                  </div>
-                  <button type="button" onClick={handleRepeat}
-                    className="px-3 py-1.5 rounded-lg border border-[var(--pm-border)] text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] hover:bg-[var(--pm-bg-tertiary)] text-[10px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer">
-                    REPETIR
+                {/* Repeat button overlay */}
+                <div className="absolute bottom-2 right-2">
+                  <button type="button" onClick={handleRepeatPhoto}
+                    className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-black/60 backdrop-blur-sm border border-white/20 text-white hover:bg-black/80 text-[10px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer">
+                    <Camera className="w-3 h-3" />
+                    REPETIR FOTO
                   </button>
                 </div>
-              </div>
-            ) : srcProxy ? (
-              <img
-                src={srcProxy}
-                alt={`Barra ${bar.barNumber}`}
-                className="w-full object-cover max-h-56"
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.style.display = 'none';
-                  const parent = target.parentElement;
-                  if (parent && !parent.querySelector('.fallback-icon')) {
-                    const fallback = document.createElement('div');
-                    fallback.className = 'fallback-icon text-center p-6';
-                    fallback.innerHTML = `
-                      <div class="w-8 h-8 mx-auto mb-2 flex items-center justify-center rounded-lg" style="background: rgba(100,100,100,0.1); border: 1px solid rgba(100,100,100,0.2)">
-                        <svg class="w-4 h-4 text-[var(--pm-text-dim)]/40" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
-                      </div>
-                      <p class="text-[10px] font-mono text-[var(--pm-text-dim)]/40">Cámara no disponible</p>
-                    `;
-                    parent.appendChild(fallback);
-                  }
-                }}
-              />
+                {/* Upload status */}
+                {photoUploadedUrl && (
+                  <div className="absolute top-2 right-2">
+                    <span className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-[var(--pm-accent-emerald)]/20 backdrop-blur-sm border border-[var(--pm-accent-emerald)]/30">
+                      <Check className="w-3 h-3 text-[var(--pm-accent-emerald)]" />
+                      <span className="text-[9px] font-mono font-bold text-[var(--pm-accent-emerald)]">Foto lista</span>
+                    </span>
+                  </div>
+                )}
+              </>
             ) : (
-              <div className="text-center p-6">
-                <div className="w-8 h-8 mx-auto mb-2 flex items-center justify-center rounded-lg" style={{ background: 'rgba(100,100,100,0.1)', border: '1px solid rgba(100,100,100,0.2)' }}>
-                  <Camera className="w-4 h-4 text-[var(--pm-text-dim)]/40" />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="text-center">
+                  <div className="w-10 h-10 mx-auto mb-2 flex items-center justify-center rounded-lg" style={{ background: 'rgba(100,100,100,0.15)', border: '1px solid rgba(100,100,100,0.25)' }}>
+                    <Camera className="w-5 h-5 text-[var(--pm-text-dim)]/40" />
+                  </div>
+                  <p className="text-[10px] font-mono text-[var(--pm-text-dim)]/50">Sin evidencia fotográfica</p>
                 </div>
-                <p className="text-[10px] font-mono text-[var(--pm-text-dim)]/40">Sin evidencia fotográfica</p>
               </div>
             )}
           </div>
@@ -279,46 +250,51 @@ export function BarDetailModal({
             </div>
           </div>
 
-          {/* Device Capture Buttons */}
-          {(isPorValidar || isEditing) && cameraMode === 'idle' && (
-            <div className="flex gap-2">
-              <button type="button" onClick={() => {}}
-                className="flex-1 py-2 rounded-lg border border-[var(--pm-border)]/60 text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] hover:bg-[var(--pm-bg-hover)]/60 text-[10px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1.5"
-                style={{ WebkitTapHighlightColor: 'transparent' }}>
-                <Scale className="w-3 h-3 text-[var(--pm-accent-gold)]" />
-                OBTENER PESO
-              </button>
-              <button type="button" onClick={() => {}}
-                className="flex-1 py-2 rounded-lg border border-[var(--pm-border)]/60 text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] hover:bg-[var(--pm-bg-hover)]/60 text-[10px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1.5"
-                style={{ WebkitTapHighlightColor: 'transparent' }}>
-                <Microscope className="w-3 h-3 text-[var(--pm-accent-gold)]" />
-                OBTENER LEYES
-              </button>
-              <button type="button" onClick={() => setCameraMode('camera')}
-                className="flex-1 py-2 rounded-lg border border-[var(--pm-border)]/60 text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] hover:bg-[var(--pm-bg-hover)]/60 text-[10px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1.5"
-                style={{ WebkitTapHighlightColor: 'transparent' }}>
-                <Camera className="w-3 h-3 text-[var(--pm-accent-cyan)]" />
-                ADJUNTAR FOTO
-              </button>
-            </div>
-          )}
-
           {/* Fine Weight */}
           <div className="p-3 rounded-xl border border-[var(--pm-accent-gold)]/20 bg-[var(--pm-accent-gold)]/5">
             <span className="text-[8px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider block text-center">PESO FINO</span>
             <span className="text-sm font-mono font-bold text-[var(--pm-accent-gold)] block text-center">{formatNumber(fa, 4)} g</span>
           </div>
 
+          {/* Device Capture Buttons — industrial size */}
+          {(isPorValidar || isEditing) && (
+            <div className="grid grid-cols-3 gap-2">
+              <button type="button" onClick={() => {}}
+                className="group relative py-4 rounded-xl border border-[var(--pm-border)]/60 text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] hover:bg-[var(--pm-bg-hover)]/60 text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer flex flex-col items-center gap-2"
+                style={{ WebkitTapHighlightColor: 'transparent' }}>
+                <Scale className="w-5 h-5 text-[var(--pm-accent-gold)] group-hover:drop-shadow-[0_0_6px_rgba(212,175,55,0.4)]" />
+                <span>OBTENER PESO</span>
+                <span className="text-[7px] font-mono text-[var(--pm-text-dim)]/50 normal-case tracking-normal">Próximamente</span>
+              </button>
+              <button type="button" onClick={() => {}}
+                className="group relative py-4 rounded-xl border border-[var(--pm-border)]/60 text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] hover:bg-[var(--pm-bg-hover)]/60 text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer flex flex-col items-center gap-2"
+                style={{ WebkitTapHighlightColor: 'transparent' }}>
+                <Microscope className="w-5 h-5 text-[var(--pm-accent-gold)] group-hover:drop-shadow-[0_0_6px_rgba(212,175,55,0.4)]" />
+                <span>OBTENER LEYES</span>
+                <span className="text-[7px] font-mono text-[var(--pm-text-dim)]/50 normal-case tracking-normal">Próximamente</span>
+              </button>
+              <button type="button" onClick={() => setShowCameraModal(true)}
+                className="group relative py-4 rounded-xl border border-[var(--pm-accent-cyan)]/30 bg-[var(--pm-accent-cyan)]/5 text-[var(--pm-accent-cyan)] hover:bg-[var(--pm-accent-cyan)]/10 text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer flex flex-col items-center gap-2"
+                style={{ WebkitTapHighlightColor: 'transparent' }}>
+                <Camera className="w-5 h-5 group-hover:drop-shadow-[0_0_6px_rgba(6,182,212,0.4)]" />
+                <span>ADJUNTAR FOTO</span>
+                {hasPhoto && (
+                  <span className="text-[7px] font-mono text-[var(--pm-accent-emerald)] normal-case tracking-normal">✓ Capturada</span>
+                )}
+              </button>
+            </div>
+          )}
+
           {/* Action Buttons */}
           <div className="flex gap-3">
             {isEditing ? (
               <>
                 <button type="button" onClick={handleCancelEdit}
-                  className="py-2.5 px-4 rounded-lg border border-[var(--pm-border)] text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] hover:bg-[var(--pm-bg-tertiary)] text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer">
+                  className="py-3 px-5 rounded-lg border border-[var(--pm-border)] text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] hover:bg-[var(--pm-bg-tertiary)] text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer">
                   Cancelar
                 </button>
                 <button type="button" onClick={handleSaveChanges} disabled={isSaving}
-                  className="flex-1 py-2.5 rounded-lg text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="flex-1 py-3 rounded-lg text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   style={{
                     background: 'linear-gradient(135deg, rgba(212,175,55,0.2), rgba(212,175,55,0.1))',
                     color: 'var(--pm-accent-gold)',
@@ -341,11 +317,11 @@ export function BarDetailModal({
             ) : (
               <>
                 <button type="button" onClick={onClose}
-                  className="py-2.5 px-4 rounded-lg border border-[var(--pm-border)] text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] hover:bg-[var(--pm-bg-tertiary)] text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer">
+                  className="py-3 px-5 rounded-lg border border-[var(--pm-border)] text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] hover:bg-[var(--pm-bg-tertiary)] text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer">
                   CERRAR
                 </button>
                 <button type="button" onClick={handleEditClick}
-                  className="py-2.5 px-4 rounded-lg text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2"
+                  className="py-3 px-5 rounded-lg text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2"
                   style={{
                     background: 'linear-gradient(135deg, rgba(212,175,55,0.15), rgba(212,175,55,0.05))',
                     color: 'var(--pm-accent-gold)',
@@ -356,7 +332,7 @@ export function BarDetailModal({
                 </button>
                 {isPorValidar && onValidate && (
                   <button type="button" onClick={handleValidate} disabled={isSaving || !canValidate}
-                    className="flex-1 py-2.5 rounded-lg text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    className="flex-1 py-3 rounded-lg text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     style={{
                       background: 'linear-gradient(135deg, rgba(16,185,129,0.2), rgba(16,185,129,0.1))',
                       color: 'var(--pm-accent-emerald)',
@@ -381,6 +357,31 @@ export function BarDetailModal({
           </div>
         </div>
       </ModalShell>
+
+      {/* Camera Capture Modal — separate overlay */}
+      {showCameraModal && (
+        <div className="fixed inset-0 bg-black/90 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
+          <div className="w-full max-w-lg rounded-2xl overflow-hidden border border-[var(--pm-border)] bg-[var(--pm-bg-primary)] shadow-2xl">
+            {/* Camera header */}
+            <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--pm-border)]/30">
+              <span className="text-[10px] font-mono font-bold text-[var(--pm-accent-cyan)] uppercase tracking-wider flex items-center gap-1.5">
+                <Camera className="w-3.5 h-3.5" /> CAPTURA DE EVIDENCIA
+              </span>
+              <button type="button" onClick={() => setShowCameraModal(false)}
+                className="p-1.5 rounded-lg hover:bg-[var(--pm-bg-tertiary)] text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] active:scale-90 transition-all cursor-pointer">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            {/* Camera viewfinder */}
+            <div className="relative h-[360px] bg-black">
+              <CameraTerminal
+                onCapture={handleCapture}
+                onClose={() => setShowCameraModal(false)}
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* PIN Pad Modal */}
       <PinPadModal
