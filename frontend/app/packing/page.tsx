@@ -326,18 +326,37 @@ export default function PackingPage() {
     setDetailBar(bar);
   };
 
-  const handleDetailSave = async (data: { grossWeight: number; purity: number }) => {
-    if (!detailBar || !selectedPacking) return;
+  const handleDetailValidate = async (barId: string) => {
+    if (!selectedPacking) return;
+    const bar = selectedPacking.bars?.find(b => b.id === barId);
+    if (!bar) return;
 
     setDetailSaving(true);
     try {
       await validatePacking.mutateAsync({
         id: selectedPacking.id,
-        bars: [{ barId: detailBar.id, grossWeight: data.grossWeight, purity: data.purity }],
+        bars: [{ barId, grossWeight: Number(bar.grossWeight), purity: Number(bar.purity) }],
       });
       setDetailBar(null);
     } catch (err) {
       console.error('Validate error:', err);
+    } finally {
+      setDetailSaving(false);
+    }
+  };
+
+  const handleDetailSave = async (barId: string, data: { grossWeight: number; purity: number }) => {
+    if (!selectedPacking) return;
+
+    setDetailSaving(true);
+    try {
+      await validatePacking.mutateAsync({
+        id: selectedPacking.id,
+        bars: [{ barId, grossWeight: data.grossWeight, purity: data.purity }],
+      });
+      setDetailBar(null);
+    } catch (err) {
+      console.error('Save error:', err);
     } finally {
       setDetailSaving(false);
     }
@@ -534,7 +553,8 @@ export default function PackingPage() {
           bar={detailBar}
           spValues={spValuesRef.current[detailBar.id]}
           onClose={() => setDetailBar(null)}
-          onValidate={(detailBar.status === 'POR_VALIDAR' || detailBar.status === 'IN_STOCK' || detailBar.status === 'COMPLETADO') ? handleDetailSave : undefined}
+          onValidate={handleDetailValidate}
+          onSave={handleDetailSave}
           isSaving={detailSaving}
         />
       )}
