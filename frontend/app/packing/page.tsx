@@ -22,7 +22,7 @@ import { BarInventoryPanel } from '@/components/packing/BarInventoryPanel';
 import { PackingListSidebar } from '@/components/packing/PackingListSidebar';
 import { ValidationDetailPanel } from '@/components/packing/ValidationDetailPanel';
 import { DeleteStatusOverlay } from '@/components/packing/DeleteStatusOverlay';
-import { PinPadModal } from '@/components/packing/PinPadModal';
+import { BarDetailModal } from '@/components/packing/BarDetailModal';
 import { PackingsTable } from '@/components/historicos/PackingsTable';
 import { HistoryFilters } from '@/components/historicos/HistoryFilters';
 
@@ -67,11 +67,8 @@ export default function PackingPage() {
   const [barPhotoUrls, setBarPhotoUrls] = useState<Record<string, string>>({});
   const spValuesRef = useRef<Record<string, { grossWeight: number; purity: number; leyAg?: number }>>({});
 
-  const [pinModal, setPinModal] = useState<{
-    bar: Bar;
-    mode: 'new' | 'revalidate';
-  } | null>(null);
-  const [pinSaving, setPinSaving] = useState(false);
+  const [detailBar, setDetailBar] = useState<Bar | null>(null);
+  const [detailSaving, setDetailSaving] = useState(false);
 
   const [historySearchQuery, setHistorySearchQuery] = useState('');
   const [historyDateFrom, setHistoryDateFrom] = useState('');
@@ -326,49 +323,24 @@ export default function PackingPage() {
   };
 
   const handleRowClick = (bar: Bar) => {
-    if (bar.status === 'IN_STOCK' || bar.status === 'COMPLETADO') {
-      setEvidenceBarId(bar.id);
-      return;
-    }
-    if (bar.status === 'POR_VALIDAR') {
-      setPinModal({ bar, mode: 'new' });
-    } else {
-      setPinModal({ bar, mode: 'revalidate' });
-    }
+    setDetailBar(bar);
   };
 
-  const handlePinUnlock = () => {
-    if (!pinModal) return;
-    const bar = pinModal.bar;
-    setPinModal({
-      bar,
-      mode: pinModal.mode,
-    });
-  };
+  const handleDetailSave = async (data: { grossWeight: number; purity: number }) => {
+    if (!detailBar || !selectedPacking) return;
 
-  const handlePinSave = async (data: { grossWeight: string; purity: string }) => {
-    if (!pinModal || !selectedPacking) return;
-    const { bar } = pinModal;
-    const bw = parseFloat(data.grossWeight);
-    const la = parseFloat(data.purity);
-    if (isNaN(bw) || isNaN(la)) return;
-
-    setPinSaving(true);
+    setDetailSaving(true);
     try {
       await validatePacking.mutateAsync({
         id: selectedPacking.id,
-        bars: [{ barId: bar.id, grossWeight: bw, purity: la }],
+        bars: [{ barId: detailBar.id, grossWeight: data.grossWeight, purity: data.purity }],
       });
-      setPinModal(null);
+      setDetailBar(null);
     } catch (err) {
       console.error('Validate error:', err);
     } finally {
-      setPinSaving(false);
+      setDetailSaving(false);
     }
-  };
-
-  const handlePinModalClose = () => {
-    setPinModal(null);
   };
 
   const pendingPackings = useMemo(() =>
@@ -556,22 +528,16 @@ export default function PackingPage() {
         onClose={() => setEvidenceBarId(null)}
       />
 
-      {/* PIN Security Modal */}
-      <PinPadModal
-        isOpen={!!pinModal}
-        onClose={handlePinModalClose}
-        onUnlock={handlePinUnlock}
-        mode={pinModal?.mode === 'revalidate' ? 'confirm' : 'unlock'}
-        title={pinModal?.mode === 'revalidate' ? 'RE-VALIDAR BARRA' : 'PIN DE SEGURIDAD'}
-        subtitle={pinModal?.mode === 'revalidate' ? 'Ingrese PIN para re-validar esta barra' : 'Ingrese 4 dígitos para desbloquear edición'}
-        barInfo={pinModal ? {
-          barNumber: pinModal.bar.barNumber,
-          grossWeight: String(Number(pinModal.bar.grossWeight)),
-          purity: String(Number(pinModal.bar.purity)),
-        } : undefined}
-        onConfirmSave={handlePinSave}
-        isSaving={pinSaving}
-      />
+      {/* Bar Detail Modal */}
+      {detailBar && (
+        <BarDetailModal
+          bar={detailBar}
+          spValues={spValuesRef.current[detailBar.id]}
+          onClose={() => setDetailBar(null)}
+          onValidate={(detailBar.status === 'POR_VALIDAR' || detailBar.status === 'IN_STOCK' || detailBar.status === 'COMPLETADO') ? handleDetailSave : undefined}
+          isSaving={detailSaving}
+        />
+      )}
 
       {/* Confirm Registration Overlay */}
       {confirmRegOverlay && (

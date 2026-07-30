@@ -94,7 +94,7 @@ export function ValidationDetailPanel({
           <div className="px-4 py-2 border-b border-[var(--pm-border)]/20 flex items-center gap-2 bg-[var(--pm-accent-gold)]/3">
             <Shield className="w-3 h-3 text-[var(--pm-accent-gold)]" />
             <span className="text-[9px] font-mono text-[var(--pm-text-dim)] tracking-wider">
-              {'>_ EDICIÓN PROTEGIDA — TOQUE UNA BARRA PARA EDITAR (REQUIERE PIN)'}
+              {'>_ TOQUE UNA BARRA PARA VER DETALLE — EDICIÓN REQUIERE PIN'}
             </span>
           </div>
 
