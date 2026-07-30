@@ -6,6 +6,21 @@ import { X, SlidersHorizontal, RotateCcw, Search } from 'lucide-react';
 import type { Client, ClientRole } from '@/types/api';
 import { useClients } from '@/hooks/useClients';
 
+function useBodyScrollLock(isOpen: boolean) {
+  useEffect(() => {
+    if (!isOpen) return;
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+    document.body.style.overflow = 'hidden';
+    document.body.style.paddingRight = `${scrollbarWidth}px`;
+    return () => {
+      document.body.style.overflow = '';
+      document.body.style.paddingRight = '';
+    };
+  }, [isOpen]);
+}
+
+const springTransition = { type: 'spring', damping: 25, stiffness: 300 } as const;
+
 interface DashboardFiltersProps {
   startDate: string;
   endDate: string;
@@ -155,6 +170,8 @@ export default function DashboardFilters({
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [preset, setPreset] = useState<Preset>('custom');
 
+  useBodyScrollLock(advancedOpen);
+
   const suppliers = useMemo(
     () => allClients.filter((c) => c.role === 'PROVEEDOR' || c.role === 'AMBOS'),
     [allClients],
@@ -259,7 +276,7 @@ export default function DashboardFilters({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.15 }}
+            transition={springTransition}
             className="fixed inset-0 z-[100] flex items-center justify-center p-4"
           >
             <div
@@ -270,7 +287,7 @@ export default function DashboardFilters({
               initial={{ scale: 0.94, opacity: 0, y: 10 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.94, opacity: 0, y: 10 }}
-              transition={{ duration: 0.2 }}
+              transition={springTransition}
               className="relative bg-[#0A0F1C]/80 backdrop-blur-xl border border-white/[0.06] rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] p-6 w-full max-w-md space-y-5"
             >
               <div className="flex items-center justify-between">

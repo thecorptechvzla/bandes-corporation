@@ -63,6 +63,7 @@ interface CustomBlockProps {
   glowColor?: string;
   index?: number;
   treemapId?: string;
+  depth?: number;
 }
 
 function CustomTreemapBlock(props: CustomBlockProps) {
@@ -70,11 +71,12 @@ function CustomTreemapBlock(props: CustomBlockProps) {
     x = 0, y = 0, width = 0, height = 0,
     name = '', value = 0, pct = 0, fill = '#0D1520',
     accent = '#00E5FF', glowColor = '#00E5FF',
-    index = 0, treemapId = 'default',
+    index = 0, treemapId = 'default', depth = 1,
   } = props;
   const [hovered, setHovered] = useState(false);
 
   if (width <= 0 || height <= 0) return null;
+  if (depth !== 1) return <g />; // hide root node
 
   const uid = `${treemapId}-block-${index}`;
   const weightLabel = `${formatNumber(value, 2)} g`;

@@ -229,6 +229,7 @@ export default function V2DashboardPage() {
         name, value,
         pct: total > 0 ? (value / total) * 100 : 0,
         fill: GREEN_PALETTE[idx % GREEN_PALETTE.length],
+        depth: 1,
       }));
   }, [filteredBars]);
 
@@ -249,6 +250,7 @@ export default function V2DashboardPage() {
         name, value,
         pct: total > 0 ? (value / total) * 100 : 0,
         fill: GREEN_PALETTE[idx % GREEN_PALETTE.length],
+        depth: 1,
       }));
   }, [filteredExits]);
 

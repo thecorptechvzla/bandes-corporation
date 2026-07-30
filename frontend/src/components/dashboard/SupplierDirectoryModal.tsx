@@ -1,10 +1,25 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Building2, X } from 'lucide-react';
 import { SupplierDirectory } from '@/components/SupplierDirectory';
 import type { Bar, Client } from '@/types/api';
+
+function useBodyScrollLock(isOpen: boolean) {
+  useEffect(() => {
+    if (!isOpen) return;
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+    document.body.style.overflow = 'hidden';
+    document.body.style.paddingRight = `${scrollbarWidth}px`;
+    return () => {
+      document.body.style.overflow = '';
+      document.body.style.paddingRight = '';
+    };
+  }, [isOpen]);
+}
+
+const springTransition = { type: 'spring', damping: 25, stiffness: 300 } as const;
 
 interface SupplierDirectoryModalProps {
   isOpen: boolean;
@@ -27,6 +42,7 @@ export function SupplierDirectoryModal({
   onClose,
   onBarClick,
 }: SupplierDirectoryModalProps) {
+  useBodyScrollLock(isOpen);
   return (
     <AnimatePresence>
       {isOpen && (
@@ -34,7 +50,7 @@ export function SupplierDirectoryModal({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.15 }}
+          transition={springTransition}
           className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6"
         >
           <div
@@ -45,7 +61,7 @@ export function SupplierDirectoryModal({
             initial={{ scale: 0.94, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.94, opacity: 0 }}
-            transition={{ duration: 0.2 }}
+            transition={springTransition}
             className="relative glass-panel w-full max-w-4xl h-[80vh] max-h-[800px] rounded-2xl border border-[var(--pm-border)] flex flex-col overflow-hidden"
           >
             <div className="flex items-center justify-between p-4 sm:p-5 border-b border-[var(--pm-border)]">

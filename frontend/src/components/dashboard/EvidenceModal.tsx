@@ -1,10 +1,23 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { motion } from 'motion/react';
 import { ClipboardCheck, Camera, Check } from 'lucide-react';
 import { formatNumber } from '@/lib/format';
 import type { Bar } from '@/types/api';
+
+function useBodyScrollLock(isOpen: boolean) {
+  useEffect(() => {
+    if (!isOpen) return;
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+    document.body.style.overflow = 'hidden';
+    document.body.style.paddingRight = `${scrollbarWidth}px`;
+    return () => {
+      document.body.style.overflow = '';
+      document.body.style.paddingRight = '';
+    };
+  }, [isOpen]);
+}
 
 interface EvidenceModalProps {
   barId: string | null;
@@ -32,6 +45,8 @@ export function EvidenceModal({ barId, bars, onClose }: EvidenceModalProps) {
   if (!barId) return null;
   const bar = bars.find(b => b.id === barId);
   if (!bar) return null;
+
+  useBodyScrollLock(true);
 
   const srcProxy = `/api/blob/view?url=${encodeURIComponent(bar.photoUrl || '')}`;
 

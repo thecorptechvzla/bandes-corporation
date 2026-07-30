@@ -1,6 +1,19 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X } from 'lucide-react';
+
+function useBodyScrollLock(isOpen: boolean) {
+  useEffect(() => {
+    if (!isOpen) return;
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+    document.body.style.overflow = 'hidden';
+    document.body.style.paddingRight = `${scrollbarWidth}px`;
+    return () => {
+      document.body.style.overflow = '';
+      document.body.style.paddingRight = '';
+    };
+  }, [isOpen]);
+}
 
 interface ModalShellProps {
   isOpen: boolean;
@@ -42,6 +55,8 @@ export function ModalShell({
   hideCloseButton = false,
   noPadding = false,
 }: ModalShellProps) {
+  useBodyScrollLock(isOpen);
+
   const renderHeader = () => {
     if (noHeader) return null;
 
