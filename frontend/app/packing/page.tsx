@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useClients } from '@/hooks/useClients';
 import { useBars, useCreateBar, useBulkUploadBars } from '@/hooks/useBars';
@@ -22,6 +22,7 @@ import { BarInventoryPanel } from '@/components/packing/BarInventoryPanel';
 import { PackingListSidebar } from '@/components/packing/PackingListSidebar';
 import { ValidationDetailPanel } from '@/components/packing/ValidationDetailPanel';
 import { DeleteStatusOverlay } from '@/components/packing/DeleteStatusOverlay';
+import { PinPadModal } from '@/components/packing/PinPadModal';
 import { PackingsTable } from '@/components/historicos/PackingsTable';
 import { HistoryFilters } from '@/components/historicos/HistoryFilters';
 
@@ -62,20 +63,15 @@ export default function PackingPage() {
   const [validating, setValidating] = useState(false);
   const [validationResult, setValidationResult] = useState<{ total: number; success: number; error: number } | null>(null);
   const [confirmFinalizeModal, setConfirmFinalizeModal] = useState(false);
-  const [selectedBarId, setSelectedBarId] = useState<string | null>(null);
-  const [confirmModal, setConfirmModal] = useState<{
-    barId: string;
-    basculaWeight: string;
-    leyAu: string;
-    leyAg: string;
-  } | null>(null);
-  const [cameraMode, setCameraMode] = useState<'idle' | 'camera' | 'preview'>('idle');
-  const [photoBlob, setPhotoBlob] = useState<Blob | null>(null);
-  const [photoPreviewUrl, setPhotoPreviewUrl] = useState<string | null>(null);
-  const [photoUploadedUrl, setPhotoUploadedUrl] = useState<string | null>(null);
   const [evidenceBarId, setEvidenceBarId] = useState<string | null>(null);
   const [barPhotoUrls, setBarPhotoUrls] = useState<Record<string, string>>({});
   const spValuesRef = useRef<Record<string, { grossWeight: number; purity: number; leyAg?: number }>>({});
+
+  const [pinModal, setPinModal] = useState<{
+    bar: Bar;
+    mode: 'new' | 'revalidate';
+  } | null>(null);
+  const [pinSaving, setPinSaving] = useState(false);
 
   const [historySearchQuery, setHistorySearchQuery] = useState('');
   const [historyDateFrom, setHistoryDateFrom] = useState('');
@@ -329,133 +325,51 @@ export default function PackingPage() {
     setFormError('');
   };
 
-  const handleEditChange = (barId: string, field: string, value: string) => {
-    setValidationEdits(prev => ({
-      ...prev,
-      [barId]: { ...prev[barId], [field]: value },
-    }));
+  const handleRowClick = (bar: Bar) => {
+    if (bar.status === 'IN_STOCK' || bar.status === 'COMPLETADO') {
+      setEvidenceBarId(bar.id);
+      return;
+    }
+    if (bar.status === 'POR_VALIDAR') {
+      setPinModal({ bar, mode: 'new' });
+    } else {
+      setPinModal({ bar, mode: 'revalidate' });
+    }
   };
 
-  const computeDelta = (bar: Bar) => {
-    const edit = validationEdits[bar.id];
-    if (!edit) return 0;
-    const orig = Number(bar.grossWeight);
-    const phys = parseFloat(edit.grossWeight);
-    if (isNaN(phys)) return 0;
-    return phys - orig;
-  };
-
-  const handleRowSelect = (barId: string, status: string) => {
-    if (status !== 'POR_VALIDAR') return;
-    setSelectedBarId(prev => prev === barId ? null : barId);
-  };
-
-  const handleConfirmBar = () => {
-    if (!selectedBarId || !selectedPacking?.bars) return;
-    const bar = selectedPacking.bars.find(b => b.id === selectedBarId);
-    if (!bar) return;
-    resetPhotoState();
-    setConfirmModal({
-      barId: selectedBarId,
-      basculaWeight: String(Number(bar.grossWeight)),
-      leyAu: String(Number(bar.purity)),
-      leyAg: bar.leyAg != null ? String(Number(bar.leyAg)) : '',
+  const handlePinUnlock = () => {
+    if (!pinModal) return;
+    const bar = pinModal.bar;
+    setPinModal({
+      bar,
+      mode: pinModal.mode,
     });
   };
 
-  const handleSyncValidate = async () => {
-    if (!confirmModal || !selectedPacking) return;
-    const { barId, basculaWeight, leyAu, leyAg } = confirmModal;
-    const bw = parseFloat(basculaWeight);
-    const la = parseFloat(leyAu);
-    const lag = parseFloat(leyAg) || 0;
+  const handlePinSave = async (data: { grossWeight: string; purity: string }) => {
+    if (!pinModal || !selectedPacking) return;
+    const { bar } = pinModal;
+    const bw = parseFloat(data.grossWeight);
+    const la = parseFloat(data.purity);
     if (isNaN(bw) || isNaN(la)) return;
 
-    handleEditChange(barId, 'grossWeight', basculaWeight);
-    handleEditChange(barId, 'purity', leyAu);
-    if (leyAg) handleEditChange(barId, 'leyAg', leyAg);
-
-    let url = photoUploadedUrl;
-    if ((!url || url.startsWith('data:')) && photoBlob) {
-      url = await uploadPhoto(photoBlob);
-    }
-
-    const apiUrl = url || undefined;
-
+    setPinSaving(true);
     try {
       await validatePacking.mutateAsync({
         id: selectedPacking.id,
-        bars: [{ barId, grossWeight: bw, purity: la, leyAg: lag > 0 ? lag : undefined, photoUrl: apiUrl }],
+        bars: [{ barId: bar.id, grossWeight: bw, purity: la }],
       });
-      if (url) {
-        setBarPhotoUrls(prev => ({ ...prev, [barId]: url }));
-      }
-      setConfirmModal(null);
-      setSelectedBarId(null);
-      resetPhotoState();
+      setPinModal(null);
     } catch (err) {
-      console.error('Sync error:', err);
+      console.error('Validate error:', err);
+    } finally {
+      setPinSaving(false);
     }
   };
 
-  const uploadPhoto = useCallback(async (blob: Blob): Promise<string> => {
-    const fd = new FormData();
-    fd.append('file', blob, `photo-${Date.now()}.jpg`);
-    const res = await fetch('/api/blob/upload', { method: 'POST', body: fd });
-    if (!res.ok) throw new Error('Error al subir la foto');
-    const data = await res.json();
-    return data.url as string;
-  }, []);
-
-  const handleCapture = useCallback(async (blob: Blob) => {
-    const localUrl = URL.createObjectURL(blob);
-    setPhotoBlob(blob);
-    setPhotoPreviewUrl(localUrl);
-    setCameraMode('preview');
-    try {
-      const url = await uploadPhoto(blob);
-      setPhotoUploadedUrl(url);
-      if (confirmModal) {
-        setBarPhotoUrls(prev => ({ ...prev, [confirmModal.barId]: url }));
-      }
-    } catch (err) {
-      console.error('Auto-upload failed, will retry on sync:', err);
-    }
-  }, [uploadPhoto, confirmModal]);
-
-  const resetPhotoState = useCallback(() => {
-    if (photoPreviewUrl) URL.revokeObjectURL(photoPreviewUrl);
-    setPhotoBlob(null);
-    setPhotoPreviewUrl(null);
-    setPhotoUploadedUrl(null);
-    setCameraMode('idle');
-  }, [photoPreviewUrl]);
-
-  const handleDeviceFieldChange = useCallback((field: string, value: string) => {
-    setConfirmModal(prev => prev ? { ...prev, [field]: value } : null);
-  }, []);
-
-  const handleRepeatPhoto = useCallback(() => {
-    if (photoPreviewUrl) URL.revokeObjectURL(photoPreviewUrl);
-    setPhotoBlob(null);
-    setPhotoPreviewUrl(null);
-    setPhotoUploadedUrl(null);
-    setCameraMode('camera');
-  }, [photoPreviewUrl]);
-
-  const handleDeviceClose = useCallback(() => {
-    setConfirmModal(null);
-    setSelectedBarId(null);
-    resetPhotoState();
-  }, [resetPhotoState]);
-
-  const modalLiveFA = useMemo(() => {
-    if (!confirmModal) return 0;
-    const w = parseFloat(confirmModal.basculaWeight);
-    const p = parseFloat(confirmModal.leyAu);
-    if (isNaN(w) || isNaN(p)) return 0;
-    return w * (p / 1000);
-  }, [confirmModal]);
+  const handlePinModalClose = () => {
+    setPinModal(null);
+  };
 
   const pendingPackings = useMemo(() =>
     packings.filter(p => p.status === 'PENDING'),
@@ -588,26 +502,11 @@ export default function PackingPage() {
               selectedPacking={selectedPacking}
               validationResult={validationResult}
               validationEdits={validationEdits}
-              selectedBarId={selectedBarId}
               allBarsValidated={allBarsValidated}
               validatedCount={validatedCount}
               totalCount={totalCount}
               isPending={finalizePacking.isPending}
-              confirmModal={confirmModal}
-              cameraMode={cameraMode}
-              photoPreviewUrl={photoPreviewUrl}
-              photoUploadedUrl={photoUploadedUrl}
-              modalLiveFA={modalLiveFA}
-              onEditChange={handleEditChange}
-              onComputeDelta={computeDelta}
-              onRowSelect={handleRowSelect}
-              onConfirmBar={handleConfirmBar}
-              onSyncValidate={handleSyncValidate}
-              onDeviceClose={handleDeviceClose}
-              onCapture={handleCapture}
-              onRepeatPhoto={handleRepeatPhoto}
-              onDeviceFieldChange={handleDeviceFieldChange}
-              onCameraModeChange={setCameraMode}
+              onRowClick={handleRowClick}
               onSetEvidenceBarId={setEvidenceBarId}
               onSetConfirmFinalizeModal={setConfirmFinalizeModal}
             />
@@ -655,6 +554,23 @@ export default function PackingPage() {
         spValues={spValuesRef.current}
         barPhotoUrls={barPhotoUrls}
         onClose={() => setEvidenceBarId(null)}
+      />
+
+      {/* PIN Security Modal */}
+      <PinPadModal
+        isOpen={!!pinModal}
+        onClose={handlePinModalClose}
+        onUnlock={handlePinUnlock}
+        mode={pinModal?.mode === 'revalidate' ? 'confirm' : 'unlock'}
+        title={pinModal?.mode === 'revalidate' ? 'RE-VALIDAR BARRA' : 'PIN DE SEGURIDAD'}
+        subtitle={pinModal?.mode === 'revalidate' ? 'Ingrese PIN para re-validar esta barra' : 'Ingrese 4 dígitos para desbloquear edición'}
+        barInfo={pinModal ? {
+          barNumber: pinModal.bar.barNumber,
+          grossWeight: String(Number(pinModal.bar.grossWeight)),
+          purity: String(Number(pinModal.bar.purity)),
+        } : undefined}
+        onConfirmSave={handlePinSave}
+        isSaving={pinSaving}
       />
 
       {/* Confirm Registration Overlay */}
