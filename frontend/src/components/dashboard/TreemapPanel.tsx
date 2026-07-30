@@ -62,6 +62,7 @@ interface CustomBlockProps {
   accent?: string;
   glowColor?: string;
   index?: number;
+  treemapId?: string;
 }
 
 function CustomTreemapBlock(props: CustomBlockProps) {
@@ -69,13 +70,13 @@ function CustomTreemapBlock(props: CustomBlockProps) {
     x = 0, y = 0, width = 0, height = 0,
     name = '', value = 0, pct = 0, fill = '#0D1520',
     accent = '#00E5FF', glowColor = '#00E5FF',
-    index = 0,
+    index = 0, treemapId = 'default',
   } = props;
   const [hovered, setHovered] = useState(false);
 
   if (width <= 0 || height <= 0) return null;
 
-  const uid = `block-${index}`;
+  const uid = `${treemapId}-block-${index}`;
   const weightLabel = `${formatNumber(value, 2)} g`;
 
   const showName = width > 50 && height > 40;
@@ -182,6 +183,7 @@ interface TreemapPanelProps {
   onToggleView: () => void;
   emptyIcon: React.ComponentType<{ className?: string }>;
   emptyLabel: string;
+  treemapId: string;
 }
 
 export function TreemapPanel({
@@ -196,6 +198,7 @@ export function TreemapPanel({
   onToggleView,
   emptyIcon: EmptyIcon,
   emptyLabel,
+  treemapId,
 }: TreemapPanelProps) {
   const renderTreemap = () => (
     <>
@@ -206,7 +209,7 @@ export function TreemapPanel({
           aspectRatio={4 / 3}
           stroke="transparent"
           isAnimationActive={true}
-          content={<CustomTreemapBlock accent={accent} glowColor={glowColor} />}
+          content={<CustomTreemapBlock accent={accent} glowColor={glowColor} treemapId={treemapId} />}
         >
           <Tooltip content={<TreemapTooltip accent={accent} scaleLabel={scaleLabel} />} />
         </Treemap>

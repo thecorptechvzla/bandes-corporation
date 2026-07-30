@@ -58,7 +58,7 @@ function hashStr(s: string): number {
   return Math.abs(h);
 }
 
-const GREEN_PALETTE = ['rgba(16, 185, 129, 0.6)', 'rgba(5, 150, 105, 0.6)', 'rgba(4, 120, 87, 0.6)'];
+const GREEN_PALETTE = ['#10b981', '#059669', '#047857', '#065f46'];
 
 export default function V2DashboardPage() {
   const [filterStartDate, setFilterStartDate] = useState('');
@@ -347,6 +347,7 @@ export default function V2DashboardPage() {
           onToggleView={() => setShowTableIngresos(!showTableIngresos)}
           emptyIcon={Scale}
           emptyLabel="SIN DATOS DE INGRESOS"
+          treemapId="ingresos"
         />
         <TreemapPanel
           title="EGRESOS POR CLIENTE"
@@ -360,6 +361,7 @@ export default function V2DashboardPage() {
           onToggleView={() => setShowTableEgresos(!showTableEgresos)}
           emptyIcon={TrendingDown}
           emptyLabel="SIN DATOS DE EGRESOS"
+          treemapId="egresos"
         />
       </div>
 
