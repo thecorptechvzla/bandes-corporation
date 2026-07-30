@@ -8,10 +8,10 @@
 :root {
   /* ── Background Palette ── */
   --hud-bg-deepest:   #070A13;       /* App background — near-black midnight blue */
-  --hud-bg-base:      #080B11;       /* Main content area */
-  --hud-bg-card:      #0D121F;       /* Card / surface — solid, no glass */
-  --hud-bg-hover:     #111827;       /* Row / element hover */
-  --hud-bg-elevated:  #131A2A;       /* Elevated surface (drawers, active states) */
+  --hud-bg-base:      #0A0F1A;       /* Sidebar & content base — distinguishable from deepest */
+  --hud-bg-card:      #111A2E;       /* Card / surface — clearly lifted from base */
+  --hud-bg-hover:     #151E34;       /* Row / element hover */
+  --hud-bg-elevated:  #1A2440;       /* Elevated surface (drawers, active states) */
 
   /* ── Border Palette ── */
   --hud-border:       #1E293B;       /* Default border */
@@ -145,13 +145,16 @@ main {
   background-size: 48px 48px;
 }
 
-/* ── Card (solid container, ultra-thin border, no glass) ── */
+/* ── Card (solid container, ultra-thin border, inner ring, no glass) ── */
 .hud-card {
   background: var(--hud-bg-card);
   border: 1px solid rgba(30, 41, 59, 0.5);
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
-  transition: box-shadow 200ms ease;
+  transition: box-shadow 200ms ease, border-color 200ms ease;
+  /* Inner edge highlight to visually separate card from background */
+  outline: 1px solid rgba(255, 255, 255, 0.03);
+  outline-offset: -1px;
 }
 
 .hud-card:hover {
@@ -221,13 +224,14 @@ main {
   padding: 8px 16px;
 }
 
-/* ── Sidebar ── */
+/* ── Sidebar — Cyberpunk Trading Terminal ── */
 .hud-sidebar {
-  width: 220px;
+  width: 256px;
   background: var(--hud-bg-base);
-  border-right: 1px solid var(--hud-border);
+  border-right: 1px solid rgba(30, 41, 59, 0.5);
   flex-shrink: 0;
   overflow: hidden;
+  box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.03);
 }
 
 .hud-sidebar .nav-item {
@@ -235,26 +239,30 @@ main {
   align-items: center;
   gap: 12px;
   padding: 10px 18px;
+  margin: 0 8px;
   font-size: 12px;
   font-family: var(--hud-font-mono);
   font-weight: 600;
   letter-spacing: 0.05em;
   color: var(--hud-text-dim);
   border-left: 2px solid transparent;
+  border-radius: 0 6px 6px 0;
   transition: all 150ms ease;
   cursor: pointer;
   text-decoration: none;
+  position: relative;
 }
 
 .hud-sidebar .nav-item:hover {
   color: var(--hud-text-primary);
-  background: rgba(17, 24, 39, 0.6);
+  background: rgba(255, 255, 255, 0.03);
 }
 
 .hud-sidebar .nav-item.active {
   color: #F3F4F6;
-  background: rgba(16, 185, 129, 0.06);
-  border-left-color: var(--hud-accent-emerald);
+  border-left: 4px solid var(--hud-accent-emerald);
+  background: linear-gradient(90deg, rgba(16, 185, 129, 0.12) 0%, transparent 100%);
+  box-shadow: inset 3px 0 12px -4px rgba(16, 185, 129, 0.15);
 }
 
 /* ── Scrollbar ── */
@@ -334,6 +342,8 @@ p, span.text-\[\#8C8C8C\], td, .text-neutral-400 {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6) !important;
   border-radius: 12px;
   transition: box-shadow 200ms ease;
+  outline: 1px solid rgba(255, 255, 255, 0.03) !important;
+  outline-offset: -1px;
 }
 
 .glass-panel:hover {
@@ -386,13 +396,14 @@ p, span.text-\[\#8C8C8C\], td, .text-neutral-400 {
   background: var(--hud-bg-hover);
 }
 
-/* V2 sidebar → HUD sidebar */
+/* V2 sidebar → mapped to HUD sidebar */
 .v2-sidebar {
-  width: 220px;
+  width: 256px;
   background: var(--hud-bg-base);
-  border-right: 1px solid var(--hud-border);
+  border-right: 1px solid rgba(30, 41, 59, 0.5);
   flex-shrink: 0;
   overflow: hidden;
+  box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.03);
 }
 
 .v2-sidebar .nav-item {
@@ -400,26 +411,30 @@ p, span.text-\[\#8C8C8C\], td, .text-neutral-400 {
   align-items: center;
   gap: 12px;
   padding: 10px 18px;
+  margin: 0 8px;
   font-size: 12px;
   font-family: var(--hud-font-mono);
   font-weight: 600;
   letter-spacing: 0.05em;
   color: var(--hud-text-dim);
   border-left: 2px solid transparent;
+  border-radius: 0 6px 6px 0;
   transition: all 150ms ease;
   cursor: pointer;
   text-decoration: none;
+  position: relative;
 }
 
 .v2-sidebar .nav-item:hover {
   color: var(--hud-text-primary);
-  background: rgba(17, 24, 39, 0.6);
+  background: rgba(255, 255, 255, 0.03);
 }
 
 .v2-sidebar .nav-item.active {
   color: #F3F4F6;
-  background: rgba(16, 185, 129, 0.06);
-  border-left-color: var(--hud-accent-emerald);
+  border-left: 4px solid var(--hud-accent-emerald);
+  background: linear-gradient(90deg, rgba(16, 185, 129, 0.12) 0%, transparent 100%);
+  box-shadow: inset 3px 0 12px -4px rgba(16, 185, 129, 0.15);
 }
 
 /* V2 scroll → HUD scroll */

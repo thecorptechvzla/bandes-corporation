@@ -106,7 +106,7 @@ export default function RootLayout({
             <div className="hud-grid min-h-screen text-[var(--hud-text-primary)] font-sans flex overflow-hidden">
 
               {/* ═══ DESKTOP SIDEBAR ═══ */}
-              <aside className="v2-sidebar hidden lg:flex lg:flex-col">
+              <aside className="hud-sidebar hidden lg:flex lg:flex-col">
                   <div className="flex items-center gap-3 h-16 px-5 shrink-0 border-b border-[var(--hud-border)]">
                   <img src="/Bandes2.png" alt="Bandes" className="w-8 h-8 rounded-lg object-contain" />
                   <span className="text-sm font-mono font-bold text-[#F3F4F6] tracking-widest">

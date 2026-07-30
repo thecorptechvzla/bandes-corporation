@@ -93,31 +93,47 @@ function CustomTreemapBlock(props: CustomBlockProps) {
       style={{ cursor: 'pointer' }}
     >
       <defs>
-        <linearGradient id={`glass-${uid}`} x1="0" y1="0" x2="1" y2="1">
+        {/* LED cell gradient — diagonal with depth */}
+        <linearGradient id={`led-${uid}`} x1="0" y1="0" x2="1" y2="1">
           <stop offset="0%" stopColor={fill} stopOpacity={1} />
-          <stop offset="100%" stopColor={fill} stopOpacity={0.85} />
+          <stop offset="100%" stopColor={fill} stopOpacity={0.7} />
         </linearGradient>
-        <linearGradient id={`inner-${uid}`} x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="rgba(255,255,255,0.15)" />
+        {/* LED top highlight — retroillumination effect */}
+        <linearGradient id={`led-top-${uid}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="rgba(255,255,255,0.18)" />
+          <stop offset="40%" stopColor="rgba(255,255,255,0)" />
+        </linearGradient>
+        {/* LED shine — subtle diagonal sheen */}
+        <linearGradient id={`led-shine-${uid}`} x1="0" y1="1" x2="0.5" y2="0">
+          <stop offset="0%" stopColor="rgba(255,255,255,0)" />
           <stop offset="60%" stopColor="rgba(255,255,255,0)" />
+          <stop offset="100%" stopColor="rgba(255,255,255,0.06)" />
         </linearGradient>
       </defs>
 
+      {/* Base LED cell */}
       <rect x={x} y={y} width={width} height={height}
-        fill={`url(#glass-${uid})`} rx={8} />
+        fill={`url(#led-${uid})`} rx={8} />
 
+      {/* Retroillumination (top glow) */}
       <rect x={x} y={y} width={width} height={height}
-        fill={`url(#inner-${uid})`} rx={8} />
+        fill={`url(#led-top-${uid})`} rx={8} />
 
-      <rect x={x + 1} y={y + 1} width={width - 2} height={height - 2}
-        fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth={1} rx={7} />
+      {/* Diagonal sheen */}
+      <rect x={x} y={y} width={width} height={height}
+        fill={`url(#led-shine-${uid})`} rx={8} />
 
+      {/* Border — LED frame */}
       <rect x={x} y={y} width={width} height={height} fill="none" stroke={fill}
-        strokeOpacity={hovered ? 0.7 : 0.25} strokeWidth={1.5} rx={8} />
+        strokeOpacity={hovered ? 0.9 : 0.5} strokeWidth={1.5} rx={8} />
+
+      {/* Inner light border */}
+      <rect x={x + 1} y={y + 1} width={width - 2} height={height - 2}
+        fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={0.75} rx={7} />
 
       {hovered && (
         <rect x={x} y={y} width={width} height={height}
-          fill="rgba(255,255,255,0.08)" rx={8} />
+          fill="rgba(255,255,255,0.06)" rx={8} />
       )}
 
       {showName && (

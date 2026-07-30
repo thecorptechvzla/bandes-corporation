@@ -8,8 +8,8 @@ import { useMaterialExits } from '@/hooks/useExits';
 import { useProcesses } from '@/hooks/useProcesses';
 import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
 import {
-  ClipboardList, Flame, Warehouse, Inbox, TrendingDown,
-  Scale, Pickaxe,
+  Flame, Warehouse, Inbox, TrendingDown,
+  Scale, Scale as ScaleIcon, Inbox as InboxIcon,
 } from 'lucide-react';
 import { AreaChart, Area, ResponsiveContainer } from 'recharts';
 import { formatNumber } from '@/lib/format';
@@ -20,6 +20,8 @@ import { BovedaModal } from '@/components/dashboard/BovedaModal';
 import { KpiCardGrid, KPI_COLORS } from '@/components/dashboard/KpiCardGrid';
 import { BalancesTable } from '@/components/dashboard/BalancesTable';
 import { TreemapPanel } from '@/components/dashboard/TreemapPanel';
+import { QuickActions } from '@/components/dashboard/QuickActions';
+import { ActivityTerminal } from '@/components/dashboard/ActivityTerminal';
 
 function SparklineArea({ data, color, id }: { data: number[]; color: string; id: string }) {
   const chartData = data.map((v, i) => ({ i, v }));
@@ -47,16 +49,7 @@ function SparklineArea({ data, color, id }: { data: number[]; color: string; id:
   );
 }
 
-const KPI_ICONS = [ClipboardList, Flame, Warehouse, Inbox];
 
-function hashStr(s: string): number {
-  let h = 0;
-  for (let i = 0; i < s.length; i++) {
-    h = ((h << 5) - h) + s.charCodeAt(i);
-    h |= 0;
-  }
-  return Math.abs(h);
-}
 
 const GREEN_PALETTE = ['#10b981', '#059669', '#047857', '#065f46'];
 
@@ -365,6 +358,27 @@ export default function V2DashboardPage() {
           emptyLabel="SIN DATOS DE EGRESOS"
           treemapId="egresos"
         />
+      </div>
+
+      {/* Quick Actions + Activity Terminal */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mt-5">
+        <div className="lg:col-span-1">
+          <QuickActions
+            actions={[
+              { label: 'Ingresar Material', icon: ScaleIcon, accent: '#10B981', shortcut: 'Ctrl+I', onClick: () => setIsIngresoModalOpen(true) },
+              { label: 'Ver Procesos', icon: Flame, accent: '#F59E0B', shortcut: 'Ctrl+P', onClick: () => setIsProcesoModalOpen(true) },
+              { label: 'Bóveda', icon: Warehouse, accent: '#EAB308', shortcut: 'Ctrl+B', onClick: () => setIsBovedaModalOpen(true) },
+              { label: 'Stock Pendiente', icon: InboxIcon, accent: '#06B6D4', shortcut: 'Ctrl+S', onClick: () => setIsPorRefundirModalOpen(true) },
+            ]}
+          />
+        </div>
+        <div className="lg:col-span-2">
+          <ActivityTerminal
+            bars={bars}
+            exits={exits}
+            processes={processes}
+          />
+        </div>
       </div>
 
       {/* Balances Table */}

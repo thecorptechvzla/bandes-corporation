@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { ClipboardList, Flame, Warehouse, Inbox } from 'lucide-react';
+import { ClipboardList, Flame, Warehouse, Inbox, TrendingUp, TrendingDown } from 'lucide-react';
 import { AreaChart, Area, ResponsiveContainer } from 'recharts';
 import { formatNumber } from '@/lib/format';
 
@@ -28,6 +28,15 @@ interface KpiItem {
     value: number;
     icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
   }[];
+}
+
+function calcTrend(spark: number[]): { delta: number; direction: 'up' | 'down' | 'flat' } | null {
+  if (spark.length < 4) return null;
+  const last = spark[spark.length - 1];
+  const prevAvg = spark.slice(0, -1).reduce((s, v) => s + v, 0) / (spark.length - 1);
+  if (prevAvg === 0) return null;
+  const delta = ((last - prevAvg) / prevAvg) * 100;
+  return { delta, direction: delta > 0.1 ? 'up' : delta < -0.1 ? 'down' : 'flat' };
 }
 
 const KPI_COLORS = [
@@ -120,6 +129,8 @@ export function KpiCardGrid({ kpiData, isMounted, onCardClick }: KpiCardGridProp
               boxShadow: hoveredIndex === idx
                 ? `0 0 25px -5px ${kpi.accent}, 0 4px 20px rgba(0,0,0,0.6)`
                 : '0 4px 20px rgba(0,0,0,0.6)',
+              outline: '1px solid rgba(255,255,255,0.03)',
+              outlineOffset: -1,
             }}
             onClick={() => onCardClick(idx)}
           >
@@ -131,12 +142,33 @@ export function KpiCardGrid({ kpiData, isMounted, onCardClick }: KpiCardGridProp
                 >
                   <Icon className="w-4.5 h-4.5" style={{ color: kpi.accent }} />
                 </div>
-                <span
-                  className="text-[9px] font-mono font-bold tracking-wider px-2 py-0.5 rounded"
-                  style={{ background: `${kpi.accent}10`, color: kpi.accent, border: `1px solid ${kpi.accent}20` }}
-                >
-                  {kpi.tag}
-                </span>
+                <div className="flex items-center gap-2">
+                  {(() => {
+                    const trend = calcTrend(kpi.spark);
+                    if (!trend || trend.direction === 'flat') return null;
+                    return (
+                      <span
+                        className={`inline-flex items-center gap-0.5 text-[9px] font-mono font-bold px-1.5 py-0.5 rounded ${
+                          trend.direction === 'up'
+                            ? 'text-emerald-400 bg-emerald-500/10'
+                            : 'text-red-400 bg-red-500/10'
+                        }`}
+                      >
+                        {trend.direction === 'up'
+                          ? <TrendingUp className="w-2.5 h-2.5" />
+                          : <TrendingDown className="w-2.5 h-2.5" />
+                        }
+                        {Math.abs(trend.delta).toFixed(1)}%
+                      </span>
+                    );
+                  })()}
+                  <span
+                    className="text-[9px] font-mono font-bold tracking-wider px-2 py-0.5 rounded"
+                    style={{ background: `${kpi.accent}10`, color: kpi.accent, border: `1px solid ${kpi.accent}20` }}
+                  >
+                    {kpi.tag}
+                  </span>
+                </div>
               </div>
 
               <span className="text-[11px] text-[var(--hud-text-dim)] font-sans block mb-1">{kpi.label}</span>
