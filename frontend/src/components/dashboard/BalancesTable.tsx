@@ -36,7 +36,7 @@ export function BalancesTable({ clientBalances, totalBalance, onClientClick }: B
       <div className="flex items-center justify-between px-6 pt-5 pb-3 border-b border-[var(--hud-border)]">
         <div>
           <h3 className="text-sm font-semibold text-[var(--hud-text-primary)] font-sans">
-            Resumen de Balances
+            Balances
           </h3>
           <p className="text-[11px] text-[var(--hud-text-dim)] font-sans mt-0.5">
             Ingresos, recuperación y egresos por cliente.

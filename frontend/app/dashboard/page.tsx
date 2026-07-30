@@ -109,6 +109,11 @@ export default function V2DashboardPage() {
 
   const ingresoBars = filteredBars;
 
+  const totalIngresoGross = useMemo(
+    () => ingresoBars.reduce((s, b) => s + Number(b.grossWeight), 0),
+    [ingresoBars],
+  );
+
   const procesoBars = useMemo(
     () => filteredBars.filter((b) => b.status === 'PROCESANDO'),
     [filteredBars],
@@ -245,11 +250,11 @@ export default function V2DashboardPage() {
   const kpiData = [
     {
       label: 'Oro Recibido',
-      value: metrics?.oroRecibido.fineWeight ?? 0,
+      value: totalIngresoGross,
       subicon: Scale,
-      sublabel: `Peso Fino total: ${formatNumber(metrics?.oroRecibido.fineWeight ?? 0, 2)} g`,
+      sublabel: `PESO BRUTO: ${formatNumber(totalIngresoGross, 2)} g`,
       accent: KPI_COLORS[0].accent,
-      tag: KPI_COLORS[0].label,
+      tag: 'PESO BRUTO',
       postfix: '',
       spark: sparkIn,
     },
