@@ -31,9 +31,9 @@ export function BalancesTable({ clientBalances, totalBalance, onClientClick }: B
       initial={{ opacity: 0, y: 32 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.35, duration: 0.45 }}
-      className="hud-card overflow-hidden mt-5"
+      className="hud-card overflow-hidden"
     >
-      <div className="flex items-center justify-between px-6 pt-5 pb-3 border-b border-white/5">
+      <div className="flex items-center justify-between px-6 pt-5 pb-3 border-b border-[var(--hud-border)]">
         <div>
           <h3 className="text-sm font-semibold text-[var(--hud-text-primary)] font-sans">
             Resumen de Balances
@@ -43,11 +43,12 @@ export function BalancesTable({ clientBalances, totalBalance, onClientClick }: B
           </p>
         </div>
         <div className="text-right">
-          <span className="text-[10px] text-[var(--hud-text-dim)] font-mono block">BALANCE TOTAL</span>
+          <span className="text-[10px] text-[var(--hud-text-muted)] font-mono block uppercase tracking-wider">BALANCE TOTAL</span>
           <span
             className={`text-sm font-mono font-bold ${totalBalance >= 0 ? 'text-[var(--hud-accent-emerald)]' : 'text-[var(--hud-accent-red)]'}`}
+            style={{ filter: `drop-shadow(0 0 6px ${totalBalance >= 0 ? 'rgba(16,185,129,0.4)' : 'rgba(239,68,68,0.4)'})` }}
           >
-            {fmtG(Math.abs(totalBalance))}
+            {fmtG(Math.abs(totalBalance))} g
             {totalBalance < 0 ? ' (negativo)' : ''}
           </span>
         </div>
@@ -55,21 +56,24 @@ export function BalancesTable({ clientBalances, totalBalance, onClientClick }: B
 
       {clientBalances.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16">
-          <Coins className="w-12 h-12 text-gray-500/30 mb-3" />
-          <span className="text-sm font-mono text-gray-500/50">No hay datos de clientes</span>
+          <Coins className="w-12 h-12 text-[var(--hud-text-muted)]/30 mb-3" />
+          <span className="text-sm font-mono text-[var(--hud-text-muted)]">No hay datos de clientes</span>
         </div>
       ) : (
         <div className="overflow-x-auto">
           <div className="min-w-[1000px]">
-            <div className="grid grid-cols-[180px_repeat(5,120px)_100px_80px] px-4 py-2.5 border-b border-white/5 text-[9px] font-mono font-bold tracking-[0.1em] uppercase text-[var(--hud-text-muted)]">
+            <div
+              className="grid grid-cols-[180px_repeat(5,120px)_100px_80px] px-5 py-3 border-b border-[var(--hud-border)] text-[9px] font-sans font-bold tracking-[0.12em] uppercase text-[var(--hud-text-muted)]"
+              style={{ background: 'var(--hud-bg-deepest)' }}
+            >
               <div className="text-left">Cliente</div>
-              <div className="text-right">Peso Bruto (G)</div>
-              <div className="text-right">Peso Fino (G)</div>
-              <div className="text-right">R (G)</div>
-              <div className="text-right">Egresos (G)</div>
-              <div className="text-right">Balance (G)</div>
-              <div className="text-right">MERMA (G)</div>
-              <div className="text-right">MERMA (%)</div>
+              <div className="text-right">Peso Bruto</div>
+              <div className="text-right">Peso Fino</div>
+              <div className="text-right">R</div>
+              <div className="text-right">Egresos</div>
+              <div className="text-right">Balance</div>
+              <div className="text-right">MERMA</div>
+              <div className="text-right">%</div>
             </div>
             {clientBalances.map((c, idx) => (
               <motion.div
@@ -78,8 +82,8 @@ export function BalancesTable({ clientBalances, totalBalance, onClientClick }: B
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.45 + idx * 0.04, duration: 0.3 }}
                 onClick={() => onClientClick(c.id)}
-                className="grid grid-cols-[180px_repeat(5,120px)_100px_80px] px-4 py-2.5 border-b border-white/5 text-[12px] font-mono transition-all duration-100 hover:bg-[var(--hud-bg-hover)] active:scale-[0.98] cursor-pointer"
-                style={{ background: idx % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.015)' }}
+                className="grid grid-cols-[180px_repeat(5,120px)_100px_80px] px-5 py-3 border-b border-white/[0.02] text-[12px] font-mono transition-all duration-150 hover:bg-[var(--hud-bg-elevated)] active:scale-[0.98] cursor-pointer"
+                style={{ background: idx % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.01)' }}
               >
                 <div className="text-left font-sans font-semibold text-[var(--hud-text-primary)] truncate">
                   {c.name}
@@ -96,14 +100,17 @@ export function BalancesTable({ clientBalances, totalBalance, onClientClick }: B
                 <div className="text-right text-[var(--hud-accent-red)]">
                   {fmtG(c.egresos)}
                 </div>
-                <div className={`text-right font-bold ${c.balance >= 0 ? 'text-[var(--hud-accent-emerald)]' : 'text-[var(--hud-accent-red)]'}`}>
-                  {fmtG(Math.abs(c.balance))}
+                <div
+                  className={`text-right font-bold ${c.balance >= 0 ? 'text-[var(--hud-accent-emerald)]' : 'text-[var(--hud-accent-red)]'}`}
+                  style={{ filter: `drop-shadow(0 0 4px ${c.balance >= 0 ? 'rgba(16,185,129,0.3)' : 'rgba(239,68,68,0.3)'})` }}
+                >
+                  {fmtG(Math.abs(c.balance))} g
                   {c.balance < 0 ? ' −' : ''}
                 </div>
                 <div className="text-right text-[var(--hud-accent-red)]">
                   {formatNumber(c.mermaG, 2)}
                 </div>
-                <div className="text-right text-[var(--hud-accent-red)]">
+                <div className="text-right text-[var(--hud-accent-amber)]">
                   {formatNumber(c.mermaPct, 1)}%
                 </div>
               </motion.div>

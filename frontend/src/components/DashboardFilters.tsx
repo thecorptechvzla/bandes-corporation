@@ -216,7 +216,7 @@ export default function DashboardFilters({
           />
         </div>
 
-        <div className="w-px h-5 bg-white/[0.06] shrink-0" />
+        <div className="w-px h-5 bg-[var(--hud-border)] shrink-0" />
 
         {/* Presets */}
         <div className="flex gap-1 shrink-0">
@@ -229,9 +229,9 @@ export default function DashboardFilters({
               key={val}
               type="button"
               onClick={() => applyPreset(val)}
-              className={`px-2.5 py-1 text-[9px] font-mono font-bold tracking-wider rounded-full transition-all ${
+              className={`px-3 py-1.5 text-[9px] font-mono font-bold tracking-wider rounded-lg transition-all ${
                 preset === val
-                  ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20'
+                  ? 'bg-[var(--hud-accent-gold)]/10 text-[var(--hud-accent-gold)] border border-[var(--hud-accent-gold)]/25'
                   : 'bg-transparent text-[var(--hud-text-dim)] border border-transparent hover:border-[var(--hud-border)] hover:text-[var(--hud-text-primary)]'
               }`}
             >
@@ -240,15 +240,15 @@ export default function DashboardFilters({
           ))}
         </div>
 
-        <div className="w-px h-5 bg-white/[0.06] shrink-0" />
+        <div className="w-px h-5 bg-[var(--hud-border)] shrink-0" />
 
         {/* Advanced filters toggle */}
         <button
           type="button"
           onClick={() => setAdvancedOpen(true)}
-          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[9px] font-mono font-bold tracking-wider transition-all shrink-0 ${
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[9px] font-mono font-bold tracking-wider transition-all shrink-0 ${
             supplierId || clientId
-              ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20'
+              ? 'bg-[var(--hud-accent-gold)]/10 text-[var(--hud-accent-gold)] border border-[var(--hud-accent-gold)]/25'
               : 'bg-transparent text-[var(--hud-text-dim)] border border-transparent hover:border-[var(--hud-border)] hover:text-[var(--hud-text-primary)]'
           }`}
         >
@@ -261,7 +261,7 @@ export default function DashboardFilters({
           <button
             type="button"
             onClick={handleClear}
-            className="flex items-center gap-1 px-2 py-1 text-[9px] font-mono text-[var(--hud-text-dim)] hover:text-emerald-400 transition-all shrink-0"
+            className="flex items-center gap-1 px-2 py-1 text-[9px] font-mono text-[var(--hud-text-muted)] hover:text-[var(--hud-accent-gold)] transition-all shrink-0"
           >
             <RotateCcw className="w-3 h-3" />
             <span className="hidden md:inline">Limpiar</span>
@@ -288,7 +288,7 @@ export default function DashboardFilters({
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.94, opacity: 0, y: 10 }}
               transition={springTransition}
-              className="relative bg-[var(--hud-bg-card)]/90 border border-[rgba(30,41,59,0.5)] rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.6)] p-6 w-full max-w-md space-y-5"
+              className="relative bg-[var(--hud-bg-card)]/95 border border-[var(--hud-border)] rounded-2xl shadow-[0_12px_48px_rgba(0,0,0,0.6)] p-6 w-full max-w-md space-y-5 backdrop-blur-xl"
             >
               <div className="flex items-center justify-between">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-[var(--hud-text-primary)]">

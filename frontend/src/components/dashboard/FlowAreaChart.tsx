@@ -31,9 +31,10 @@ function FlowTooltip({ active, payload, label }: any) {
     <div
       className="rounded-xl px-4 py-3 text-[10px] font-mono space-y-1.5 min-w-[180px]"
       style={{
-        background: 'var(--hud-bg-card)',
-        border: '1px solid rgba(255,255,255,0.06)',
-        boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+        background: 'var(--hud-bg-elevated)',
+        border: '1px solid var(--hud-border)',
+        boxShadow: '0 12px 40px rgba(0,0,0,0.5)',
+        backdropFilter: 'blur(12px)',
       }}
     >
       <p className="text-[9px] text-[var(--hud-text-muted)] uppercase tracking-widest font-bold">
@@ -64,7 +65,7 @@ export function FlowAreaChart({ data, isMounted }: FlowAreaChartProps) {
       transition={{ delay: 0.15, duration: 0.45 }}
       className="hud-card overflow-hidden h-full"
     >
-      <div className="flex items-center gap-2 px-5 pt-4 pb-2 border-b border-white/5">
+      <div className="flex items-center gap-2 px-5 pt-4 pb-2 border-b border-[var(--hud-border)]">
         <TrendingUp className="w-3.5 h-3.5 text-[var(--hud-accent-sky)]" />
         <h3 className="text-[10px] font-bold text-[var(--hud-text-primary)] font-mono tracking-wider uppercase">
           Flujo de Material (30 días)
@@ -73,64 +74,107 @@ export function FlowAreaChart({ data, isMounted }: FlowAreaChartProps) {
 
       {!hasData || !isMounted ? (
         <div className="flex items-center justify-center py-20">
-          <span className="text-xs font-mono text-[var(--hud-text-dim)]/50">Sin datos de flujo</span>
+          <span className="text-xs font-mono text-[var(--hud-text-muted)]">Sin datos de flujo</span>
         </div>
       ) : (
         <div className="px-3 pt-4 pb-2">
-          <ResponsiveContainer width="100%" height={240}>
-            <AreaChart data={data} margin={{ top: 5, right: 16, bottom: 0, left: -10 }}>
+          <ResponsiveContainer width="100%" height={260}>
+            <AreaChart data={data} margin={{ top: 10, right: 24, bottom: 0, left: -8 }}>
               <defs>
                 <linearGradient id="grad-sky" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="var(--hud-accent-sky)" stopOpacity={0.25} />
+                  <stop offset="0%" stopColor="var(--hud-accent-sky)" stopOpacity={0.4} />
+                  <stop offset="30%" stopColor="var(--hud-accent-sky)" stopOpacity={0.15} />
                   <stop offset="100%" stopColor="var(--hud-accent-sky)" stopOpacity={0} />
                 </linearGradient>
                 <linearGradient id="grad-gold" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="var(--hud-accent-gold)" stopOpacity={0.25} />
+                  <stop offset="0%" stopColor="var(--hud-accent-gold)" stopOpacity={0.4} />
+                  <stop offset="30%" stopColor="var(--hud-accent-gold)" stopOpacity={0.15} />
                   <stop offset="100%" stopColor="var(--hud-accent-gold)" stopOpacity={0} />
                 </linearGradient>
+                <filter id="glow-sky" x="-50%" y="-50%" width="200%" height="200%">
+                  <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                  <feMerge>
+                    <feMergeNode in="coloredBlur"/>
+                    <feMergeNode in="SourceGraphic"/>
+                  </feMerge>
+                </filter>
+                <filter id="glow-gold" x="-50%" y="-50%" width="200%" height="200%">
+                  <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                  <feMerge>
+                    <feMergeNode in="coloredBlur"/>
+                    <feMergeNode in="SourceGraphic"/>
+                  </feMerge>
+                </filter>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+              <CartesianGrid
+                strokeDasharray="4 8"
+                stroke="rgba(255,255,255,0.03)"
+                vertical={false}
+              />
               <XAxis
                 dataKey="date"
                 tickFormatter={formatTickDate}
-                tick={{ fontSize: 9, fill: 'var(--hud-text-dim)' }}
-                axisLine={{ stroke: 'rgba(255,255,255,0.06)' }}
+                tick={{ fontSize: 10, fill: 'var(--hud-text-dim)', fontFamily: 'var(--hud-font-mono)' }}
+                axisLine={{ stroke: 'rgba(255,255,255,0.04)' }}
                 tickLine={false}
                 interval="preserveStartEnd"
+                tickMargin={8}
               />
               <YAxis
-                tick={{ fontSize: 9, fill: 'var(--hud-text-dim)' }}
+                tick={{ fontSize: 10, fill: 'var(--hud-text-dim)', fontFamily: 'var(--hud-font-mono)' }}
                 axisLine={false}
                 tickLine={false}
                 tickFormatter={(v: number) => v >= 1000 ? `${(v / 1000).toFixed(1)}k` : `${v}`}
+                tickCount={5}
+                dy={-4}
               />
-              <Tooltip content={<FlowTooltip />} />
+              <Tooltip content={<FlowTooltip />} wrapperStyle={{ outline: 'none' }} />
               <Legend
                 iconType="circle"
                 iconSize={6}
-                wrapperStyle={{ fontSize: 9, fontFamily: 'var(--hud-font-mono)', paddingTop: 8 }}
+                wrapperStyle={{ fontSize: 9, fontFamily: 'var(--hud-font-mono)', paddingTop: 12 }}
               />
               <Area
                 type="monotone"
                 dataKey="ingresos"
                 name="Ingresos"
                 stroke="var(--hud-accent-sky)"
-                strokeWidth={2}
+                strokeWidth={2.5}
+                strokeLinecap="round"
+                strokeLinejoin="round"
                 fill="url(#grad-sky)"
+                filter="url(#glow-sky)"
                 dot={false}
-                activeDot={{ r: 4, strokeWidth: 0 }}
+                activeDot={{
+                  r: 5,
+                  stroke: '#fff',
+                  strokeWidth: 2,
+                  fill: 'var(--hud-accent-sky)',
+                }}
                 isAnimationActive={isMounted}
+                animationDuration={1000}
+                animationEasing="ease-out"
               />
               <Area
                 type="monotone"
                 dataKey="egresos"
                 name="Egresos"
                 stroke="var(--hud-accent-gold)"
-                strokeWidth={2}
+                strokeWidth={2.5}
+                strokeLinecap="round"
+                strokeLinejoin="round"
                 fill="url(#grad-gold)"
+                filter="url(#glow-gold)"
                 dot={false}
-                activeDot={{ r: 4, strokeWidth: 0 }}
+                activeDot={{
+                  r: 5,
+                  stroke: '#fff',
+                  strokeWidth: 2,
+                  fill: 'var(--hud-accent-gold)',
+                }}
                 isAnimationActive={isMounted}
+                animationDuration={1000}
+                animationEasing="ease-out"
               />
             </AreaChart>
           </ResponsiveContainer>

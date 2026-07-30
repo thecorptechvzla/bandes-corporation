@@ -56,12 +56,13 @@ function SparklineArea({ data, color, id }: { data: number[]; color: string; id:
       : [0.1, 0.4, 0.3, 0.7, 1];
   const chartData = raw.map((v, i) => ({ i, v }));
   return (
-    <div className="w-full h-12 overflow-hidden">
+    <div className="w-full h-14 overflow-hidden">
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={chartData} margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
+        <AreaChart data={chartData} margin={{ top: 2, right: 0, bottom: 0, left: 0 }}>
           <defs>
             <linearGradient id={`spark-${id}`} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={color} stopOpacity={0.15} />
+              <stop offset="0%" stopColor={color} stopOpacity={0.35} />
+              <stop offset="50%" stopColor={color} stopOpacity={0.1} />
               <stop offset="100%" stopColor={color} stopOpacity={0} />
             </linearGradient>
           </defs>
@@ -69,12 +70,20 @@ function SparklineArea({ data, color, id }: { data: number[]; color: string; id:
             type="monotone"
             dataKey="v"
             stroke={color}
-            strokeWidth={1.5}
-            strokeOpacity={1}
+            strokeWidth={2}
+            strokeLinecap="round"
+            strokeLinejoin="round"
             fill={`url(#spark-${id})`}
             dot={false}
-            activeDot={false}
-            isAnimationActive={false}
+            activeDot={{
+              r: 4,
+              stroke: '#fff',
+              strokeWidth: 2,
+              fill: color,
+            }}
+            isAnimationActive={true}
+            animationDuration={800}
+            animationEasing="ease-out"
           />
         </AreaChart>
       </ResponsiveContainer>
@@ -123,26 +132,26 @@ export function KpiCardGrid({ kpiData, isMounted, onCardClick }: KpiCardGridProp
             transition={{ delay: 0.1 * idx, duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
             onMouseEnter={() => setHoveredIndex(idx)}
             onMouseLeave={() => setHoveredIndex(null)}
-            className="relative overflow-hidden cursor-pointer bg-[var(--hud-bg-card)] rounded-2xl shadow-[0_8px_40px_rgba(0,0,0,0.30)] hover:-translate-y-1.5 active:scale-[0.97] transition-all duration-300 ease-out"
+            className="relative overflow-hidden cursor-pointer hud-card hover:-translate-y-1.5 active:scale-[0.97] transition-all duration-300 ease-out"
             style={{
               boxShadow: hoveredIndex === idx
                 ? `0 0 30px -8px ${kpi.accent}, 0 8px 40px rgba(0,0,0,0.30)`
-                : '0 8px 40px rgba(0,0,0,0.30)',
+                : 'var(--hud-shadow-card)',
             }}
             onClick={() => onCardClick(idx)}
           >
             {/* Top accent bar — colored indicator per KPI */}
             <div
-              className="absolute top-0 left-0 right-0 h-[3px] rounded-t-xl z-20"
+              className="absolute top-0 left-0 right-0 h-[2px] rounded-t-2xl z-20"
               style={{ background: kpi.accent }}
             />
-            <div className="relative z-10 p-5">
+            <div className="relative z-10 p-6">
               <div className="flex items-center justify-between mb-4">
                 <div
-                  className="w-9 h-9 rounded-xl flex items-center justify-center"
-                  style={{ background: `${kpi.accent}12` }}
+                  className="w-10 h-10 rounded-xl flex items-center justify-center"
+                  style={{ background: `${kpi.accent}15` }}
                 >
-                  <Icon className="w-4.5 h-4.5" style={{ color: kpi.accent }} />
+                  <Icon className="w-5 h-5" style={{ color: kpi.accent }} />
                 </div>
                 <div className="flex items-center gap-2">
                   {(() => {
@@ -150,7 +159,7 @@ export function KpiCardGrid({ kpiData, isMounted, onCardClick }: KpiCardGridProp
                     if (!trend || trend.direction === 'flat') return null;
                     return (
                       <span
-                        className={`inline-flex items-center gap-0.5 text-[9px] font-mono font-bold px-1.5 py-0.5 rounded ${
+                        className={`inline-flex items-center gap-0.5 text-[9px] font-mono font-bold px-2 py-0.5 rounded-lg ${
                           trend.direction === 'up'
                             ? 'text-emerald-400 bg-emerald-500/10'
                             : 'text-red-400 bg-red-500/10'
@@ -165,8 +174,8 @@ export function KpiCardGrid({ kpiData, isMounted, onCardClick }: KpiCardGridProp
                     );
                   })()}
                   <span
-                    className="text-[9px] font-mono font-bold tracking-wider px-2 py-0.5 rounded"
-                    style={{ background: `${kpi.accent}10`, color: kpi.accent, border: `1px solid ${kpi.accent}20` }}
+                    className="text-[9px] font-mono font-bold tracking-wider px-2.5 py-1 rounded-lg"
+                    style={{ background: `${kpi.accent}12`, color: kpi.accent, border: `1px solid ${kpi.accent}25` }}
                   >
                     {kpi.tag}
                   </span>
@@ -175,7 +184,7 @@ export function KpiCardGrid({ kpiData, isMounted, onCardClick }: KpiCardGridProp
 
               <span className="text-[11px] text-[var(--hud-text-dim)] font-sans block mb-1">{kpi.label}</span>
               <div className="flex items-baseline gap-1.5 mb-2">
-                <span className="text-2xl font-mono font-bold text-[var(--hud-text-primary)] tracking-tight" style={{ filter: `drop-shadow(0 0 8px ${kpi.accent}80)` }}>
+                <span className="text-3xl font-mono font-bold text-[var(--hud-text-primary)] tracking-tight" style={{ filter: `drop-shadow(0 0 12px ${kpi.accent}60)` }}>
                   {!isMounted
                     ? '0,00'
                     : kpi.postfix === '%'
@@ -188,7 +197,7 @@ export function KpiCardGrid({ kpiData, isMounted, onCardClick }: KpiCardGridProp
               </div>
 
               {kpi.sparks ? (
-                <div className="mb-3 h-14 flex flex-col justify-end gap-1">
+                <div className="mb-3 h-16 flex flex-col justify-end gap-1">
                   {kpi.sparks.map((sp, i) => (
                     <div key={i} className="h-6">
                       {isMounted && (
@@ -202,7 +211,7 @@ export function KpiCardGrid({ kpiData, isMounted, onCardClick }: KpiCardGridProp
                   ))}
                 </div>
               ) : kpi.proportion ? (
-                <div className="mb-3 h-12 flex items-end">
+                <div className="mb-3 h-14 flex items-end">
                   <ProportionBar items={kpi.proportion} />
                 </div>
               ) : (

@@ -5,7 +5,7 @@ import { motion } from 'motion/react';
 import { BarChart3 } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip,
-  ResponsiveContainer, Cell, LabelList,
+  ResponsiveContainer, Cell, LabelList, CartesianGrid,
 } from 'recharts';
 import { formatNumber } from '@/lib/format';
 
@@ -25,11 +25,12 @@ function BarTooltip({ active, payload }: any) {
   const entry = payload[0].payload;
   return (
     <div
-      className="rounded-xl px-3.5 py-2.5 text-[10px] font-mono space-y-1 min-w-[170px]"
+      className="rounded-xl px-4 py-3 text-[10px] font-mono space-y-1.5 min-w-[180px]"
       style={{
-        background: 'var(--hud-bg-card)',
-        border: '1px solid rgba(255,255,255,0.06)',
-        boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+        background: 'var(--hud-bg-elevated)',
+        border: '1px solid var(--hud-border)',
+        boxShadow: '0 12px 40px rgba(0,0,0,0.5)',
+        backdropFilter: 'blur(12px)',
       }}
     >
       <p className="text-[var(--hud-text-primary)] font-semibold text-[11px]">{entry.displayName}</p>
@@ -44,7 +45,16 @@ function BarTooltip({ active, payload }: any) {
   );
 }
 
-const BALANCE_PALETTE = ['#10B981', '#06B6D4', '#EAB308', '#F59E0B', '#8B5CF6', '#EC4899', '#14B8A6', '#6366F1'];
+const BALANCE_GRADIENTS = [
+  ['#10B981', '#059669'],
+  ['#06B6D4', '#0891B2'],
+  ['#EAB308', '#CA8A04'],
+  ['#F59E0B', '#D97706'],
+  ['#8B5CF6', '#7C3AED'],
+  ['#EC4899', '#DB2777'],
+  ['#14B8A6', '#0D9488'],
+  ['#6366F1', '#4F46E5'],
+];
 
 export function ClientBalancesBarChart({ clientBalances, isMounted }: ClientBalancesBarChartProps) {
   const chartData = useMemo(() => {
@@ -54,8 +64,9 @@ export function ClientBalancesBarChart({ clientBalances, isMounted }: ClientBala
         displayName: c.name.length > 14 ? `${c.name.slice(0, 12)}…` : c.name,
         balance: c.balance,
         color: c.balance >= 0
-          ? BALANCE_PALETTE[idx % BALANCE_PALETTE.length]
+          ? BALANCE_GRADIENTS[idx % BALANCE_GRADIENTS.length][0]
           : '#EF4444',
+        gradientId: `bar-grad-${idx}`,
       }))
       .reverse();
   }, [clientBalances]);
@@ -69,49 +80,80 @@ export function ClientBalancesBarChart({ clientBalances, isMounted }: ClientBala
       transition={{ delay: 0.30, duration: 0.45 }}
       className="hud-card overflow-hidden h-full"
     >
-      <div className="flex items-center gap-2 px-5 pt-4 pb-2 border-b border-white/5">
+      <div className="flex items-center gap-2 px-5 pt-4 pb-2 border-b border-[var(--hud-border)]">
         <BarChart3 className="w-3.5 h-3.5 text-[var(--hud-accent-gold)]" />
         <h3 className="text-[10px] font-bold text-[var(--hud-text-primary)] font-mono tracking-wider uppercase">
           Top Balances
         </h3>
-        <span className="text-[8px] font-mono text-[var(--hud-text-dim)] ml-auto">
+        <span className="text-[8px] font-mono text-[var(--hud-text-muted)] ml-auto">
           por cliente
         </span>
       </div>
 
       {!hasData || !isMounted ? (
         <div className="flex items-center justify-center py-20">
-          <span className="text-xs font-mono text-[var(--hud-text-dim)]/50">Sin datos de balances</span>
+          <span className="text-xs font-mono text-[var(--hud-text-muted)]">Sin datos de balances</span>
         </div>
       ) : (
         <div className="px-3 pt-3 pb-3">
-          <ResponsiveContainer width="100%" height={240}>
-            <BarChart data={chartData} layout="vertical" margin={{ top: 0, right: 40, bottom: 0, left: 0 }}>
+          <ResponsiveContainer width="100%" height={260}>
+            <BarChart data={chartData} layout="vertical" margin={{ top: 4, right: 48, bottom: 0, left: 0 }}>
+              <defs>
+                {BALANCE_GRADIENTS.map(([c1, c2], idx) => (
+                  <linearGradient key={idx} id={`bar-grad-${idx}`} x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stopColor={c1} stopOpacity={0.9} />
+                    <stop offset="100%" stopColor={c2} stopOpacity={0.7} />
+                  </linearGradient>
+                ))}
+              </defs>
+              <CartesianGrid
+                strokeDasharray="4 8"
+                stroke="rgba(255,255,255,0.03)"
+                horizontal={false}
+              />
               <XAxis
                 type="number"
-                tick={{ fontSize: 9, fill: 'var(--hud-text-dim)' }}
-                axisLine={{ stroke: 'rgba(255,255,255,0.06)' }}
+                tick={{ fontSize: 10, fill: 'var(--hud-text-dim)', fontFamily: 'var(--hud-font-mono)' }}
+                axisLine={{ stroke: 'rgba(255,255,255,0.04)' }}
                 tickLine={false}
                 tickFormatter={(v: number) => v >= 1000 ? `${(v / 1000).toFixed(1)}k` : `${v}`}
+                tickCount={5}
               />
               <YAxis
                 type="category"
                 dataKey="displayName"
-                tick={{ fontSize: 9, fill: 'var(--hud-text-dim)' }}
+                tick={{ fontSize: 10, fill: 'var(--hud-text-dim)', fontFamily: 'var(--hud-font-sans)' }}
                 axisLine={false}
                 tickLine={false}
-                width={95}
+                width={100}
               />
-              <Tooltip content={<BarTooltip />} />
-              <Bar dataKey="balance" radius={[0, 4, 4, 0]} barSize={14} isAnimationActive={isMounted}>
+              <Tooltip content={<BarTooltip />} wrapperStyle={{ outline: 'none' }} />
+              <Bar
+                dataKey="balance"
+                radius={[0, 8, 8, 0]}
+                barSize={18}
+                isAnimationActive={isMounted}
+                animationDuration={1000}
+                animationEasing="ease-out"
+              >
                 {chartData.map((entry, idx) => (
-                  <Cell key={idx} fill={entry.color} fillOpacity={0.85} />
+                  <Cell
+                    key={idx}
+                    fill={`url(#bar-grad-${BALANCE_GRADIENTS.findIndex(g => g[0] === entry.color) >= 0 ? BALANCE_GRADIENTS.findIndex(g => g[0] === entry.color) : 0})`}
+                    fillOpacity={1}
+                  />
                 ))}
                 <LabelList
                   dataKey="balance"
-                  position="right"
-                  formatter={(v: number) => `${formatNumber(v, 1)} g`}
-                  style={{ fontSize: 9, fontFamily: 'var(--hud-font-mono)', fontWeight: 600, fill: 'var(--hud-text-dim)' }}
+                  position="insideEnd"
+                  offset={8}
+                  formatter={(v: number) => `${formatNumber(v, 1)}g`}
+                  style={{
+                    fontSize: 10,
+                    fontFamily: 'var(--hud-font-mono)',
+                    fontWeight: 700,
+                    fill: 'var(--hud-text-primary)',
+                  }}
                 />
               </Bar>
             </BarChart>

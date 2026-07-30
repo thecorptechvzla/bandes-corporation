@@ -311,8 +311,8 @@ export default function V2DashboardPage() {
         />
       </div>
 
-      {/* ═══ MEGA GRID — 12 COL ═══ */}
-      <div className="grid gap-5" style={{ gridTemplateColumns: 'repeat(12, 1fr)' }}>
+      {/* ═══ BENTO GRID — 12 COL ═══ */}
+      <div className="grid gap-6" style={{ gridTemplateColumns: 'repeat(12, 1fr)' }}>
 
         {/* ── Fila 1: KPIs (full width) ── */}
         <div className="col-span-12">
@@ -388,8 +388,8 @@ export default function V2DashboardPage() {
       </div>
 
       {/* Footer note */}
-      <p className="text-[9px] text-[var(--hud-text-dim)] font-mono text-center opacity-50 mt-5">
-        Datos actualizados en tiempo real · Bandes HUD
+      <p className="text-[9px] text-[var(--hud-text-muted)] font-mono text-center mt-6">
+        Datos actualizados en tiempo real · Bandes Analytics
       </p>
 
       {/* ═══ MODALS ═══ */}

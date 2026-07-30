@@ -10,7 +10,20 @@ import {
   ArrowLeftRight, FolderUp, LogOut,
   Calendar, History, Menu, X,
 } from 'lucide-react';
+import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
+
+const geistSans = Geist({
+  subsets: ['latin'],
+  variable: '--font-geist-sans',
+  display: 'swap',
+});
+
+const geistMono = Geist_Mono({
+  subsets: ['latin'],
+  variable: '--font-geist-mono',
+  display: 'swap',
+});
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -97,7 +110,7 @@ export default function RootLayout({
         <link rel="icon" type="image/png" href="/Bandes2.png" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       </head>
-      <body className="min-h-screen font-sans antialiased text-[var(--hud-text-primary)] bg-[var(--hud-bg-deepest)]">
+      <body className={`${geistSans.variable} ${geistMono.variable} min-h-screen font-sans antialiased text-[var(--hud-text-primary)] bg-[var(--hud-bg-deepest)]`}>
         <QueryClientProvider client={queryClient}>
           <GoldTraceabilityProvider>
             <div className="hud-grid min-h-screen text-[var(--hud-text-primary)] font-sans flex overflow-hidden">
@@ -105,9 +118,9 @@ export default function RootLayout({
               {/* ═══ DESKTOP SIDEBAR ═══ */}
               <aside className="hud-sidebar hidden lg:flex lg:flex-col">
                   <div className="flex items-center gap-3 h-16 px-5 shrink-0">
-                  <img src="/Bandes2.png" alt="Bandes" className="w-8 h-8 rounded-lg object-contain" />
-                  <span className="text-sm font-mono font-bold text-[#F3F4F6] tracking-widest">
-                    CONTROL MINING
+                  <img src="/Bandes2.png" alt="Bandes" className="w-8 h-8 rounded-xl object-contain" />
+                  <span className="text-xs font-mono font-bold text-slate-50 tracking-[0.2em] uppercase">
+                    Bandes
                   </span>
                 </div>
                   <nav className="flex-1 flex flex-col gap-0.5 py-4 overflow-y-auto">
@@ -132,17 +145,16 @@ export default function RootLayout({
               {/* ═══ MOBILE DRAWER ═══ */}
               <aside className={`
                 fixed inset-y-0 left-0 z-50 flex flex-col w-72
-                v2-sidebar
-                bg-[var(--hud-bg-base)]
+                bg-[var(--hud-bg-base)] border-r border-[var(--hud-border)]
                 transition-transform duration-300 ease-in-out
                 lg:hidden
                 ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}
               `}>
                   <div className="flex items-center justify-between h-16 px-5 shrink-0">
                   <div className="flex items-center gap-3">
-                    <img src="/Bandes2.png" alt="Bandes" className="w-8 h-8 rounded-lg object-contain" />
-                    <span className="text-sm font-mono font-bold text-[#F3F4F6] tracking-widest">
-                      CONTROL MINING
+                    <img src="/Bandes2.png" alt="Bandes" className="w-8 h-8 rounded-xl object-contain" />
+                    <span className="text-xs font-mono font-bold text-slate-50 tracking-[0.2em] uppercase">
+                      Bandes
                     </span>
                   </div>
                   <button
@@ -167,24 +179,24 @@ export default function RootLayout({
               <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
 
                 {/* Header */}
-                <header className="h-14 shrink-0 flex items-center justify-between px-4 sm:px-6 bg-[var(--hud-bg-card)]/80 shadow-[0_4px_20px_rgba(0,0,0,0.15)]">
+                <header className="h-14 shrink-0 flex items-center justify-between px-4 sm:px-6 bg-[var(--hud-bg-card)]/90 backdrop-blur-md border-b border-[var(--hud-border)]">
                   <div className="flex items-center gap-3">
                     <button
                       onClick={() => setMobileOpen(true)}
-                      className="lg:hidden p-1.5 rounded-lg hover:bg-[var(--hud-bg-card)] text-[var(--hud-text-dim)] hover:text-[var(--hud-text-primary)] transition-colors cursor-pointer"
+                      className="lg:hidden p-1.5 rounded-xl hover:bg-[var(--hud-bg-elevated)] text-[var(--hud-text-dim)] hover:text-[var(--hud-text-primary)] transition-colors cursor-pointer"
                     >
                       <Menu className="w-5 h-5" />
                     </button>
-                    <span className="text-[10px] font-mono font-bold text-[var(--hud-accent-gold)] uppercase tracking-[0.15em]">
+                    <span className="text-xs font-mono font-bold text-[var(--hud-accent-gold)] uppercase tracking-[0.18em]">
                       {routeLabels[activeTab] || activeTab}
                     </span>
                   </div>
-                  <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-1.5 px-2.5 py-1 bg-[var(--hud-bg-deepest)]/60 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 px-3 py-1.5 bg-[var(--hud-bg-deepest)] rounded-xl border border-[var(--hud-border)]">
                       <span className="w-1.5 h-1.5 rounded-full bg-[var(--hud-accent-emerald)] animate-pulse" />
                       <span className="text-[10px] font-mono text-[var(--hud-text-dim)]">{sysTime}</span>
                     </div>
-                    <div className="hidden sm:flex items-center gap-2 px-2.5 py-1 bg-[var(--hud-bg-deepest)]/60 rounded-lg">
+                    <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-[var(--hud-bg-deepest)] rounded-xl border border-[var(--hud-border)]">
                       <Calendar className="w-3 h-3 text-[var(--hud-accent-gold)]" />
                       <span className="text-[10px] font-mono text-[var(--hud-text-dim)]">
                         {new Date().toLocaleDateString('es-ES', {
@@ -197,19 +209,19 @@ export default function RootLayout({
 
                 {/* Content */}
                 <main className="flex-1 overflow-y-auto hud-scroll">
-                  <div className="w-full p-4 sm:p-6 md:p-8 space-y-8">
+                  <div className="w-full p-4 sm:p-6 md:p-8 space-y-6">
                     {children}
                   </div>
                 </main>
 
                 {/* Status bar */}
-                <footer className="h-7 shrink-0 flex items-center px-6 bg-[var(--hud-bg-card)] shadow-[0_-2px_12px_rgba(0,0,0,0.12)]">
-                  <div className="flex items-center gap-4 text-[8px] font-mono text-[var(--hud-text-dim)]">
-                    <span className="flex items-center gap-1">
-                      <span className="w-1 h-1 rounded-full bg-[var(--hud-accent-emerald)]" />
+                <footer className="h-7 shrink-0 flex items-center px-6 bg-[var(--hud-bg-card)]/80 border-t border-[var(--hud-border)]">
+                  <div className="flex items-center gap-4 text-[9px] font-mono text-[var(--hud-text-muted)]">
+                    <span className="flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[var(--hud-accent-emerald)]" />
                       SYS ONLINE
                     </span>
-                    <span className="hidden sm:inline">BANDES Premium</span>
+                    <span className="hidden sm:inline">Bandes Analytics</span>
                   </div>
                 </footer>
               </div>

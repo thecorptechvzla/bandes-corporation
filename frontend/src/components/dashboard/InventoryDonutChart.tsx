@@ -17,11 +17,12 @@ function DonutTooltip({ active, payload }: any) {
   const entry = payload[0];
   return (
     <div
-      className="rounded-xl px-3.5 py-2.5 text-[10px] font-mono space-y-1 min-w-[150px]"
+      className="rounded-xl px-4 py-3 text-[10px] font-mono space-y-1.5 min-w-[160px]"
       style={{
-        background: 'var(--hud-bg-card)',
-        border: '1px solid rgba(255,255,255,0.06)',
-        boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+        background: 'var(--hud-bg-elevated)',
+        border: '1px solid var(--hud-border)',
+        boxShadow: '0 12px 40px rgba(0,0,0,0.5)',
+        backdropFilter: 'blur(12px)',
       }}
     >
       <div className="flex items-center gap-1.5">
@@ -51,7 +52,7 @@ export function InventoryDonutChart({ fundido, sinFundir, isMounted }: Inventory
       transition={{ delay: 0.2, duration: 0.45 }}
       className="hud-card overflow-hidden h-full"
     >
-      <div className="flex items-center gap-2 px-5 pt-4 pb-2 border-b border-white/5">
+      <div className="flex items-center gap-2 px-5 pt-4 pb-2 border-b border-[var(--hud-border)]">
         <Warehouse className="w-3.5 h-3.5 text-[var(--hud-accent-emerald)]" />
         <h3 className="text-[10px] font-bold text-[var(--hud-text-primary)] font-mono tracking-wider uppercase">
           Estado Bóveda
@@ -60,11 +61,11 @@ export function InventoryDonutChart({ fundido, sinFundir, isMounted }: Inventory
 
       {!hasData || !isMounted ? (
         <div className="flex items-center justify-center py-20">
-          <span className="text-xs font-mono text-[var(--hud-text-dim)]/50">Sin datos en bóveda</span>
+          <span className="text-xs font-mono text-[var(--hud-text-muted)]">Sin datos en bóveda</span>
         </div>
       ) : (
         <div className="relative px-3 pt-4 pb-4">
-          <ResponsiveContainer width="100%" height={200}>
+          <ResponsiveContainer width="100%" height={220}>
             <PieChart>
               <Pie
                 data={chartData}
@@ -72,37 +73,44 @@ export function InventoryDonutChart({ fundido, sinFundir, isMounted }: Inventory
                 nameKey="name"
                 cx="50%"
                 cy="50%"
-                innerRadius={55}
-                outerRadius={78}
-                strokeWidth={0}
+                innerRadius={64}
+                outerRadius={84}
+                strokeWidth={2}
+                stroke="var(--hud-bg-deepest)"
                 isAnimationActive={isMounted}
+                animationDuration={1000}
+                animationEasing="ease-out"
               >
                 {chartData.map((entry, idx) => (
                   <Cell key={idx} fill={entry.color} />
                 ))}
               </Pie>
-              <Tooltip content={<DonutTooltip />} />
+              <Tooltip content={<DonutTooltip />} wrapperStyle={{ outline: 'none' }} />
             </PieChart>
           </ResponsiveContainer>
 
           {/* Center label */}
           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none" style={{ top: 24 }}>
-            <span className="text-[8px] font-mono text-[var(--hud-text-muted)] uppercase tracking-[0.15em]">
+            <span className="text-[9px] font-mono text-[var(--hud-text-muted)] uppercase tracking-[0.18em]">
               En Bóveda
             </span>
-            <span className="text-lg font-bold font-mono text-[var(--hud-text-primary)] mt-0.5">
+            <span className="text-2xl font-bold font-mono text-[var(--hud-text-primary)] mt-1" style={{ filter: 'drop-shadow(0 0 8px rgba(16, 185, 129, 0.4))' }}>
               {formatNumber(total, 2)}
             </span>
-            <span className="text-[8px] font-mono text-[var(--hud-text-muted)]">gramos</span>
+            <span className="text-[9px] font-mono text-[var(--hud-text-muted)] uppercase tracking-wider">gramos</span>
           </div>
 
-          {/* Legend */}
-          <div className="flex items-center justify-center gap-5 mt-2">
+          {/* Legend — pills */}
+          <div className="flex items-center justify-center gap-3 mt-3">
             {chartData.map(item => (
-              <div key={item.name} className="flex items-center gap-1.5 text-[9px] font-mono">
-                <span className="w-2 h-2 rounded-full" style={{ background: item.color }} />
-                <span className="text-[var(--hud-text-dim)]">{item.name}:</span>
-                <span className="font-semibold" style={{ color: item.color }}>
+              <div
+                key={item.name}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg"
+                style={{ background: 'var(--hud-bg-deepest)', border: '1px solid var(--hud-border)' }}
+              >
+                <span className="w-2.5 h-2.5 rounded-full" style={{ background: item.color }} />
+                <span className="text-[9px] font-mono text-[var(--hud-text-dim)]">{item.name}</span>
+                <span className="text-[10px] font-mono font-bold" style={{ color: item.color }}>
                   {formatNumber(item.value, 2)} g
                 </span>
               </div>
