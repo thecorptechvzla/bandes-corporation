@@ -198,7 +198,7 @@ export default function DashboardFilters({
   return (
     <>
       {/* Floating pill */}
-      <div className="inline-flex flex-wrap items-center justify-center gap-4 bg-[var(--hud-bg-card)]/80 border border-[rgba(30,41,59,0.5)] shadow-[0_4px_20px_rgba(0,0,0,0.6)] px-6 py-3 rounded-full max-md:rounded-2xl max-md:flex-col w-full md:w-fit mx-auto overflow-x-auto [&::-webkit-scrollbar]:hidden">
+      <div className="inline-flex flex-wrap items-center justify-center gap-4 bg-[var(--hud-bg-card)]/80 shadow-[0_8px_40px_rgba(0,0,0,0.25)] px-6 py-3 rounded-full max-md:rounded-2xl max-md:flex-col w-full md:w-fit mx-auto overflow-x-auto [&::-webkit-scrollbar]:hidden">
         {/* Date inputs */}
         <div className="flex items-center gap-1.5 shrink-0">
           <input

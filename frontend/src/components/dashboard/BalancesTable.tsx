@@ -33,7 +33,7 @@ export function BalancesTable({ clientBalances, totalBalance, onClientClick }: B
       transition={{ delay: 0.35, duration: 0.45 }}
       className="hud-card overflow-hidden mt-5"
     >
-      <div className="flex items-center justify-between px-6 pt-5 pb-3 border-b border-[var(--hud-border)]">
+      <div className="flex items-center justify-between px-6 pt-5 pb-3 border-b border-white/5">
         <div>
           <h3 className="text-sm font-semibold text-[var(--hud-text-primary)] font-sans">
             Resumen de Balances
@@ -61,7 +61,7 @@ export function BalancesTable({ clientBalances, totalBalance, onClientClick }: B
       ) : (
         <div className="overflow-x-auto">
           <div className="min-w-[1000px]">
-            <div className="grid grid-cols-[180px_repeat(5,120px)_100px_80px] px-4 py-2.5 border-b border-[var(--hud-border)] text-[9px] font-mono font-bold tracking-[0.1em] uppercase text-[var(--hud-text-muted)]">
+            <div className="grid grid-cols-[180px_repeat(5,120px)_100px_80px] px-4 py-2.5 border-b border-white/5 text-[9px] font-mono font-bold tracking-[0.1em] uppercase text-[var(--hud-text-muted)]">
               <div className="text-left">Cliente</div>
               <div className="text-right">Peso Bruto (G)</div>
               <div className="text-right">Peso Fino (G)</div>
@@ -78,7 +78,7 @@ export function BalancesTable({ clientBalances, totalBalance, onClientClick }: B
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.45 + idx * 0.04, duration: 0.3 }}
                 onClick={() => onClientClick(c.id)}
-                className="grid grid-cols-[180px_repeat(5,120px)_100px_80px] px-4 py-2.5 border-b border-[rgba(30,41,59,0.15)] text-[12px] font-mono transition-all duration-100 hover:bg-[var(--hud-bg-hover)] active:scale-[0.98] cursor-pointer"
+                className="grid grid-cols-[180px_repeat(5,120px)_100px_80px] px-4 py-2.5 border-b border-white/5 text-[12px] font-mono transition-all duration-100 hover:bg-[var(--hud-bg-hover)] active:scale-[0.98] cursor-pointer"
                 style={{ background: idx % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.015)' }}
               >
                 <div className="text-left font-sans font-semibold text-[var(--hud-text-primary)] truncate">

@@ -84,11 +84,8 @@ export default function RootLayout({
             active:scale-[0.97] transition-all duration-150
           `}
         >
-          <IconComponent className={`w-4 h-4 shrink-0 ${isActive ? 'text-[var(--hud-accent-emerald)]' : 'text-[var(--hud-text-dim)] group-hover:text-[var(--hud-text-primary)]'}`} />
+          <IconComponent className={`w-4 h-4 shrink-0 ${isActive ? 'text-white' : 'text-[var(--hud-text-dim)] group-hover:text-[var(--hud-text-primary)]'}`} />
           <span>{item.name}</span>
-          {isActive && (
-            <span className="ml-auto w-1.5 h-1.5 rounded-full bg-[var(--hud-accent-emerald)] animate-pulse" />
-          )}
         </Link>
       );
     });
@@ -107,7 +104,7 @@ export default function RootLayout({
 
               {/* ═══ DESKTOP SIDEBAR ═══ */}
               <aside className="hud-sidebar hidden lg:flex lg:flex-col">
-                  <div className="flex items-center gap-3 h-16 px-5 shrink-0 border-b border-[var(--hud-border)]">
+                  <div className="flex items-center gap-3 h-16 px-5 shrink-0">
                   <img src="/Bandes2.png" alt="Bandes" className="w-8 h-8 rounded-lg object-contain" />
                   <span className="text-sm font-mono font-bold text-[#F3F4F6] tracking-widest">
                     CONTROL MINING
@@ -116,7 +113,7 @@ export default function RootLayout({
                   <nav className="flex-1 flex flex-col gap-0.5 py-4 overflow-y-auto">
                     {renderNavItems()}
                   </nav>
-                  <div className="px-3 py-4 border-t border-[var(--hud-border)] space-y-1">
+                  <div className="px-3 py-4 space-y-1">
                   <button className="nav-item w-full text-[10px] active:scale-95">
                     <LogOut className="w-3.5 h-3.5 shrink-0" />
                     <span>Salir</span>
@@ -137,12 +134,11 @@ export default function RootLayout({
                 fixed inset-y-0 left-0 z-50 flex flex-col w-72
                 v2-sidebar
                 bg-[var(--hud-bg-base)]
-                border-r border-[var(--hud-border)]
                 transition-transform duration-300 ease-in-out
                 lg:hidden
                 ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}
               `}>
-                  <div className="flex items-center justify-between h-16 px-5 shrink-0 border-b border-[var(--hud-border)]">
+                  <div className="flex items-center justify-between h-16 px-5 shrink-0">
                   <div className="flex items-center gap-3">
                     <img src="/Bandes2.png" alt="Bandes" className="w-8 h-8 rounded-lg object-contain" />
                     <span className="text-sm font-mono font-bold text-[#F3F4F6] tracking-widest">
@@ -151,7 +147,7 @@ export default function RootLayout({
                   </div>
                   <button
                     onClick={() => setMobileOpen(false)}
-                    className="p-1.5 rounded-lg hover:bg-[var(--hud-bg-card)] text-[var(--hud-text-dim)] hover:text-[var(--hud-text-primary)] transition-colors cursor-pointer"
+                    className="p-1.5 rounded-xl hover:bg-[var(--hud-bg-card)] text-[var(--hud-text-dim)] hover:text-[var(--hud-text-primary)] transition-colors cursor-pointer"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -159,7 +155,7 @@ export default function RootLayout({
                 <nav className="flex-1 flex flex-col gap-0.5 py-4 overflow-y-auto">
                   {renderNavItems(() => setMobileOpen(false))}
                 </nav>
-                <div className="px-3 py-4 border-t border-[var(--hud-border)] space-y-1">
+                <div className="px-3 py-4 space-y-1">
                   <button className="nav-item w-full text-[10px] active:scale-95">
                     <LogOut className="w-3.5 h-3.5 shrink-0" />
                     <span>Salir</span>
@@ -171,7 +167,7 @@ export default function RootLayout({
               <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
 
                 {/* Header */}
-                <header className="h-14 shrink-0 flex items-center justify-between px-4 sm:px-6 border-b border-[var(--hud-border)] bg-[var(--hud-bg-card)]/80">
+                <header className="h-14 shrink-0 flex items-center justify-between px-4 sm:px-6 bg-[var(--hud-bg-card)]/80 shadow-[0_4px_20px_rgba(0,0,0,0.15)]">
                   <div className="flex items-center gap-3">
                     <button
                       onClick={() => setMobileOpen(true)}
@@ -184,11 +180,11 @@ export default function RootLayout({
                     </span>
                   </div>
                   <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-1.5 px-2.5 py-1 border border-[var(--hud-border)] rounded-md">
+                    <div className="flex items-center gap-1.5 px-2.5 py-1 bg-[var(--hud-bg-deepest)]/60 rounded-lg">
                       <span className="w-1.5 h-1.5 rounded-full bg-[var(--hud-accent-emerald)] animate-pulse" />
                       <span className="text-[10px] font-mono text-[var(--hud-text-dim)]">{sysTime}</span>
                     </div>
-                    <div className="hidden sm:flex items-center gap-2 px-2.5 py-1 border border-[var(--hud-border)] rounded-md">
+                    <div className="hidden sm:flex items-center gap-2 px-2.5 py-1 bg-[var(--hud-bg-deepest)]/60 rounded-lg">
                       <Calendar className="w-3 h-3 text-[var(--hud-accent-gold)]" />
                       <span className="text-[10px] font-mono text-[var(--hud-text-dim)]">
                         {new Date().toLocaleDateString('es-ES', {
@@ -207,7 +203,7 @@ export default function RootLayout({
                 </main>
 
                 {/* Status bar */}
-                <footer className="h-7 shrink-0 flex items-center px-6 border-t border-[var(--hud-border)] bg-[var(--hud-bg-card)]">
+                <footer className="h-7 shrink-0 flex items-center px-6 bg-[var(--hud-bg-card)] shadow-[0_-2px_12px_rgba(0,0,0,0.12)]">
                   <div className="flex items-center gap-4 text-[8px] font-mono text-[var(--hud-text-dim)]">
                     <span className="flex items-center gap-1">
                       <span className="w-1 h-1 rounded-full bg-[var(--hud-accent-emerald)]" />

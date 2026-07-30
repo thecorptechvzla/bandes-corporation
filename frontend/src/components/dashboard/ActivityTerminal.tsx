@@ -92,7 +92,7 @@ export function ActivityTerminal({ bars, exits, processes }: ActivityTerminalPro
       transition={{ delay: 0.3, duration: 0.4 }}
       className="hud-card overflow-hidden"
     >
-      <div className="flex items-center gap-2 px-5 pt-4 pb-2 border-b border-[var(--hud-border)]/30">
+      <div className="flex items-center gap-2 px-5 pt-4 pb-2 border-b border-white/5">
         <Terminal className="w-3.5 h-3.5 text-[var(--hud-accent-emerald)]" />
         <h3 className="text-[10px] font-bold text-[var(--hud-text-primary)] font-mono tracking-wider uppercase">
           Terminal de Actividad
@@ -165,7 +165,7 @@ export function ActivityTerminal({ bars, exits, processes }: ActivityTerminalPro
         )}
       </div>
 
-      <div className="px-5 py-2 border-t border-[var(--hud-border)]/20">
+      <div className="px-5 py-2 border-t border-white/5">
         <span className="text-[7px] font-mono text-[var(--hud-text-dim)]/40 uppercase tracking-widest">
           Últimos eventos en tiempo real
         </span>

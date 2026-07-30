@@ -8,8 +8,7 @@ import { useMaterialExits } from '@/hooks/useExits';
 import { useProcesses } from '@/hooks/useProcesses';
 import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
 import {
-  Flame, Warehouse, Inbox, TrendingDown,
-  Scale, Scale as ScaleIcon, Inbox as InboxIcon,
+  Flame, Warehouse, Inbox, TrendingDown, Scale,
 } from 'lucide-react';
 import { AreaChart, Area, ResponsiveContainer } from 'recharts';
 import { formatNumber } from '@/lib/format';
@@ -20,8 +19,6 @@ import { BovedaModal } from '@/components/dashboard/BovedaModal';
 import { KpiCardGrid, KPI_COLORS } from '@/components/dashboard/KpiCardGrid';
 import { BalancesTable } from '@/components/dashboard/BalancesTable';
 import { TreemapPanel } from '@/components/dashboard/TreemapPanel';
-import { QuickActions } from '@/components/dashboard/QuickActions';
-import { ActivityTerminal } from '@/components/dashboard/ActivityTerminal';
 
 function SparklineArea({ data, color, id }: { data: number[]; color: string; id: string }) {
   const chartData = data.map((v, i) => ({ i, v }));
@@ -358,27 +355,6 @@ export default function V2DashboardPage() {
           emptyLabel="SIN DATOS DE EGRESOS"
           treemapId="egresos"
         />
-      </div>
-
-      {/* Quick Actions + Activity Terminal */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mt-5">
-        <div className="lg:col-span-1">
-          <QuickActions
-            actions={[
-              { label: 'Ingresar Material', icon: ScaleIcon, accent: '#10B981', shortcut: 'Ctrl+I', onClick: () => setIsIngresoModalOpen(true) },
-              { label: 'Ver Procesos', icon: Flame, accent: '#F59E0B', shortcut: 'Ctrl+P', onClick: () => setIsProcesoModalOpen(true) },
-              { label: 'Bóveda', icon: Warehouse, accent: '#EAB308', shortcut: 'Ctrl+B', onClick: () => setIsBovedaModalOpen(true) },
-              { label: 'Stock Pendiente', icon: InboxIcon, accent: '#06B6D4', shortcut: 'Ctrl+S', onClick: () => setIsPorRefundirModalOpen(true) },
-            ]}
-          />
-        </div>
-        <div className="lg:col-span-2">
-          <ActivityTerminal
-            bars={bars}
-            exits={exits}
-            processes={processes}
-          />
-        </div>
       </div>
 
       {/* Balances Table */}

@@ -80,9 +80,15 @@ function CustomTreemapBlock(props: CustomBlockProps) {
   const uid = `${treemapId}-block-${index}`;
   const weightLabel = `${formatNumber(value, 2)} g`;
 
-  const showName = width > 50 && height > 40;
-  const showWeight = width > 60 && height > 60;
-  const showPct = width > 70 && height > 80;
+  const gap = 6;
+  const ix = x + gap / 2;
+  const iy = y + gap / 2;
+  const iw = width - gap;
+  const ih = height - gap;
+
+  const showName = iw > 50 && ih > 40;
+  const showWeight = iw > 60 && ih > 60;
+  const showPct = iw > 70 && ih > 80;
 
   const shadowStyle = { textShadow: '0 2px 4px rgba(0,0,0,0.8)' };
 
@@ -95,8 +101,8 @@ function CustomTreemapBlock(props: CustomBlockProps) {
       <defs>
         {/* LED cell gradient — diagonal with depth */}
         <linearGradient id={`led-${uid}`} x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor={fill} stopOpacity={1} />
-          <stop offset="100%" stopColor={fill} stopOpacity={0.7} />
+          <stop offset="0%" stopColor={fill} stopOpacity={0.85} />
+          <stop offset="100%" stopColor={fill} stopOpacity={0.55} />
         </linearGradient>
         {/* LED top highlight — retroillumination effect */}
         <linearGradient id={`led-top-${uid}`} x1="0" y1="0" x2="0" y2="1">
@@ -112,54 +118,54 @@ function CustomTreemapBlock(props: CustomBlockProps) {
       </defs>
 
       {/* Base LED cell */}
-      <rect x={x} y={y} width={width} height={height}
-        fill={`url(#led-${uid})`} rx={8} />
+      <rect x={ix} y={iy} width={iw} height={ih}
+        fill={`url(#led-${uid})`} rx={12} />
 
       {/* Retroillumination (top glow) */}
-      <rect x={x} y={y} width={width} height={height}
-        fill={`url(#led-top-${uid})`} rx={8} />
+      <rect x={ix} y={iy} width={iw} height={ih}
+        fill={`url(#led-top-${uid})`} rx={12} />
 
       {/* Diagonal sheen */}
-      <rect x={x} y={y} width={width} height={height}
-        fill={`url(#led-shine-${uid})`} rx={8} />
+      <rect x={ix} y={iy} width={iw} height={ih}
+        fill={`url(#led-shine-${uid})`} rx={12} />
 
       {/* Border — LED frame */}
-      <rect x={x} y={y} width={width} height={height} fill="none" stroke={fill}
-        strokeOpacity={hovered ? 0.9 : 0.5} strokeWidth={1.5} rx={8} />
+      <rect x={ix} y={iy} width={iw} height={ih} fill="none" stroke={fill}
+        strokeOpacity={hovered ? 0.9 : 0.5} strokeWidth={1.5} rx={12} />
 
       {/* Inner light border */}
-      <rect x={x + 1} y={y + 1} width={width - 2} height={height - 2}
-        fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={0.75} rx={7} />
+      <rect x={ix + 1} y={iy + 1} width={iw - 2} height={ih - 2}
+        fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={0.75} rx={11} />
 
       {hovered && (
-        <rect x={x} y={y} width={width} height={height}
-          fill="rgba(255,255,255,0.06)" rx={8} />
+        <rect x={ix} y={iy} width={iw} height={ih}
+          fill="rgba(255,255,255,0.06)" rx={12} />
       )}
 
       {showName && (
-        <text x={x + width / 2} y={y + height / 2 - (showWeight ? 12 : showPct ? 16 : 0)}
+        <text x={ix + iw / 2} y={iy + ih / 2 - (showWeight ? 12 : showPct ? 16 : 0)}
           textAnchor="middle" dominantBaseline="central" fill="#FFFFFF"
           fontFamily="'JetBrains Mono', 'Fira Code', monospace"
-          fontSize={height > 100 ? 14 : height > 70 ? 12 : 10} fontWeight={800}
+          fontSize={ih > 100 ? 14 : ih > 70 ? 12 : 10} fontWeight={800}
           style={shadowStyle}>
-          {name.length > (width > 120 ? 22 : width > 80 ? 16 : 10)
-            ? `${name.slice(0, width > 120 ? 22 : width > 80 ? 16 : 10)}…`
+          {name.length > (iw > 120 ? 22 : iw > 80 ? 16 : 10)
+            ? `${name.slice(0, iw > 120 ? 22 : iw > 80 ? 16 : 10)}…`
             : name}
         </text>
       )}
 
       {showWeight && (
-        <text x={x + width / 2} y={y + height / 2 + 14}
+        <text x={ix + iw / 2} y={iy + ih / 2 + 14}
           textAnchor="middle" dominantBaseline="central" fill="#FFFFFF"
           fontFamily="'JetBrains Mono', 'Fira Code', monospace"
-          fontSize={height > 100 ? 12 : 10} fontWeight={600} opacity={0.9}
+          fontSize={ih > 100 ? 12 : 10} fontWeight={600} opacity={0.9}
           style={shadowStyle}>
           {weightLabel}
         </text>
       )}
 
       {showPct && (
-        <text x={x + width / 2} y={y + height / 2 + 30}
+        <text x={ix + iw / 2} y={iy + ih / 2 + 30}
           textAnchor="middle" dominantBaseline="central" fill="#FFFFFF"
           fontFamily="'JetBrains Mono', 'Fira Code', monospace"
           fontSize={10} fontWeight={600} opacity={0.85}
@@ -173,7 +179,7 @@ function CustomTreemapBlock(props: CustomBlockProps) {
 
 function TreemapLegend({ data }: { data: { name: string; value: number; pct: number; fill: string }[] }) {
   return (
-    <div className="flex flex-wrap gap-x-5 gap-y-1 px-4 pb-3 pt-2.5 border-t border-[var(--hud-border)]/30 text-[9px] font-mono">
+    <div className="flex flex-wrap gap-x-5 gap-y-1 px-4 pb-3 pt-2.5 border-t border-white/5 text-[9px] font-mono">
       {data.map(item => (
         <div key={item.name} className="flex items-center gap-1.5 whitespace-nowrap">
           <span className="w-2 h-2 rounded-full shrink-0" style={{ background: item.fill }} />
@@ -277,7 +283,7 @@ export function TreemapPanel({
       transition={{ delay: 0.2, duration: 0.45 }}
       className="hud-card overflow-hidden"
     >
-      <div className="flex items-center justify-between px-5 pt-4 pb-2 border-b border-[var(--hud-border)]/30">
+      <div className="flex items-center justify-between px-5 pt-4 pb-2 border-b border-white/5">
         <div>
           <h3 className="text-[11px] font-semibold text-[var(--hud-text-primary)] font-mono tracking-wider">
             {title}

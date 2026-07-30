@@ -1,23 +1,23 @@
 @import "tailwindcss";
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   BANDES PLATFORM — INDUSTRIAL TERMINAL HUD THEME
-   Dark · High Density · Tactical Financial Aesthetic
+   BANDES PLATFORM — MODERN ANALYTICS / FINTECH UI
+   Dark Navy · Soft Shadows · Floating Cards · Pill Navigation
    ═══════════════════════════════════════════════════════════════════════════ */
 
 :root {
-  /* ── Background Palette ── */
-  --hud-bg-deepest:   #070A13;       /* App background — near-black midnight blue */
-  --hud-bg-base:      #0A0F1A;       /* Sidebar & content base — distinguishable from deepest */
-  --hud-bg-card:      #111A2E;       /* Card / surface — clearly lifted from base */
-  --hud-bg-hover:     #151E34;       /* Row / element hover */
-  --hud-bg-elevated:  #1A2440;       /* Elevated surface (drawers, active states) */
+  /* ── Background Palette — Navy Deep (no borders, only shadows) ── */
+  --hud-bg-deepest:   #11131F;       /* App background — midnight navy */
+  --hud-bg-base:      #1A1D2D;       /* Sidebar & content base */
+  --hud-bg-card:      #1F2336;       /* Card / surface — lifted by colour, not borders */
+  --hud-bg-hover:     #2A2E42;       /* Row / element hover */
+  --hud-bg-elevated:  #333755;       /* Elevated surface (drawers, active states) */
 
-  /* ── Border Palette ── */
-  --hud-border:       #1E293B;       /* Default border */
-  --hud-border-dim:   #1E293B;       /* Dim border (used with 0.5 opacity via alpha) */
+  /* ── Border Palette (ultra-subtle, barely there) ── */
+  --hud-border:       #2D3148;       /* Default border — low contrast, soft */
+  --hud-border-dim:   #2D3148;       /* Dim border (used with 0.5 opacity via alpha) */
 
-  /* ── Semantic Accents (Neon critical) ── */
+  /* ── Semantic Accents (vibrant but refined) ── */
   --hud-accent-emerald: #10B981;     /* Success, security, positive balance */
   --hud-accent-gold:    #EAB308;     /* Primary metric — Oro Recibido */
   --hud-accent-amber:   #F59E0B;     /* Process metric — Oro en Proceso */
@@ -26,8 +26,8 @@
 
   /* ── Text Palette ── */
   --hud-text-primary:  #E2E8F0;      /* Primary content */
-  --hud-text-dim:      #64748B;      /* Secondary / muted */
-  --hud-text-muted:    #475569;      /* Table headers, labels */
+  --hud-text-dim:      #8B95A5;      /* Secondary / muted — soft blue-grey */
+  --hud-text-muted:    #5C677D;      /* Table headers, labels */
 
   /* ── Typography ── */
   --hud-font-mono:     'JetBrains Mono', 'Fira Code', monospace;
@@ -136,49 +136,64 @@ main {
    REUSABLE HUD COMPONENT CLASSES
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* ── Technical grid overlay (extremely subtle) ── */
+/* ── Technical grid overlay — architectural blueprint ── */
 .hud-grid {
   background-color: var(--hud-bg-deepest);
   background-image:
-    linear-gradient(rgba(30, 41, 59, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(30, 41, 59, 0.03) 1px, transparent 1px);
-  background-size: 48px 48px;
+    /* Fine grid — 48px cells */
+    linear-gradient(rgba(51, 65, 85, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(51, 65, 85, 0.08) 1px, transparent 1px),
+    /* Master grid — every 6th cell (288px) for blueprint feel */
+    linear-gradient(rgba(51, 65, 85, 0.16) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(51, 65, 85, 0.16) 1px, transparent 1px);
+  background-size:
+    48px 48px,
+    48px 48px,
+    288px 288px,
+    288px 288px;
 }
 
-/* ── Card (solid container, ultra-thin border, inner ring, no glass) ── */
+/* ── Card (floating container, no border, wide soft shadow) ── */
 .hud-card {
   background: var(--hud-bg-card);
-  border: 1px solid rgba(30, 41, 59, 0.5);
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
-  transition: box-shadow 200ms ease, border-color 200ms ease;
-  /* Inner edge highlight to visually separate card from background */
-  outline: 1px solid rgba(255, 255, 255, 0.03);
-  outline-offset: -1px;
+  border: none;
+  border-radius: 24px;
+  box-shadow:
+    0 8px 40px rgba(0, 0, 0, 0.30),
+    0 2px 12px rgba(0, 0, 0, 0.18);
+  transition: box-shadow 250ms ease, transform 250ms ease;
 }
 
 .hud-card:hover {
+  transform: translateY(-2px);
   box-shadow:
-    0 4px 20px rgba(0, 0, 0, 0.6),
-    0 0 25px -5px rgba(16, 185, 129, 0.15);
+    0 14px 48px rgba(0, 0, 0, 0.38),
+    0 4px 18px rgba(0, 0, 0, 0.22),
+    0 0 40px -8px rgba(16, 185, 129, 0.10);
 }
 
 .hud-card-gold:hover {
+  transform: translateY(-2px);
   box-shadow:
-    0 4px 20px rgba(0, 0, 0, 0.6),
-    0 0 25px -5px rgba(234, 179, 8, 0.15);
+    0 14px 48px rgba(0, 0, 0, 0.38),
+    0 4px 18px rgba(0, 0, 0, 0.22),
+    0 0 40px -8px rgba(234, 179, 8, 0.10);
 }
 
 .hud-card-amber:hover {
+  transform: translateY(-2px);
   box-shadow:
-    0 4px 20px rgba(0, 0, 0, 0.6),
-    0 0 25px -5px rgba(245, 158, 11, 0.15);
+    0 14px 48px rgba(0, 0, 0, 0.38),
+    0 4px 18px rgba(0, 0, 0, 0.22),
+    0 0 40px -8px rgba(245, 158, 11, 0.10);
 }
 
 .hud-card-sky:hover {
+  transform: translateY(-2px);
   box-shadow:
-    0 4px 20px rgba(0, 0, 0, 0.6),
-    0 0 25px -5px rgba(6, 182, 212, 0.15);
+    0 14px 48px rgba(0, 0, 0, 0.38),
+    0 4px 18px rgba(0, 0, 0, 0.22),
+    0 0 40px -8px rgba(6, 182, 212, 0.10);
 }
 
 /* ── Premium table ── */
@@ -201,7 +216,7 @@ main {
 
 .hud-table td {
   padding: 10px 16px;
-  border-bottom: 1px solid rgba(30, 41, 59, 0.15);
+  border-bottom: 1px solid rgba(51, 65, 85, 0.15);
   font-size: 12px;
   font-family: var(--hud-font-mono);
   transition: background 100ms ease;
@@ -224,29 +239,27 @@ main {
   padding: 8px 16px;
 }
 
-/* ── Sidebar — Cyberpunk Trading Terminal ── */
+/* ── Sidebar — Modern Fintech ── */
 .hud-sidebar {
   width: 256px;
-  background: var(--hud-bg-base);
-  border-right: 1px solid rgba(30, 41, 59, 0.5);
+  background: var(--hud-bg-deepest);
+  border-right: none;
   flex-shrink: 0;
   overflow: hidden;
-  box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.03);
 }
 
 .hud-sidebar .nav-item {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 18px;
-  margin: 0 8px;
+  padding: 10px 16px;
+  margin: 2px 10px;
   font-size: 12px;
   font-family: var(--hud-font-mono);
   font-weight: 600;
   letter-spacing: 0.05em;
   color: var(--hud-text-dim);
-  border-left: 2px solid transparent;
-  border-radius: 0 6px 6px 0;
+  border-radius: 12px;
   transition: all 150ms ease;
   cursor: pointer;
   text-decoration: none;
@@ -255,14 +268,14 @@ main {
 
 .hud-sidebar .nav-item:hover {
   color: var(--hud-text-primary);
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .hud-sidebar .nav-item.active {
-  color: #F3F4F6;
-  border-left: 4px solid var(--hud-accent-emerald);
-  background: linear-gradient(90deg, rgba(16, 185, 129, 0.12) 0%, transparent 100%);
-  box-shadow: inset 3px 0 12px -4px rgba(16, 185, 129, 0.15);
+  color: #FFFFFF;
+  background: linear-gradient(135deg, #0D9488 0%, #10B981 100%);
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(16, 185, 129, 0.30), 0 2px 8px rgba(16, 185, 129, 0.20);
 }
 
 /* ── Scrollbar ── */
@@ -280,7 +293,7 @@ main {
 }
 
 .hud-scroll::-webkit-scrollbar-thumb:hover {
-  background: rgba(30, 41, 59, 0.8);
+  background: rgba(51, 65, 85, 0.8);
 }
 
 /* ── Divider ── */
@@ -333,39 +346,44 @@ p, span.text-\[\#8C8C8C\], td, .text-neutral-400 {
   border-color: var(--hud-border) !important;
 }
 
-/* Legacy glass-panel mapped to solid HUD card */
+/* Legacy glass-panel mapped to floating card */
 .glass-panel {
   background: var(--hud-bg-card) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
-  border: 1px solid rgba(30, 41, 59, 0.5) !important;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6) !important;
-  border-radius: 12px;
-  transition: box-shadow 200ms ease;
-  outline: 1px solid rgba(255, 255, 255, 0.03) !important;
-  outline-offset: -1px;
+  border: none !important;
+  box-shadow:
+    0 8px 40px rgba(0, 0, 0, 0.30),
+    0 2px 12px rgba(0, 0, 0, 0.18) !important;
+  border-radius: 24px;
+  transition: box-shadow 250ms ease;
+  outline: none !important;
 }
 
 .glass-panel:hover {
   box-shadow:
-    0 4px 20px rgba(0, 0, 0, 0.6),
-    0 0 25px -5px rgba(16, 185, 129, 0.15) !important;
+    0 14px 48px rgba(0, 0, 0, 0.38),
+    0 4px 18px rgba(0, 0, 0, 0.22),
+    0 0 40px -8px rgba(16, 185, 129, 0.10) !important;
 }
 
 /* V2 premium card → HUD card */
 .premium-card {
   background: var(--hud-bg-card);
-  border: 1px solid rgba(30, 41, 59, 0.5);
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
-  transition: box-shadow 200ms ease;
+  border: none;
+  border-radius: 24px;
+  box-shadow:
+    0 8px 40px rgba(0, 0, 0, 0.30),
+    0 2px 12px rgba(0, 0, 0, 0.18);
+  transition: box-shadow 250ms ease, transform 250ms ease;
 }
 
 .premium-card:hover {
   transform: translateY(-2px);
   box-shadow:
-    0 4px 20px rgba(0, 0, 0, 0.6),
-    0 0 25px -5px rgba(16, 185, 129, 0.15);
+    0 14px 48px rgba(0, 0, 0, 0.38),
+    0 4px 18px rgba(0, 0, 0, 0.22),
+    0 0 40px -8px rgba(16, 185, 129, 0.10);
 }
 
 /* V2 premium table → HUD table */
@@ -383,7 +401,7 @@ p, span.text-\[\#8C8C8C\], td, .text-neutral-400 {
 
 .premium-table td {
   padding: 10px 16px;
-  border-bottom: 1px solid rgba(30, 41, 59, 0.15);
+  border-bottom: 1px solid rgba(51, 65, 85, 0.15);
   font-size: 12px;
   font-family: var(--hud-font-mono);
 }
@@ -399,26 +417,24 @@ p, span.text-\[\#8C8C8C\], td, .text-neutral-400 {
 /* V2 sidebar → mapped to HUD sidebar */
 .v2-sidebar {
   width: 256px;
-  background: var(--hud-bg-base);
-  border-right: 1px solid rgba(30, 41, 59, 0.5);
+  background: var(--hud-bg-deepest);
+  border-right: none;
   flex-shrink: 0;
   overflow: hidden;
-  box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.03);
 }
 
 .v2-sidebar .nav-item {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 18px;
-  margin: 0 8px;
+  padding: 10px 16px;
+  margin: 2px 10px;
   font-size: 12px;
   font-family: var(--hud-font-mono);
   font-weight: 600;
   letter-spacing: 0.05em;
   color: var(--hud-text-dim);
-  border-left: 2px solid transparent;
-  border-radius: 0 6px 6px 0;
+  border-radius: 12px;
   transition: all 150ms ease;
   cursor: pointer;
   text-decoration: none;
@@ -427,14 +443,14 @@ p, span.text-\[\#8C8C8C\], td, .text-neutral-400 {
 
 .v2-sidebar .nav-item:hover {
   color: var(--hud-text-primary);
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .v2-sidebar .nav-item.active {
-  color: #F3F4F6;
-  border-left: 4px solid var(--hud-accent-emerald);
-  background: linear-gradient(90deg, rgba(16, 185, 129, 0.12) 0%, transparent 100%);
-  box-shadow: inset 3px 0 12px -4px rgba(16, 185, 129, 0.15);
+  color: #FFFFFF;
+  background: linear-gradient(135deg, #0D9488 0%, #10B981 100%);
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(16, 185, 129, 0.30), 0 2px 8px rgba(16, 185, 129, 0.20);
 }
 
 /* V2 scroll → HUD scroll */
@@ -452,16 +468,22 @@ p, span.text-\[\#8C8C8C\], td, .text-neutral-400 {
 }
 
 .v2-scroll::-webkit-scrollbar-thumb:hover {
-  background: rgba(30, 41, 59, 0.8);
+  background: rgba(51, 65, 85, 0.8);
 }
 
 /* V2 premium grid → HUD grid */
 .v2-premium {
   background-color: var(--hud-bg-deepest);
   background-image:
-    linear-gradient(rgba(30, 41, 59, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(30, 41, 59, 0.03) 1px, transparent 1px);
-  background-size: 48px 48px;
+    linear-gradient(rgba(51, 65, 85, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(51, 65, 85, 0.08) 1px, transparent 1px),
+    linear-gradient(rgba(51, 65, 85, 0.16) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(51, 65, 85, 0.16) 1px, transparent 1px);
+  background-size:
+    48px 48px,
+    48px 48px,
+    288px 288px,
+    288px 288px;
 }
 
 /* ── Form elements ── */

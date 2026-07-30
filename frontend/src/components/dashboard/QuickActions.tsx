@@ -27,7 +27,7 @@ export function QuickActions({ actions }: QuickActionsProps) {
       transition={{ delay: 0.25, duration: 0.4 }}
       className="hud-card overflow-hidden"
     >
-      <div className="flex items-center gap-2 px-5 pt-4 pb-2 border-b border-[var(--hud-border)]/30">
+      <div className="flex items-center gap-2 px-5 pt-4 pb-2 border-b border-white/5">
         <Zap className="w-3.5 h-3.5 text-[var(--hud-accent-gold)]" />
         <h3 className="text-[10px] font-bold text-[var(--hud-text-primary)] font-mono tracking-wider uppercase">
           Acciones Rápidas
@@ -41,22 +41,19 @@ export function QuickActions({ actions }: QuickActionsProps) {
             <button
               key={act.label}
               onClick={act.onClick}
-              className="group relative flex items-center gap-3 px-3.5 py-3 rounded-lg border transition-all duration-150 active:scale-[0.97] cursor-pointer text-left"
+              className="group relative flex items-center gap-3 px-3.5 py-3 rounded-xl transition-all duration-150 active:scale-[0.97] cursor-pointer text-left"
               style={{
                 background: `${act.accent}08`,
-                borderColor: `${act.accent}20`,
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.background = `${act.accent}15`;
-                e.currentTarget.style.borderColor = `${act.accent}40`;
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.background = `${act.accent}08`;
-                e.currentTarget.style.borderColor = `${act.accent}20`;
               }}
             >
               <div
-                className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-transform group-hover:scale-110"
+                className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110"
                 style={{ background: `${act.accent}15` }}
               >
                 <Icon className="w-4 h-4" style={{ color: act.accent }} />

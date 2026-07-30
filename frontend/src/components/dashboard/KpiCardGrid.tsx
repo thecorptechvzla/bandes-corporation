@@ -123,22 +123,24 @@ export function KpiCardGrid({ kpiData, isMounted, onCardClick }: KpiCardGridProp
             transition={{ delay: 0.1 * idx, duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
             onMouseEnter={() => setHoveredIndex(idx)}
             onMouseLeave={() => setHoveredIndex(null)}
-            className="relative overflow-hidden cursor-pointer bg-[var(--hud-bg-card)] border border-[rgba(30,41,59,0.5)] rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.6)] hover:-translate-y-1.5 active:scale-[0.97] transition-all duration-300 ease-out"
+            className="relative overflow-hidden cursor-pointer bg-[var(--hud-bg-card)] rounded-2xl shadow-[0_8px_40px_rgba(0,0,0,0.30)] hover:-translate-y-1.5 active:scale-[0.97] transition-all duration-300 ease-out"
             style={{
-              borderColor: hoveredIndex === idx ? `${kpi.accent}40` : 'rgba(30,41,59,0.5)',
               boxShadow: hoveredIndex === idx
-                ? `0 0 25px -5px ${kpi.accent}, 0 4px 20px rgba(0,0,0,0.6)`
-                : '0 4px 20px rgba(0,0,0,0.6)',
-              outline: '1px solid rgba(255,255,255,0.03)',
-              outlineOffset: -1,
+                ? `0 0 30px -8px ${kpi.accent}, 0 8px 40px rgba(0,0,0,0.30)`
+                : '0 8px 40px rgba(0,0,0,0.30)',
             }}
             onClick={() => onCardClick(idx)}
           >
+            {/* Top accent bar — colored indicator per KPI */}
+            <div
+              className="absolute top-0 left-0 right-0 h-[3px] rounded-t-xl z-20"
+              style={{ background: kpi.accent }}
+            />
             <div className="relative z-10 p-5">
               <div className="flex items-center justify-between mb-4">
                 <div
                   className="w-9 h-9 rounded-xl flex items-center justify-center"
-                  style={{ background: `${kpi.accent}12`, border: `1px solid ${kpi.accent}25` }}
+                  style={{ background: `${kpi.accent}12` }}
                 >
                   <Icon className="w-4.5 h-4.5" style={{ color: kpi.accent }} />
                 </div>
