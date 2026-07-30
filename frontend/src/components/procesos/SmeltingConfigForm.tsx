@@ -2,7 +2,7 @@
 
 import React, { useMemo } from 'react';
 import { motion } from 'motion/react';
-import { Play, Sparkles, AlertTriangle, CheckCircle2, Users, Weight } from 'lucide-react';
+import { Play, Sparkles, AlertTriangle, CheckCircle2, Users, Weight, Building2 } from 'lucide-react';
 import { formatNumber } from '@/lib/format';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import type { Bar, Client } from '@/types/api';
@@ -142,39 +142,42 @@ export function SmeltingConfigForm({
               <table className="premium-table w-full">
                 <thead className="sticky top-0 z-10 bg-[var(--pm-bg-primary)]">
                   <tr>
-                    <th className="w-10 px-4 py-3 text-center">
+                    <th className="w-10 px-4 py-3.5 text-center">
                       <input type="checkbox" checked={allClientsSelected}
                         onChange={onSelectAllClients}
                         className="accent-[var(--pm-accent-amber)] cursor-pointer"
                       />
                     </th>
-                    <th className="px-4 py-3">Código</th>
-                    <th className="px-4 py-3 text-right">Bruto (g)</th>
-                    <th className="px-4 py-3 text-right">Fino (g)</th>
-                    <th className="px-4 py-3 text-right">Ley (‰)</th>
+                    <th className="px-4 py-3.5 text-left text-[11px] font-mono font-bold text-slate-200 uppercase tracking-wider">Código</th>
+                    <th className="px-4 py-3.5 text-right text-[11px] font-mono font-bold text-slate-200 uppercase tracking-wider">Bruto (g)</th>
+                    <th className="px-4 py-3.5 text-right text-[11px] font-mono font-bold text-slate-200 uppercase tracking-wider">Fino (g)</th>
+                    <th className="px-4 py-3.5 text-right text-[11px] font-mono font-bold text-slate-200 uppercase tracking-wider">Ley (‰)</th>
                   </tr>
                 </thead>
                 <tbody>
                   {visibleGroups.map(group => (
                     <React.Fragment key={group.client.id}>
                       {/* Provider header row */}
-                      <tr className="bg-[var(--pm-bg-deepest)]/60">
-                        <td colSpan={5} className="px-3 py-2">
+                      <tr className="bg-blue-500/5">
+                        <td colSpan={5} className="px-4 py-2.5">
                           <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2.5">
                               <input type="checkbox" checked={group.bars.every(b => selectedBarIds.includes(b.id)) && group.bars.length > 0}
                                 onChange={() => onSelectAllBarsOfClient(group.client.id)}
                                 className="accent-[var(--pm-accent-amber)] cursor-pointer"
                               />
-                              <span className="text-[10px] font-mono font-bold text-[var(--pm-accent-gold)] uppercase tracking-wider">
-                                {group.client.name}
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-blue-500/10 border border-blue-500/30">
+                                <Building2 className="w-3 h-3 text-blue-400" />
+                                <span className="text-[10px] font-mono font-bold text-blue-100 uppercase tracking-wider">
+                                  {group.client.name}
+                                </span>
                               </span>
-                              <span className="text-[8px] font-mono text-[var(--pm-text-dim)]">
+                              <span className="text-[8px] font-mono text-slate-500">
                                 ({group.selectedCount}/{group.bars.length})
                               </span>
                             </div>
                             {group.selectedCount > 0 && (
-                              <span className="text-[9px] font-mono text-[var(--pm-accent-amber)]">
+                              <span className="text-[9px] font-mono font-medium text-blue-300">
                                 {formatNumber(group.grossTotal, 2)}g bruto
                               </span>
                             )}
@@ -186,18 +189,18 @@ export function SmeltingConfigForm({
                         const isSelected = selectedBarIds.includes(bar.id);
                         return (
                           <tr key={bar.id} onClick={() => onBarToggle(bar.id)}
-                            className={`odd:bg-[var(--pm-bg-deepest)]/30 hover:bg-[var(--pm-bg-tertiary)]/50 transition-all cursor-pointer ${isSelected ? 'bg-[var(--pm-accent-amber)]/5' : ''}`}
+                            className={`odd:bg-[var(--pm-bg-deepest)]/30 hover:bg-blue-500/5 transition-all cursor-pointer ${isSelected ? 'bg-[var(--pm-accent-amber)]/5' : ''}`}
                           >
-                            <td className="px-4 py-3 text-center">
+                            <td className="px-4 py-2 text-center">
                               <input type="checkbox" checked={isSelected}
                                 onChange={() => onBarToggle(bar.id)}
                                 className="accent-[var(--pm-accent-amber)] cursor-pointer"
                               />
                             </td>
-                            <td className="px-4 py-3 text-center font-mono font-bold text-[var(--pm-accent-gold)] tracking-wider text-[11px]">{bar.barNumber}</td>
-                            <td className="px-4 py-3 text-right font-mono font-medium text-slate-200">{formatNumber(Number(bar.grossWeight), 2)}</td>
-                            <td className="px-4 py-3 text-right font-mono font-medium text-slate-200">{formatNumber(Number(bar.fineWeight), 4)}</td>
-                            <td className="px-4 py-3 text-right font-mono font-medium text-slate-200/70">{bar.purity}‰</td>
+                            <td className="px-4 py-2 text-center font-mono font-bold text-amber-400 tracking-wider text-[12px] hover:text-amber-300 transition-colors">{bar.barNumber}</td>
+                            <td className="px-4 py-2 text-right font-mono font-medium text-slate-100 text-[14px]">{formatNumber(Number(bar.grossWeight), 2)}</td>
+                            <td className="px-4 py-2 text-right font-mono font-medium text-slate-400 text-[14px]">{formatNumber(Number(bar.fineWeight), 4)}</td>
+                            <td className="px-4 py-2 text-right font-mono font-medium text-cyan-400/80 text-[14px]">{bar.purity}‰</td>
                           </tr>
                         );
                       })}
