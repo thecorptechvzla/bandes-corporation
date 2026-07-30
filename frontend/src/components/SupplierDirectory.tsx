@@ -102,14 +102,16 @@ export function SupplierDirectory({
     <div className="flex flex-col min-h-0 flex-1">
       {showSearch && (
         <div className="px-4 sm:px-5 py-3 border-b border-[var(--hud-border)]/10 flex items-center justify-end gap-2">
-          <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[var(--hud-text-dim)]" />
+          <div className="flex items-center w-36 bg-[var(--hud-bg-deepest)] border border-[var(--hud-border)] rounded-lg overflow-hidden transition-all focus-within:border-[var(--hud-accent-gold)]/40">
+            <div className="pl-2.5 flex items-center justify-center">
+              <Search className="w-3.5 h-3.5 text-[var(--hud-text-dim)]" />
+            </div>
             <input
               type="text"
               value={searchCode}
               onChange={(e) => { setSearchCode(e.target.value); setCurrentPage(1); }}
               placeholder="Buscar por código..."
-              className="w-36 pl-7 pr-2 py-1.5 bg-[var(--hud-bg-deepest)] border border-[var(--hud-border)] text-[var(--hud-text-dim)] text-[10px] placeholder:text-[var(--hud-text-dim)]/30 outline-none transition-all focus:border-[var(--hud-accent-gold)]/40 rounded-lg"
+              className="flex-1 bg-transparent py-1.5 px-2 outline-none text-[10px] font-mono text-[var(--hud-text-dim)] placeholder:text-[var(--hud-text-dim)]/30"
             />
           </div>
           <span className="text-[10px] font-mono text-[var(--hud-text-dim)] bg-[var(--hud-bg-deepest)]/50 px-2 py-0.5 border border-[var(--hud-border)] rounded">

@@ -12,6 +12,7 @@ import { useBars } from '@/hooks/useBars';
 import { useProcesses } from '@/hooks/useProcesses';
 import {
   Plus, AlertTriangle, Trash2, Check,
+  Package, Layers, Shield,
 } from 'lucide-react';
 import type { Client, ClientRole } from '@/types/api';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
@@ -19,7 +20,6 @@ import { formatRif } from '@/lib/format';
 import { ClientFormModal } from '@/components/clientes/ClientFormModal';
 import { ClientTable } from '@/components/clientes/ClientTable';
 import { ClientFilterBar } from '@/components/clientes/ClientFilterBar';
-import { Package, Layers } from 'lucide-react';
 
 type FilterTab = 'TODOS' | 'PROVEEDORES' | 'CLIENTES';
 
@@ -99,60 +99,82 @@ export default function V2ClientesPage() {
   const isLoadingMutation = createClient.isPending || updateClient.isPending;
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }} className="space-y-6">
-
-      {/* Header */}
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
+      className="space-y-6"
+    >
+      {/* ═══ HEADER ═══ */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
         className="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
       >
-        <div>
-          <h1 className="text-xl font-semibold text-[var(--pm-text-primary)] font-sans flex items-center gap-2.5">
-            <span className="text-[var(--pm-accent-gold)]">Registro Proveedores - Clientes</span>
-          </h1>
-          <p className="text-xs text-[var(--pm-text-dim)] mt-1">
-            Gestión centralizada de entidades y balances.
-          </p>
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.2)' }}>
+            <Shield className="w-4 h-4 text-[var(--pm-accent-gold)]" />
+          </div>
+          <div>
+            <h1 className="text-lg font-semibold text-[var(--pm-text-primary)] font-sans tracking-tight">
+              Directorio Comercial
+            </h1>
+            <p className="text-[10px] text-[var(--pm-text-dim)] font-mono uppercase tracking-wider mt-0.5">
+              Registro oficial de entidades autorizadas
+            </p>
+          </div>
         </div>
         <button
           onClick={openCreateModal}
-          className="premium-card px-4 py-2.5 rounded-xl font-mono text-xs uppercase tracking-wider font-bold flex items-center gap-2 active:scale-95 transition-all duration-150 cursor-pointer border-[var(--pm-accent-gold)]/30 hover:border-[var(--pm-accent-gold)]/60"
-          style={{ background: 'rgba(212,175,55,0.08)' }}
+          className="premium-card px-4 py-2.5 rounded-xl font-mono text-[10px] uppercase tracking-widest font-bold flex items-center gap-2 active:scale-95 transition-all duration-150 cursor-pointer hover:border-[var(--pm-accent-gold)]/40"
+          style={{ borderColor: 'rgba(212,175,55,0.25)' }}
         >
-          <Plus className="w-4 h-4 text-[var(--pm-accent-gold)]" />
+          <Plus className="w-3.5 h-3.5 text-[var(--pm-accent-gold)]" />
           <span style={{ color: 'var(--pm-accent-gold)' }}>Nuevo Registro</span>
         </button>
       </motion.div>
 
-      {/* Main Card */}
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.15, duration: 0.4 }}
-        className="premium-card overflow-hidden"
-      >
-        <ClientFilterBar
-          filterTab={filterTab} searchQuery={searchQuery}
-          onFilterTabChange={setFilterTab} onSearchChange={setSearchQuery}
-        />
-        <ClientTable
-          clients={visibleClients} totalCount={clients.length}
-          isLoading={isLoading} isError={isError} error={error}
-          searchQuery={searchQuery} filterTab={filterTab}
-          onEdit={openEditModal} onDelete={openDeleteModal} onCreate={openCreateModal}
-        />
-      </motion.div>
+      {/* ═══ BENTO GRID ═══ */}
+      <div className="grid grid-cols-1 gap-6">
+        {/* ═══ FILTER + TABLE PANEL ═══ */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15, duration: 0.4 }}
+          className="glass-panel overflow-hidden"
+        >
+          <ClientFilterBar
+            filterTab={filterTab}
+            searchQuery={searchQuery}
+            onFilterTabChange={setFilterTab}
+            onSearchChange={setSearchQuery}
+          />
+          <ClientTable
+            clients={visibleClients}
+            totalCount={clients.length}
+            isLoading={isLoading}
+            isError={isError}
+            error={error}
+            searchQuery={searchQuery}
+            filterTab={filterTab}
+            onEdit={openEditModal}
+            onDelete={openDeleteModal}
+            onCreate={openCreateModal}
+          />
+        </motion.div>
+      </div>
 
-      {/* Form Modal */}
+      {/* ═══ FORM MODAL ═══ */}
       <ClientFormModal
-        isOpen={showModal} editingClient={editingClient}
-        isPending={isLoadingMutation} onSubmit={handleSubmit}
+        isOpen={showModal}
+        editingClient={editingClient}
+        isPending={isLoadingMutation}
+        onSubmit={handleSubmit}
         onClose={() => { setShowModal(false); setEditingClient(null); }}
       />
 
-      {/* Delete Impact Modal */}
+      {/* ═══ DELETE IMPACT MODAL ═══ */}
       <ConfirmDialog
         isOpen={!!deleteTarget}
         onClose={() => setDeleteTarget(null)}
@@ -200,7 +222,7 @@ export default function V2ClientesPage() {
         </div>
       </ConfirmDialog>
 
-      {/* Delete status overlay */}
+      {/* ═══ DELETE STATUS OVERLAY ═══ */}
       <AnimatePresence>
         {deleteStatus !== 'idle' && (
           <motion.div

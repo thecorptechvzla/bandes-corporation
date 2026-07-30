@@ -34,11 +34,13 @@ export function BarInventoryPanel({
     <motion.div initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.15, duration: 0.4 }}
       className="glass-panel rounded-2xl border border-[var(--pm-border)]/40 overflow-hidden">
       <div className="flex items-center gap-3 px-5 py-3 border-b border-[var(--pm-border)]/20">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[var(--pm-text-dim)]/40" />
+        <div className="flex items-center flex-1 bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] rounded-lg overflow-hidden transition-colors focus-within:border-[var(--pm-accent-gold)]">
+          <div className="pl-3 flex items-center justify-center">
+            <Search className="w-3.5 h-3.5 text-[var(--pm-text-dim)]/40" />
+          </div>
           <input type="text" placeholder="Buscar barra por código..." value={searchQuery}
             onChange={e => onSearchChange(e.target.value)}
-            className="w-full bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] rounded-lg pl-9 pr-3 py-2 text-xs font-mono text-[var(--pm-text-primary)] focus:outline-none focus:border-[var(--pm-accent-gold)] transition-colors placeholder:text-[var(--pm-text-dim)]/30" />
+            className="flex-1 bg-transparent py-2 px-3 outline-none text-xs font-mono text-[var(--pm-text-primary)] placeholder:text-[var(--pm-text-dim)]/30" />
         </div>
         <span className="text-[10px] font-mono text-[var(--pm-text-dim)] whitespace-nowrap">{totalBars} barras</span>
       </div>

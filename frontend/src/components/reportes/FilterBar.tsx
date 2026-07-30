@@ -52,10 +52,14 @@ export function FilterBar({
         </div>
 
         <div className="relative">
-          <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-[var(--pm-text-dim)]/50" />
-          <input type="text" placeholder="Buscar cliente..." value={clientSearch}
-            onChange={e => onClientSearchChange(e.target.value)}
-            className="w-40 bg-[var(--pm-bg-base)]/60 border border-[var(--pm-border)]/40 rounded-lg pl-6 pr-2 py-1.5 text-[10px] font-mono text-[var(--pm-text-primary)] focus:outline-none focus:border-[var(--pm-accent-gold)]" />
+          <div className="flex items-center w-40 bg-[var(--pm-bg-base)]/60 border border-[var(--pm-border)]/40 rounded-lg overflow-hidden transition-colors focus-within:border-[var(--pm-accent-gold)]">
+            <div className="pl-2 flex items-center justify-center">
+              <Search className="w-3 h-3 text-[var(--pm-text-dim)]/50" />
+            </div>
+            <input type="text" placeholder="Buscar cliente..." value={clientSearch}
+              onChange={e => onClientSearchChange(e.target.value)}
+              className="flex-1 bg-transparent py-1.5 px-2 outline-none text-[10px] font-mono text-[var(--pm-text-primary)] placeholder:text-[var(--pm-text-dim)]/30" />
+          </div>
           {filterClientId && (
             <div className="absolute left-0 top-full mt-1 z-20 w-56 max-h-40 overflow-y-auto bg-[var(--pm-bg-secondary)] border border-[var(--pm-border)] rounded-lg p-1 shadow-xl">
               {clientOptions.map(c => (

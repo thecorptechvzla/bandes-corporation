@@ -100,6 +100,57 @@
 }
 
 /* ═══════════════════════════════════════════════════════
+   PREMIUM (PM) VARIABLES — Unified Dark Palette
+   ═══════════════════════════════════════════════════════ */
+
+:root {
+  /* — Premium Backgrounds — */
+  --pm-bg-deepest: #0F111A;
+  --pm-bg-base: #151720;
+  --pm-bg-secondary: #1A1D23;
+  --pm-bg-tertiary: #22262D;
+
+  /* — Premium Borders — */
+  --pm-border: #2D3139;
+
+  /* — Premium Text — */
+  --pm-text-primary: #F8FAFC;
+  --pm-text-dim: #94A3B8;
+
+  /* — Premium Accents — */
+  --pm-accent-gold: #D4AF37;
+  --pm-accent-emerald: #10B981;
+  --pm-accent-red: #EF4444;
+  --pm-accent-cyan: #22D3EE;
+  --pm-accent-sky: #38BDF8;
+}
+
+/* ═══════════════════════════════════════════════════════
+   GLASS PANEL & PREMIUM CARD
+   ═══════════════════════════════════════════════════════ */
+
+.glass-panel {
+  background: rgba(26, 29, 35, 0.65);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 20px;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.02),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+.premium-card {
+  background: rgba(26, 29, 35, 0.55);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+}
+
+/* ═══════════════════════════════════════════════════════
    GLOBAL RESETS & BASE STYLES
    ═══════════════════════════════════════════════════════ */
 
@@ -377,7 +428,8 @@ body {
 }
 
 /* ═══════════════════════════════════════════════════════
-   FORM INPUTS
+   FORM INPUTS — Typography only (no border/bg/radius)
+   Layout is handled by .pm-input or flex containers.
    ═══════════════════════════════════════════════════════ */
 
 input[type="text"],
@@ -387,20 +439,14 @@ input[type="email"],
 input[type="password"],
 input[type="date"],
 textarea {
-  background-color: var(--hud-bg-deepest);
-  border: 1px solid var(--hud-border);
-  border-radius: 12px;
-  padding: 0.625rem 0.875rem;
   font-family: var(--hud-font-sans);
   font-size: 12px;
   color: var(--hud-text-primary);
-  transition: all 150ms ease;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
 }
 
 input:focus, textarea:focus, select:focus {
   outline: none;
-  border-color: var(--hud-accent-gold);
-  box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.15);
 }
 
 input::placeholder, textarea::placeholder {
@@ -451,4 +497,77 @@ input::placeholder, textarea::placeholder {
 @keyframes skeleton-pulse {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
+}
+
+/* ═══════════════════════════════════════════════════════
+   PM-INPUT — Standalone input (no icon/prefix)
+   For inputs that don't live inside a flex container.
+   ═══════════════════════════════════════════════════════ */
+
+.pm-input {
+  background-color: var(--pm-bg-deepest);
+  border: 1px solid var(--pm-border);
+  border-radius: 10px;
+  padding: 0.625rem 0.875rem;
+  width: 100%;
+}
+
+.pm-input:focus {
+  border-color: var(--pm-accent-gold);
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.12);
+}
+
+.pm-input::placeholder {
+  color: var(--pm-text-dim);
+  opacity: 0.35;
+}
+
+/* ═══════════════════════════════════════════════════════
+   PREMIUM TABLE ROWS
+   ═══════════════════════════════════════════════════════ */
+
+.pm-table-row {
+  transition: background 150ms ease, box-shadow 150ms ease;
+}
+
+.pm-table-row:hover {
+  background: rgba(255, 255, 255, 0.03);
+  box-shadow: inset 0 0 24px rgba(212, 175, 55, 0.03);
+}
+
+/* ═══════════════════════════════════════════════════════
+   PREMIUM BADGE — Tactical Style
+   ═══════════════════════════════════════════════════════ */
+
+.pm-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+  font-family: var(--hud-font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  border: 1px solid;
+}
+
+.pm-badge--proveedor {
+  color: var(--pm-accent-sky);
+  border-color: rgba(56, 189, 248, 0.2);
+  background: rgba(56, 189, 248, 0.08);
+}
+
+.pm-badge--cliente {
+  color: var(--pm-accent-emerald);
+  border-color: rgba(16, 185, 129, 0.2);
+  background: rgba(16, 185, 129, 0.08);
+}
+
+.pm-badge--ambos {
+  color: #A78BFA;
+  border-color: rgba(167, 139, 250, 0.2);
+  background: rgba(167, 139, 250, 0.08);
 }

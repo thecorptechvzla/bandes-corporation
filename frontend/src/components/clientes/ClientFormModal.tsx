@@ -9,10 +9,10 @@ import {
 import type { Client, ClientRole } from '@/types/api';
 import { formatRifDisplay, sanitizeRifInput } from '@/lib/format';
 
-const ROLE_STYLES: Record<string, string> = {
-  PROVEEDOR: 'text-sky-400 border-sky-500/25 bg-sky-500/10',
-  CLIENTE: 'text-emerald-400 border-emerald-500/25 bg-emerald-500/10',
-  AMBOS: 'text-purple-400 border-purple-500/25 bg-purple-500/10',
+const ROLE_BADGE_CLASS: Record<string, string> = {
+  PROVEEDOR: 'pm-badge--proveedor',
+  CLIENTE: 'pm-badge--cliente',
+  AMBOS: 'pm-badge--ambos',
 };
 
 const ROLE_LABELS: Record<string, string> = {
@@ -118,7 +118,7 @@ export function ClientFormModal({ isOpen, editingClient, isPending, onSubmit, on
             className="w-full max-w-lg glass-panel rounded-2xl overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Header */}
+            {/* ═══ HEADER ═══ */}
             <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-[var(--pm-border)]">
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.2)' }}>
@@ -141,17 +141,19 @@ export function ClientFormModal({ isOpen, editingClient, isPending, onSubmit, on
               </button>
             </div>
 
-            {/* Body */}
+            {/* ═══ FORM BODY ═══ */}
             <form onSubmit={handleSubmit} className="p-6 space-y-5">
               {/* RIF */}
               <div className="space-y-1.5">
                 <label className="text-[10px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider flex items-center gap-1">
                   <Hash className="w-3 h-3" /> RIF
                 </label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-mono font-bold text-[var(--pm-accent-gold)] select-none pointer-events-none">
-                    J-
-                  </span>
+                <div className="flex items-center w-full bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] rounded-lg overflow-hidden transition-colors focus-within:border-[var(--pm-accent-gold)]">
+                  <div className="pl-3 flex items-center justify-center">
+                    <span className="text-xs font-mono font-bold text-[var(--pm-accent-gold)] select-none pointer-events-none">
+                      J-
+                    </span>
+                  </div>
                   <input
                     ref={rifRef}
                     type="text"
@@ -160,7 +162,7 @@ export function ClientFormModal({ isOpen, editingClient, isPending, onSubmit, on
                     placeholder="123456789"
                     value={rif.replace(/\D/g, '')}
                     onChange={(e) => handleRifInput(e.target.value)}
-                    className="w-full bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] rounded-lg pl-9 pr-3 py-2.5 text-xs font-mono text-[var(--pm-text-primary)] focus:outline-none focus:border-[var(--pm-accent-gold)] transition-colors placeholder:text-[var(--pm-text-dim)]/30"
+                    className="flex-1 bg-transparent py-2.5 px-3 outline-none text-xs font-mono text-[var(--pm-text-primary)] placeholder:text-[var(--pm-text-dim)]/30"
                     required
                   />
                 </div>
@@ -179,7 +181,7 @@ export function ClientFormModal({ isOpen, editingClient, isPending, onSubmit, on
                   placeholder="Nombre del cliente o proveedor"
                   value={name}
                   onChange={(e) => setName(e.target.value.toUpperCase())}
-                  className="w-full bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] rounded-lg px-3 py-2.5 text-xs font-sans text-[var(--pm-text-primary)] focus:outline-none focus:border-[var(--pm-accent-gold)] transition-colors uppercase placeholder:text-[var(--pm-text-dim)]/30"
+                  className="pm-input font-sans uppercase"
                   required
                 />
               </div>
@@ -195,9 +197,9 @@ export function ClientFormModal({ isOpen, editingClient, isPending, onSubmit, on
                       key={r}
                       type="button"
                       onClick={() => setRole(r)}
-                      className={`px-3 py-2.5 rounded-lg text-[10px] font-mono font-bold uppercase tracking-wider border transition-all active:scale-95 cursor-pointer ${
+                      className={`pm-badge justify-center py-2.5 text-[10px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer ${
                         role === r
-                          ? `${ROLE_STYLES[r]} bg-opacity-20`
+                          ? ROLE_BADGE_CLASS[r]
                           : 'border-[var(--pm-border)] text-[var(--pm-text-dim)] hover:border-[var(--pm-text-dim)]/30 hover:text-[var(--pm-text-primary)]'
                       }`}
                     >
@@ -217,7 +219,7 @@ export function ClientFormModal({ isOpen, editingClient, isPending, onSubmit, on
                   placeholder="Teléfono, email o persona de contacto"
                   value={contactInfo}
                   onChange={(e) => setContactInfo(e.target.value)}
-                  className="w-full bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] rounded-lg px-3 py-2.5 text-xs font-sans text-[var(--pm-text-primary)] focus:outline-none focus:border-[var(--pm-accent-gold)] transition-colors placeholder:text-[var(--pm-text-dim)]/30"
+                  className="pm-input font-sans"
                 />
               </div>
 

@@ -8,10 +8,10 @@ import {
 import type { Client } from '@/types/api';
 import { formatRif } from '@/lib/format';
 
-const ROLE_STYLES: Record<string, string> = {
-  PROVEEDOR: 'text-sky-400 border-sky-500/25 bg-sky-500/10',
-  CLIENTE: 'text-emerald-400 border-emerald-500/25 bg-emerald-500/10',
-  AMBOS: 'text-purple-400 border-purple-500/25 bg-purple-500/10',
+const ROLE_BADGE_CLASS: Record<string, string> = {
+  PROVEEDOR: 'pm-badge--proveedor',
+  CLIENTE: 'pm-badge--cliente',
+  AMBOS: 'pm-badge--ambos',
 };
 
 const ROLE_LABELS: Record<string, string> = {
@@ -33,6 +33,22 @@ interface ClientTableProps {
   onCreate: () => void;
 }
 
+function SkeletonRows() {
+  return (
+    <tbody>
+      {Array.from({ length: 6 }).map((_, i) => (
+        <tr key={i} className="border-b border-[var(--pm-border)]/50">
+          <td className="px-4 py-3.5"><div className="skeleton h-4 w-24 rounded mx-auto" /></td>
+          <td className="px-4 py-3.5"><div className="skeleton h-4 w-40 rounded" /></td>
+          <td className="px-4 py-3.5"><div className="skeleton h-5 w-16 rounded mx-auto" /></td>
+          <td className="px-4 py-3.5 hidden sm:table-cell"><div className="skeleton h-4 w-28 rounded" /></td>
+          <td className="px-4 py-3.5"><div className="skeleton h-4 w-12 rounded mx-auto" /></td>
+        </tr>
+      ))}
+    </tbody>
+  );
+}
+
 export function ClientTable({
   clients, totalCount, isLoading, isError, error,
   searchQuery, filterTab, onEdit, onDelete, onCreate,
@@ -43,9 +59,19 @@ export function ClientTable({
   return (
     <>
       {isLoading ? (
-        <div className="flex flex-col items-center justify-center py-20 text-[var(--pm-text-dim)]">
-          <div className="w-8 h-8 border-2 border-[var(--pm-accent-gold)] border-t-transparent rounded-full animate-spin mb-3" />
-          <span className="text-sm font-sans">Cargando directorio...</span>
+        <div className="overflow-x-auto">
+          <table className="w-full table-fixed border-collapse font-sans text-xs">
+            <thead>
+              <tr className="border-b border-[var(--pm-border)]">
+                <th className="w-[20%] text-center px-4 py-3 text-[10px] text-[var(--pm-text-dim)] font-mono font-bold uppercase tracking-widest">RIF</th>
+                <th className="w-[35%] text-left px-4 py-3 text-[10px] text-[var(--pm-text-dim)] font-mono font-bold uppercase tracking-widest">Nombre</th>
+                <th className="w-[15%] text-center px-4 py-3 text-[10px] text-[var(--pm-text-dim)] font-mono font-bold uppercase tracking-widest">Rol</th>
+                <th className="w-[20%] text-left px-4 py-3 text-[10px] text-[var(--pm-text-dim)] font-mono font-bold uppercase tracking-widest hidden sm:table-cell">Contacto</th>
+                <th className="w-[10%] text-center px-4 py-3 text-[10px] text-[var(--pm-text-dim)] font-mono font-bold uppercase tracking-widest">Acciones</th>
+              </tr>
+            </thead>
+            <SkeletonRows />
+          </table>
         </div>
       ) : isError ? (
         <div className="flex flex-col items-center justify-center py-20 text-[var(--pm-accent-red)]">
@@ -79,15 +105,15 @@ export function ClientTable({
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full table-fixed border-collapse font-sans text-xs">
-             <thead>
-               <tr className="border-b border-[var(--pm-border)]">
-                 <th className="w-[20%] text-center px-4 py-3 text-[var(--pm-text-dim)] font-semibold uppercase tracking-wider">RIF</th>
-                 <th className="w-[35%] text-left px-4 py-3 text-[var(--pm-text-dim)] font-semibold uppercase tracking-wider">Nombre</th>
-                 <th className="w-[15%] text-center px-4 py-3 text-[var(--pm-text-dim)] font-semibold uppercase tracking-wider">Rol</th>
-                 <th className="w-[20%] text-left px-4 py-3 text-[var(--pm-text-dim)] font-semibold uppercase tracking-wider hidden sm:table-cell">Contacto</th>
-                 <th className="w-[10%] text-center px-4 py-3 text-[var(--pm-text-dim)] font-semibold uppercase tracking-wider">Acciones</th>
-               </tr>
-             </thead>
+            <thead>
+              <tr className="border-b border-[var(--pm-border)]">
+                <th className="w-[20%] text-center px-4 py-3 text-[10px] text-[var(--pm-text-dim)] font-mono font-bold uppercase tracking-widest">RIF</th>
+                <th className="w-[35%] text-left px-4 py-3 text-[10px] text-[var(--pm-text-dim)] font-mono font-bold uppercase tracking-widest">Nombre</th>
+                <th className="w-[15%] text-center px-4 py-3 text-[10px] text-[var(--pm-text-dim)] font-mono font-bold uppercase tracking-widest">Rol</th>
+                <th className="w-[20%] text-left px-4 py-3 text-[10px] text-[var(--pm-text-dim)] font-mono font-bold uppercase tracking-widest hidden sm:table-cell">Contacto</th>
+                <th className="w-[10%] text-center px-4 py-3 text-[10px] text-[var(--pm-text-dim)] font-mono font-bold uppercase tracking-widest">Acciones</th>
+              </tr>
+            </thead>
             <tbody>
               {clients.map((client, idx) => (
                 <motion.tr
@@ -95,16 +121,16 @@ export function ClientTable({
                   initial={{ opacity: 0, x: -8 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.2 + idx * 0.03, duration: 0.25 }}
-                  className="odd:bg-[var(--pm-bg-deepest)]/40 hover:bg-[var(--pm-bg-tertiary)]/60 transition-all duration-150 hover:shadow-[inset_0_0_20px_rgba(212,175,55,0.04)]"
+                  className="pm-table-row border-b border-[var(--pm-border)]/30"
                 >
-                  <td className="text-center px-4 py-3 font-mono font-bold text-[var(--pm-accent-gold)] tracking-wider">
+                  <td className="text-center px-4 py-3 font-mono font-bold text-cyan-400 tracking-wider text-[11px]">
                     {formatRif(client.rif)}
                   </td>
                   <td className="text-left px-4 py-3 font-sans font-bold text-[var(--pm-text-primary)]">
                     {client.name}
                   </td>
                   <td className="text-center px-4 py-3">
-                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-[9px] font-mono font-bold border rounded whitespace-nowrap ${ROLE_STYLES[client.role] || ''}`}>
+                    <span className={`pm-badge ${ROLE_BADGE_CLASS[client.role] || ''}`}>
                       {ROLE_LABELS[client.role] || client.role}
                     </span>
                   </td>
@@ -115,14 +141,14 @@ export function ClientTable({
                     <div className="flex items-center justify-center gap-1">
                       <button
                         onClick={() => onEdit(client)}
-                        className="p-1.5 rounded hover:bg-[var(--pm-accent-gold)]/10 text-[var(--pm-text-dim)] hover:text-[var(--pm-accent-gold)] active:scale-90 transition-all cursor-pointer"
+                        className="p-1.5 rounded-lg hover:bg-[var(--pm-accent-gold)]/10 text-[var(--pm-text-dim)] hover:text-[var(--pm-accent-gold)] active:scale-90 transition-all cursor-pointer"
                         title="Editar entidad"
                       >
                         <Pencil className="w-3.5 h-3.5" />
                       </button>
                       <button
                         onClick={() => onDelete(client)}
-                        className="p-1.5 rounded hover:bg-[var(--pm-accent-red)]/10 text-[var(--pm-text-dim)] hover:text-[var(--pm-accent-red)] active:scale-90 transition-all cursor-pointer"
+                        className="p-1.5 rounded-lg hover:bg-[var(--pm-accent-red)]/10 text-[var(--pm-text-dim)] hover:text-[var(--pm-accent-red)] active:scale-90 transition-all cursor-pointer"
                         title="Eliminar entidad"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
