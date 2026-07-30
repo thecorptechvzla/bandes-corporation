@@ -6,14 +6,6 @@ import { LayoutGrid, Table2 } from 'lucide-react';
 import { Treemap, ResponsiveContainer, Tooltip } from 'recharts';
 import { formatNumber } from '@/lib/format';
 
-function isLightColor(hex: string): boolean {
-  const clean = hex.replace('#', '');
-  const r = parseInt(clean.substring(0, 2), 16);
-  const g = parseInt(clean.substring(2, 4), 16);
-  const b = parseInt(clean.substring(4, 6), 16);
-  return (r * 299 + g * 587 + b * 114) / 1000 > 160;
-}
-
 interface TreemapTooltipProps {
   active?: boolean;
   payload?: any[];
@@ -77,20 +69,20 @@ function CustomTreemapBlock(props: CustomBlockProps) {
     x = 0, y = 0, width = 0, height = 0,
     name = '', value = 0, pct = 0, fill = '#0D1520',
     accent = '#00E5FF', glowColor = '#00E5FF',
+    index = 0,
   } = props;
   const [hovered, setHovered] = useState(false);
 
   if (width <= 0 || height <= 0) return null;
 
+  const uid = `block-${index}`;
   const weightLabel = `${formatNumber(value, 2)} g`;
-  const lightText = isLightColor(fill);
 
   const showName = width > 50 && height > 40;
   const showWeight = width > 60 && height > 60;
   const showPct = width > 70 && height > 80;
 
-  const textColor = lightText ? '#0A0F1A' : '#F4F4F5';
-  const shadowIntensity = lightText ? 0.5 : 0.95;
+  const shadowStyle = { textShadow: '0 2px 4px rgba(0,0,0,0.8)' };
 
   return (
     <g
@@ -98,31 +90,40 @@ function CustomTreemapBlock(props: CustomBlockProps) {
       onMouseLeave={() => setHovered(false)}
       style={{ cursor: 'pointer' }}
     >
-      <rect x={x} y={y} width={width} height={height} fill={fill} rx={8} />
+      <defs>
+        <linearGradient id={`glass-${uid}`} x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor={fill} stopOpacity={1} />
+          <stop offset="100%" stopColor={fill} stopOpacity={0.85} />
+        </linearGradient>
+        <linearGradient id={`inner-${uid}`} x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="rgba(255,255,255,0.15)" />
+          <stop offset="60%" stopColor="rgba(255,255,255,0)" />
+        </linearGradient>
+      </defs>
+
+      <rect x={x} y={y} width={width} height={height}
+        fill={`url(#glass-${uid})`} rx={8} />
+
+      <rect x={x} y={y} width={width} height={height}
+        fill={`url(#inner-${uid})`} rx={8} />
 
       <rect x={x + 1} y={y + 1} width={width - 2} height={height - 2}
-        fill="none" stroke="var(--pm-bg-deepest)" strokeWidth={2} rx={7} />
+        fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth={1} rx={7} />
 
       <rect x={x} y={y} width={width} height={height} fill="none" stroke={fill}
-        strokeOpacity={hovered ? 0.7 : 0.3} strokeWidth={hovered ? 1.5 : 0.75} rx={8} />
+        strokeOpacity={hovered ? 0.7 : 0.25} strokeWidth={1.5} rx={8} />
 
       {hovered && (
-        <>
-          <rect x={x - 1} y={y - 1} width={width + 2} height={height + 2}
-            fill="none" stroke={glowColor} strokeWidth={2} rx={9} opacity={0.7}
-            style={{ filter: 'drop-shadow(0 0 6px ' + glowColor + ')' }} />
-          <rect x={x - 1} y={y - 1} width={width + 2} height={height + 2}
-            fill="none" stroke={glowColor} strokeWidth={6} rx={10} opacity={0.15}
-            style={{ filter: 'blur(5px)' }} />
-        </>
+        <rect x={x} y={y} width={width} height={height}
+          fill="rgba(255,255,255,0.08)" rx={8} />
       )}
 
       {showName && (
         <text x={x + width / 2} y={y + height / 2 - (showWeight ? 12 : showPct ? 16 : 0)}
-          textAnchor="middle" dominantBaseline="central" fill={textColor}
+          textAnchor="middle" dominantBaseline="central" fill="#FFFFFF"
           fontFamily="'JetBrains Mono', 'Fira Code', monospace"
           fontSize={height > 100 ? 14 : height > 70 ? 12 : 10} fontWeight={800}
-          style={{ textShadow: `0 2px 8px rgba(0,0,0,${shadowIntensity}), 0 0 4px rgba(0,0,0,${shadowIntensity})` }}>
+          style={shadowStyle}>
           {name.length > (width > 120 ? 22 : width > 80 ? 16 : 10)
             ? `${name.slice(0, width > 120 ? 22 : width > 80 ? 16 : 10)}…`
             : name}
@@ -131,20 +132,20 @@ function CustomTreemapBlock(props: CustomBlockProps) {
 
       {showWeight && (
         <text x={x + width / 2} y={y + height / 2 + 14}
-          textAnchor="middle" dominantBaseline="central" fill={textColor}
+          textAnchor="middle" dominantBaseline="central" fill="#FFFFFF"
           fontFamily="'JetBrains Mono', 'Fira Code', monospace"
           fontSize={height > 100 ? 12 : 10} fontWeight={600} opacity={0.9}
-          style={{ textShadow: `0 2px 6px rgba(0,0,0,${shadowIntensity})` }}>
+          style={shadowStyle}>
           {weightLabel}
         </text>
       )}
 
       {showPct && (
         <text x={x + width / 2} y={y + height / 2 + 30}
-          textAnchor="middle" dominantBaseline="central" fill={textColor}
+          textAnchor="middle" dominantBaseline="central" fill="#FFFFFF"
           fontFamily="'JetBrains Mono', 'Fira Code', monospace"
           fontSize={10} fontWeight={600} opacity={0.85}
-          style={{ textShadow: `0 2px 6px rgba(0,0,0,${shadowIntensity})` }}>
+          style={shadowStyle}>
           {formatNumber(pct, 1)}%
         </text>
       )}

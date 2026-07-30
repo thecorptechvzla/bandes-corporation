@@ -58,7 +58,7 @@ function hashStr(s: string): number {
   return Math.abs(h);
 }
 
-const NEON_SUMMER_PALETTE = ['#06837F', '#02CECB', '#B4FFFF', '#FED811', '#FDC100'];
+const GREEN_PALETTE = ['rgba(16, 185, 129, 0.6)', 'rgba(5, 150, 105, 0.6)', 'rgba(4, 120, 87, 0.6)'];
 
 export default function V2DashboardPage() {
   const [filterStartDate, setFilterStartDate] = useState('');
@@ -228,7 +228,7 @@ export default function V2DashboardPage() {
       .map(({ name, value }, idx) => ({
         name, value,
         pct: total > 0 ? (value / total) * 100 : 0,
-        fill: NEON_SUMMER_PALETTE[idx % NEON_SUMMER_PALETTE.length],
+        fill: GREEN_PALETTE[idx % GREEN_PALETTE.length],
       }));
   }, [filteredBars]);
 
@@ -248,7 +248,7 @@ export default function V2DashboardPage() {
       .map(({ name, value }, idx) => ({
         name, value,
         pct: total > 0 ? (value / total) * 100 : 0,
-        fill: NEON_SUMMER_PALETTE[idx % NEON_SUMMER_PALETTE.length],
+        fill: GREEN_PALETTE[idx % GREEN_PALETTE.length],
       }));
   }, [filteredExits]);
 
