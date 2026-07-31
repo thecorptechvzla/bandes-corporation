@@ -44,8 +44,10 @@ export function RecoveryModal({ lot, lotBarsMap, processLotsMap, onClose, upload
   const [hwLeyAu, setHwLeyAu] = useState(recoveredLeyAu);
 
   const [cameraMode, setCameraMode] = useState<CameraMode>('idle');
-  const [photoPreviewUrl, setPhotoPreviewUrl] = useState<string | null>(null);
-  const [photoUploadedUrl, setPhotoUploadedUrl] = useState<string | null>(null);
+  const [photoPreviewUrl, setPhotoPreviewUrl] = useState<string | null>(
+    lot.photoUrl ? `/api/blob/view?url=${encodeURIComponent(lot.photoUrl)}` : null,
+  );
+  const [photoUploadedUrl, setPhotoUploadedUrl] = useState<string | null>(lot.photoUrl ?? null);
   const [photoUploading, setPhotoUploading] = useState(false);
   const previewUrlRef = useRef<string | null>(null);
 
@@ -64,6 +66,9 @@ export function RecoveryModal({ lot, lotBarsMap, processLotsMap, onClose, upload
     try {
       const url = await uploadPhoto(blob);
       setPhotoUploadedUrl(url);
+      updateLot.mutateAsync({ id: lot.id, data: { photoUrl: url } }).catch(err => {
+        console.error('Failed to persist photoUrl:', err);
+      });
     } catch (err) {
       console.error('Auto-upload failed:', err);
     } finally {
