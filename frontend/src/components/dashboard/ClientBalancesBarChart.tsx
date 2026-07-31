@@ -116,7 +116,8 @@ export function ClientBalancesBarChart({ clientBalances, isMounted, onBarClick }
                 isAnimationActive={isMounted}
                 animationDuration={1000}
                 animationEasing="ease-out"
-                onClick={(entry: ChartEntry) => onBarClick?.(entry.id)}
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                onClick={(entry: any) => onBarClick?.(entry.id as string)}
               >
                 {chartData.map((entry, idx) => (
                   <Cell

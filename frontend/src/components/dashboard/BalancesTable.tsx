@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { motion } from 'motion/react';
 import { Coins } from 'lucide-react';
 import { formatNumber } from '@/lib/format';
@@ -18,6 +18,11 @@ const TH = 'text-right text-[10px] font-sans font-bold tracking-[0.1em] uppercas
 const TH_STICKY = 'sticky left-0 z-10 text-left text-[10px] font-sans font-bold tracking-[0.1em] uppercase text-[var(--hud-text-muted)] px-5 py-3';
 
 export function BalancesTable({ clientBalances, totalBalance, onClientClick }: BalancesTableProps) {
+  const sorted = useMemo(
+    () => [...clientBalances].sort((a, b) => b.balance - a.balance),
+    [clientBalances]
+  );
+
   const handleRowClick = useCallback((e: React.MouseEvent<HTMLTableSectionElement>) => {
     const tr = (e.target as HTMLElement).closest('tr');
     if (tr?.dataset?.clientId) onClientClick(tr.dataset.clientId);
@@ -76,7 +81,7 @@ export function BalancesTable({ clientBalances, totalBalance, onClientClick }: B
               </tr>
             </thead>
             <tbody onClick={handleRowClick}>
-              {clientBalances.map((c) => (
+              {sorted.map((c) => (
                 <tr
                   key={c.id}
                   data-client-id={c.id}
