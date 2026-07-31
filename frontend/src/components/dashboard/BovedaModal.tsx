@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Warehouse, X, ChevronDown } from 'lucide-react';
+import { Warehouse, X, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import { formatNumber } from '@/lib/format';
 import { SupplierDirectory } from '@/components/SupplierDirectory';
 import type { Lot, Process, Client, Bar } from '@/types/api';
@@ -41,7 +41,10 @@ interface BovedaModalProps {
 export function BovedaModal({ isOpen, lots, bars, clients, onClose, onBarClick }: BovedaModalProps) {
   const [tab, setTab] = useState<Tab>('fundido');
   const [expandedFundidoId, setExpandedFundidoId] = useState<string | null>(null);
+  const [fundidoLotPages, setFundidoLotPages] = useState<Record<string, number>>({});
   useBodyScrollLock(isOpen);
+
+  const LOTS_PER_PAGE = 10;
 
   const grouped = useMemo(() => {
     const map = new Map<string, { clientName: string; lots: BovedaLot[] }>();
@@ -180,57 +183,103 @@ export function BovedaModal({ isOpen, lots, bars, clients, onClose, onBarClick }
                               transition={{ duration: 0.2 }}
                               className="overflow-hidden"
                             >
-                              <div className="px-2 pt-3">
-                                <div className="rounded-xl border border-[var(--hud-border)]/20 overflow-hidden">
-                                  <table className="w-full">
-                                    <thead>
-                                      <tr className="bg-[var(--hud-bg-deepest)]/50">
-                                        <th className="text-[9px] font-mono font-bold tracking-[0.1em] uppercase text-[var(--hud-text-muted)] text-left px-3 py-2">
-                                          Proceso
-                                        </th>
-                                        <th className="text-[9px] font-mono font-bold tracking-[0.1em] uppercase text-[var(--hud-text-muted)] text-left px-3 py-2">
-                                          Lote
-                                        </th>
-                                        <th className="text-[9px] font-mono font-bold tracking-[0.1em] uppercase text-[var(--hud-text-muted)] text-left px-3 py-2">
-                                          Operador
-                                        </th>
-                                        <th className="text-[9px] font-mono font-bold tracking-[0.1em] uppercase text-[var(--hud-text-muted)] text-right px-3 py-2">
-                                          Peso Recuperado (g)
-                                        </th>
-                                        <th className="text-[9px] font-mono font-bold tracking-[0.1em] uppercase text-[var(--hud-text-muted)] text-right px-3 py-2">
-                                          Fecha
-                                        </th>
-                                      </tr>
-                                    </thead>
-                                    <tbody>
-                                      {clientLots.map((lot) => (
-                                        <tr
-                                          key={lot.id}
-                                          className="border-t border-[var(--hud-border)] hover:bg-[var(--hud-bg-hover)] transition-colors"
-                                        >
-                                          <td className="px-3 py-2 text-[10px] font-mono text-[var(--hud-text-primary)]">
-                                            {lot.process?.name ?? '—'}
-                                          </td>
-                                          <td className="px-3 py-2 text-[10px] font-mono text-[var(--hud-text-primary)]">
-                                            {lot.name}
-                                          </td>
-                                          <td className="px-3 py-2 text-[10px] font-mono text-[var(--hud-text-dim)]">
-                                            {lot.operator ?? '—'}
-                                          </td>
-                                          <td className="px-3 py-2 text-[10px] font-mono text-[var(--hud-text-primary)] text-right tabular-nums">
-                                            {formatNumber(Number(lot.recovered ?? 0), 2)}
-                                          </td>
-                                          <td className="px-3 py-2 text-[10px] font-mono text-[var(--hud-text-dim)] text-right">
-                                            {lot.recoveryAt
-                                              ? new Date(lot.recoveryAt).toLocaleDateString('es-AR')
-                                              : '—'}
-                                          </td>
-                                        </tr>
-                                      ))}
-                                    </tbody>
-                                  </table>
-                                </div>
-                              </div>
+                              {(() => {
+                                const lotPage = fundidoLotPages[id] ?? 1;
+                                const lotTotalPages = Math.max(1, Math.ceil(clientLots.length / LOTS_PER_PAGE));
+                                const safeLotPage = Math.min(lotPage, lotTotalPages);
+                                const paginatedLots = clientLots.slice((safeLotPage - 1) * LOTS_PER_PAGE, safeLotPage * LOTS_PER_PAGE);
+                                return (
+                                  <div className="px-4 sm:px-5 pb-4 sm:pb-5 overflow-hidden">
+                                    <div className="overflow-x-auto rounded-xl border border-[var(--hud-border)]/20">
+                                      <table className="w-full table-fixed border-collapse text-xs font-sans">
+                                        <thead>
+                                          <tr>
+                                            <th className="w-[20%] text-left px-4 py-3 bg-[var(--hud-bg-primary)]">
+                                              <span className="text-[9px] font-mono font-bold tracking-[0.1em] uppercase text-[var(--hud-text-muted)]">Proceso</span>
+                                            </th>
+                                            <th className="w-[15%] text-left px-4 py-3 bg-[var(--hud-bg-primary)]">
+                                              <span className="text-[9px] font-mono font-bold tracking-[0.1em] uppercase text-[var(--hud-text-muted)]">Lote</span>
+                                            </th>
+                                            <th className="w-[15%] text-left px-4 py-3 bg-[var(--hud-bg-primary)]">
+                                              <span className="text-[9px] font-mono font-bold tracking-[0.1em] uppercase text-[var(--hud-text-muted)]">Operador</span>
+                                            </th>
+                                            <th className="w-[25%] text-right px-4 py-3 bg-[var(--hud-bg-primary)]">
+                                              <span className="text-[9px] font-mono font-bold tracking-[0.1em] uppercase text-[var(--hud-text-muted)]">Peso Recuperado (g)</span>
+                                            </th>
+                                            <th className="w-[25%] text-right px-4 py-3 bg-[var(--hud-bg-primary)]">
+                                              <span className="text-[9px] font-mono font-bold tracking-[0.1em] uppercase text-[var(--hud-text-muted)]">Fecha</span>
+                                            </th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          {paginatedLots.map((lot, lotIdx) => (
+                                            <tr
+                                              key={lot.id}
+                                              className={`${lotIdx % 2 === 1 ? 'bg-[var(--hud-bg-deepest)]/30' : ''}`}
+                                            >
+                                              <td className="text-left px-4 py-3 sticky left-0 bg-[var(--hud-bg-primary)] font-semibold text-[var(--hud-accent-gold)]">
+                                                <span className="text-[11px]">{lot.process?.name ?? '—'}</span>
+                                              </td>
+                                              <td className="text-left px-4 py-3 font-mono text-[11px] text-[var(--hud-text-primary)]">
+                                                {lot.name}
+                                              </td>
+                                              <td className="text-left px-4 py-3 font-mono text-[11px] text-[var(--hud-text-dim)]">
+                                                {lot.operator ?? '—'}
+                                              </td>
+                                              <td className="text-right px-4 py-3 font-mono text-[11px] text-[var(--hud-accent-gold)] tabular-nums">
+                                                {formatNumber(Number(lot.recovered ?? 0), 2)}
+                                              </td>
+                                              <td className="text-right px-4 py-3 font-mono text-[11px] text-[var(--hud-text-dim)]">
+                                                {lot.recoveryAt
+                                                  ? new Date(lot.recoveryAt).toLocaleDateString('es-AR')
+                                                  : '—'}
+                                              </td>
+                                            </tr>
+                                          ))}
+                                        </tbody>
+                                        {clientLots.length > 0 && (
+                                          <tfoot>
+                                            <tr className="border-t border-[var(--hud-border)] bg-[var(--hud-bg-deepest)]/50">
+                                              <td className="sticky left-0 bg-[var(--hud-bg-deepest)]/50 px-3 py-2 text-[9px] font-bold text-[var(--hud-text-dim)] uppercase tracking-widest">
+                                                Total {clientName}
+                                              </td>
+                                              <td />
+                                              <td />
+                                              <td className="text-right px-4 py-3 font-mono text-xs text-[var(--hud-accent-gold)]">
+                                                {formatNumber(clientTotal, 2)}
+                                              </td>
+                                              <td />
+                                            </tr>
+                                          </tfoot>
+                                        )}
+                                      </table>
+                                    </div>
+                                    {lotTotalPages > 1 && (
+                                      <div className="flex items-center justify-center gap-3 pt-2">
+                                        <span className="text-[9px] font-mono text-[var(--hud-text-dim)]">
+                                          Página {safeLotPage} de {lotTotalPages}
+                                        </span>
+                                        <div className="flex items-center gap-1">
+                                          <button
+                                            onClick={() => setFundidoLotPages(prev => ({ ...prev, [id]: safeLotPage - 1 }))}
+                                            disabled={safeLotPage <= 1}
+                                            className="p-1 text-[var(--hud-text-dim)] hover:text-[var(--hud-text-primary)] disabled:text-[var(--hud-text-dim)]/30 disabled:cursor-not-allowed transition-all"
+                                          >
+                                            <ChevronLeft className="w-3 h-3" />
+                                          </button>
+                                          <button
+                                            onClick={() => setFundidoLotPages(prev => ({ ...prev, [id]: safeLotPage + 1 }))}
+                                            disabled={safeLotPage >= lotTotalPages}
+                                            className="p-1 text-[var(--hud-text-dim)] hover:text-[var(--hud-text-primary)] disabled:text-[var(--hud-text-dim)]/30 disabled:cursor-not-allowed transition-all"
+                                          >
+                                            <ChevronRight className="w-3 h-3" />
+                                          </button>
+                                        </div>
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })()}
                             </motion.div>
                           )}
                         </AnimatePresence>
