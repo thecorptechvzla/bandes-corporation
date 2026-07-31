@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Warehouse, X } from 'lucide-react';
+import { Warehouse, X, ChevronDown } from 'lucide-react';
 import { formatNumber } from '@/lib/format';
 import { SupplierDirectory } from '@/components/SupplierDirectory';
 import type { Lot, Process, Client, Bar } from '@/types/api';
@@ -40,6 +40,7 @@ interface BovedaModalProps {
 
 export function BovedaModal({ isOpen, lots, bars, clients, onClose, onBarClick }: BovedaModalProps) {
   const [tab, setTab] = useState<Tab>('fundido');
+  const [expandedFundidoId, setExpandedFundidoId] = useState<string | null>(null);
   useBodyScrollLock(isOpen);
 
   const grouped = useMemo(() => {
@@ -128,7 +129,7 @@ export function BovedaModal({ isOpen, lots, bars, clients, onClose, onBarClick }
             {/* Body */}
             <div className="flex-1 overflow-y-auto">
               {tab === 'fundido' ? (
-                <div className="p-4 sm:p-5 space-y-5">
+                <div className="p-4 sm:p-5 space-y-3">
                   {grouped.length === 0 && (
                     <div className="flex flex-col items-center justify-center h-full min-h-[200px] text-center">
                       <Warehouse className="w-10 h-10 text-[var(--hud-text-dim)] mb-3 opacity-40" />
@@ -138,69 +139,104 @@ export function BovedaModal({ isOpen, lots, bars, clients, onClose, onBarClick }
                     </div>
                   )}
 
-                  {grouped.map(({ id, clientName, lots: clientLots }) => (
-                    <div key={id}>
-                      <div className="flex items-center gap-2 mb-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-[var(--hud-accent-gold)]" />
-                        <span className="text-[10px] font-mono font-bold tracking-wider uppercase text-[var(--hud-text-primary)]">
-                          {clientName}
-                        </span>
-                        <span className="text-[9px] font-mono text-[var(--hud-text-dim)]">
-                          ({formatNumber(clientLots.reduce((s, l) => s + Number(l.recovered ?? 0), 0), 2)} g)
-                        </span>
-                      </div>
+                  {grouped.map(({ id, clientName, lots: clientLots }) => {
+                    const isExpanded = expandedFundidoId === id;
+                    const clientTotal = clientLots.reduce((s, l) => s + Number(l.recovered ?? 0), 0);
+                    return (
+                      <div key={id}>
+                        <div
+                          className="glass-panel cursor-pointer active:scale-[0.98] transition-all hover:bg-[var(--hud-accent-gold)]/[0.04] rounded-xl border border-[var(--hud-border)]/40 overflow-hidden"
+                          onClick={() => setExpandedFundidoId(prev => prev === id ? null : id)}
+                        >
+                          <div className="p-4 flex items-center justify-between gap-3">
+                            <div className="flex items-center gap-3 min-w-0">
+                              <div className="w-1.5 h-1.5 rounded-full bg-[var(--hud-accent-gold)] flex-shrink-0" />
+                              <div className="min-w-0">
+                                <p className="text-sm font-bold text-[var(--hud-text-primary)] uppercase tracking-wider truncate">
+                                  {clientName}
+                                </p>
+                                <p className="text-[10px] text-[var(--hud-text-dim)] font-mono truncate">
+                                  {formatNumber(clientTotal, 2)} g recuperados
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-3 flex-shrink-0">
+                              <span className="text-[10px] font-mono text-[var(--hud-text-dim)] bg-[var(--hud-bg-deepest)]/50 px-2 py-0.5 border border-[var(--hud-border)] rounded whitespace-nowrap">
+                                {clientLots.length} LOTES
+                              </span>
+                              <ChevronDown
+                                className={`w-4 h-4 text-[var(--hud-text-dim)] transition-transform flex-shrink-0 ${isExpanded ? 'rotate-180' : ''}`}
+                              />
+                            </div>
+                          </div>
+                        </div>
 
-                      <div className="rounded-xl border border-[var(--hud-border)] overflow-hidden">
-                        <table className="w-full">
-                          <thead>
-                            <tr className="bg-[var(--hud-bg-deepest)]/50">
-                              <th className="text-[9px] font-mono font-bold tracking-[0.1em] uppercase text-[var(--hud-text-muted)] text-left px-3 py-2">
-                                Proceso
-                              </th>
-                              <th className="text-[9px] font-mono font-bold tracking-[0.1em] uppercase text-[var(--hud-text-muted)] text-left px-3 py-2">
-                                Lote
-                              </th>
-                              <th className="text-[9px] font-mono font-bold tracking-[0.1em] uppercase text-[var(--hud-text-muted)] text-left px-3 py-2">
-                                Operador
-                              </th>
-                              <th className="text-[9px] font-mono font-bold tracking-[0.1em] uppercase text-[var(--hud-text-muted)] text-right px-3 py-2">
-                                Peso Recuperado (g)
-                              </th>
-                              <th className="text-[9px] font-mono font-bold tracking-[0.1em] uppercase text-[var(--hud-text-muted)] text-right px-3 py-2">
-                                Fecha
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {clientLots.map((lot) => (
-                              <tr
-                                key={lot.id}
-                                className="border-t border-[var(--hud-border)] hover:bg-[var(--hud-bg-hover)] transition-colors"
-                              >
-                                <td className="px-3 py-2 text-[10px] font-mono text-[var(--hud-text-primary)]">
-                                  {lot.process?.name ?? '—'}
-                                </td>
-                                <td className="px-3 py-2 text-[10px] font-mono text-[var(--hud-text-primary)]">
-                                  {lot.name}
-                                </td>
-                                <td className="px-3 py-2 text-[10px] font-mono text-[var(--hud-text-dim)]">
-                                  {lot.operator ?? '—'}
-                                </td>
-                                <td className="px-3 py-2 text-[10px] font-mono text-[var(--hud-text-primary)] text-right tabular-nums">
-                                  {formatNumber(Number(lot.recovered ?? 0), 2)}
-                                </td>
-                                <td className="px-3 py-2 text-[10px] font-mono text-[var(--hud-text-dim)] text-right">
-                                  {lot.recoveryAt
-                                    ? new Date(lot.recoveryAt).toLocaleDateString('es-AR')
-                                    : '—'}
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
+                        <AnimatePresence>
+                          {isExpanded && (
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: 'auto', opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ duration: 0.2 }}
+                              className="overflow-hidden"
+                            >
+                              <div className="px-2 pt-3">
+                                <div className="rounded-xl border border-[var(--hud-border)]/20 overflow-hidden">
+                                  <table className="w-full">
+                                    <thead>
+                                      <tr className="bg-[var(--hud-bg-deepest)]/50">
+                                        <th className="text-[9px] font-mono font-bold tracking-[0.1em] uppercase text-[var(--hud-text-muted)] text-left px-3 py-2">
+                                          Proceso
+                                        </th>
+                                        <th className="text-[9px] font-mono font-bold tracking-[0.1em] uppercase text-[var(--hud-text-muted)] text-left px-3 py-2">
+                                          Lote
+                                        </th>
+                                        <th className="text-[9px] font-mono font-bold tracking-[0.1em] uppercase text-[var(--hud-text-muted)] text-left px-3 py-2">
+                                          Operador
+                                        </th>
+                                        <th className="text-[9px] font-mono font-bold tracking-[0.1em] uppercase text-[var(--hud-text-muted)] text-right px-3 py-2">
+                                          Peso Recuperado (g)
+                                        </th>
+                                        <th className="text-[9px] font-mono font-bold tracking-[0.1em] uppercase text-[var(--hud-text-muted)] text-right px-3 py-2">
+                                          Fecha
+                                        </th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {clientLots.map((lot) => (
+                                        <tr
+                                          key={lot.id}
+                                          className="border-t border-[var(--hud-border)] hover:bg-[var(--hud-bg-hover)] transition-colors"
+                                        >
+                                          <td className="px-3 py-2 text-[10px] font-mono text-[var(--hud-text-primary)]">
+                                            {lot.process?.name ?? '—'}
+                                          </td>
+                                          <td className="px-3 py-2 text-[10px] font-mono text-[var(--hud-text-primary)]">
+                                            {lot.name}
+                                          </td>
+                                          <td className="px-3 py-2 text-[10px] font-mono text-[var(--hud-text-dim)]">
+                                            {lot.operator ?? '—'}
+                                          </td>
+                                          <td className="px-3 py-2 text-[10px] font-mono text-[var(--hud-text-primary)] text-right tabular-nums">
+                                            {formatNumber(Number(lot.recovered ?? 0), 2)}
+                                          </td>
+                                          <td className="px-3 py-2 text-[10px] font-mono text-[var(--hud-text-dim)] text-right">
+                                            {lot.recoveryAt
+                                              ? new Date(lot.recoveryAt).toLocaleDateString('es-AR')
+                                              : '—'}
+                                          </td>
+                                        </tr>
+                                      ))}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               ) : (
                 <div className="p-4 sm:p-5">
