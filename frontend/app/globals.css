@@ -137,8 +137,7 @@
   border-radius: 20px;
   box-shadow:
     0 8px 32px rgba(0, 0, 0, 0.4),
-    0 0 0 1px rgba(255, 255, 255, 0.02),
-    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    0 0 0 1px rgba(255, 255, 255, 0.02);
 }
 
 .premium-card {
@@ -223,19 +222,20 @@ body {
   color: var(--hud-text-primary);
 }
 
-/* ─── Active state: Gradient pill with glow ─── */
+/* ─── Active state: Gold matte with left border accent ─── */
 .nav-item.active {
-  background: linear-gradient(135deg, #10B981, #0EA5E9);
-  color: #fff;
+  background: rgba(213, 176, 66, 0.08);
+  color: #D5B042;
   font-weight: 700;
-  box-shadow: 0 4px 20px rgba(16, 185, 129, 0.25), 0 0 0 1px rgba(16, 185, 129, 0.15);
-  border-color: transparent;
+  border-left: 3px solid #D5B042;
+  padding-left: calc(1.125rem - 3px);
+  box-shadow: inset 0 1px 6px rgba(213, 176, 66, 0.04);
 }
 
 .nav-item.active:hover {
-  background: linear-gradient(135deg, #10B981, #0EA5E9);
-  box-shadow: 0 6px 24px rgba(16, 185, 129, 0.35), 0 0 0 1px rgba(16, 185, 129, 0.2);
-  transform: translateY(-1px);
+  background: rgba(213, 176, 66, 0.12);
+  box-shadow: inset 0 1px 8px rgba(213, 176, 66, 0.06);
+  transform: none;
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -245,15 +245,22 @@ body {
 .hud-card {
   background: var(--hud-bg-card);
   border: 1px solid var(--hud-border);
-  border-radius: 24px;
+  border-radius: 20px;
   box-shadow: var(--hud-shadow-card);
   padding: 1.5rem;
-  transition: box-shadow 250ms ease, transform 250ms ease;
+  transition: box-shadow 250ms ease;
 }
 
 .hud-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--hud-shadow-elevated), 0 0 40px -8px rgba(16, 185, 129, 0.08);
+  box-shadow: var(--hud-shadow-elevated);
+}
+
+/* ═══════════════════════════════════════════════════════
+   KPI CARD — Accent glow on hover
+   ═══════════════════════════════════════════════════════ */
+
+.kpi-card:hover {
+  box-shadow: 0 0 28px -10px var(--kpi-glow), var(--hud-shadow-elevated);
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -570,4 +577,29 @@ input::placeholder, textarea::placeholder {
   color: #A78BFA;
   border-color: rgba(167, 139, 250, 0.2);
   background: rgba(167, 139, 250, 0.08);
+}
+
+/* ═══════════════════════════════════════════════════════
+   TABLE ROW PARITY
+   ═══════════════════════════════════════════════════════ */
+
+.balances-row {
+  --row-bg: transparent;
+}
+.balances-row:nth-child(even) {
+  --row-bg: rgba(255, 255, 255, 0.015);
+  background: var(--row-bg);
+}
+.balances-row-sticky {
+  background: var(--row-bg) !important;
+}
+
+/* ═══════════════════════════════════════════════════════
+   RECHARTS — DISABLE BAR HOVER OVERLAY
+   ═══════════════════════════════════════════════════════ */
+
+.recharts-bar-rectangle:hover {
+  filter: none !important;
+  opacity: 1 !important;
+  fill-opacity: 1 !important;
 }

@@ -94,7 +94,7 @@ export function InventoryDonutChart({ fundido, sinFundir, isMounted }: Inventory
             <span className="text-[9px] font-mono text-[var(--hud-text-muted)] uppercase tracking-[0.18em]">
               En Bóveda
             </span>
-            <span className="text-2xl font-bold font-mono text-[var(--hud-text-primary)] mt-1" style={{ filter: 'drop-shadow(0 0 8px rgba(16, 185, 129, 0.4))' }}>
+            <span className="text-2xl font-bold font-mono text-[var(--hud-text-primary)] mt-1">
               {formatNumber(total, 2)}
             </span>
             <span className="text-[9px] font-mono text-[var(--hud-text-muted)] uppercase tracking-wider">gramos</span>

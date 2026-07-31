@@ -234,3 +234,20 @@ export interface AvailableLotsGlobalResponse {
   clientName: string;
   lots: AvailableLot[];
 }
+
+/* ─── Dashboard Computed Types ─── */
+
+export interface ClientBalance {
+  id: string;
+  name: string;
+  ingresoBruto: number;
+  fa: number;
+  leyAu: number;
+  ingreso: number;
+  r: number;
+  sinFundir: number;
+  egresos: number;
+  balance: number;
+  mermaG: number;
+  mermaPct: number;
+}

@@ -179,7 +179,7 @@ function CustomTreemapBlock(props: CustomBlockProps) {
 
 function TreemapLegend({ data }: { data: { name: string; value: number; pct: number; fill: string }[] }) {
   return (
-    <div className="flex flex-wrap gap-x-5 gap-y-1 px-4 pb-3 pt-2.5 border-t border-white/5 text-[9px] font-mono">
+    <div className="flex flex-wrap gap-x-5 gap-y-1 px-4 pb-3 pt-2.5 border-t border-[var(--hud-border)] text-[9px] font-mono">
       {data.map(item => (
         <div key={item.name} className="flex items-center gap-1.5 whitespace-nowrap">
           <span className="w-2 h-2 rounded-full shrink-0" style={{ background: item.fill }} />
@@ -283,7 +283,7 @@ export function TreemapPanel({
       transition={{ delay: 0.2, duration: 0.45 }}
       className="hud-card overflow-hidden flex flex-col flex-1"
     >
-      <div className="flex items-center justify-between px-5 pt-4 pb-2 border-b border-white/5">
+      <div className="flex items-center justify-between px-5 pt-4 pb-2 border-b border-[var(--hud-border)]">
         <div>
           <h3 className="text-[11px] font-semibold text-[var(--hud-text-primary)] font-mono tracking-wider">
             {title}

@@ -9,18 +9,24 @@ import {
 } from 'recharts';
 import { formatNumber } from '@/lib/format';
 
-interface ClientBalance {
-  id: string;
-  name: string;
+interface ChartEntry {
+  displayName: string;
   balance: number;
+  color: string;
+  gradientIdx: number;
+}
+
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: Array<{ payload: ChartEntry }>;
 }
 
 interface ClientBalancesBarChartProps {
-  clientBalances: ClientBalance[];
+  clientBalances: { id: string; name: string; balance: number }[];
   isMounted: boolean;
 }
 
-function BarTooltip({ active, payload }: any) {
+function BarTooltip({ active, payload }: CustomTooltipProps) {
   if (!active || !payload?.length) return null;
   const entry = payload[0].payload;
   return (
@@ -45,7 +51,7 @@ function BarTooltip({ active, payload }: any) {
   );
 }
 
-const BALANCE_GRADIENTS = [
+const BALANCE_GRADIENTS: [string, string][] = [
   ['#10B981', '#059669'],
   ['#06B6D4', '#0891B2'],
   ['#EAB308', '#CA8A04'],
@@ -56,8 +62,10 @@ const BALANCE_GRADIENTS = [
   ['#6366F1', '#4F46E5'],
 ];
 
+const formatLabel = (v: number) => `${formatNumber(v, 1)}g`;
+
 export function ClientBalancesBarChart({ clientBalances, isMounted }: ClientBalancesBarChartProps) {
-  const chartData = useMemo(() => {
+  const chartData = useMemo<ChartEntry[]>(() => {
     return clientBalances
       .slice(0, 8)
       .map((c, idx) => ({
@@ -66,7 +74,7 @@ export function ClientBalancesBarChart({ clientBalances, isMounted }: ClientBala
         color: c.balance >= 0
           ? BALANCE_GRADIENTS[idx % BALANCE_GRADIENTS.length][0]
           : '#EF4444',
-        gradientId: `bar-grad-${idx}`,
+        gradientIdx: c.balance >= 0 ? idx % BALANCE_GRADIENTS.length : 0,
       }))
       .reverse();
   }, [clientBalances]);
@@ -78,7 +86,7 @@ export function ClientBalancesBarChart({ clientBalances, isMounted }: ClientBala
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.30, duration: 0.45 }}
-      className="hud-card overflow-hidden h-full"
+      className="bg-transparent border border-[var(--hud-border)] rounded-[20px] overflow-hidden h-full"
     >
       <div className="flex items-center gap-2 px-5 pt-4 pb-2 border-b border-[var(--hud-border)]">
         <BarChart3 className="w-3.5 h-3.5 text-[var(--hud-accent-gold)]" />
@@ -99,10 +107,10 @@ export function ClientBalancesBarChart({ clientBalances, isMounted }: ClientBala
           <ResponsiveContainer width="100%" height={260}>
             <BarChart data={chartData} layout="vertical" margin={{ top: 4, right: 48, bottom: 0, left: 0 }}>
               <defs>
-                {BALANCE_GRADIENTS.map(([c1, c2], idx) => (
-                  <linearGradient key={idx} id={`bar-grad-${idx}`} x1="0" y1="0" x2="1" y2="0">
-                    <stop offset="0%" stopColor={c1} stopOpacity={0.9} />
-                    <stop offset="100%" stopColor={c2} stopOpacity={0.7} />
+                {chartData.map((entry) => (
+                  <linearGradient key={entry.gradientIdx} id={`bar-grad-${entry.gradientIdx}`} x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stopColor={BALANCE_GRADIENTS[entry.gradientIdx][0]} stopOpacity={0.9} />
+                    <stop offset="100%" stopColor={BALANCE_GRADIENTS[entry.gradientIdx][1]} stopOpacity={0.7} />
                   </linearGradient>
                 ))}
               </defs>
@@ -132,6 +140,7 @@ export function ClientBalancesBarChart({ clientBalances, isMounted }: ClientBala
                 dataKey="balance"
                 radius={[0, 8, 8, 0]}
                 barSize={18}
+                activeBar={false}
                 isAnimationActive={isMounted}
                 animationDuration={1000}
                 animationEasing="ease-out"
@@ -139,7 +148,7 @@ export function ClientBalancesBarChart({ clientBalances, isMounted }: ClientBala
                 {chartData.map((entry, idx) => (
                   <Cell
                     key={idx}
-                    fill={`url(#bar-grad-${BALANCE_GRADIENTS.findIndex(g => g[0] === entry.color) >= 0 ? BALANCE_GRADIENTS.findIndex(g => g[0] === entry.color) : 0})`}
+                    fill={`url(#bar-grad-${entry.gradientIdx})`}
                     fillOpacity={1}
                   />
                 ))}
@@ -147,7 +156,7 @@ export function ClientBalancesBarChart({ clientBalances, isMounted }: ClientBala
                   dataKey="balance"
                   position="insideEnd"
                   offset={8}
-                  formatter={(v: number) => `${formatNumber(v, 1)}g`}
+                  formatter={formatLabel}
                   style={{
                     fontSize: 10,
                     fontFamily: 'var(--hud-font-mono)',

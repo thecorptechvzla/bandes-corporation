@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { motion } from 'motion/react';
 import { ClipboardList, Flame, Warehouse, Inbox, TrendingUp, TrendingDown } from 'lucide-react';
 import { AreaChart, Area, ResponsiveContainer } from 'recharts';
@@ -116,9 +116,7 @@ interface KpiCardGridProps {
 }
 
 export function KpiCardGrid({ kpiData, isMounted, onCardClick }: KpiCardGridProps) {
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const icons = KPI_ICONS;
-  const colors = KPI_COLORS;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
@@ -130,31 +128,20 @@ export function KpiCardGrid({ kpiData, isMounted, onCardClick }: KpiCardGridProp
             initial={{ opacity: 0, y: -24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 * idx, duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-            onMouseEnter={() => setHoveredIndex(idx)}
-            onMouseLeave={() => setHoveredIndex(null)}
-            className="relative overflow-hidden cursor-pointer hud-card hover:-translate-y-1.5 active:scale-[0.97] transition-all duration-300 ease-out"
-            style={{
-              boxShadow: hoveredIndex === idx
-                ? `0 0 30px -8px ${kpi.accent}, 0 8px 40px rgba(0,0,0,0.30)`
-                : 'var(--hud-shadow-card)',
-            }}
+            style={{ '--kpi-glow': kpi.accent } as React.CSSProperties}
+            className="relative overflow-hidden cursor-pointer hud-card kpi-card hover:-translate-y-1 active:scale-95 transition-all duration-300 ease-out"
             onClick={() => onCardClick(idx)}
           >
-            {/* Top accent bar — colored indicator per KPI */}
-            <div
-              className="absolute top-0 left-0 right-0 h-[2px] rounded-t-2xl z-20"
-              style={{ background: kpi.accent }}
-            />
             <div className="relative z-10 p-7">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
                   <div
                     className="w-10 h-10 rounded-xl flex items-center justify-center"
-                    style={{ background: `${kpi.accent}15` }}
+                    style={{ background: `${kpi.accent}12` }}
                   >
                     <Icon className="w-5 h-5" style={{ color: kpi.accent }} />
                   </div>
-                  <span className="text-[11px] text-[var(--hud-text-dim)] font-sans">{kpi.label}</span>
+                  <span className="text-[11px] text-slate-400 font-sans">{kpi.label}</span>
                 </div>
                 <div className="flex items-center gap-2.5">
                   {(() => {
@@ -186,14 +173,14 @@ export function KpiCardGrid({ kpiData, isMounted, onCardClick }: KpiCardGridProp
               </div>
 
               <div className="flex items-baseline gap-1.5 mb-2">
-                <span className="text-3xl font-mono font-bold text-[var(--hud-text-primary)] tracking-tight" style={{ filter: `drop-shadow(0 0 12px ${kpi.accent}60)` }}>
+                <span className="text-3xl font-mono font-bold text-slate-100 tracking-tight">
                   {!isMounted
                     ? '0,00'
                     : kpi.postfix === '%'
                       ? `${formatNumber(kpi.value, 1)}`
                       : formatNumber(kpi.value, 2)}
                 </span>
-                <span className="text-sm text-[var(--hud-text-dim)] font-mono self-end mb-0.5">
+                <span className="text-sm text-slate-400 font-mono self-end mb-0.5">
                   {kpi.postfix || 'g'}
                 </span>
               </div>
@@ -226,7 +213,7 @@ export function KpiCardGrid({ kpiData, isMounted, onCardClick }: KpiCardGridProp
                     {kpi.subValues.map((sv) => (
                       <div key={sv.label} className="flex items-center gap-1.5">
                         <sv.icon className="w-3 h-3 shrink-0" style={{ color: kpi.accent }} />
-                        <span className="text-[9px] font-mono text-[var(--hud-text-dim)]">
+                        <span className="text-[9px] font-mono text-slate-400">
                           {sv.label}:
                         </span>
                         <span className="text-[10px] font-mono font-bold text-[var(--hud-text-primary)] tabular-nums">
@@ -238,7 +225,7 @@ export function KpiCardGrid({ kpiData, isMounted, onCardClick }: KpiCardGridProp
                 ) : (
                   <div className="flex items-center gap-1.5">
                     <KpiSubIcon icon={kpi.subicon} accent={kpi.accent} />
-                    <span className="text-[10px] text-[var(--hud-text-dim)] font-mono truncate">{kpi.sublabel}</span>
+                    <span className="text-[10px] text-slate-400 font-mono truncate">{kpi.sublabel}</span>
                   </div>
                 )}
               </div>

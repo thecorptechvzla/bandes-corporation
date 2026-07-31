@@ -193,12 +193,14 @@ export default function V2DashboardPage() {
         e.exitDetails.some(d => d.lot?.process?.client?.id === client.id));
       const egresos = clientExits.reduce((s, e) => s + Number(e.totalWeight), 0);
       const balance = fa + r - egresos;
+      const leyAu = ingresoBruto > 0 ? (fa / ingresoBruto) * 100 : 0;
+      const sinFundir = Math.max(0, fa - r);
       const faProcesado = clientBars
         .filter(b => b.status === 'COMPLETADO' || b.status === 'EXITED')
         .reduce((s, b) => s + Number(b.fineWeight), 0);
       const mermaG = Math.max(0, faProcesado - r);
       const mermaPct = faProcesado > 0 ? (mermaG / faProcesado) * 100 : 0;
-      return { id: client.id, name: client.name, ingresoBruto, fa, r, egresos, balance, mermaG, mermaPct };
+      return { id: client.id, name: client.name, ingresoBruto, fa, leyAu, ingreso: fa, r, sinFundir, egresos, balance, mermaG, mermaPct };
     })
       .filter(c => c.ingresoBruto > 0 || c.fa > 0 || c.egresos > 0)
       .sort((a, b) => b.ingresoBruto - a.ingresoBruto);

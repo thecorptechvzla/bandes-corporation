@@ -97,7 +97,7 @@ export default function RootLayout({
             active:scale-[0.97] transition-all duration-150
           `}
         >
-          <IconComponent className={`w-4 h-4 shrink-0 ${isActive ? 'text-white' : 'text-[var(--hud-text-dim)] group-hover:text-[var(--hud-text-primary)]'}`} />
+          <IconComponent className={`w-4 h-4 shrink-0 ${isActive ? 'text-[#D5B042]' : 'text-[var(--hud-text-dim)] group-hover:text-[var(--hud-text-primary)]'}`} />
           <span>{item.name}</span>
         </Link>
       );
