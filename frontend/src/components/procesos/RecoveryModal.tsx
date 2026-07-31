@@ -59,7 +59,7 @@ export function RecoveryModal({ lot, lotBarsMap, processLotsMap, onClose, upload
     if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
     previewUrlRef.current = localUrl;
     setPhotoPreviewUrl(localUrl);
-    setCameraMode('preview');
+    setCameraMode('idle');
     setPhotoUploading(true);
     try {
       const url = await uploadPhoto(blob);
@@ -173,7 +173,16 @@ export function RecoveryModal({ lot, lotBarsMap, processLotsMap, onClose, upload
               <span className="text-[var(--pm-accent-red)]">*</span>
             </label>
 
-            {cameraMode === 'idle' && (
+            {cameraMode === 'camera' && (
+              <div className="rounded-xl overflow-hidden border border-[var(--pm-border)]" style={{ height: '280px' }}>
+                <CameraTerminal
+                  onCapture={handleCapture}
+                  onClose={() => setCameraMode('idle')}
+                />
+              </div>
+            )}
+
+            {cameraMode === 'idle' && !photoPreviewUrl && (
               <button
                 type="button"
                 onClick={() => setCameraMode('camera')}
@@ -189,16 +198,7 @@ export function RecoveryModal({ lot, lotBarsMap, processLotsMap, onClose, upload
               </button>
             )}
 
-            {cameraMode === 'camera' && (
-              <div className="rounded-xl overflow-hidden border border-[var(--pm-border)]">
-                <CameraTerminal
-                  onCapture={handleCapture}
-                  onClose={() => setCameraMode('idle')}
-                />
-              </div>
-            )}
-
-            {cameraMode === 'preview' && photoPreviewUrl && (
+            {cameraMode === 'idle' && photoPreviewUrl && (
               <div className="relative rounded-xl overflow-hidden border border-[var(--pm-border)]">
                 <img src={photoPreviewUrl} alt="Evidencia" className="w-full max-h-48 object-contain bg-black" />
                 {photoUploading && (
@@ -206,6 +206,14 @@ export function RecoveryModal({ lot, lotBarsMap, processLotsMap, onClose, upload
                     <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[var(--pm-bg-deepest)]/90 border border-[var(--pm-border)]">
                       <LoadingSpinner size="sm" className="text-[var(--pm-accent-cyan)]" />
                       <span className="text-[10px] font-mono text-[var(--pm-text-dim)]">Subiendo foto...</span>
+                    </div>
+                  </div>
+                )}
+                {photoUploadedUrl && (
+                  <div className="absolute top-2 right-2">
+                    <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-[var(--pm-accent-emerald)]/15 border border-[var(--pm-accent-emerald)]/30">
+                      <CheckCircle2 className="w-3 h-3 text-[var(--pm-accent-emerald)]" />
+                      <span className="text-[8px] font-mono text-[var(--pm-accent-emerald)] font-bold">EVIDENCIA CAPTURADA</span>
                     </div>
                   </div>
                 )}
@@ -219,14 +227,6 @@ export function RecoveryModal({ lot, lotBarsMap, processLotsMap, onClose, upload
                     <RefreshCw className="w-3.5 h-3.5 text-[var(--pm-accent-cyan)]" />
                   </button>
                 </div>
-                {photoUploadedUrl && (
-                  <div className="absolute top-2 right-2">
-                    <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-[var(--pm-accent-emerald)]/15 border border-[var(--pm-accent-emerald)]/30">
-                      <CheckCircle2 className="w-3 h-3 text-[var(--pm-accent-emerald)]" />
-                      <span className="text-[8px] font-mono text-[var(--pm-accent-emerald)] font-bold">SUBIDA</span>
-                    </div>
-                  </div>
-                )}
               </div>
             )}
           </div>
@@ -277,26 +277,30 @@ export function RecoveryModal({ lot, lotBarsMap, processLotsMap, onClose, upload
                   {discrepancy >= 0 ? '+' : ''}{discrepancy.toFixed(2)}%
                 </span>
               </div>
-              <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-[9px] font-mono">
-                <div className="flex justify-between">
-                  <span className="text-[var(--pm-text-dim)]">Peso Fino:</span>
-                  <span className="text-[var(--pm-text-primary)]">{formatNumber(lotFA, 4)} g</span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 font-mono">
+                <div className="space-y-3">
+                  <div className="flex justify-between items-baseline">
+                    <span className="text-[10px] uppercase tracking-widest text-slate-500">Peso Fino</span>
+                    <span className="text-base font-bold text-slate-200">{formatNumber(lotFA, 4)} g</span>
+                  </div>
+                  <div className="flex justify-between items-baseline">
+                    <span className="text-[10px] uppercase tracking-widest text-slate-500">Peso Bruto</span>
+                    <span className="text-sm text-slate-200">{formatNumber(recWeightNum, 4)} g</span>
+                  </div>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-[var(--pm-text-dim)]">Peso Bruto:</span>
-                  <span className="text-[var(--pm-accent-amber)]">{formatNumber(recWeightNum, 4)} g</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-[var(--pm-text-dim)]">Diferencia:</span>
-                  <span className={mermaGramos >= 0 ? 'text-[var(--pm-accent-emerald)]' : 'text-[var(--pm-accent-red)]'}>
-                    {mermaGramos >= 0 ? '+' : ''}{formatNumber(mermaGramos, 4)} g
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-[var(--pm-text-dim)]">Merma:</span>
-                  <span className={Math.abs(mermaPct) <= 5 ? 'text-[var(--pm-accent-emerald)]' : 'text-[var(--pm-accent-red)]'}>
-                    {mermaPct.toFixed(2)}%
-                  </span>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-baseline">
+                    <span className="text-[10px] uppercase tracking-widest text-slate-500">Diferencia</span>
+                    <span className={`text-base font-bold ${mermaGramos >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                      {mermaGramos >= 0 ? '+' : ''}{formatNumber(mermaGramos, 4)} g
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-baseline">
+                    <span className="text-[10px] uppercase tracking-widest text-slate-500">Merma</span>
+                    <span className={`text-sm ${Math.abs(mermaPct) <= 5 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                      {mermaPct.toFixed(2)}%
+                    </span>
+                  </div>
                 </div>
               </div>
             </motion.div>
@@ -312,16 +316,22 @@ export function RecoveryModal({ lot, lotBarsMap, processLotsMap, onClose, upload
             <button type="button" onClick={onClose} disabled={confirming}
               className="flex-1 py-2.5 rounded-lg border border-[var(--pm-border)] text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] hover:bg-[var(--pm-bg-tertiary)] text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer disabled:opacity-40"
             >Cancelar</button>
-            <button type="button" onClick={handleConfirmRecovery} disabled={confirming || !photoUploadedUrl}
+            <button type="button" onClick={() => {
+              const rw = parseFloat(recoveredWeight);
+              const isValidWeights = !isNaN(rw) && rw > 0;
+              const hasPhoto = !!photoUploadedUrl;
+              console.log('Button disabled because:', { photo: !hasPhoto, weights: !isValidWeights });
+              handleConfirmRecovery();
+            }} disabled={confirming || !photoUploadedUrl || !(parseFloat(recoveredWeight) > 0)}
               className="flex-1 py-2.5 rounded-lg text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer disabled:opacity-40 flex items-center justify-center gap-2"
               style={{
-                background: !photoUploadedUrl
+                background: !photoUploadedUrl || !(parseFloat(recoveredWeight) > 0)
                   ? 'rgba(100,100,100,0.15)'
                   : Math.abs(discrepancy) > 5 ? 'rgba(239,68,68,0.15)' : 'rgba(16,185,129,0.15)',
-                color: !photoUploadedUrl
+                color: !photoUploadedUrl || !(parseFloat(recoveredWeight) > 0)
                   ? 'var(--pm-text-dim)'
                   : Math.abs(discrepancy) > 5 ? 'var(--pm-accent-red)' : 'var(--pm-accent-emerald)',
-                border: `1px solid ${!photoUploadedUrl
+                border: `1px solid ${!photoUploadedUrl || !(parseFloat(recoveredWeight) > 0)
                   ? 'rgba(100,100,100,0.3)'
                   : Math.abs(discrepancy) > 5 ? 'rgba(239,68,68,0.3)' : 'rgba(16,185,129,0.3)'}`,
               }}

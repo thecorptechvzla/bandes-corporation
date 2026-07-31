@@ -16,9 +16,7 @@ export function CameraTerminal({ onCapture, onClose }: CameraTerminalProps) {
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [facing, setFacing] = useState<'user' | 'environment'>('environment');
-  const [capturedBlob, setCapturedBlob] = useState<Blob | null>(null);
-  const [capturedUrl, setCapturedUrl] = useState<string | null>(null);
-  const [isPreview, setIsPreview] = useState(false);
+  const [capturing, setCapturing] = useState(false);
 
   useEffect(() => {
     navigator.mediaDevices.enumerateDevices().then(d =>
@@ -55,45 +53,21 @@ export function CameraTerminal({ onCapture, onClose }: CameraTerminalProps) {
   const capture = useCallback(() => {
     const video = videoRef.current;
     const canvas = canvasRef.current;
-    if (!video || !canvas) return;
+    if (!video || !canvas || capturing) return;
+    setCapturing(true);
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
     canvas.getContext('2d')?.drawImage(video, 0, 0);
     canvas.toBlob(b => {
       if (b) {
-        setCapturedBlob(b);
-        setCapturedUrl(URL.createObjectURL(b));
-        setIsPreview(true);
         stream?.getTracks().forEach(t => t.stop());
+        onCapture(b);
+        onClose();
+      } else {
+        setCapturing(false);
       }
     }, 'image/jpeg', 0.85);
-  }, [stream]);
-
-  const handleConfirm = useCallback(() => {
-    if (capturedBlob) {
-      onCapture(capturedBlob);
-      if (capturedUrl) URL.revokeObjectURL(capturedUrl);
-      setCapturedBlob(null);
-      setCapturedUrl(null);
-      setIsPreview(false);
-    }
-  }, [capturedBlob, capturedUrl, onCapture]);
-
-  const handleRepeat = useCallback(() => {
-    if (capturedUrl) URL.revokeObjectURL(capturedUrl);
-    setCapturedBlob(null);
-    setCapturedUrl(null);
-    setIsPreview(false);
-    const constraints: MediaStreamConstraints = {
-      video: selectedDeviceId
-        ? { deviceId: { exact: selectedDeviceId } }
-        : { facingMode: facing },
-    };
-    navigator.mediaDevices
-      .getUserMedia(constraints)
-      .then(s => setStream(s))
-      .catch(() => setError('No se pudo reiniciar la cámara'));
-  }, [capturedUrl, selectedDeviceId, facing]);
+  }, [stream, capturing, onCapture, onClose]);
 
   const toggleCamera = () => {
     stream?.getTracks().forEach(t => t.stop());
@@ -123,7 +97,7 @@ export function CameraTerminal({ onCapture, onClose }: CameraTerminalProps) {
         </div>
       )}
 
-      {/* Viewfinder — flex-1 so it fills remaining space, never overflows */}
+      {/* Viewfinder */}
       <div className="flex-1 min-h-0 relative mx-3 mt-3 rounded-xl overflow-hidden bg-black border-2 border-[var(--pm-accent-cyan)]/30 flex items-center justify-center">
         {error ? (
           <div className="text-center p-6">
@@ -133,35 +107,7 @@ export function CameraTerminal({ onCapture, onClose }: CameraTerminalProps) {
               Verifica los permisos de cámara en tu navegador
             </p>
           </div>
-        ) : isPreview && capturedUrl ? (
-          /* PREVIEW MODE */
-          <div className="absolute inset-0">
-            <img src={capturedUrl} alt="Vista previa" className="w-full h-full object-cover" />
-            <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent flex items-center justify-center gap-4">
-              <button
-                type="button"
-                onClick={handleRepeat}
-                className="px-4 py-2 rounded-lg border border-[var(--pm-border)] text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] hover:bg-[var(--pm-bg-tertiary)] text-[10px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer"
-              >
-                Repetir
-              </button>
-              <button
-                type="button"
-                onClick={handleConfirm}
-                className="px-6 py-2 rounded-lg text-[10px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer"
-                style={{
-                  background: 'linear-gradient(135deg, rgba(16,185,129,0.3), rgba(16,185,129,0.15))',
-                  color: 'var(--pm-accent-emerald)',
-                  border: '1px solid rgba(16,185,129,0.5)',
-                  boxShadow: '0 0 16px rgba(16,185,129,0.2)',
-                }}
-              >
-                Confirmar
-              </button>
-            </div>
-          </div>
         ) : (
-          /* LIVE VIEWFINDER */
           <>
             <video
               ref={videoRef}
@@ -184,8 +130,12 @@ export function CameraTerminal({ onCapture, onClose }: CameraTerminalProps) {
               </div>
               <div className="absolute left-[15%] right-[15%] h-px bg-[var(--pm-accent-cyan)]/30 animate-pulse" style={{ top: '35%' }} />
             </div>
+            {/* Capturing flash */}
+            {capturing && (
+              <div className="absolute inset-0 bg-white/20 animate-pulse" />
+            )}
             {/* Loading indicator */}
-            {!stream && (
+            {!stream && !error && (
               <div className="absolute inset-0 flex items-center justify-center bg-black/60">
                 <div className="w-8 h-8 border-2 border-[var(--pm-accent-cyan)] border-t-transparent rounded-full animate-spin" />
               </div>
@@ -196,43 +146,46 @@ export function CameraTerminal({ onCapture, onClose }: CameraTerminalProps) {
 
       <canvas ref={canvasRef} className="hidden" />
 
-      {/* Controls — always rendered, fixed at bottom */}
-      {!isPreview && (
-        <div className="flex-shrink-0 flex items-center justify-center gap-4 px-3 py-4">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-4 py-2 rounded-lg border border-[var(--pm-border)] text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] hover:bg-[var(--pm-bg-tertiary)] text-[10px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer"
-          >
-            Cancelar
-          </button>
+      {/* Controls */}
+      <div className="flex-shrink-0 flex items-center justify-center gap-4 px-3 py-4">
+        <button
+          type="button"
+          onClick={onClose}
+          disabled={capturing}
+          className="px-4 py-2 rounded-lg border border-[var(--pm-border)] text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] hover:bg-[var(--pm-bg-tertiary)] text-[10px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer disabled:opacity-40"
+        >
+          Cancelar
+        </button>
 
-          <button
-            type="button"
-            onClick={capture}
-            disabled={!stream || !!error}
-            className="w-16 h-16 rounded-full flex items-center justify-center transition-all active:scale-90 disabled:opacity-30 cursor-pointer"
-            style={{
-              background: 'linear-gradient(135deg, rgba(0,229,255,0.2), rgba(0,229,255,0.08))',
-              border: '3px solid rgba(0,229,255,0.6)',
-              boxShadow: '0 0 24px rgba(0,229,255,0.2)',
-            }}
-          >
-            <div className="w-12 h-12 rounded-full border-2 border-[var(--pm-accent-cyan)] flex items-center justify-center">
+        <button
+          type="button"
+          onClick={capture}
+          disabled={!stream || !!error || capturing}
+          className="w-16 h-16 rounded-full flex items-center justify-center transition-all active:scale-90 disabled:opacity-30 cursor-pointer"
+          style={{
+            background: 'linear-gradient(135deg, rgba(0,229,255,0.2), rgba(0,229,255,0.08))',
+            border: '3px solid rgba(0,229,255,0.6)',
+            boxShadow: '0 0 24px rgba(0,229,255,0.2)',
+          }}
+        >
+          <div className="w-12 h-12 rounded-full border-2 border-[var(--pm-accent-cyan)] flex items-center justify-center">
+            {capturing ? (
+              <div className="w-5 h-5 border-2 border-[var(--pm-accent-cyan)] border-t-transparent rounded-full animate-spin" />
+            ) : (
               <Camera className="w-6 h-6 text-[var(--pm-accent-cyan)]" />
-            </div>
-          </button>
+            )}
+          </div>
+        </button>
 
-          <button
-            type="button"
-            onClick={toggleCamera}
-            disabled={!stream || !!error}
-            className="px-4 py-2 rounded-lg border border-[var(--pm-accent-cyan)]/30 text-[var(--pm-accent-cyan)] hover:bg-[var(--pm-accent-cyan)]/10 text-[10px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer disabled:opacity-30 flex items-center gap-1.5"
-          >
-            <RefreshCw className="w-3 h-3" /> Girar
-          </button>
-        </div>
-      )}
+        <button
+          type="button"
+          onClick={toggleCamera}
+          disabled={!stream || !!error || capturing}
+          className="px-4 py-2 rounded-lg border border-[var(--pm-accent-cyan)]/30 text-[var(--pm-accent-cyan)] hover:bg-[var(--pm-accent-cyan)]/10 text-[10px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer disabled:opacity-30 flex items-center gap-1.5"
+        >
+          <RefreshCw className="w-3 h-3" /> Girar
+        </button>
+      </div>
     </div>
   );
 }
