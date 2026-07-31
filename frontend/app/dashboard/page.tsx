@@ -255,7 +255,7 @@ export default function V2DashboardPage() {
 
   const kpiData = [
     {
-      label: 'Oro Recibido',
+      label: 'Oro Ingresado',
       value: totalIngresoGross,
       subicon: Scale,
       sublabel: `PESO BRUTO: ${formatNumber(totalIngresoGross, 2)} g`,

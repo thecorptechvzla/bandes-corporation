@@ -12,7 +12,7 @@ interface BalancesTableProps {
   onClientClick: (clientId: string) => void;
 }
 
-const fmtG = (val: number) => formatNumber(val, 2);
+const fmtG = (val: number) => `${formatNumber(val, 2)} g`;
 
 const TH = 'text-right text-[10px] font-sans font-bold tracking-[0.1em] uppercase text-[var(--hud-text-muted)] px-4 py-3';
 const TH_STICKY = 'sticky left-0 z-10 text-left text-[10px] font-sans font-bold tracking-[0.1em] uppercase text-[var(--hud-text-muted)] px-5 py-3';
@@ -49,7 +49,7 @@ export function BalancesTable({ clientBalances, totalBalance, onClientClick }: B
           <span
             className={`text-sm font-mono font-bold ${totalBalance >= 0 ? 'text-[var(--hud-accent-emerald)]' : 'text-[var(--hud-accent-red)]'}`}
           >
-            {fmtG(Math.abs(totalBalance))} g
+            {fmtG(Math.abs(totalBalance))}
             {totalBalance < 0 ? ' (negativo)' : ''}
           </span>
         </div>
@@ -69,13 +69,12 @@ export function BalancesTable({ clientBalances, totalBalance, onClientClick }: B
                 style={{ background: 'var(--hud-bg-deepest)' }}
               >
                 <th className={TH_STICKY} style={{ background: 'var(--hud-bg-deepest)' }}>Cliente</th>
-                <th className={TH}>Peso Bruto</th>
+                <th className={TH}>Ingreso Bruto</th>
                 <th className={TH}>Peso Fino</th>
                 <th className={TH}>Ley Au</th>
-                <th className={TH}>Ingreso</th>
-                <th className={TH}>Egreso</th>
-                <th className={TH}>Fundió (R)</th>
-                <th className={TH}>SIN REFUNDIR</th>
+                <th className={TH}>Recuperado (R)</th>
+                <th className={TH}>Egresos</th>
+                <th className={TH}>Balance</th>
                 <th className={TH}>Merma</th>
               </tr>
             </thead>
@@ -96,16 +95,13 @@ export function BalancesTable({ clientBalances, totalBalance, onClientClick }: B
                     {fmtG(c.fa)}
                   </td>
                   <td className="text-right text-xs font-mono text-slate-400 px-4 py-3">
-                    {fmtG(c.leyAu)}%
-                  </td>
-                  <td className="text-right text-xs font-mono text-[var(--hud-accent-gold)] px-4 py-3">
-                    {fmtG(c.ingreso)}
-                  </td>
-                  <td className="text-right text-xs font-mono text-[var(--hud-accent-red)] px-4 py-3">
-                    {fmtG(c.egresos)}
+                    {formatNumber(c.leyAu, 1)}%
                   </td>
                   <td className="text-right text-xs font-mono text-[var(--hud-accent-amber)] px-4 py-3">
                     {fmtG(c.r)}
+                  </td>
+                  <td className="text-right text-xs font-mono text-[var(--hud-accent-red)] px-4 py-3">
+                    {fmtG(c.egresos)}
                   </td>
                   <td className={`text-right text-xs font-mono font-bold px-4 py-3 ${c.balance >= 0 ? 'text-[var(--hud-accent-emerald)]' : 'text-[var(--hud-accent-red)]'}`}>
                     {fmtG(Math.abs(c.balance))}
@@ -113,7 +109,7 @@ export function BalancesTable({ clientBalances, totalBalance, onClientClick }: B
                   </td>
                   <td className="text-right text-xs font-mono text-[var(--hud-accent-amber)] px-4 py-3">
                     {fmtG(c.mermaG)}
-                    <span className="text-[var(--hud-text-muted)] ml-1">({fmtG(c.mermaPct)}%)</span>
+                    <span className="text-[var(--hud-text-muted)] ml-1">({formatNumber(c.mermaPct, 1)}%)</span>
                   </td>
                 </tr>
               ))}

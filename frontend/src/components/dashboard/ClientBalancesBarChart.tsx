@@ -34,7 +34,7 @@ const BALANCE_GRADIENTS: [string, string][] = [
   ['#6366F1', '#4F46E5'],
 ];
 
-const formatLabel = (v: number) => `${formatNumber(v, 1)}g`;
+const formatLabel = (v: number) => `${formatNumber(v, 2)} g`;
 
 export function ClientBalancesBarChart({ clientBalances, isMounted, onBarClick }: ClientBalancesBarChartProps) {
   const chartData = useMemo<ChartEntry[]>(() => {
@@ -97,7 +97,7 @@ export function ClientBalancesBarChart({ clientBalances, isMounted, onBarClick }
                 tick={{ fontSize: 10, fill: 'var(--hud-text-dim)', fontFamily: 'var(--hud-font-mono)' }}
                 axisLine={{ stroke: 'rgba(255,255,255,0.04)' }}
                 tickLine={false}
-                tickFormatter={(v: number) => v >= 1000 ? `${(v / 1000).toFixed(1)}k` : `${v}`}
+                tickFormatter={(v: number) => formatNumber(v, 0)}
                 tickCount={5}
               />
               <YAxis

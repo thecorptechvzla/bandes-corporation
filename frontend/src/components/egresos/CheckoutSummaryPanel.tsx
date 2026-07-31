@@ -108,17 +108,16 @@ export function CheckoutSummaryPanel({
                     </div>
                     <div className="space-y-1">
                       {items.map((item: any) => {
-                        const label = item.type === 'lot' ? item.code || item.name : item.code || item.barNumber;
-                        const weight = item.pesoFino || item.availableWeight || Number(item.fineWeight);
-                        const badge = item.type === 'lot' ? 'REF' : 'SIN-REF';
+                        const isLot = item.type === 'lot';
+                        const badgeLabel = isLot ? 'REFUNDIDO' : 'SIN REFUNDIR';
                         return (
                           <div key={item.id} className="flex items-center justify-between text-[10px] font-mono">
-                            <span className="text-[var(--pm-text-dim)] flex items-center gap-1.5">
-                              <span className={`text-[8px] font-bold px-1 py-0.5 rounded ${
-                                item.type === 'lot' ? 'bg-[var(--pm-accent-amber)]/10 text-[var(--pm-accent-amber)]' : 'bg-[var(--pm-accent-teal)]/10 text-[var(--pm-accent-teal)]'
-                              }`}>{badge}</span>
-                              {label}
-                            </span>
+                            <div className="flex items-center gap-2">
+                              <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded w-20 text-center ${
+                                isLot ? 'bg-[var(--pm-accent-amber)]/10 text-[var(--pm-accent-amber)]' : 'bg-slate-500/10 text-slate-400'
+                              }`}>{badgeLabel}</span>
+                              <span className="text-[var(--pm-text-primary)]">{label}</span>
+                            </div>
                             <span className="text-[var(--pm-text-primary)]">{formatNumber(weight, 4)} g</span>
                           </div>
                         );

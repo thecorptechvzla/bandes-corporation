@@ -124,7 +124,7 @@ export function FlowAreaChart({ data, isMounted }: FlowAreaChartProps) {
                 tick={{ fontSize: 10, fill: 'var(--hud-text-dim)', fontFamily: 'var(--hud-font-mono)' }}
                 axisLine={false}
                 tickLine={false}
-                tickFormatter={(v: number) => v >= 1000 ? `${(v / 1000).toFixed(1)}k` : `${v}`}
+                tickFormatter={(v: number) => formatNumber(v, 0)}
                 tickCount={5}
                 dy={-4}
               />

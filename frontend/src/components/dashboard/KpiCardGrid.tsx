@@ -173,14 +173,14 @@ export function KpiCardGrid({ kpiData, isMounted, onCardClick }: KpiCardGridProp
               </div>
 
               <div className="flex items-baseline gap-1.5 mb-2">
-                <span className="text-3xl font-mono font-bold text-slate-100 tracking-tight">
+                <span className="text-3xl xl:text-4xl font-mono font-bold text-slate-100 tracking-tight">
                   {!isMounted
                     ? '0,00'
                     : kpi.postfix === '%'
                       ? `${formatNumber(kpi.value, 1)}`
                       : formatNumber(kpi.value, 2)}
                 </span>
-                <span className="text-sm text-slate-400 font-mono self-end mb-0.5">
+                <span className="text-xs text-slate-400 font-mono self-end mb-1">
                   {kpi.postfix || 'g'}
                 </span>
               </div>

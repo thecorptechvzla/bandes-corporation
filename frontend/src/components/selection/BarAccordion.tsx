@@ -141,11 +141,8 @@ export function BarAccordion({
                           <th className="w-10 px-4 py-2.5 bg-[var(--pm-bg-secondary)]">
                             {/* checkbox column spacer */}
                           </th>
-                          <th className="px-4 py-2.5 text-left bg-[var(--pm-bg-secondary)]">
-                            <div className="flex items-center gap-2">
-                              <span className="sticky left-10 bg-[var(--pm-bg-secondary)]">Código</span>
-                            </div>
-                          </th>
+                          <th className="px-4 py-2.5 text-left bg-[var(--pm-bg-secondary)]">Código</th>
+                          <th className="px-4 py-2.5 text-left bg-[var(--pm-bg-secondary)]">Status</th>
                           <th className="px-4 py-2.5 text-right bg-[var(--pm-bg-secondary)]">Bruto (g)</th>
                           <th className="px-4 py-2.5 text-right bg-[var(--pm-bg-secondary)]">Ley (‰)</th>
                           <th className="px-4 py-2.5 text-right bg-[var(--pm-bg-secondary)]">Fino (g)</th>
@@ -176,23 +173,22 @@ export function BarAccordion({
                                   className="accent-[var(--pm-accent-amber)] cursor-pointer w-3.5 h-3.5"
                                 />
                               </td>
-                              {/* Código + Badge inline */}
-                              <td className="px-4 py-1.5 text-left">
-                                <div className="flex items-center gap-2">
-                                  <span
-                                    className={`text-[7px] font-mono font-bold px-1.5 py-0.5 rounded shrink-0 ${
-                                      item.type === 'lot'
-                                        ? 'text-[var(--pm-accent-amber)] bg-[var(--pm-accent-amber)]/10'
-                                        : 'text-[var(--pm-accent-teal)] bg-[var(--pm-accent-teal)]/10'
-                                    }`}
-                                  >
-                                    {item.type === 'lot' ? 'REF' : 'SIN-REF'}
-                                  </span>
-                                  <span className="sticky left-10 font-mono font-bold text-amber-400 tracking-wider text-[11px] hover:text-amber-300 transition-colors">
-                                    {item.code}
-                                  </span>
-                                </div>
-                              </td>
+                               {/* Código */}
+                               <td className="px-4 py-1.5 text-left font-mono font-bold text-amber-400 tracking-wider text-[11px] hover:text-amber-300 transition-colors">
+                                 {item.code}
+                               </td>
+                               {/* Status */}
+                               <td className="px-4 py-1.5 text-left">
+                                 <span
+                                   className={`text-[7px] font-mono font-bold px-1.5 py-0.5 rounded shrink-0 w-20 text-center ${
+                                     item.type === 'lot'
+                                       ? 'text-[var(--pm-accent-amber)] bg-[var(--pm-accent-amber)]/10'
+                                       : 'text-slate-400 bg-slate-500/10'
+                                   }`}
+                                 >
+                                   {item.type === 'lot' ? 'REFUNDIDO' : 'SIN REFUNDIR'}
+                                 </span>
+                               </td>
                               {/* Peso Bruto */}
                               <td className="px-4 py-1.5 text-right font-mono font-medium text-slate-100 text-[12px]">
                                 {item.pesoBruto !== null ? formatNumber(item.pesoBruto, 2) : '—'}
