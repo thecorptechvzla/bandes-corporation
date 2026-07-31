@@ -4,7 +4,7 @@ import React, { useMemo } from 'react';
 import { motion } from 'motion/react';
 import { BarChart3 } from 'lucide-react';
 import {
-  BarChart, Bar, XAxis, YAxis, Tooltip,
+  BarChart, Bar, XAxis, YAxis,
   ResponsiveContainer, Cell, LabelList, CartesianGrid,
 } from 'recharts';
 import { formatNumber } from '@/lib/format';
@@ -16,39 +16,9 @@ interface ChartEntry {
   gradientIdx: number;
 }
 
-interface CustomTooltipProps {
-  active?: boolean;
-  payload?: Array<{ payload: ChartEntry }>;
-}
-
 interface ClientBalancesBarChartProps {
   clientBalances: { id: string; name: string; balance: number }[];
   isMounted: boolean;
-}
-
-function BarTooltip({ active, payload }: CustomTooltipProps) {
-  if (!active || !payload?.length) return null;
-  const entry = payload[0].payload;
-  return (
-    <div
-      className="rounded-xl px-4 py-3 text-[10px] font-mono space-y-1.5 min-w-[180px]"
-      style={{
-        background: 'var(--hud-bg-elevated)',
-        border: '1px solid var(--hud-border)',
-        boxShadow: '0 12px 40px rgba(0,0,0,0.5)',
-        backdropFilter: 'blur(12px)',
-      }}
-    >
-      <p className="text-[var(--hud-text-primary)] font-semibold text-[11px]">{entry.displayName}</p>
-      <div className="flex items-center gap-1.5">
-        <span className="w-2 h-2 rounded-full" style={{ background: entry.color }} />
-        <span className="text-[var(--hud-text-dim)]">Balance:</span>
-        <span className="font-semibold" style={{ color: entry.color }}>
-          {formatNumber(Math.abs(entry.balance), 2)} g
-        </span>
-      </div>
-    </div>
-  );
 }
 
 const BALANCE_GRADIENTS: [string, string][] = [
@@ -135,7 +105,6 @@ export function ClientBalancesBarChart({ clientBalances, isMounted }: ClientBala
                 tickLine={false}
                 width={100}
               />
-              <Tooltip content={<BarTooltip />} wrapperStyle={{ outline: 'none' }} />
               <Bar
                 dataKey="balance"
                 radius={[0, 8, 8, 0]}

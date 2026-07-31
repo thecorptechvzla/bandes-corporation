@@ -593,13 +593,3 @@ input::placeholder, textarea::placeholder {
 .balances-row-sticky {
   background: var(--row-bg) !important;
 }
-
-/* ═══════════════════════════════════════════════════════
-   RECHARTS — DISABLE BAR HOVER OVERLAY
-   ═══════════════════════════════════════════════════════ */
-
-.recharts-bar-rectangle:hover {
-  filter: none !important;
-  opacity: 1 !important;
-  fill-opacity: 1 !important;
-}
