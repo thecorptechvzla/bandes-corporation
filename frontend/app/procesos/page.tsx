@@ -23,6 +23,7 @@ export default function V2ProcesosPage() {
 
   const [selectedClientIds, setSelectedClientIds] = useState<string[]>([]);
   const [selectedBarIds, setSelectedBarIds] = useState<string[]>([]);
+  const [openGroups, setOpenGroups] = useState<Set<string>>(new Set());
   const [formError, setFormError] = useState('');
   const [formSuccess, setFormSuccess] = useState('');
   const [creating, setCreating] = useState(false);
@@ -154,6 +155,27 @@ export default function V2ProcesosPage() {
     });
   };
 
+  const handleToggleSupplier = (clientId: string) => {
+    setOpenGroups(prev => {
+      const next = new Set(prev);
+      if (next.has(clientId)) next.delete(clientId); else next.add(clientId);
+      return next;
+    });
+  };
+
+  const isSupplierAllSelected = useCallback((clientId: string) => {
+    const clientBarIds = availableBars
+      .filter(b => b.clientId === clientId)
+      .map(b => b.id);
+    return clientBarIds.length > 0 && clientBarIds.every(id => selectedBarIds.includes(id));
+  }, [availableBars, selectedBarIds]);
+
+  // Initialize all groups open when bars change
+  React.useEffect(() => {
+    const clientsWithBars = clients.filter(c => availableBars.some(b => b.clientId === c.id));
+    setOpenGroups(new Set(clientsWithBars.map(c => c.id)));
+  }, [availableBars.length, clients.length]);
+
   const handleStartSmelting = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError('');
@@ -235,6 +257,7 @@ export default function V2ProcesosPage() {
           bars={bars}
           selectedClientIds={selectedClientIds}
           selectedBarIds={selectedBarIds}
+          openGroups={openGroups}
           formError={formError}
           formSuccess={formSuccess}
           creating={creating}
@@ -242,6 +265,8 @@ export default function V2ProcesosPage() {
           onSelectAllClients={handleSelectAllClients}
           onBarToggle={handleBarToggle}
           onSelectAllBarsOfClient={handleSelectAllBarsOfClient}
+          onToggleSupplier={handleToggleSupplier}
+          isSupplierAllSelected={isSupplierAllSelected}
           onSubmit={handleStartSmelting}
         />
 

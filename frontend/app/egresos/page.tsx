@@ -26,6 +26,7 @@ interface AvailableLot {
   clientName: string;
   clientRif: string;
   availableWeight: number;
+  grossWeight: number;
   barCount: number;
 }
 
@@ -66,6 +67,9 @@ export default function V2EgresosPage() {
             clientRif: client?.rif || '—',
             availableWeight: Number(
               eligibleBars.reduce((s, b) => s + Number(b.fineWeight), 0),
+            ),
+            grossWeight: Number(
+              eligibleBars.reduce((s, b) => s + Number(b.grossWeight), 0),
             ),
             barCount: eligibleBars.length,
           };
@@ -192,6 +196,16 @@ export default function V2EgresosPage() {
     [selectedBars],
   );
 
+  const lotTotalGross = useMemo(
+    () => selectedLots.reduce((s, l) => s + l.grossWeight, 0),
+    [selectedLots],
+  );
+
+  const barTotalGross = useMemo(
+    () => selectedBars.reduce((s, b) => s + Number(b.grossWeight), 0),
+    [selectedBars],
+  );
+
   const totalWeight = lotTotalWeight + barTotalWeight;
 
   const combinedGroupedByClient = useMemo(() => {
@@ -201,7 +215,7 @@ export default function V2EgresosPage() {
       groups[l.clientId].push({
         type: 'lot', id: l.id, code: l.name, provider: l.clientName,
         clientId: l.clientId, clientName: l.clientName, clientRif: l.clientRif,
-        pesoBruto: null, leyAu: null, pesoFino: l.availableWeight, barCount: l.barCount,
+        pesoBruto: l.grossWeight > 0 ? l.grossWeight : null, leyAu: null, pesoFino: l.availableWeight, barCount: l.barCount,
       });
     });
     selectedBars.forEach(b => {
@@ -392,6 +406,7 @@ export default function V2EgresosPage() {
           selectedBars={selectedBars}
           groupedByClient={combinedGroupedByClient}
           totalWeight={totalWeight}
+          grossTotal={lotTotalGross + barTotalGross}
           clientCount={clientCount}
           destinationClient={destinationClient}
           onDestinationChange={setDestinationClient}

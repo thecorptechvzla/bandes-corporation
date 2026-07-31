@@ -15,6 +15,7 @@ interface AvailableLot {
   clientName: string;
   clientRif: string;
   availableWeight: number;
+  grossWeight: number;
   barCount: number;
 }
 
@@ -30,6 +31,7 @@ interface CheckoutSummaryPanelProps {
   selectedBars: Bar[];
   groupedByClient: Record<string, any[]>;
   totalWeight: number;
+  grossTotal: number;
   clientCount: number;
   destinationClient: { id: string; name: string; rif: string; contactInfo?: string } | null;
   onDestinationChange: (v: { id: string; name: string; rif: string; contactInfo?: string } | null) => void;
@@ -39,7 +41,7 @@ interface CheckoutSummaryPanelProps {
 }
 
 export function CheckoutSummaryPanel({
-  selectedLots, selectedBars, groupedByClient, totalWeight, clientCount,
+  selectedLots, selectedBars, groupedByClient, totalWeight, grossTotal, clientCount,
   destinationClient, onDestinationChange, buyerClients, status, onOpenConfirm,
 }: CheckoutSummaryPanelProps) {
   const fmtWeightDisplay = (val: number) => `${formatNumber(val, 2)} g`;
@@ -70,16 +72,19 @@ export function CheckoutSummaryPanel({
           </div>
         ) : (
           <>
-            {/* Total weight */}
-            <div className="text-center py-4 px-4 rounded-xl border border-[var(--pm-border)] bg-[var(--pm-bg-deepest)]/50">
+            {/* Total weight — Peso Bruto destacado */}
+            <div className="text-center py-4 px-4 rounded-xl border border-[var(--pm-accent-amber)]/20 bg-[var(--pm-accent-amber)]/5">
               <span className="text-[9px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider block mb-1">
-                Peso Total Acumulado
+                Peso Bruto Total
               </span>
-              <span className="text-2xl font-mono font-bold text-[var(--pm-accent-gold)] tracking-tight">
-                {fmtWeightDisplay(totalWeight)}
+              <span className="text-2xl font-mono font-bold text-[var(--pm-accent-amber)] tracking-tight">
+                {fmtWeightDisplay(grossTotal)}
               </span>
               <span className="text-[10px] font-mono text-[var(--pm-text-dim)] block mt-1">
                 {clientCount} proveedor{clientCount !== 1 ? 'es' : ''} · {lotCount > 0 && `${lotCount} lote(s)`}{lotCount > 0 && barCount > 0 && ' + '}{barCount > 0 && `${barCount} barra(s)`}
+              </span>
+              <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block mt-0.5">
+                Peso Neto: {fmtWeightDisplay(totalWeight)}
               </span>
             </div>
 
@@ -138,7 +143,7 @@ export function CheckoutSummaryPanel({
                 border: `1px solid ${itemCount > 0 && destinationClient ? 'rgba(212,175,55,0.3)' : 'var(--pm-border)'}`,
               }}>
               <Send className="w-4 h-4" />
-              Ejecutar Despacho ({lotCount > 0 && `${lotCount}L`}{lotCount > 0 && barCount > 0 && '+'}{barCount > 0 && `${barCount}B`})
+              Ejecutar Salida · {formatNumber(grossTotal, 2)} g
             </button>
           </>
         )}
