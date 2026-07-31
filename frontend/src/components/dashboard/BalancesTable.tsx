@@ -75,8 +75,7 @@ export function BalancesTable({ clientBalances, totalBalance, onClientClick }: B
                 <th className={TH}>Ingreso</th>
                 <th className={TH}>Egreso</th>
                 <th className={TH}>Fundió (R)</th>
-                <th className={TH}>Sin Fundir</th>
-                <th className={TH}>Queda</th>
+                <th className={TH}>SIN REFUNDIR</th>
                 <th className={TH}>Merma</th>
               </tr>
             </thead>
@@ -107,9 +106,6 @@ export function BalancesTable({ clientBalances, totalBalance, onClientClick }: B
                   </td>
                   <td className="text-right text-xs font-mono text-[var(--hud-accent-amber)] px-4 py-3">
                     {fmtG(c.r)}
-                  </td>
-                  <td className="text-right text-xs font-mono text-slate-400 px-4 py-3">
-                    {fmtG(c.sinFundir)}
                   </td>
                   <td className={`text-right text-xs font-mono font-bold px-4 py-3 ${c.balance >= 0 ? 'text-[var(--hud-accent-emerald)]' : 'text-[var(--hud-accent-red)]'}`}>
                     {fmtG(Math.abs(c.balance))}
