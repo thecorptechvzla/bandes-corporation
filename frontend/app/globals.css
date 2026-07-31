@@ -584,10 +584,10 @@ input::placeholder, textarea::placeholder {
    ═══════════════════════════════════════════════════════ */
 
 .balances-row {
-  --row-bg: transparent;
+  --row-bg: var(--hud-bg-card);
 }
 .balances-row:nth-child(even) {
-  --row-bg: rgba(255, 255, 255, 0.015);
+  --row-bg: #1C2027;
   background: var(--row-bg);
 }
 .balances-row-sticky {
