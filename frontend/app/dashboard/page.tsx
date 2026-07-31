@@ -189,6 +189,10 @@ export default function V2DashboardPage() {
       const clientProcesses = processes.filter(p => p.clientId === client.id);
       const r = clientProcesses.reduce((s, p) =>
         s + (p.lots?.reduce((sl, l) => sl + Number(l.recovered ?? 0), 0) ?? 0), 0);
+      const rCerrado = clientProcesses
+        .filter(p => p.status === 'CLOSED')
+        .reduce((s, p) =>
+          s + (p.lots?.reduce((sl, l) => sl + Number(l.recovered ?? 0), 0) ?? 0), 0);
       const clientExits = filteredExits.filter(e =>
         e.exitDetails.some(d => d.lot?.process?.client?.id === client.id));
       const egresos = clientExits.reduce((s, e) => s + Number(e.totalWeight), 0);
@@ -198,7 +202,7 @@ export default function V2DashboardPage() {
       const faProcesado = clientBars
         .filter(b => b.status === 'COMPLETADO' || b.status === 'EXITED')
         .reduce((s, b) => s + Number(b.fineWeight), 0);
-      const mermaG = Math.max(0, faProcesado - r);
+      const mermaG = Math.max(0, faProcesado - rCerrado);
       const mermaPct = faProcesado > 0 ? (mermaG / faProcesado) * 100 : 0;
       return { id: client.id, name: client.name, ingresoBruto, fa, leyAu, ingreso: fa, r, sinFundir, egresos, balance, mermaG, mermaPct };
     })

@@ -50,6 +50,7 @@ export function SupplierDirectory({
     const latestDate = new Map<string, number>();
 
     for (const bar of bars) {
+      if (q && !bar.barNumber.toLowerCase().includes(q)) continue;
       if (!grouped.has(bar.clientId)) grouped.set(bar.clientId, []);
       grouped.get(bar.clientId)!.push(bar);
       const d = new Date(bar.createdAt).getTime();
@@ -81,13 +82,16 @@ export function SupplierDirectory({
   );
 
   const grandTotal = useMemo(() => {
-    const ids = new Set(visibleClients.map((c) => c.id));
-    const visible = bars.filter((b) => ids.has(b.clientId));
-    return {
-      grossWeight: visible.reduce((s, b) => s + Number(b.grossWeight), 0),
-      fa: visible.reduce((s, b) => s + Number(b.fineWeight), 0),
-    };
-  }, [bars, visibleClients]);
+    let grossWeight = 0;
+    let fa = 0;
+    for (const c of visibleClients) {
+      for (const b of barsByClient.get(c.id) ?? []) {
+        grossWeight += Number(b.grossWeight);
+        fa += Number(b.fineWeight);
+      }
+    }
+    return { grossWeight, fa };
+  }, [visibleClients, barsByClient]);
 
   if (isLoading) {
     return (

@@ -52,9 +52,24 @@ export function RecoveryModal({ lot, lotBarsMap, processLotsMap, onClose, upload
   const previewUrlRef = useRef<string | null>(null);
 
   const recWeightNum = parseFloat(recoveredWeight) || 0;
+  const recoveredLeyAuNum = parseFloat(recoveredLeyAu) || 0;
+  const calculatedFineWeight = (recWeightNum * recoveredLeyAuNum) / 1000;
   const discrepancy = lotFA > 0 ? ((recWeightNum - lotFA) / lotFA) * 100 : 0;
   const mermaGramos = lotFA - recWeightNum;
   const mermaPct = lotFA > 0 ? (mermaGramos / lotFA) * 100 : 0;
+
+  const blockNonNumeric = (e: React.KeyboardEvent) => {
+    const allowed = ['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'ArrowLeft', 'ArrowRight', 'Home', 'End'];
+    if (allowed.includes(e.key) || (e.ctrlKey && ['a', 'c', 'v', 'x'].includes(e.key))) return;
+    if (/^[0-9]$/.test(e.key)) return;
+    if (e.key === ',' || e.key === '.') return;
+    e.preventDefault();
+  };
+
+  const handlePasteNumeric = (e: React.ClipboardEvent) => {
+    const text = e.clipboardData.getData('text');
+    if (!/^[0-9.,]+$/.test(text)) e.preventDefault();
+  };
 
   const handleCapture = useCallback(async (blob: Blob) => {
     const localUrl = URL.createObjectURL(blob);
@@ -166,7 +181,7 @@ export function RecoveryModal({ lot, lotBarsMap, processLotsMap, onClose, upload
             </div>
             <div className="p-2 rounded-lg border border-[var(--pm-border)] bg-[var(--pm-bg-deepest)]/50 text-center">
               <span className="text-[8px] font-mono text-[var(--pm-text-dim)] block">Peso Fino</span>
-              <span className="text-xs font-mono font-bold text-[var(--pm-accent-gold)]">{formatNumber(lotFA, 4)} g</span>
+              <span className="text-xs font-mono font-bold text-[var(--pm-accent-gold)]">{formatNumber(lotFA, 2)} g</span>
             </div>
           </div>
 
@@ -240,8 +255,10 @@ export function RecoveryModal({ lot, lotBarsMap, processLotsMap, onClose, upload
           <div className="space-y-1">
             <label className="text-[9px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider">Peso Bruto (g)</label>
             <div className="flex gap-2">
-              <input type="number" step="0.0001" value={recoveredWeight}
+              <input type="number" step="0.01" value={recoveredWeight}
                 onChange={e => setRecoveredWeight(e.target.value)}
+                onKeyDown={blockNonNumeric}
+                onPaste={handlePasteNumeric}
                 className="flex-1 bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] rounded-lg px-3 py-2 text-sm font-mono text-[var(--pm-text-primary)] focus:outline-none focus:border-[var(--pm-accent-amber)] transition-colors"
               />
               <HudButton variant="ghost" className="text-[9px] px-3 shrink-0"
@@ -258,6 +275,8 @@ export function RecoveryModal({ lot, lotBarsMap, processLotsMap, onClose, upload
             <div className="flex gap-2">
               <input type="number" min="0" max="1000" step="0.1" value={recoveredLeyAu}
                 onChange={e => setRecoveredLeyAu(e.target.value)}
+                onKeyDown={blockNonNumeric}
+                onPaste={handlePasteNumeric}
                 className="flex-1 bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] rounded-lg px-3 py-2 text-sm font-mono text-[var(--pm-text-primary)] focus:outline-none focus:border-[var(--pm-accent-amber)] transition-colors"
               />
               <HudButton variant="ghost" className="text-[9px] px-3 shrink-0"
@@ -267,6 +286,16 @@ export function RecoveryModal({ lot, lotBarsMap, processLotsMap, onClose, upload
               </HudButton>
             </div>
           </div>
+
+          {/* Fino Calculado — real-time */}
+          {recWeightNum > 0 && recoveredLeyAuNum > 0 && (
+            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}
+              className="flex items-center justify-between p-2.5 rounded-lg border border-[var(--pm-accent-gold)]/20 bg-[var(--pm-accent-gold)]/5"
+            >
+              <span className="text-[9px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider">Fino Calculado (FA)</span>
+              <span className="text-sm font-mono font-bold text-[var(--pm-accent-gold)]">{formatNumber(calculatedFineWeight, 2)} g</span>
+            </motion.div>
+          )}
 
           {/* Discrepancy */}
           {recWeightNum > 0 && (
@@ -286,23 +315,23 @@ export function RecoveryModal({ lot, lotBarsMap, processLotsMap, onClose, upload
                 <div className="space-y-3">
                   <div className="flex justify-between items-baseline">
                     <span className="text-[10px] uppercase tracking-widest text-slate-500">Peso Fino</span>
-                    <span className="text-base font-bold text-slate-200">{formatNumber(lotFA, 4)} g</span>
+                    <span className="text-lg font-bold text-slate-200">{formatNumber(lotFA, 2)} g</span>
                   </div>
                   <div className="flex justify-between items-baseline">
                     <span className="text-[10px] uppercase tracking-widest text-slate-500">Peso Bruto</span>
-                    <span className="text-sm text-slate-200">{formatNumber(recWeightNum, 4)} g</span>
+                    <span className="text-base text-slate-200">{formatNumber(recWeightNum, 2)} g</span>
                   </div>
                 </div>
                 <div className="space-y-3">
                   <div className="flex justify-between items-baseline">
                     <span className="text-[10px] uppercase tracking-widest text-slate-500">Diferencia</span>
-                    <span className={`text-base font-bold ${mermaGramos >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                      {mermaGramos >= 0 ? '+' : ''}{formatNumber(mermaGramos, 4)} g
+                    <span className={`text-lg font-bold ${mermaGramos >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                      {mermaGramos >= 0 ? '+' : ''}{formatNumber(mermaGramos, 2)} g
                     </span>
                   </div>
                   <div className="flex justify-between items-baseline">
                     <span className="text-[10px] uppercase tracking-widest text-slate-500">Merma</span>
-                    <span className={`text-sm ${Math.abs(mermaPct) <= 5 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                    <span className={`text-base font-bold ${Math.abs(mermaPct) <= 5 ? 'text-emerald-400' : 'text-rose-400'}`}>
                       {mermaPct.toFixed(2)}%
                     </span>
                   </div>
