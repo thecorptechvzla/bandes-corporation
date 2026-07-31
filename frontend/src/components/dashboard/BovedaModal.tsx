@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Warehouse, X, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Warehouse, X, ChevronDown, ChevronLeft, ChevronRight, Building2 } from 'lucide-react';
 import { formatNumber } from '@/lib/format';
 import { SupplierDirectory } from '@/components/SupplierDirectory';
 import type { Lot, Process, Client, Bar } from '@/types/api';
@@ -46,28 +46,43 @@ export function BovedaModal({ isOpen, lots, bars, clients, onClose, onBarClick }
 
   const LOTS_PER_PAGE = 10;
 
+  const clientMap = useMemo(() => {
+    const map = new Map<string, { name: string; rif: string }>();
+    for (const c of clients) map.set(c.id, { name: c.name, rif: c.rif });
+    return map;
+  }, [clients]);
+
   const grouped = useMemo(() => {
-    const map = new Map<string, { clientName: string; lots: BovedaLot[] }>();
+    const map = new Map<string, { clientName: string; rif: string; lots: BovedaLot[] }>();
     for (const lot of lots) {
       const clientId = lot.client?.id ?? lot.process?.clientId ?? 'unknown';
       const clientName = lot.client?.name ?? lot.process?.client?.name ?? 'Desconocido';
-      if (!map.has(clientId)) map.set(clientId, { clientName, lots: [] });
+      const rif = clientMap.get(clientId)?.rif ?? '—';
+      if (!map.has(clientId)) map.set(clientId, { clientName, rif, lots: [] });
       map.get(clientId)!.lots.push(lot);
     }
     return Array.from(map.entries())
-      .map(([id, g]) => ({ id, clientName: g.clientName, lots: g.lots }))
+      .map(([id, g]) => ({ id, clientName: g.clientName, rif: g.rif, lots: g.lots }))
       .sort((a, b) => b.lots.length - a.lots.length);
-  }, [lots]);
+  }, [lots, clientMap]);
 
-  const totalFundido = useMemo(
+  const totalRecovered = useMemo(
     () => lots.reduce((s, l) => s + Number(l.recovered ?? 0), 0),
     [lots],
   );
 
-  const totalSinFundir = useMemo(
+  const totalFineWeight = useMemo(
     () => bars.reduce((s, b) => s + Number(b.fineWeight ?? 0), 0),
     [bars],
   );
+
+  const totalGrossWeight = useMemo(
+    () => bars.reduce((s, b) => s + Number(b.grossWeight ?? 0), 0),
+    [bars],
+  );
+
+  const grandTotalBruto = tab === 'fundido' ? 0 : totalGrossWeight;
+  const grandTotalFino = tab === 'fundido' ? totalRecovered : totalFineWeight;
 
   const tabDefs: { key: Tab; label: string; count: number }[] = [
     { key: 'fundido', label: 'FUNDIDO', count: lots.length },
@@ -142,7 +157,7 @@ export function BovedaModal({ isOpen, lots, bars, clients, onClose, onBarClick }
                     </div>
                   )}
 
-                  {grouped.map(({ id, clientName, lots: clientLots }) => {
+                  {grouped.map(({ id, clientName, rif, lots: clientLots }) => {
                     const isExpanded = expandedFundidoId === id;
                     const clientTotal = clientLots.reduce((s, l) => s + Number(l.recovered ?? 0), 0);
                     return (
@@ -153,17 +168,20 @@ export function BovedaModal({ isOpen, lots, bars, clients, onClose, onBarClick }
                         >
                           <div className="p-4 flex items-center justify-between gap-3">
                             <div className="flex items-center gap-3 min-w-0">
-                              <div className="w-1.5 h-1.5 rounded-full bg-[var(--hud-accent-gold)] flex-shrink-0" />
+                              <Building2 className="w-5 h-5 text-[var(--hud-accent-gold)] flex-shrink-0" />
                               <div className="min-w-0">
                                 <p className="text-sm font-bold text-[var(--hud-text-primary)] uppercase tracking-wider truncate">
                                   {clientName}
                                 </p>
                                 <p className="text-[10px] text-[var(--hud-text-dim)] font-mono truncate">
-                                  {formatNumber(clientTotal, 2)} g recuperados
+                                  RIF: {rif}
                                 </p>
                               </div>
                             </div>
                             <div className="flex items-center gap-3 flex-shrink-0">
+                              <span className="text-[10px] font-mono text-[var(--hud-text-dim)] whitespace-nowrap">
+                                Fino: {formatNumber(clientTotal, 2)} g
+                              </span>
                               <span className="text-[10px] font-mono text-[var(--hud-text-dim)] bg-[var(--hud-bg-deepest)]/50 px-2 py-0.5 border border-[var(--hud-border)] rounded whitespace-nowrap">
                                 {clientLots.length} LOTES
                               </span>
@@ -302,6 +320,7 @@ export function BovedaModal({ isOpen, lots, bars, clients, onClose, onBarClick }
                       clients={clients}
                       purityFirst
                       showSearch
+                      hideFooter
                       onBarClick={onBarClick}
                     />
                   )}
@@ -309,34 +328,51 @@ export function BovedaModal({ isOpen, lots, bars, clients, onClose, onBarClick }
               )}
             </div>
 
-            {/* Footer */}
-            <div className="flex items-center justify-between px-4 sm:px-5 py-3 border-t border-[var(--hud-border)] bg-[var(--hud-bg-deepest)]/30">
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-[9px] font-mono font-bold tracking-wider uppercase text-[var(--hud-text-dim)]">
-                    Fundido:
+            {/* Unified GRAN TOTAL Footer */}
+            <div className="flex-shrink-0 border-t border-[var(--hud-accent-gold)]/30 bg-[var(--hud-bg-deepest)]">
+              <div className="hidden sm:flex items-center justify-between px-4 sm:px-5 py-3 sm:py-3.5">
+                <span className="text-xs font-bold text-[var(--hud-text-primary)] uppercase tracking-widest">
+                  GRAN TOTAL
+                </span>
+                <div className="flex items-center gap-5">
+                  <span className="text-xs font-mono text-[var(--hud-text-dim)]">
+                    Peso Bruto:{' '}
+                    <span className="text-[var(--hud-accent-gold)] font-bold text-sm">
+                      {formatNumber(grandTotalBruto, 2)}
+                    </span>{' '}
+                    <span className="text-[10px] text-[var(--hud-text-dim)]">g</span>
                   </span>
-                  <span className="text-[10px] font-mono font-bold text-[var(--hud-text-primary)] tabular-nums">
-                    {formatNumber(totalFundido, 2)} g
-                  </span>
-                </div>
-                <div className="w-px h-3 bg-[var(--hud-border)]" />
-                <div className="flex items-center gap-1.5">
-                  <span className="text-[9px] font-mono font-bold tracking-wider uppercase text-[var(--hud-text-dim)]">
-                    Sin Fundir:
-                  </span>
-                  <span className="text-[10px] font-mono font-bold text-[var(--hud-text-primary)] tabular-nums">
-                    {formatNumber(totalSinFundir, 2)} g
+                  <span className="text-[10px] text-[var(--hud-text-dim)]/30">|</span>
+                  <span className="text-xs font-mono text-[var(--hud-text-dim)]">
+                    Peso Fino:{' '}
+                    <span className="text-[var(--hud-accent-gold)] font-bold text-sm">
+                      {formatNumber(grandTotalFino, 2)}
+                    </span>{' '}
+                    <span className="text-[10px] text-[var(--hud-text-dim)]">g</span>
                   </span>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-[9px] font-mono font-bold tracking-[0.1em] uppercase text-[var(--hud-text-dim)]">
+
+              <div className="sm:hidden px-4 py-3">
+                <div className="text-[10px] font-bold text-[var(--hud-text-primary)] uppercase tracking-widest mb-2">
                   GRAN TOTAL
-                </span>
-                <span className="text-[11px] font-mono font-bold text-[var(--hud-text-primary)] tabular-nums">
-                  {formatNumber(totalFundido + totalSinFundir, 2)} g
-                </span>
+                </div>
+                <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+                  <div>
+                    <div className="text-[9px] text-[var(--hud-text-dim)] uppercase tracking-wider">Peso Bruto</div>
+                    <div className="text-[13px] font-mono font-bold text-[var(--hud-accent-gold)] leading-tight whitespace-nowrap">
+                      {formatNumber(grandTotalBruto, 2)}{' '}
+                      <span className="text-[10px] font-normal text-[var(--hud-text-dim)]">g</span>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-[9px] text-[var(--hud-text-dim)] uppercase tracking-wider">Peso Fino</div>
+                    <div className="text-[13px] font-mono font-bold text-[var(--hud-accent-gold)] leading-tight whitespace-nowrap">
+                      {formatNumber(grandTotalFino, 2)}{' '}
+                      <span className="text-[10px] font-normal text-[var(--hud-text-dim)]">g</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </motion.div>

@@ -15,6 +15,7 @@ interface SupplierDirectoryProps {
   isLoading?: boolean;
   purityFirst?: boolean;
   showSearch?: boolean;
+  hideFooter?: boolean;
   filterSupplierId?: string;
   onBarClick?: (barId: string) => void;
 }
@@ -25,6 +26,7 @@ export function SupplierDirectory({
   isLoading,
   purityFirst = false,
   showSearch = false,
+  hideFooter = false,
   filterSupplierId,
   onBarClick,
 }: SupplierDirectoryProps) {
@@ -276,7 +278,7 @@ export function SupplierDirectory({
         </div>
       )}
 
-      {visibleClients.length > 0 && (
+      {!hideFooter && visibleClients.length > 0 && (
         <div className="flex-shrink-0 border-t border-[var(--hud-accent-gold)]/30 bg-[var(--hud-bg-deepest)]">
           <div className="hidden sm:flex items-center justify-between px-4 sm:px-5 py-3 sm:py-3.5">
             <span className="text-xs font-bold text-[var(--hud-text-primary)] uppercase tracking-widest">
