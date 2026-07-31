@@ -10,6 +10,7 @@ import {
 import { formatNumber } from '@/lib/format';
 
 interface ChartEntry {
+  id: string;
   displayName: string;
   balance: number;
   color: string;
@@ -19,6 +20,7 @@ interface ChartEntry {
 interface ClientBalancesBarChartProps {
   clientBalances: { id: string; name: string; balance: number }[];
   isMounted: boolean;
+  onBarClick?: (clientId: string) => void;
 }
 
 const BALANCE_GRADIENTS: [string, string][] = [
@@ -34,11 +36,12 @@ const BALANCE_GRADIENTS: [string, string][] = [
 
 const formatLabel = (v: number) => `${formatNumber(v, 1)}g`;
 
-export function ClientBalancesBarChart({ clientBalances, isMounted }: ClientBalancesBarChartProps) {
+export function ClientBalancesBarChart({ clientBalances, isMounted, onBarClick }: ClientBalancesBarChartProps) {
   const chartData = useMemo<ChartEntry[]>(() => {
     return clientBalances
       .slice(0, 8)
       .map((c, idx) => ({
+        id: c.id,
         displayName: c.name.length > 14 ? `${c.name.slice(0, 12)}…` : c.name,
         balance: c.balance,
         color: c.balance >= 0
@@ -56,7 +59,7 @@ export function ClientBalancesBarChart({ clientBalances, isMounted }: ClientBala
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.30, duration: 0.45 }}
-      className="bg-transparent border border-[var(--hud-border)] rounded-[20px] overflow-hidden h-full"
+      className="top-balances-chart bg-transparent border border-[var(--hud-border)] rounded-[20px] overflow-hidden h-full"
     >
       <div className="flex items-center gap-2 px-5 pt-4 pb-2 border-b border-[var(--hud-border)]">
         <BarChart3 className="w-3.5 h-3.5 text-[var(--hud-accent-gold)]" />
@@ -113,6 +116,7 @@ export function ClientBalancesBarChart({ clientBalances, isMounted }: ClientBala
                 isAnimationActive={isMounted}
                 animationDuration={1000}
                 animationEasing="ease-out"
+                onClick={(entry: ChartEntry) => onBarClick?.(entry.id)}
               >
                 {chartData.map((entry, idx) => (
                   <Cell

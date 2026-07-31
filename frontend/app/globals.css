@@ -593,3 +593,17 @@ input::placeholder, textarea::placeholder {
 .balances-row-sticky {
   background: var(--row-bg) !important;
 }
+
+/* ═══════════════════════════════════════════════════════
+   TOP BALANCES — Subtle bar hover highlight
+   ═══════════════════════════════════════════════════════ */
+
+.top-balances-chart .recharts-bar-rectangle {
+  cursor: pointer;
+}
+
+.top-balances-chart .recharts-bar-rectangle:hover {
+  filter: brightness(1.18);
+  opacity: 1 !important;
+  fill-opacity: 1 !important;
+}

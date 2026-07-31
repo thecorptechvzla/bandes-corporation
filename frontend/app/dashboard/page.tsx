@@ -390,7 +390,7 @@ export default function V2DashboardPage() {
           />
         </div>
         <div className="col-span-12 lg:col-span-4">
-          <ClientBalancesBarChart clientBalances={clientBalances} isMounted={isMounted} />
+          <ClientBalancesBarChart clientBalances={clientBalances} isMounted={isMounted} onBarClick={(id) => { setSelectedClientId(id); setIsClientBarModalOpen(true); }} />
         </div>
       </div>
 
