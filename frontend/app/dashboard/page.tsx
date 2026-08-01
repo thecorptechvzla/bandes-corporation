@@ -369,8 +369,8 @@ export default function V2DashboardPage() {
         </div>
         <div className="col-span-12 lg:col-span-4">
           <InventoryDonutChart
-            fundido={metrics?.oroEnBoveda.fundido ?? 0}
-            sinFundir={metrics?.oroEnBoveda.sinFundir ?? 0}
+            fundido={fundidoGross}
+            sinFundir={sinFundirGross}
             isMounted={isMounted}
           />
         </div>

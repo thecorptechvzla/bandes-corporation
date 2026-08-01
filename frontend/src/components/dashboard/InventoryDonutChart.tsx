@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'motion/react';
 import { Warehouse } from 'lucide-react';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
@@ -40,6 +40,27 @@ export function InventoryDonutChart({ fundido, sinFundir, isMounted }: Inventory
   const total = fundido + sinFundir;
   const hasData = total > 0;
 
+  const chartRef = useRef<HTMLDivElement>(null);
+  const [chartWidth, setChartWidth] = useState(380);
+
+  useEffect(() => {
+    const el = chartRef.current;
+    if (!el) return;
+    const observer = new ResizeObserver((entries) => {
+      const w = entries[0]?.contentRect.width ?? 0;
+      if (w > 0) setChartWidth(w);
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  const h = Math.round(Math.max(220, chartWidth * 0.45));
+  const outerRadius = Math.round(h * 0.42);
+  const innerRadius = Math.round(outerRadius * 0.74);
+  const totalStr = formatNumber(total, 2);
+  const fitFont = Math.floor(((innerRadius * 2) * 0.94) / (0.6 * totalStr.length));
+  const fontSize = Math.min(44, Math.max(16, fitFont));
+
   const chartData = [
     { name: 'Fundido', value: fundido, color: '#10B981' },
     { name: 'Sin Fundir', value: sinFundir, color: '#06B6D4' },
@@ -64,40 +85,42 @@ export function InventoryDonutChart({ fundido, sinFundir, isMounted }: Inventory
           <span className="text-xs font-mono text-[var(--hud-text-muted)]">Sin datos en bóveda</span>
         </div>
       ) : (
-        <div className="relative px-3 pt-4 pb-4">
-          <ResponsiveContainer width="100%" height={220}>
-            <PieChart>
-              <Pie
-                data={chartData}
-                dataKey="value"
-                nameKey="name"
-                cx="50%"
-                cy="50%"
-                innerRadius={64}
-                outerRadius={84}
-                strokeWidth={2}
-                stroke="var(--hud-bg-deepest)"
-                isAnimationActive={isMounted}
-                animationDuration={1000}
-                animationEasing="ease-out"
-              >
-                {chartData.map((entry, idx) => (
-                  <Cell key={idx} fill={entry.color} />
-                ))}
-              </Pie>
-              <Tooltip content={<DonutTooltip />} wrapperStyle={{ outline: 'none' }} />
-            </PieChart>
-          </ResponsiveContainer>
+        <div className="px-3 pt-4 pb-4">
+          <div className="relative" ref={chartRef}>
+            <ResponsiveContainer width="100%" height={h}>
+              <PieChart>
+                <Pie
+                  data={chartData}
+                  dataKey="value"
+                  nameKey="name"
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={innerRadius}
+                  outerRadius={outerRadius}
+                  strokeWidth={2}
+                  stroke="var(--hud-bg-deepest)"
+                  isAnimationActive={isMounted}
+                  animationDuration={1000}
+                  animationEasing="ease-out"
+                >
+                  {chartData.map((entry, idx) => (
+                    <Cell key={idx} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip content={<DonutTooltip />} wrapperStyle={{ outline: 'none' }} />
+              </PieChart>
+            </ResponsiveContainer>
 
-          {/* Center label */}
-          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-            <span className="text-[9px] font-mono text-[var(--hud-text-muted)] uppercase tracking-[0.18em]">
-              En Bóveda
-            </span>
-            <span className="text-2xl font-bold font-mono text-[var(--hud-text-primary)] mt-1">
-              {formatNumber(total, 2)}
-            </span>
-            <span className="text-[9px] font-mono text-[var(--hud-text-muted)] uppercase tracking-wider">gramos</span>
+            {/* Center label */}
+            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+              <span className="text-[9px] font-mono text-[var(--hud-text-muted)] uppercase tracking-[0.18em]">
+                En Bóveda
+              </span>
+              <span className="font-bold font-mono text-[var(--hud-text-primary)] mt-1 whitespace-nowrap tabular-nums" style={{ fontSize }}>
+                {totalStr}
+              </span>
+              <span className="text-[9px] font-mono text-[var(--hud-text-muted)] uppercase tracking-wider">g</span>
+            </div>
           </div>
 
           {/* Legend — pills */}
