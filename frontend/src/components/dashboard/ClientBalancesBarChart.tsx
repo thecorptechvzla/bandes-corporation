@@ -8,17 +8,18 @@ import {
   ResponsiveContainer, Cell, LabelList, CartesianGrid,
 } from 'recharts';
 import { formatNumber } from '@/lib/format';
+import type { ClientBalance } from '@/types/api';
 
 interface ChartEntry {
   id: string;
   displayName: string;
-  balance: number;
+  balanceGross: number;
   color: string;
   gradientIdx: number;
 }
 
 interface ClientBalancesBarChartProps {
-  clientBalances: { id: string; name: string; balance: number }[];
+  clientBalances: ClientBalance[];
   isMounted: boolean;
   onBarClick?: (clientId: string) => void;
 }
@@ -43,11 +44,9 @@ export function ClientBalancesBarChart({ clientBalances, isMounted, onBarClick }
       .map((c, idx) => ({
         id: c.id,
         displayName: c.name.length > 14 ? `${c.name.slice(0, 12)}…` : c.name,
-        balance: c.balance,
-        color: c.balance >= 0
-          ? BALANCE_GRADIENTS[idx % BALANCE_GRADIENTS.length][0]
-          : '#EF4444',
-        gradientIdx: c.balance >= 0 ? idx % BALANCE_GRADIENTS.length : 0,
+        balanceGross: c.ingresoBruto,
+        color: BALANCE_GRADIENTS[idx % BALANCE_GRADIENTS.length][0],
+        gradientIdx: idx % BALANCE_GRADIENTS.length,
       }))
       .reverse();
   }, [clientBalances]);
@@ -109,7 +108,7 @@ export function ClientBalancesBarChart({ clientBalances, isMounted, onBarClick }
                 width={100}
               />
               <Bar
-                dataKey="balance"
+                dataKey="balanceGross"
                 radius={[0, 8, 8, 0]}
                 barSize={18}
                 activeBar={false}
@@ -127,7 +126,7 @@ export function ClientBalancesBarChart({ clientBalances, isMounted, onBarClick }
                   />
                 ))}
                 <LabelList
-                  dataKey="balance"
+                  dataKey="balanceGross"
                   position="insideEnd"
                   offset={8}
                   formatter={formatLabel}
