@@ -35,15 +35,15 @@ export function ConfirmRegistrationModal({ data, onClose, onConfirm }: ConfirmRe
         </div>
 
         <div className="p-4 rounded-xl border border-[var(--pm-border)]/40 bg-[var(--pm-bg-deepest)]/30 space-y-2">
-          <div className="flex justify-between text-[10px] font-mono">
+          <div className="flex justify-between text-[11px] font-mono">
             <span className="text-[var(--pm-text-dim)]">Código</span>
             <span className="font-bold text-[var(--pm-accent-gold)]">{data.barNumber}</span>
           </div>
-          <div className="flex justify-between text-[10px] font-mono">
+          <div className="flex justify-between text-[11px] font-mono">
             <span className="text-[var(--pm-text-dim)]">Peso Bruto</span>
             <span className="font-bold text-[var(--pm-text-primary)]">{formatNumber(data.grossWeight, 2)} g</span>
           </div>
-          <div className="flex justify-between text-[10px] font-mono">
+          <div className="flex justify-between text-[11px] font-mono">
             <span className="text-[var(--pm-text-dim)]">Ley Au</span>
             <span className="font-bold text-[var(--pm-text-primary)]">{formatNumber(data.purity, 1)} ‰</span>
           </div>

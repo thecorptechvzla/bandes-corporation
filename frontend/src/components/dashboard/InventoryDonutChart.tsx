@@ -17,7 +17,7 @@ function DonutTooltip({ active, payload }: any) {
   const entry = payload[0];
   return (
     <div
-      className="rounded-xl px-4 py-3 text-[10px] font-mono space-y-1.5 min-w-[160px]"
+      className="rounded-xl px-4 py-3 text-[11px] font-mono space-y-1.5 min-w-[160px]"
       style={{
         background: 'var(--hud-bg-elevated)',
         border: '1px solid var(--hud-border)',
@@ -75,7 +75,7 @@ export function InventoryDonutChart({ fundido, sinFundir, isMounted }: Inventory
     >
       <div className="flex items-center gap-2 px-5 pt-4 pb-2 border-b border-[var(--hud-border)]">
         <Warehouse className="w-3.5 h-3.5 text-[var(--hud-accent-emerald)]" />
-        <h3 className="text-[10px] font-bold text-[var(--hud-text-primary)] font-mono tracking-wider uppercase">
+        <h3 className="text-[11px] font-bold text-[var(--hud-text-primary)] font-mono tracking-wider uppercase">
           Estado Bóveda
         </h3>
       </div>
@@ -113,13 +113,13 @@ export function InventoryDonutChart({ fundido, sinFundir, isMounted }: Inventory
 
             {/* Center label */}
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-              <span className="text-[9px] font-mono text-[var(--hud-text-muted)] uppercase tracking-[0.18em]">
+              <span className="text-[10px] font-mono text-[var(--hud-text-muted)] uppercase tracking-[0.18em]">
                 En Bóveda
               </span>
               <span className="font-bold font-mono text-[var(--hud-text-primary)] mt-1 whitespace-nowrap tabular-nums" style={{ fontSize }}>
                 {totalStr}
               </span>
-              <span className="text-[9px] font-mono text-[var(--hud-text-muted)] uppercase tracking-wider">g</span>
+              <span className="text-[10px] font-mono text-[var(--hud-text-muted)] uppercase tracking-wider">g</span>
             </div>
           </div>
 
@@ -132,8 +132,8 @@ export function InventoryDonutChart({ fundido, sinFundir, isMounted }: Inventory
                 style={{ background: 'var(--hud-bg-deepest)', border: '1px solid var(--hud-border)' }}
               >
                 <span className="w-2.5 h-2.5 rounded-full" style={{ background: item.color }} />
-                <span className="text-[9px] font-mono text-[var(--hud-text-dim)]">{item.name}</span>
-                <span className="text-[10px] font-mono font-bold" style={{ color: item.color }}>
+                <span className="text-[10px] font-mono text-[var(--hud-text-dim)]">{item.name}</span>
+                <span className="text-[11px] font-mono font-bold" style={{ color: item.color }}>
                   {formatNumber(item.value, 2)} g
                 </span>
               </div>

@@ -18,7 +18,7 @@ function TreemapTooltip({ active, payload, accent, scaleLabel }: TreemapTooltipP
   const data = payload[0].payload;
   return (
     <div
-      className="rounded-lg border px-3.5 py-2.5 text-[10px] font-mono space-y-1 min-w-[170px]"
+      className="rounded-lg border px-3.5 py-2.5 text-[11px] font-mono space-y-1 min-w-[170px]"
       style={{
         background: 'var(--hud-bg-card)',
         borderColor: `${accent}40`,
@@ -26,20 +26,20 @@ function TreemapTooltip({ active, payload, accent, scaleLabel }: TreemapTooltipP
         boxShadow: `0 0 20px ${accent}15, 0 4px 20px rgba(0,0,0,0.6)`,
       }}
     >
-      <div className="flex items-center gap-2 text-[9px] text-[var(--hud-text-dim)] uppercase tracking-[0.12em] font-bold">
+      <div className="flex items-center gap-2 text-[10px] text-[var(--hud-text-dim)] uppercase tracking-[0.12em] font-bold">
         <span className="w-2 h-2 rounded-full" style={{ background: accent }} />
         {scaleLabel}
       </div>
       <p className="text-[13px] font-bold text-[var(--hud-text-primary)]">{data.name}</p>
       <div className="border-t border-[var(--hud-border)] pt-1.5 mt-1.5 space-y-1">
         <p className="flex justify-between items-center">
-          <span className="text-[var(--hud-text-dim)] text-[10px]">MASA TOTAL</span>
+          <span className="text-[var(--hud-text-dim)] text-[11px]">MASA TOTAL</span>
           <span className="font-semibold text-[12px]" style={{ color: accent }}>
             {formatNumber(data.value, 2)} g
           </span>
         </p>
         <p className="flex justify-between items-center">
-          <span className="text-[var(--hud-text-dim)] text-[10px]">PROPORCIÓN</span>
+          <span className="text-[var(--hud-text-dim)] text-[11px]">PROPORCIÓN</span>
           <span className="font-semibold text-[12px]" style={{ color: accent }}>
             {formatNumber(data.pct, 1)}%
           </span>
@@ -179,7 +179,7 @@ function CustomTreemapBlock(props: CustomBlockProps) {
 
 function TreemapLegend({ data }: { data: { name: string; value: number; pct: number; fill: string }[] }) {
   return (
-    <div className="flex flex-wrap gap-x-5 gap-y-1 px-4 pb-3 pt-2.5 border-t border-[var(--hud-border)] text-[9px] font-mono">
+    <div className="flex flex-wrap gap-x-5 gap-y-1 px-4 pb-3 pt-2.5 border-t border-[var(--hud-border)] text-[10px] font-mono">
       {data.map(item => (
         <div key={item.name} className="flex items-center gap-1.5 whitespace-nowrap">
           <span className="w-2 h-2 rounded-full shrink-0" style={{ background: item.fill }} />
@@ -246,9 +246,9 @@ export function TreemapPanel({
       <table className="w-full">
         <thead className="sticky top-0" style={{ background: 'var(--hud-bg-base)' }}>
           <tr>
-            <th className="text-[9px] font-mono font-bold tracking-[0.1em] uppercase text-[var(--hud-text-muted)] text-left px-4 py-2.5 border-b border-[var(--hud-border)]">ENTIDAD</th>
-            <th className="text-[9px] font-mono font-bold tracking-[0.1em] uppercase text-[var(--hud-text-muted)] text-right px-4 py-2.5 border-b border-[var(--hud-border)]">MASA TOTAL</th>
-            <th className="text-[9px] font-mono font-bold tracking-[0.1em] uppercase text-[var(--hud-text-muted)] text-right px-4 py-2.5 border-b border-[var(--hud-border)]">PROPORCIÓN</th>
+            <th className="text-[10px] font-mono font-bold tracking-wider uppercase text-[var(--hud-text-muted)] text-left px-4 py-2.5 border-b border-[var(--hud-border)]">ENTIDAD</th>
+            <th className="text-[10px] font-mono font-bold tracking-wider uppercase text-[var(--hud-text-muted)] text-right px-4 py-2.5 border-b border-[var(--hud-border)]">MASA TOTAL</th>
+            <th className="text-[10px] font-mono font-bold tracking-wider uppercase text-[var(--hud-text-muted)] text-right px-4 py-2.5 border-b border-[var(--hud-border)]">PROPORCIÓN</th>
           </tr>
         </thead>
         <tbody>
@@ -288,13 +288,13 @@ export function TreemapPanel({
           <h3 className="text-[11px] font-semibold text-[var(--hud-text-primary)] font-mono tracking-wider">
             {title}
           </h3>
-          <p className="text-[9px] text-[var(--hud-text-dim)] font-mono mt-0.5">
+          <p className="text-[10px] text-[var(--hud-text-dim)] font-mono mt-0.5">
             {subtitle}
           </p>
         </div>
         <button
           onClick={onToggleView}
-          className="flex items-center gap-1.5 text-[9px] font-mono font-bold tracking-wider uppercase px-3 py-1.5 rounded-lg transition-all duration-150 active:scale-95"
+          className="flex items-center gap-1.5 text-[10px] font-mono font-bold tracking-wider uppercase px-3 py-1.5 rounded-lg transition-all duration-150 active:scale-95"
           style={{
             background: toggleBg,
             color: toggleColor,

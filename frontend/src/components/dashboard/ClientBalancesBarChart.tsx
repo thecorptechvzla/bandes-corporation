@@ -63,10 +63,10 @@ export function ClientBalancesBarChart({ clientBalances, isMounted, onBarClick }
     >
       <div className="flex items-center gap-2 px-5 pt-4 pb-2 border-b border-[var(--hud-border)]">
         <BarChart3 className="w-3.5 h-3.5 text-[var(--hud-accent-gold)]" />
-        <h3 className="text-[10px] font-bold text-[var(--hud-text-primary)] font-mono tracking-wider uppercase">
+        <h3 className="text-[11px] font-bold text-[var(--hud-text-primary)] font-mono tracking-wider uppercase">
           Top Balances
         </h3>
-        <span className="text-[8px] font-mono text-[var(--hud-text-muted)] ml-auto">
+        <span className="text-[9px] font-mono text-[var(--hud-text-muted)] ml-auto">
           por cliente
         </span>
       </div>

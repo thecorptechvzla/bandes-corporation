@@ -27,7 +27,7 @@ export function HistoryFilters({
     <div className="glass-panel rounded-2xl border border-[var(--pm-border)]/40 p-4">
       <div className="flex flex-wrap items-end gap-3">
         <div className="flex-1 min-w-[200px]">
-          <label className="block text-[10px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider mb-1.5">
+          <label className="block text-[11px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider mb-1.5">
             <Search className="w-3 h-3 inline mr-1" />
             Buscar
           </label>
@@ -43,7 +43,7 @@ export function HistoryFilters({
         </div>
 
         <div>
-          <label className="block text-[10px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider mb-1.5">
+          <label className="block text-[11px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider mb-1.5">
             <Calendar className="w-3 h-3 inline mr-1" />
             Desde
           </label>
@@ -56,7 +56,7 @@ export function HistoryFilters({
         </div>
 
         <div>
-          <label className="block text-[10px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider mb-1.5">
+          <label className="block text-[11px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider mb-1.5">
             <Calendar className="w-3 h-3 inline mr-1" />
             Hasta
           </label>
@@ -69,7 +69,7 @@ export function HistoryFilters({
         </div>
 
         <div>
-          <label className="block text-[10px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider mb-1.5">
+          <label className="block text-[11px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider mb-1.5">
             <Building2 className="w-3 h-3 inline mr-1" />
             Proveedor
           </label>
@@ -88,7 +88,7 @@ export function HistoryFilters({
         {hasAnyFilter && (
           <button
             onClick={onClear}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-[10px] font-bold font-mono text-[var(--pm-text-dim)] hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 transition-all cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-[11px] font-bold font-mono text-[var(--pm-text-dim)] hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 transition-all cursor-pointer"
           >
             <X className="w-3.5 h-3.5" />
             Limpiar

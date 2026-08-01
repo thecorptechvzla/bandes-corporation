@@ -72,7 +72,7 @@ export function HardwareSyncOverlay({ mode, weight, ley, onWeightChange, onLeyCh
           {/* Status text */}
           <div className="flex items-center gap-2">
             <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
-            <span className="text-[10px] font-mono text-cyan-400/80 tracking-[0.15em] animate-pulse">
+            <span className="text-[11px] font-mono text-cyan-400/80 tracking-wider animate-pulse">
               [ SIMULANDO CONEXIÓN CON DISPOSITIVO EXTERNO ]
             </span>
           </div>
@@ -87,7 +87,7 @@ export function HardwareSyncOverlay({ mode, weight, ley, onWeightChange, onLeyCh
           >
             {mode === 'WEIGHT' ? (
               <div className="space-y-2">
-                <label className="text-[10px] font-mono text-cyan-400/60 uppercase tracking-[0.15em]">
+                <label className="text-[11px] font-mono text-cyan-400/60 uppercase tracking-wider">
                   PESO BÁSCULA (g)
                 </label>
                 <input type="number" step="0.0001" value={weight}
@@ -100,7 +100,7 @@ export function HardwareSyncOverlay({ mode, weight, ley, onWeightChange, onLeyCh
             ) : (
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-mono text-cyan-400/60 uppercase tracking-[0.15em]">
+                  <label className="text-[11px] font-mono text-cyan-400/60 uppercase tracking-wider">
                     LEY AU (‰)
                   </label>
                   <input type="number" min="0" max="1000" step="0.1" value={ley}
@@ -114,19 +114,19 @@ export function HardwareSyncOverlay({ mode, weight, ley, onWeightChange, onLeyCh
             )}
 
             {/* Footnote */}
-            <p className="text-[9px] font-mono text-red-400/60 text-center pt-1">
+            <p className="text-[10px] font-mono text-red-400/60 text-center pt-1">
               {'>_'} NOTA: INTEGRACIÓN AUTOMÁTICA DISPONIBLE EN VERSIÓN 3.0
             </p>
           </motion.div>
 
           {/* Action buttons */}
           <div className="flex gap-3 w-full">
-            <HudButton variant="ghost" className="flex-1 text-[10px]"
+            <HudButton variant="ghost" className="flex-1 text-[11px]"
               onClick={onCancel}
             >
               CANCELAR
             </HudButton>
-            <HudButton variant="primary" className="flex-1 text-[10px]"
+            <HudButton variant="primary" className="flex-1 text-[11px]"
               onClick={onConfirm}
             >
               <Zap className="w-3 h-3" />

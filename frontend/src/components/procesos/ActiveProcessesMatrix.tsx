@@ -24,7 +24,7 @@ export function ActiveProcessesMatrix({ groupedProcesses, clients, lotBarsMap, p
           <Layers className="w-4 h-4 text-[var(--pm-accent-amber)]" />
           <span className="text-xs font-mono font-bold text-[var(--pm-text-primary)] uppercase tracking-wider">Núcleos Activos</span>
         </div>
-        <span className="text-[10px] font-mono text-[var(--pm-text-dim)]">
+        <span className="text-[11px] font-mono text-[var(--pm-text-dim)]">
           {Object.values(groupedProcesses).reduce((s, p) => s + p.length, 0)} procesos
         </span>
       </div>
@@ -34,7 +34,7 @@ export function ActiveProcessesMatrix({ groupedProcesses, clients, lotBarsMap, p
           <div className="flex flex-col items-center justify-center py-16 text-[var(--pm-text-dim)]">
             <Flame className="w-10 h-10 text-[var(--pm-accent-amber)]/20 mb-3 animate-pulse" />
             <span className="text-sm font-sans">Sin procesos activos</span>
-            <p className="text-[10px] font-mono mt-1">Inicie una fundición desde el panel izquierdo.</p>
+            <p className="text-[11px] font-mono mt-1">Inicie una fundición desde el panel izquierdo.</p>
           </div>
         ) : (
           Object.entries(groupedProcesses).map(([cId, procs]) => {
@@ -50,7 +50,7 @@ export function ActiveProcessesMatrix({ groupedProcesses, clients, lotBarsMap, p
               <div key={cId} className="px-5 py-3">
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-xs font-sans font-semibold text-[var(--pm-text-primary)]">{client?.name || cId}</span>
-                  <span className="text-[10px] font-mono text-[var(--pm-accent-amber)]">Peso Fino {formatNumber(totalFA, 2)} g</span>
+                  <span className="text-[11px] font-mono text-[var(--pm-accent-amber)]">Peso Fino {formatNumber(totalFA, 2)} g</span>
                 </div>
                 <div className="space-y-2">
                   {procs.map(proc => {
@@ -58,8 +58,8 @@ export function ActiveProcessesMatrix({ groupedProcesses, clients, lotBarsMap, p
                     return (
                       <div key={proc.id} className="p-3 rounded-lg border border-[var(--pm-border)] bg-[var(--pm-bg-deepest)]/40">
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-[10px] font-mono font-bold text-[var(--pm-accent-amber)]">{proc.name}</span>
-                          <span className="text-[9px] font-mono text-[var(--pm-text-dim)]">{pLots.length} lote{pLots.length !== 1 ? 's' : ''}</span>
+                          <span className="text-[11px] font-mono font-bold text-[var(--pm-accent-amber)]">{proc.name}</span>
+                          <span className="text-[10px] font-mono text-[var(--pm-text-dim)]">{pLots.length} lote{pLots.length !== 1 ? 's' : ''}</span>
                         </div>
                         {pLots.map(lot => {
                           const lb = lotBarsMap[lot.id] || [];
@@ -69,20 +69,20 @@ export function ActiveProcessesMatrix({ groupedProcesses, clients, lotBarsMap, p
                             <div key={lot.id} className="p-2 rounded border border-[var(--pm-border)] bg-[var(--pm-bg-primary)] mb-1.5 last:mb-0">
                               <div className="flex items-center justify-between mb-1.5">
                                 <div className="flex items-center gap-2">
-                                  <span className="text-[9px] font-mono font-bold text-[var(--pm-text-primary)]">{lot.name}</span>
-                                  {lot.moldCode && <span className="text-[8px] font-mono text-[var(--pm-text-dim)]">({lot.moldCode})</span>}
+                                  <span className="text-[10px] font-mono font-bold text-[var(--pm-text-primary)]">{lot.name}</span>
+                                  {lot.moldCode && <span className="text-[9px] font-mono text-[var(--pm-text-dim)]">({lot.moldCode})</span>}
                                 </div>
                                 <button type="button" onClick={() => onOpenRecovery(lot)}
-                                  className="px-2 py-1 rounded text-[8px] font-mono font-bold uppercase tracking-wider transition-all active:scale-90 cursor-pointer"
+                                  className="px-2 py-1 rounded text-[9px] font-mono font-bold uppercase tracking-wider transition-all active:scale-90 cursor-pointer"
                                   style={{ background: 'rgba(245,158,11,0.1)', color: 'var(--pm-accent-amber)', border: '1px solid rgba(245,158,11,0.2)' }}
                                 >Calibrar Colada</button>
                               </div>
-                              <div className="flex items-center gap-2 text-[9px] font-mono text-[var(--pm-text-dim)] mb-1">
+                              <div className="flex items-center gap-2 text-[10px] font-mono text-[var(--pm-text-dim)] mb-1">
                                 <span className="flex items-center gap-0.5"><User className="w-2.5 h-2.5" />{lot.operator || '—'}</span>
                                 <span>Temp: {lot.castingTemp || '—'}°C</span>
                                 <span>{lb.length} barra{lb.length !== 1 ? 's' : ''}</span>
                               </div>
-                              <div className="flex items-center gap-3 text-[9px] font-mono">
+                              <div className="flex items-center gap-3 text-[10px] font-mono">
                                 <span className="text-[var(--pm-text-dim)]">Peso Bruto: <span className="font-medium text-slate-200">{formatNumber(lotGross, 2)} g</span></span>
                                 <span>Peso Fino <span className="font-medium text-[var(--pm-accent-gold)]">{formatNumber(lotFA, 4)} g</span></span>
                                 {lot.recovered && <span>R: <span className="font-medium text-[var(--pm-accent-emerald)]">{formatNumber(Number(lot.recovered), 4)} g</span></span>}

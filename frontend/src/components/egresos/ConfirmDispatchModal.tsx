@@ -59,7 +59,7 @@ export function ConfirmDispatchModal({
             <Send className="w-4 h-4 text-[var(--pm-accent-gold)]" />
           </div>
           <div>
-            <span className="text-[9px] font-mono font-bold text-[var(--pm-accent-gold)] uppercase tracking-wider">Confirmar Despacho Global</span>
+            <span className="text-[10px] font-mono font-bold text-[var(--pm-accent-gold)] uppercase tracking-wider">Confirmar Despacho Global</span>
             <h3 className="text-sm font-sans font-semibold text-[var(--pm-text-primary)] mt-0.5">Resumen de Salida Multi-Proveedor</h3>
           </div>
         </div>
@@ -80,7 +80,7 @@ export function ConfirmDispatchModal({
           <span className="text-[var(--pm-text-dim)]">Destinatario:</span>
           <span className="text-[var(--pm-accent-gold)] font-bold text-right">{destinationClient?.name?.toUpperCase()}</span>
         </div>
-        <div className="flex justify-between text-[9px]">
+        <div className="flex justify-between text-[10px]">
           <span className="text-[var(--pm-text-dim)]">RIF:</span>
           <span className="text-[var(--pm-text-primary)]">{destinationClient?.rif || '—'}</span>
         </div>
@@ -100,7 +100,7 @@ export function ConfirmDispatchModal({
           <span className="text-[var(--pm-text-dim)]">Peso Total:</span>
           <span className="text-lg font-bold text-[var(--pm-accent-gold)]">{fmtWeight(totalWeight)}</span>
         </div>
-        <div className="pt-1 text-[9px] text-[var(--pm-text-dim)]">
+        <div className="pt-1 text-[10px] text-[var(--pm-text-dim)]">
           Se entregarán {lotCount > 0 && `${lotCount} lote(s)`}{lotCount > 0 && barCount > 0 && ' + '}{barCount > 0 && `${barCount} barra(s)`} de {clientCount} proveedor{clientCount !== 1 ? 'es' : ''} con un peso total de {fmtWeight(totalWeight)} a <strong className="text-[var(--pm-text-primary)]">{destinationClient?.name?.toUpperCase()}</strong>.
         </div>
       </div>

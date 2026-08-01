@@ -33,7 +33,7 @@ export function ProcessDetailModal({ process, lots, lotBarsMap, clients, onClose
             <CheckCircle2 className="w-4 h-4 text-[var(--pm-accent-emerald)]" />
           </div>
           <div>
-            <span className="text-[9px] font-mono font-bold text-[var(--pm-accent-emerald)] uppercase tracking-wider">Recibo Digital de Fundición</span>
+            <span className="text-[10px] font-mono font-bold text-[var(--pm-accent-emerald)] uppercase tracking-wider">Recibo Digital de Fundición</span>
             <h3 className="text-sm font-sans font-semibold text-[var(--pm-text-primary)] mt-0.5">
               {process.name} — {clients.find(c => c.id === process.clientId)?.name || '—'}
             </h3>
@@ -49,11 +49,11 @@ export function ProcessDetailModal({ process, lots, lotBarsMap, clients, onClose
               {/* Summary cards */}
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 <div className="p-3 rounded-xl border border-[var(--pm-border)] bg-[var(--pm-bg-deepest)]/50 text-center">
-                  <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block">Lotes</span>
+                  <span className="text-[10px] font-mono text-[var(--pm-text-dim)] block">Lotes</span>
                   <span className="text-lg font-mono font-bold text-[var(--pm-text-primary)]">{lots.length}</span>
                 </div>
                 <div className="p-3 rounded-xl border border-[var(--pm-border)] bg-[var(--pm-bg-deepest)]/50 text-center">
-                  <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block">Peso Fino</span>
+                  <span className="text-[10px] font-mono text-[var(--pm-text-dim)] block">Peso Fino</span>
                   <span className="text-sm font-mono font-bold text-[var(--pm-accent-gold)]">
                     {formatNumber(lots.reduce((s, l) => {
                       const lb = lotBarsMap[l.id] || [];
@@ -62,7 +62,7 @@ export function ProcessDetailModal({ process, lots, lotBarsMap, clients, onClose
                   </span>
                 </div>
                 <div className="p-3 rounded-xl border border-[var(--pm-border)] bg-[var(--pm-bg-deepest)]/50 text-center">
-                  <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block">Recuperado</span>
+                  <span className="text-[10px] font-mono text-[var(--pm-text-dim)] block">Recuperado</span>
                   <span className="text-sm font-mono font-bold text-[var(--pm-accent-emerald)]">
                     {formatNumber(lots.reduce((s, l) => s + Number(l.recovered ?? 0), 0), 2)} g
                   </span>
@@ -107,7 +107,7 @@ export function ProcessDetailModal({ process, lots, lotBarsMap, clients, onClose
                                   <ChevronRight className="w-3.5 h-3.5 text-[var(--pm-text-dim)] flex-shrink-0 transition-transform duration-200" />
                                 )}
                                 <span>{lot.name}</span>
-                                {lot.moldCode && <span className="text-[9px] text-[var(--pm-text-dim)] ml-0.5">({lot.moldCode})</span>}
+                                {lot.moldCode && <span className="text-[10px] text-[var(--pm-text-dim)] ml-0.5">({lot.moldCode})</span>}
                               </div>
                             </td>
                             <td className="text-right px-4 py-3 font-mono text-[var(--pm-accent-gold)]">{formatNumber(fa, 2)}</td>
@@ -116,7 +116,7 @@ export function ProcessDetailModal({ process, lots, lotBarsMap, clients, onClose
                               {dif >= 0 ? '+' : ''}{formatNumber(dif, 2)}
                             </td>
                             <td className="text-right px-4 py-3">
-                              <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${Math.abs(pctRecup - 100) <= 5 ? 'text-[var(--pm-accent-emerald)]' : 'text-[var(--pm-accent-red)]'}`}>
+                              <span className={`px-1.5 py-0.5 rounded text-[11px] font-bold ${Math.abs(pctRecup - 100) <= 5 ? 'text-[var(--pm-accent-emerald)]' : 'text-[var(--pm-accent-red)]'}`}>
                                 {formatNumber(pctRecup, 2)}%
                               </span>
                             </td>
@@ -132,7 +132,7 @@ export function ProcessDetailModal({ process, lots, lotBarsMap, clients, onClose
                                   className="overflow-hidden"
                                 >
                                   <div className="border-l-2 border-[var(--pm-accent-gold)]/30 ml-4 mr-4 mb-3 mt-1 rounded-r-xl bg-black/30 overflow-x-auto">
-                                    <table className="w-full table-fixed border-collapse font-sans text-[10px]">
+                                    <table className="w-full table-fixed border-collapse font-sans text-[11px]">
                                       <thead>
                                         <tr className="border-b border-[var(--pm-border)]">
                                           <th className="w-[25%] sticky left-0 bg-[var(--pm-bg-deepest)] z-10 text-left px-4 py-2.5 text-[var(--pm-text-dim)] font-semibold uppercase tracking-wider">Código</th>
@@ -156,7 +156,7 @@ export function ProcessDetailModal({ process, lots, lotBarsMap, clients, onClose
                                         ))}
                                         {lb.length === 0 && (
                                           <tr>
-                                            <td colSpan={4} className="text-center py-4 text-[9px] text-[var(--pm-text-dim)] font-mono italic">
+                                            <td colSpan={4} className="text-center py-4 text-[10px] text-[var(--pm-text-dim)] font-mono italic">
                                               Sin barras asignadas a este lote
                                             </td>
                                           </tr>
@@ -172,7 +172,7 @@ export function ProcessDetailModal({ process, lots, lotBarsMap, clients, onClose
                       );
                     })}
                     {lots.length === 0 && (
-                      <tr><td colSpan={5} className="text-center py-8 text-[10px] text-[var(--pm-text-dim)] font-mono italic">Sin lotes registrados</td></tr>
+                      <tr><td colSpan={5} className="text-center py-8 text-[11px] text-[var(--pm-text-dim)] font-mono italic">Sin lotes registrados</td></tr>
                     )}
                   </tbody>
                 </table>

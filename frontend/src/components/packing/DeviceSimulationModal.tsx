@@ -64,7 +64,7 @@ export function DeviceSimulationModal({
 
         <div className="text-center">
           <h2 className="text-lg font-mono font-bold text-[var(--pm-accent-gold)] tracking-wider">PROXIMAMENTE</h2>
-          <p className="text-[10px] font-mono text-[var(--pm-text-dim)] mt-1 uppercase tracking-wider">
+          <p className="text-[11px] font-mono text-[var(--pm-text-dim)] mt-1 uppercase tracking-wider">
             Lectura de dispositivos externos (Báscula / Espectrómetro / Cámara)
           </p>
         </div>
@@ -88,12 +88,12 @@ export function DeviceSimulationModal({
                 {photoUploadedUrl ? (
                   <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[var(--pm-accent-emerald)]/10 border border-[var(--pm-accent-emerald)]/20">
                     <Check className="w-3 h-3 text-[var(--pm-accent-emerald)]" />
-                    <span className="text-[9px] font-mono font-bold text-[var(--pm-accent-emerald)]">Foto lista</span>
+                    <span className="text-[10px] font-mono font-bold text-[var(--pm-accent-emerald)]">Foto lista</span>
                   </span>
                 ) : (
                   <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[var(--pm-accent-amber)]/10 border border-[var(--pm-accent-amber)]/20">
                     <LoadingSpinner size="xs" className="text-[var(--pm-accent-amber)]" />
-                    <span className="text-[9px] font-mono font-bold text-[var(--pm-accent-amber)]">Subiendo...</span>
+                    <span className="text-[10px] font-mono font-bold text-[var(--pm-accent-amber)]">Subiendo...</span>
                   </span>
                 )}
               </div>
@@ -107,7 +107,7 @@ export function DeviceSimulationModal({
           <>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <label className="text-[9px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider flex items-center gap-1.5">
+                <label className="text-[10px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider flex items-center gap-1.5">
                   <Scale className="w-3 h-3 text-[var(--pm-accent-gold)]" /> PESO BRUTO (g)
                 </label>
                 <input type="number" step="any" value={confirmModal.basculaWeight}
@@ -116,7 +116,7 @@ export function DeviceSimulationModal({
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[9px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider flex items-center gap-1.5">
+                <label className="text-[10px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider flex items-center gap-1.5">
                   <Microscope className="w-3 h-3 text-[var(--pm-accent-gold)]" /> LEY AU (‰)
                 </label>
                 <input type="number" step="0.1" min="0" max="1000" value={confirmModal.leyAu}
@@ -138,11 +138,11 @@ export function DeviceSimulationModal({
                   />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <span className="text-[10px] font-mono font-bold text-[var(--pm-accent-emerald)] flex items-center gap-1.5">
+                  <span className="text-[11px] font-mono font-bold text-[var(--pm-accent-emerald)] flex items-center gap-1.5">
                     <Check className="w-3 h-3" /> Foto adjunta
                   </span>
                   <button type="button" onClick={() => onCameraModeChange('camera')}
-                    className="text-[9px] font-mono text-[var(--pm-accent-cyan)] hover:underline mt-0.5 block cursor-pointer">
+                    className="text-[10px] font-mono text-[var(--pm-accent-cyan)] hover:underline mt-0.5 block cursor-pointer">
                     📷 Reemplazar foto
                   </button>
                 </div>
@@ -156,7 +156,7 @@ export function DeviceSimulationModal({
         )}
 
         <div className="p-3 rounded-xl" style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)' }}>
-          <span className="text-[8px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider block text-center">PESO FINO</span>
+          <span className="text-[9px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider block text-center">PESO FINO</span>
           <span className="text-sm font-mono font-bold text-[var(--pm-accent-gold)] block text-center">{formatNumber(modalLiveFA, 2)} g</span>
         </div>
 

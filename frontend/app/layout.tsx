@@ -127,7 +127,7 @@ export default function RootLayout({
                     {renderNavItems()}
                   </nav>
                   <div className="px-3 py-4 space-y-1">
-                  <button className="nav-item w-full text-[10px] active:scale-95">
+                  <button className="nav-item w-full text-[11px] active:scale-95">
                     <LogOut className="w-3.5 h-3.5 shrink-0" />
                     <span>Salir</span>
                   </button>
@@ -168,7 +168,7 @@ export default function RootLayout({
                   {renderNavItems(() => setMobileOpen(false))}
                 </nav>
                 <div className="px-3 py-4 space-y-1">
-                  <button className="nav-item w-full text-[10px] active:scale-95">
+                  <button className="nav-item w-full text-[11px] active:scale-95">
                     <LogOut className="w-3.5 h-3.5 shrink-0" />
                     <span>Salir</span>
                   </button>
@@ -194,11 +194,11 @@ export default function RootLayout({
                   <div className="flex items-center gap-3">
                     <div className="flex items-center gap-2 px-3 py-1.5 bg-[var(--hud-bg-deepest)] rounded-xl border border-[var(--hud-border)]">
                       <span className="w-1.5 h-1.5 rounded-full bg-[var(--hud-accent-emerald)] animate-pulse" />
-                      <span className="text-[10px] font-mono text-[var(--hud-text-dim)]">{sysTime}</span>
+                      <span className="text-[11px] font-mono text-[var(--hud-text-dim)]">{sysTime}</span>
                     </div>
                     <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-[var(--hud-bg-deepest)] rounded-xl border border-[var(--hud-border)]">
                       <Calendar className="w-3 h-3 text-[var(--hud-accent-gold)]" />
-                      <span className="text-[10px] font-mono text-[var(--hud-text-dim)]">
+                      <span className="text-[11px] font-mono text-[var(--hud-text-dim)]">
                         {new Date().toLocaleDateString('es-ES', {
                           year: 'numeric', month: '2-digit', day: '2-digit',
                         })}
@@ -216,7 +216,7 @@ export default function RootLayout({
 
                 {/* Status bar */}
                 <footer className="h-7 shrink-0 flex items-center px-6 bg-[var(--hud-bg-card)]/80 border-t border-[var(--hud-border)]">
-                  <div className="flex items-center gap-4 text-[9px] font-mono text-[var(--hud-text-muted)]">
+                  <div className="flex items-center gap-4 text-[10px] font-mono text-[var(--hud-text-muted)]">
                     <span className="flex items-center gap-1.5">
                       <span className="w-1.5 h-1.5 rounded-full bg-[var(--hud-accent-emerald)]" />
                       SYS ONLINE

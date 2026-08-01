@@ -62,7 +62,7 @@ export function ConfirmDialog({
             {icon}
           </div>
           <div>
-            <span className="text-[9px] font-mono font-bold uppercase tracking-wider" style={{ color: v.text }}>
+            <span className="text-[10px] font-mono font-bold uppercase tracking-wider" style={{ color: v.text }}>
               {title}
             </span>
             {description && (

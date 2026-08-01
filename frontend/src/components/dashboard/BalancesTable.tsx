@@ -14,8 +14,8 @@ interface BalancesTableProps {
 
 const fmtG = (val: number) => `${formatNumber(val, 2)} g`;
 
-const TH = 'text-right text-[10px] font-sans font-bold tracking-[0.1em] uppercase text-[var(--hud-text-muted)] px-4 py-3';
-const TH_STICKY = 'sticky left-0 z-10 text-left text-[10px] font-sans font-bold tracking-[0.1em] uppercase text-[var(--hud-text-muted)] px-5 py-3';
+const TH = 'text-right text-[11px] font-sans font-bold tracking-wider uppercase text-[var(--hud-text-muted)] px-4 py-3';
+const TH_STICKY = 'sticky left-0 z-10 text-left text-[11px] font-sans font-bold tracking-wider uppercase text-[var(--hud-text-muted)] px-5 py-3';
 
 export function BalancesTable({ clientBalances, totalBalance, onClientClick }: BalancesTableProps) {
   const sorted = useMemo(
@@ -45,7 +45,7 @@ export function BalancesTable({ clientBalances, totalBalance, onClientClick }: B
           </p>
         </div>
         <div className="text-right">
-          <span className="text-[10px] text-[var(--hud-text-muted)] font-mono block uppercase tracking-wider">BALANCE TOTAL</span>
+          <span className="text-[11px] text-[var(--hud-text-muted)] font-mono block uppercase tracking-wider">BALANCE TOTAL</span>
           <span
             className={`text-sm font-mono font-bold ${totalBalance >= 0 ? 'text-[var(--hud-accent-emerald)]' : 'text-[var(--hud-accent-red)]'}`}
           >

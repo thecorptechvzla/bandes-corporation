@@ -70,7 +70,7 @@ export const Sidebar: React.FC = () => {
         <div className="flex items-center h-16 shrink-0 border-b border-[#2F353E] px-3">
           <div className="flex items-center gap-2.5">
             <Coins className="w-5 h-5 text-[#D5B042] shrink-0" />
-            <span className="font-sans font-extrabold text-sm tracking-widest text-[#F1F5F9] whitespace-nowrap opacity-0 lg:group-hover:opacity-100 transition-opacity duration-200">
+            <span className="font-sans font-extrabold text-sm tracking-wider text-[#F1F5F9] whitespace-nowrap opacity-0 lg:group-hover:opacity-100 transition-opacity duration-200">
               Bandes
             </span>
           </div>
@@ -128,7 +128,7 @@ export const Sidebar: React.FC = () => {
         <div className="flex items-center justify-between h-16 px-4 border-b border-[#2F353E] shrink-0">
           <div className="flex items-center gap-2">
             <Coins className="w-5 h-5 text-[#D5B042]" />
-            <span className="font-sans font-extrabold text-sm tracking-widest text-[#F1F5F9]">BANDES</span>
+            <span className="font-sans font-extrabold text-sm tracking-wider text-[#F1F5F9]">BANDES</span>
           </div>
           <button
             onClick={() => setIsMobileOpen(false)}

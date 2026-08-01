@@ -66,7 +66,7 @@ export function CheckoutSummaryPanel({
             <span className="text-[11px] font-mono text-center">
               Seleccione lotes o barras del panel izquierdo
             </span>
-            <p className="text-[9px] font-mono mt-1 text-center">
+            <p className="text-[10px] font-mono mt-1 text-center">
               Puede mezclar lotes refundidos y barras individuales en un solo despacho.
             </p>
           </div>
@@ -74,23 +74,23 @@ export function CheckoutSummaryPanel({
           <>
             {/* Total weight — Peso Bruto destacado */}
             <div className="text-center py-4 px-4 rounded-xl border border-[var(--pm-accent-amber)]/20 bg-[var(--pm-accent-amber)]/5">
-              <span className="text-[9px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider block mb-1">
+              <span className="text-[10px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider block mb-1">
                 Peso Bruto Total
               </span>
               <span className="text-2xl font-mono font-bold text-[var(--pm-accent-amber)] tracking-tight">
                 {fmtWeightDisplay(grossTotal)}
               </span>
-              <span className="text-[10px] font-mono text-[var(--pm-text-dim)] block mt-1">
+              <span className="text-[11px] font-mono text-[var(--pm-text-dim)] block mt-1">
                 {clientCount} proveedor{clientCount !== 1 ? 'es' : ''} · {lotCount > 0 && `${lotCount} lote(s)`}{lotCount > 0 && barCount > 0 && ' + '}{barCount > 0 && `${barCount} barra(s)`}
               </span>
-              <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block mt-0.5">
+              <span className="text-[10px] font-mono text-[var(--pm-text-dim)] block mt-0.5">
                 Peso Neto: {fmtWeightDisplay(totalWeight)}
               </span>
             </div>
 
             {/* Grouped by provider */}
             <div className="space-y-3">
-              <span className="text-[9px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider block">
+              <span className="text-[10px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider block">
                 Desglose por Proveedor
               </span>
               {Object.entries(groupedByClient).map(([cId, items]) => {
@@ -111,9 +111,9 @@ export function CheckoutSummaryPanel({
                         const isLot = item.type === 'lot';
                         const badgeLabel = isLot ? 'REFUNDIDO' : 'SIN REFUNDIR';
                         return (
-                          <div key={item.id} className="flex items-center justify-between text-[10px] font-mono">
+                          <div key={item.id} className="flex items-center justify-between text-[11px] font-mono">
                             <div className="flex items-center gap-2">
-                              <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded w-20 text-center ${
+                              <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded w-20 text-center ${
                                 isLot ? 'bg-[var(--pm-accent-amber)]/10 text-[var(--pm-accent-amber)]' : 'bg-slate-500/10 text-slate-400'
                               }`}>{badgeLabel}</span>
                               <span className="text-[var(--pm-text-primary)]">{label}</span>

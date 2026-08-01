@@ -29,7 +29,7 @@ function FlowTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null;
   return (
     <div
-      className="rounded-xl px-4 py-3 text-[10px] font-mono space-y-1.5 min-w-[180px]"
+      className="rounded-xl px-4 py-3 text-[11px] font-mono space-y-1.5 min-w-[180px]"
       style={{
         background: 'var(--hud-bg-elevated)',
         border: '1px solid var(--hud-border)',
@@ -37,7 +37,7 @@ function FlowTooltip({ active, payload, label }: any) {
         backdropFilter: 'blur(12px)',
       }}
     >
-      <p className="text-[9px] text-[var(--hud-text-muted)] uppercase tracking-widest font-bold">
+      <p className="text-[10px] text-[var(--hud-text-muted)] uppercase tracking-wider font-bold">
         {new Date(label).toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}
       </p>
       {payload.map((entry: any) => (
@@ -67,7 +67,7 @@ export function FlowAreaChart({ data, isMounted }: FlowAreaChartProps) {
     >
       <div className="flex items-center gap-2 px-5 pt-4 pb-2 border-b border-[var(--hud-border)]">
         <TrendingUp className="w-3.5 h-3.5 text-[var(--hud-accent-sky)]" />
-        <h3 className="text-[10px] font-bold text-[var(--hud-text-primary)] font-mono tracking-wider uppercase">
+        <h3 className="text-[11px] font-bold text-[var(--hud-text-primary)] font-mono tracking-wider uppercase">
           Flujo de Material (30 días)
         </h3>
       </div>

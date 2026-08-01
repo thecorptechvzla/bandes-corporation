@@ -117,10 +117,10 @@ export function SupplierDirectory({
               value={searchCode}
               onChange={(e) => { setSearchCode(e.target.value); setCurrentPage(1); }}
               placeholder="Buscar por código..."
-              className="flex-1 bg-transparent py-1.5 px-2 outline-none text-[10px] font-mono text-[var(--hud-text-dim)] placeholder:text-[var(--hud-text-dim)]/30"
+              className="flex-1 bg-transparent py-1.5 px-2 outline-none text-[11px] font-mono text-[var(--hud-text-dim)] placeholder:text-[var(--hud-text-dim)]/30"
             />
           </div>
-          <span className="text-[10px] font-mono text-[var(--hud-text-dim)] bg-[var(--hud-bg-deepest)]/50 px-2 py-0.5 border border-[var(--hud-border)] rounded">
+          <span className="text-[11px] font-mono text-[var(--hud-text-dim)] bg-[var(--hud-bg-deepest)]/50 px-2 py-0.5 border border-[var(--hud-border)] rounded">
             {String(visibleClients.length).padStart(2, '0')}
           </span>
         </div>
@@ -158,16 +158,16 @@ export function SupplierDirectory({
                           <p className="text-sm font-bold text-[var(--hud-text-primary)] uppercase tracking-wider truncate">
                             {client.name}
                           </p>
-                          <p className="text-[10px] text-[var(--hud-text-dim)] font-mono truncate">
+                          <p className="text-[11px] text-[var(--hud-text-dim)] font-mono truncate">
                             RIF: {client.rif}
                           </p>
                         </div>
                       </div>
                       <div className="flex items-center gap-3 flex-shrink-0">
-                        <span className="text-[10px] font-mono text-[var(--hud-text-dim)] whitespace-nowrap">
+                        <span className="text-[11px] font-mono text-[var(--hud-text-dim)] whitespace-nowrap">
                           Bruto: {formatNumber(clientTotals.grossWeight, 2)} g · Fino: {formatNumber(clientTotals.fa, 2)} g
                         </span>
-                        <span className="text-[10px] font-mono text-[var(--hud-text-dim)] bg-[var(--hud-bg-deepest)]/50 px-2 py-0.5 border border-[var(--hud-border)] rounded whitespace-nowrap">
+                        <span className="text-[11px] font-mono text-[var(--hud-text-dim)] bg-[var(--hud-bg-deepest)]/50 px-2 py-0.5 border border-[var(--hud-border)] rounded whitespace-nowrap">
                           {clientBars.length} BARRAS
                         </span>
                         <ChevronDown
@@ -223,7 +223,7 @@ export function SupplierDirectory({
                           {clientBars.length > 0 && (
                             <tfoot>
                               <tr className="border-t border-[var(--hud-border)] bg-[var(--hud-bg-deepest)]/50">
-                                <td className="sticky left-0 bg-[var(--hud-bg-deepest)]/50 px-3 py-2 text-[9px] font-bold text-[var(--hud-text-dim)] uppercase tracking-widest">
+                                <td className="sticky left-0 bg-[var(--hud-bg-deepest)]/50 px-3 py-2 text-[10px] font-bold text-[var(--hud-text-dim)] uppercase tracking-wider">
                                   Total {client.name}
                                 </td>
                                 {purityFirst && <td />}
@@ -238,7 +238,7 @@ export function SupplierDirectory({
                       </div>
                       {barTotalPages > 1 && (
                         <div className="flex items-center justify-center gap-3 pt-2">
-                          <span className="text-[9px] font-mono text-[var(--hud-text-dim)]">
+                          <span className="text-[10px] font-mono text-[var(--hud-text-dim)]">
                             Página {safeBarPage} de {barTotalPages}
                           </span>
                           <div className="flex items-center gap-1">
@@ -285,7 +285,7 @@ export function SupplierDirectory({
       {!hideFooter && visibleClients.length > 0 && (
         <div className="flex-shrink-0 border-t border-[var(--hud-accent-gold)]/30 bg-[var(--hud-bg-deepest)]">
           <div className="hidden sm:flex items-center justify-between px-4 sm:px-5 py-3 sm:py-3.5">
-            <span className="text-xs font-bold text-[var(--hud-text-primary)] uppercase tracking-widest">
+            <span className="text-xs font-bold text-[var(--hud-text-primary)] uppercase tracking-wider">
               GRAN TOTAL
             </span>
             <div className="flex items-center gap-5">
@@ -294,36 +294,36 @@ export function SupplierDirectory({
                 <span className="text-[var(--hud-accent-gold)] font-bold text-sm">
                   {formatNumber(grandTotal.grossWeight, 2)}
                 </span>{' '}
-                <span className="text-[10px] text-[var(--hud-text-dim)]">g</span>
+                <span className="text-[11px] text-[var(--hud-text-dim)]">g</span>
               </span>
-              <span className="text-[10px] text-[var(--hud-text-dim)]/30">|</span>
+              <span className="text-[11px] text-[var(--hud-text-dim)]/30">|</span>
               <span className="text-xs font-mono text-[var(--hud-text-dim)]">
                 Peso Fino:{' '}
                 <span className="text-[var(--hud-accent-gold)] font-bold text-sm">
                   {formatNumber(grandTotal.fa, 2)}
                 </span>{' '}
-                <span className="text-[10px] text-[var(--hud-text-dim)]">g</span>
+                <span className="text-[11px] text-[var(--hud-text-dim)]">g</span>
               </span>
             </div>
           </div>
 
           <div className="sm:hidden px-4 py-3">
-            <div className="text-[10px] font-bold text-[var(--hud-text-primary)] uppercase tracking-widest mb-2">
+            <div className="text-[11px] font-bold text-[var(--hud-text-primary)] uppercase tracking-wider mb-2">
               GRAN TOTAL
             </div>
             <div className="grid grid-cols-2 gap-x-4 gap-y-2">
               <div>
-                <div className="text-[9px] text-[var(--hud-text-dim)] uppercase tracking-wider">Peso Bruto</div>
+                <div className="text-[10px] text-[var(--hud-text-dim)] uppercase tracking-wider">Peso Bruto</div>
                 <div className="text-[13px] font-mono font-bold text-[var(--hud-accent-gold)] leading-tight whitespace-nowrap">
                   {formatNumber(grandTotal.grossWeight, 2)}{' '}
-                  <span className="text-[10px] font-normal text-[var(--hud-text-dim)]">g</span>
+                  <span className="text-[11px] font-normal text-[var(--hud-text-dim)]">g</span>
                 </div>
               </div>
               <div>
-                <div className="text-[9px] text-[var(--hud-text-dim)] uppercase tracking-wider">Peso Fino</div>
+                <div className="text-[10px] text-[var(--hud-text-dim)] uppercase tracking-wider">Peso Fino</div>
                 <div className="text-[13px] font-mono font-bold text-[var(--hud-accent-gold)] leading-tight whitespace-nowrap">
                   {formatNumber(grandTotal.fa, 2)}{' '}
-                  <span className="text-[10px] font-normal text-[var(--hud-text-dim)]">g</span>
+                  <span className="text-[11px] font-normal text-[var(--hud-text-dim)]">g</span>
                 </div>
               </div>
             </div>
@@ -333,7 +333,7 @@ export function SupplierDirectory({
 
       {supplierTotalPages > 1 && (
         <div className="px-4 sm:px-5 py-3 border-t border-[var(--hud-border)]/10 flex items-center justify-center gap-4">
-          <span className="text-[10px] font-mono text-[var(--hud-text-dim)]">
+          <span className="text-[11px] font-mono text-[var(--hud-text-dim)]">
             Página {safeSupplierPage} de {supplierTotalPages}
           </span>
           <div className="flex items-center gap-1">

@@ -36,7 +36,7 @@ export function EvidenceModal({ barId, bars, packingBars, spValues, barPhotoUrls
     <ModalShell isOpen onClose={onClose} noHeader noPadding size="lg">
       <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-[var(--pm-border)]/20">
         <div>
-          <span className="text-[9px] font-mono font-bold text-[var(--pm-accent-cyan)] uppercase tracking-wider flex items-center gap-1.5">
+          <span className="text-[10px] font-mono font-bold text-[var(--pm-accent-cyan)] uppercase tracking-wider flex items-center gap-1.5">
             <ClipboardCheck className="w-3.5 h-3.5" /> EVIDENCIA DE VALIDACIÓN
           </span>
           <h2 className="text-lg font-mono font-bold text-[var(--pm-text-primary)] mt-0.5 tracking-tight">
@@ -49,7 +49,7 @@ export function EvidenceModal({ barId, bars, packingBars, spValues, barPhotoUrls
             <StatusBadge status={bar.status} size="sm" className="border-0 bg-transparent px-0" />
           </div>
           {validatedAt && (
-            <span className="text-[8px] font-mono text-[var(--pm-text-dim)] block mt-1">
+            <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block mt-1">
               {new Date(validatedAt).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
             </span>
           )}
@@ -67,34 +67,34 @@ export function EvidenceModal({ barId, bars, packingBars, spValues, barPhotoUrls
           ) : (
             <div className="text-center p-6">
               <Camera className="w-8 h-8 text-[var(--pm-text-dim)]/30 mx-auto mb-2" />
-              <p className="text-[10px] font-mono text-[var(--pm-text-dim)]/40">Sin evidencia fotográfica</p>
+              <p className="text-[11px] font-mono text-[var(--pm-text-dim)]/60">Sin evidencia fotográfica</p>
             </div>
           )}
         </div>
 
         <div className="grid grid-cols-2 gap-3">
           <div className="p-3 rounded-xl border border-[var(--pm-border)]/40 bg-[var(--pm-bg-deepest)]/30">
-            <span className="text-[8px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider block text-center">SEGÚN PACKING (SP)</span>
+            <span className="text-[9px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider block text-center">SEGÚN PACKING (SP)</span>
             <div className="mt-2 space-y-1 text-center">
               <div>
-                <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block">Bruto</span>
+                <span className="text-[10px] font-mono text-[var(--pm-text-dim)] block">Bruto</span>
                 <span className="text-sm font-mono font-medium text-slate-200">{formatNumber(spGross, 2)} g</span>
               </div>
               <div>
-                <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block">Ley Au</span>
+                <span className="text-[10px] font-mono text-[var(--pm-text-dim)] block">Ley Au</span>
                 <span className="text-sm font-mono font-medium text-slate-200">{formatNumber(spPurity, 1)} ‰</span>
               </div>
             </div>
           </div>
           <div className="p-3 rounded-xl border border-[var(--pm-accent-cyan)]/30 bg-[var(--pm-accent-cyan)]/5">
-            <span className="text-[8px] font-mono text-[var(--pm-accent-cyan)] uppercase tracking-wider block text-center">REAL (VALIDADO)</span>
+            <span className="text-[9px] font-mono text-[var(--pm-accent-cyan)] uppercase tracking-wider block text-center">REAL (VALIDADO)</span>
             <div className="mt-2 space-y-1 text-center">
               <div>
-                <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block">Bruto</span>
+                <span className="text-[10px] font-mono text-[var(--pm-text-dim)] block">Bruto</span>
                 <span className="text-sm font-mono font-medium text-[var(--pm-accent-cyan)]">{formatNumber(validatedGross, 2)} g</span>
               </div>
               <div>
-                <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block">Ley Au</span>
+                <span className="text-[10px] font-mono text-[var(--pm-text-dim)] block">Ley Au</span>
                 <span className="text-sm font-mono font-medium text-[var(--pm-accent-cyan)]">{formatNumber(validatedPurity, 1)} ‰</span>
               </div>
             </div>
@@ -102,7 +102,7 @@ export function EvidenceModal({ barId, bars, packingBars, spValues, barPhotoUrls
         </div>
 
         <div className="p-3 rounded-xl border border-[var(--pm-accent-gold)]/20 bg-[var(--pm-accent-gold)]/5">
-          <span className="text-[8px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider block text-center">PESO FINO</span>
+          <span className="text-[9px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider block text-center">PESO FINO</span>
           <span className="text-sm font-mono font-medium text-[var(--pm-accent-gold)] block text-center">{formatNumber(fa, 4)} g</span>
         </div>
 

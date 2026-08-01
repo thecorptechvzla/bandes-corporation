@@ -125,7 +125,7 @@ export function ClientFormModal({ isOpen, editingClient, isPending, onSubmit, on
                   {editingClient ? <Pencil className="w-4 h-4 text-[var(--pm-accent-gold)]" /> : <Plus className="w-4 h-4 text-[var(--pm-accent-gold)]" />}
                 </div>
                 <div>
-                  <span className="text-[9px] font-mono font-bold text-[var(--pm-accent-gold)] uppercase tracking-wider">
+                  <span className="text-[10px] font-mono font-bold text-[var(--pm-accent-gold)] uppercase tracking-wider">
                     {editingClient ? 'Editar Entidad' : 'Nuevo Registro'}
                   </span>
                   <h3 className="text-sm font-sans font-semibold text-[var(--pm-text-primary)] mt-0.5">
@@ -145,7 +145,7 @@ export function ClientFormModal({ isOpen, editingClient, isPending, onSubmit, on
             <form onSubmit={handleSubmit} className="p-6 space-y-5">
               {/* RIF */}
               <div className="space-y-1.5">
-                <label className="text-[10px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider flex items-center gap-1">
+                <label className="text-[11px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider flex items-center gap-1">
                   <Hash className="w-3 h-3" /> RIF
                 </label>
                 <div className="flex items-center w-full bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] rounded-lg overflow-hidden transition-colors focus-within:border-[var(--pm-accent-gold)]">
@@ -166,14 +166,14 @@ export function ClientFormModal({ isOpen, editingClient, isPending, onSubmit, on
                     required
                   />
                 </div>
-                <span className="text-[9px] font-mono text-[var(--pm-text-dim)]">
+                <span className="text-[10px] font-mono text-[var(--pm-text-dim)]">
                   {formatRifDisplay(rif)} · {rif.replace(/\D/g, '').length}/9 dígitos
                 </span>
               </div>
 
               {/* Name */}
               <div className="space-y-1.5">
-                <label className="text-[10px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider flex items-center gap-1">
+                <label className="text-[11px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider flex items-center gap-1">
                   <Building2 className="w-3 h-3" /> Nombre de la Entidad
                 </label>
                 <input
@@ -188,7 +188,7 @@ export function ClientFormModal({ isOpen, editingClient, isPending, onSubmit, on
 
               {/* Role */}
               <div className="space-y-1.5">
-                <label className="text-[10px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider flex items-center gap-1">
+                <label className="text-[11px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider flex items-center gap-1">
                   <Tags className="w-3 h-3" /> Tipo / Rol
                 </label>
                 <div className="grid grid-cols-3 gap-2">
@@ -197,7 +197,7 @@ export function ClientFormModal({ isOpen, editingClient, isPending, onSubmit, on
                       key={r}
                       type="button"
                       onClick={() => setRole(r)}
-                      className={`pm-badge justify-center py-2.5 text-[10px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer ${
+                      className={`pm-badge justify-center py-2.5 text-[11px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer ${
                         role === r
                           ? ROLE_BADGE_CLASS[r]
                           : 'border-[var(--pm-border)] text-[var(--pm-text-dim)] hover:border-[var(--pm-text-dim)]/30 hover:text-[var(--pm-text-primary)]'
@@ -211,7 +211,7 @@ export function ClientFormModal({ isOpen, editingClient, isPending, onSubmit, on
 
               {/* Contact */}
               <div className="space-y-1.5">
-                <label className="text-[10px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider flex items-center gap-1">
+                <label className="text-[11px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider flex items-center gap-1">
                   <Phone className="w-3 h-3" /> Contacto <span className="opacity-40">(Opcional)</span>
                 </label>
                 <input

@@ -599,7 +599,7 @@ export default function PackingPage() {
       {/* Delete Status Overlay */}
       <DeleteStatusOverlay status={deleteStatus} />
 
-      <p className="text-[9px] text-[var(--pm-text-dim)] font-mono text-center opacity-50">
+      <p className="text-[10px] text-[var(--pm-text-dim)] font-mono text-center opacity-70">
         Packing v2 Premium · {totalBars} barras · {formatNumber(totalFineWeight, 2)} g FA · {pendingPackings.length} packing(s) pendiente(s)
       </p>
     </motion.div>

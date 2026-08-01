@@ -63,16 +63,16 @@ export function ValidationDetailPanel({
           <div className="p-4 border-b border-[var(--pm-border)]/20 flex items-center justify-between">
             <div>
               <h3 className="text-xs font-mono font-bold text-[var(--pm-text-primary)]">{selectedPacking.fileName}</h3>
-              <p className="text-[9px] font-mono text-[var(--pm-text-dim)] mt-0.5">
+              <p className="text-[10px] font-mono text-[var(--pm-text-dim)] mt-0.5">
                 {selectedPacking.client?.name} · {new Date(selectedPacking.createdAt).toLocaleDateString('es-ES')} · {selectedPacking.bars?.length ?? 0} barras
               </p>
             </div>
             <div className="flex items-center gap-3">
-              <span className={`text-[9px] font-mono whitespace-nowrap ${allBarsValidated ? 'text-[var(--pm-accent-emerald)]' : 'text-[var(--pm-text-dim)]'}`}>
+              <span className={`text-[10px] font-mono whitespace-nowrap ${allBarsValidated ? 'text-[var(--pm-accent-emerald)]' : 'text-[var(--pm-text-dim)]'}`}>
                 {validatedCount} de {totalCount} barras validadas
               </span>
               <button onClick={() => onSetConfirmFinalizeModal(true)} disabled={!allBarsValidated || isPending}
-                className={`px-4 py-2 rounded-lg text-[10px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2 ${allBarsValidated ? 'active:scale-95' : ''}`}
+                className={`px-4 py-2 rounded-lg text-[11px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2 ${allBarsValidated ? 'active:scale-95' : ''}`}
                 style={{
                   background: allBarsValidated
                     ? 'linear-gradient(135deg, rgba(16,185,129,0.2), rgba(16,185,129,0.1))'
@@ -93,16 +93,16 @@ export function ValidationDetailPanel({
           {/* Security Notice */}
           <div className="px-4 py-2 border-b border-[var(--pm-border)]/20 flex items-center gap-2 bg-[var(--pm-accent-gold)]/3">
             <Shield className="w-3 h-3 text-[var(--pm-accent-gold)]" />
-            <span className="text-[9px] font-mono text-[var(--pm-text-dim)] tracking-wider">
+            <span className="text-[10px] font-mono text-[var(--pm-text-dim)] tracking-wider">
               {'>_ TOQUE UNA BARRA PARA VER DETALLE — EDICIÓN REQUIERE PIN'}
             </span>
           </div>
 
           {/* Editable Bars Table */}
           <div className="overflow-x-auto premium-table">
-            <table className="w-full text-left text-[10px] font-mono">
+            <table className="w-full text-left text-[11px] font-mono">
               <thead>
-                <tr className="border-b border-[var(--pm-border)]/20 text-[9px] text-[var(--pm-text-dim)] uppercase tracking-wider">
+                <tr className="border-b border-[var(--pm-border)]/20 text-[10px] text-[var(--pm-text-dim)] uppercase tracking-wider">
                   <th className="px-4 py-3 text-center min-w-[120px]">Código</th>
                   <th className="px-4 py-3 text-right">Según Packing (SP)</th>
                   <th className="px-4 py-3 text-right min-w-[110px]">Peso Físico (g)</th>
@@ -137,7 +137,7 @@ export function ValidationDetailPanel({
                         {isPorValidar ? (
                           <div className="flex items-center justify-end gap-1.5">
                             <Lock className="w-3 h-3 text-[var(--pm-text-dim)]/30" />
-                            <span className="text-[var(--pm-text-dim)] bg-[var(--pm-bg-deepest)]/50 border border-[var(--pm-border)]/40 rounded px-2 py-1 text-[10px] font-mono">
+                            <span className="text-[var(--pm-text-dim)] bg-[var(--pm-bg-deepest)]/50 border border-[var(--pm-border)]/40 rounded px-2 py-1 text-[11px] font-mono">
                               {edit?.grossWeight ? formatNumber(Number(edit.grossWeight), 2) : '—'}
                             </span>
                           </div>
@@ -150,7 +150,7 @@ export function ValidationDetailPanel({
                         {isPorValidar ? (
                           <div className="flex items-center justify-end gap-1.5">
                             <Lock className="w-3 h-3 text-[var(--pm-text-dim)]/30" />
-                            <span className="text-[var(--pm-text-dim)] bg-[var(--pm-bg-deepest)]/50 border border-[var(--pm-border)]/40 rounded px-2 py-1 text-[10px] font-mono">
+                            <span className="text-[var(--pm-text-dim)] bg-[var(--pm-bg-deepest)]/50 border border-[var(--pm-border)]/40 rounded px-2 py-1 text-[11px] font-mono">
                               {edit?.purity ? formatNumber(Number(edit.purity), 1) : '—'}
                             </span>
                           </div>

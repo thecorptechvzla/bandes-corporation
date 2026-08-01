@@ -149,7 +149,7 @@ export function KpiCardGrid({ kpiData, isMounted, onCardClick }: KpiCardGridProp
                     if (!trend || trend.direction === 'flat') return null;
                     return (
                       <span
-                        className={`inline-flex items-center gap-0.5 text-[9px] font-mono font-bold px-2.5 py-1 rounded-lg ${
+                        className={`inline-flex items-center gap-0.5 text-[10px] font-mono font-bold px-2.5 py-1 rounded-lg ${
                           trend.direction === 'up'
                             ? 'text-emerald-400 bg-emerald-500/10'
                             : 'text-red-400 bg-red-500/10'
@@ -164,7 +164,7 @@ export function KpiCardGrid({ kpiData, isMounted, onCardClick }: KpiCardGridProp
                     );
                   })()}
                   <span
-                    className="text-[9px] font-mono font-bold tracking-wider px-3 py-1 rounded-lg"
+                    className="text-[10px] font-mono font-bold tracking-wider px-3 py-1 rounded-lg"
                     style={{ background: `${kpi.accent}12`, color: kpi.accent, border: `1px solid ${kpi.accent}25` }}
                   >
                     {kpi.tag}
@@ -213,10 +213,10 @@ export function KpiCardGrid({ kpiData, isMounted, onCardClick }: KpiCardGridProp
                     {kpi.subValues.map((sv) => (
                       <div key={sv.label} className="flex items-center gap-1.5">
                         <sv.icon className="w-3 h-3 shrink-0" style={{ color: kpi.accent }} />
-                        <span className="text-[9px] font-mono text-slate-400">
+                        <span className="text-[10px] font-mono text-slate-400">
                           {sv.label}:
                         </span>
-                        <span className="text-[10px] font-mono font-bold text-[var(--hud-text-primary)] tabular-nums">
+                        <span className="text-[11px] font-mono font-bold text-[var(--hud-text-primary)] tabular-nums">
                           {formatNumber(sv.value, 2)} g
                         </span>
                       </div>
@@ -225,7 +225,7 @@ export function KpiCardGrid({ kpiData, isMounted, onCardClick }: KpiCardGridProp
                 ) : (
                   <div className="flex items-center gap-1.5">
                     <KpiSubIcon icon={kpi.subicon} accent={kpi.accent} />
-                    <span className="text-[10px] text-slate-400 font-mono truncate">{kpi.sublabel}</span>
+                    <span className="text-[11px] text-slate-400 font-mono truncate">{kpi.sublabel}</span>
                   </div>
                 )}
               </div>

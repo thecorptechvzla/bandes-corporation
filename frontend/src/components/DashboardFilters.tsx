@@ -98,7 +98,7 @@ function AutocompleteSelect({
 
   return (
     <div ref={ref} className="relative">
-      <span className="text-[9px] font-mono font-bold tracking-[0.1em] uppercase text-[var(--hud-text-dim)] block mb-1">
+      <span className="text-[10px] font-mono font-bold tracking-wider uppercase text-[var(--hud-text-dim)] block mb-1">
         {label}
       </span>
       <button
@@ -132,7 +132,7 @@ function AutocompleteSelect({
             </div>
             <div className="overflow-y-auto flex-1">
               {filtered.length === 0 ? (
-                <div className="p-3 text-[10px] text-[var(--hud-text-dim)] text-center">Sin resultados</div>
+                <div className="p-3 text-[11px] text-[var(--hud-text-dim)] text-center">Sin resultados</div>
               ) : (
                 filtered.map((item) => (
                   <button
@@ -205,14 +205,14 @@ export default function DashboardFilters({
             type="date"
             value={startDate}
             onChange={(e) => onChange({ startDate: e.target.value, endDate, supplierId, clientId })}
-            className="w-24 md:w-28 px-2 py-1 bg-[var(--hud-bg-deepest)] border border-[var(--hud-border)] rounded-lg text-[10px] font-mono text-[var(--hud-text-primary)] outline-none transition-colors focus:border-emerald-500/40 [color-scheme:dark]"
+            className="w-24 md:w-28 px-2 py-1 bg-[var(--hud-bg-deepest)] border border-[var(--hud-border)] rounded-lg text-[11px] font-mono text-[var(--hud-text-primary)] outline-none transition-colors focus:border-emerald-500/40 [color-scheme:dark]"
           />
-          <span className="text-[10px] text-[var(--hud-text-dim)]">—</span>
+          <span className="text-[11px] text-[var(--hud-text-dim)]">—</span>
           <input
             type="date"
             value={endDate}
             onChange={(e) => onChange({ startDate, endDate: e.target.value, supplierId, clientId })}
-            className="w-24 md:w-28 px-2 py-1 bg-[var(--hud-bg-deepest)] border border-[var(--hud-border)] rounded-lg text-[10px] font-mono text-[var(--hud-text-primary)] outline-none transition-colors focus:border-emerald-500/40 [color-scheme:dark]"
+            className="w-24 md:w-28 px-2 py-1 bg-[var(--hud-bg-deepest)] border border-[var(--hud-border)] rounded-lg text-[11px] font-mono text-[var(--hud-text-primary)] outline-none transition-colors focus:border-emerald-500/40 [color-scheme:dark]"
           />
         </div>
 
@@ -229,7 +229,7 @@ export default function DashboardFilters({
               key={val}
               type="button"
               onClick={() => applyPreset(val)}
-              className={`px-3 py-1.5 text-[9px] font-mono font-bold tracking-wider rounded-lg transition-all ${
+              className={`px-3 py-1.5 text-[10px] font-mono font-bold tracking-wider rounded-lg transition-all ${
                 preset === val
                   ? 'bg-[var(--hud-accent-gold)]/10 text-[var(--hud-accent-gold)] border border-[var(--hud-accent-gold)]/25'
                   : 'bg-transparent text-[var(--hud-text-dim)] border border-transparent hover:border-[var(--hud-border)] hover:text-[var(--hud-text-primary)]'
@@ -246,7 +246,7 @@ export default function DashboardFilters({
         <button
           type="button"
           onClick={() => setAdvancedOpen(true)}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[9px] font-mono font-bold tracking-wider transition-all shrink-0 ${
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-mono font-bold tracking-wider transition-all shrink-0 ${
             supplierId || clientId
               ? 'bg-[var(--hud-accent-gold)]/10 text-[var(--hud-accent-gold)] border border-[var(--hud-accent-gold)]/25'
               : 'bg-transparent text-[var(--hud-text-dim)] border border-transparent hover:border-[var(--hud-border)] hover:text-[var(--hud-text-primary)]'
@@ -261,7 +261,7 @@ export default function DashboardFilters({
           <button
             type="button"
             onClick={handleClear}
-            className="flex items-center gap-1 px-2 py-1 text-[9px] font-mono text-[var(--hud-text-muted)] hover:text-[var(--hud-accent-gold)] transition-all shrink-0"
+            className="flex items-center gap-1 px-2 py-1 text-[10px] font-mono text-[var(--hud-text-muted)] hover:text-[var(--hud-accent-gold)] transition-all shrink-0"
           >
             <RotateCcw className="w-3 h-3" />
             <span className="hidden md:inline">Limpiar</span>

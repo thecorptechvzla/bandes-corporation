@@ -45,7 +45,7 @@ export function DispatchSuccessOverlay({ isOpen, result, message, onPDFCliente, 
         <span className="text-sm font-sans font-bold text-[var(--pm-accent-emerald)]">Despacho Exitoso</span>
         <span className="text-xs text-[var(--pm-text-dim)] text-center">{message}</span>
 
-        <div className="w-full p-4 rounded-xl border border-[var(--pm-border)] bg-[var(--pm-bg-deepest)]/50 space-y-2 text-[10px] font-mono">
+        <div className="w-full p-4 rounded-xl border border-[var(--pm-border)] bg-[var(--pm-bg-deepest)]/50 space-y-2 text-[11px] font-mono">
           <div className="flex justify-between">
             <span className="text-[var(--pm-text-dim)]">Destinatario:</span>
             <span className="text-[var(--pm-accent-gold)] font-bold">{result.destination}</span>
@@ -66,12 +66,12 @@ export function DispatchSuccessOverlay({ isOpen, result, message, onPDFCliente, 
 
         <div className="flex gap-2 w-full">
           <button type="button" onClick={onPDFCliente}
-            className="flex-1 py-2.5 rounded-lg text-[10px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1.5"
+            className="flex-1 py-2.5 rounded-lg text-[11px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1.5"
             style={{ background: 'linear-gradient(135deg, rgba(212,175,55,0.2), rgba(212,175,55,0.1))', color: 'var(--pm-accent-gold)', border: '1px solid rgba(212,175,55,0.3)' }}>
             <User className="w-3.5 h-3.5" /> Comprobante Cliente
           </button>
           <button type="button" onClick={onPDFEmpresa}
-            className="flex-1 py-2.5 rounded-lg text-[10px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1.5"
+            className="flex-1 py-2.5 rounded-lg text-[11px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1.5"
             style={{ background: 'linear-gradient(135deg, rgba(212,175,55,0.12), rgba(212,175,55,0.06))', color: 'var(--pm-accent-gold)', border: '1px solid rgba(212,175,55,0.2)' }}>
             <Building className="w-3.5 h-3.5" /> Comprobante Empresa
           </button>

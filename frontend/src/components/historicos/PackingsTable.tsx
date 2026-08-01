@@ -72,13 +72,13 @@ export function PackingsTable({
         <table className="w-full">
           <thead>
             <tr className="border-b border-[var(--pm-border)]/40 bg-[var(--pm-bg-tertiary)]/30">
-              <th className="text-left px-4 py-3 text-[10px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider">Packing</th>
-              <th className="text-left px-4 py-3 text-[10px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider">Proveedor</th>
-              <th className="text-left px-4 py-3 text-[10px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider">Barras</th>
-              <th className="text-left px-4 py-3 text-[10px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider">Validación</th>
-              <th className="text-left px-4 py-3 text-[10px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider">Peso Total</th>
-              <th className="text-left px-4 py-3 text-[10px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider">Fecha</th>
-              <th className="text-left px-4 py-3 text-[10px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider">Estado</th>
+              <th className="text-left px-4 py-3 text-[11px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider">Packing</th>
+              <th className="text-left px-4 py-3 text-[11px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider">Proveedor</th>
+              <th className="text-left px-4 py-3 text-[11px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider">Barras</th>
+              <th className="text-left px-4 py-3 text-[11px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider">Validación</th>
+              <th className="text-left px-4 py-3 text-[11px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider">Peso Total</th>
+              <th className="text-left px-4 py-3 text-[11px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider">Fecha</th>
+              <th className="text-left px-4 py-3 text-[11px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider">Estado</th>
               <th className="px-4 py-3 w-10" />
             </tr>
           </thead>

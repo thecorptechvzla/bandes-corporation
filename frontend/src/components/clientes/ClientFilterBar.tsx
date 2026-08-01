@@ -20,7 +20,7 @@ export function ClientFilterBar({ filterTab, searchQuery, onFilterTabChange, onS
           <button
             key={tab}
             onClick={() => onFilterTabChange(tab)}
-            className={`px-3.5 py-1.5 rounded-lg text-[10px] font-mono uppercase tracking-widest font-bold transition-all active:scale-95 cursor-pointer ${
+            className={`px-3.5 py-1.5 rounded-lg text-[11px] font-mono uppercase tracking-wider font-bold transition-all active:scale-95 cursor-pointer ${
               filterTab === tab
                 ? 'text-[var(--pm-accent-gold)] shadow-[0_0_12px_rgba(212,175,55,0.08)]'
                 : 'text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)]'

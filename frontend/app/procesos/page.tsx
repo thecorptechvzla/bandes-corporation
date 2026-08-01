@@ -238,7 +238,7 @@ export default function V2ProcesosPage() {
           </h1>
           <p className="text-xs text-[var(--pm-text-dim)] mt-0.5">Fundición, colada y recuperación de oro.</p>
         </div>
-        <div className="flex items-center gap-3 text-[10px] font-mono text-[var(--pm-text-dim)]">
+        <div className="flex items-center gap-3 text-[11px] font-mono text-[var(--pm-text-dim)]">
           <span className="flex items-center gap-1">
             <Layers className="w-3 h-3 text-[var(--pm-accent-amber)]" />
             {activeProcesses.length} activos
@@ -313,7 +313,7 @@ export default function V2ProcesosPage() {
         />
       )}
 
-      <p className="text-[9px] text-[var(--pm-text-dim)] font-mono text-center opacity-50">
+      <p className="text-[10px] text-[var(--pm-text-dim)] font-mono text-center opacity-70">
         Datos actualizados en tiempo real · Bandes v2 Premium · {activeProcesses.length} procesos activos
       </p>
 

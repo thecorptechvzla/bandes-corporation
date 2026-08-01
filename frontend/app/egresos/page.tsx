@@ -374,7 +374,7 @@ export default function V2EgresosPage() {
           </h1>
           <p className="text-xs text-[var(--pm-text-dim)] mt-0.5">Despacho global multi-proveedor con destinatario final.</p>
         </div>
-        <div className="flex items-center gap-4 text-[10px] font-mono text-[var(--pm-text-dim)]">
+        <div className="flex items-center gap-4 text-[11px] font-mono text-[var(--pm-text-dim)]">
           <span className="flex items-center gap-1">
             <Package className="w-3 h-3 text-[var(--pm-accent-amber)]" />
             {allAvailableLots.length} lotes
@@ -457,7 +457,7 @@ export default function V2EgresosPage() {
         <LotDetailModal lot={detailLot} bars={bars} onClose={() => setDetailLotId(null)} />
       )}
 
-      <p className="text-[9px] text-[var(--pm-text-dim)] font-mono text-center opacity-50">
+      <p className="text-[10px] text-[var(--pm-text-dim)] font-mono text-center opacity-70">
         Bandes v2 Premium · {allAvailableLots.length} lotes + {availableBars.length} barras disponibles · {totalSelectedCount} seleccionados
       </p>
     </motion.div>

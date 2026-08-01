@@ -33,7 +33,7 @@ export function CompletedProcessesSection({
         <div className="flex items-center gap-2">
           <CheckCircle2 className="w-4 h-4 text-[var(--pm-accent-emerald)]" />
           <span className="text-xs font-mono font-bold text-[var(--pm-text-primary)] uppercase tracking-wider">Completados</span>
-          <span className="text-[9px] font-mono text-[var(--pm-text-dim)]">{completedProcesses.length} procesos</span>
+          <span className="text-[10px] font-mono text-[var(--pm-text-dim)]">{completedProcesses.length} procesos</span>
         </div>
         {isExpanded ? <ChevronDown className="w-4 h-4 text-[var(--pm-text-dim)]" /> : <ChevronRight className="w-4 h-4 text-[var(--pm-text-dim)]" />}
       </button>
@@ -43,7 +43,7 @@ export function CompletedProcessesSection({
             <div className="divide-y divide-[var(--pm-border)] border-t border-[var(--pm-border)]">
               {Object.entries(groupedCompleted).map(([cId, procs]) => (
                 <div key={cId} className="px-5 py-3">
-                  <span className="text-[10px] font-mono font-semibold text-[var(--pm-text-primary)] block mb-2">
+                  <span className="text-[11px] font-mono font-semibold text-[var(--pm-text-primary)] block mb-2">
                     {clients.find(c => c.id === cId)?.name || cId}
                   </span>
                   {procs.map(proc => {
@@ -54,26 +54,26 @@ export function CompletedProcessesSection({
                       .reduce((s, l) => s + Number(l.recovered), 0);
                     return (
                       <div key={proc.id} onClick={() => onViewDetail(proc.id)}
-                        className="grid grid-cols-[15%_60%_25%] items-center py-2 px-1 text-[10px] font-mono cursor-pointer active:scale-[0.99] transition-all rounded-lg hover:bg-[var(--pm-bg-tertiary)]/40 group"
+                        className="grid grid-cols-[15%_60%_25%] items-center py-2 px-1 text-[11px] font-mono cursor-pointer active:scale-[0.99] transition-all rounded-lg hover:bg-[var(--pm-bg-tertiary)]/40 group"
                       >
                         <div className="flex flex-col">
                           <span className="text-[var(--pm-text-dim)] font-bold">{proc.name}</span>
                         </div>
                         <div className="grid grid-cols-3 gap-2">
                           <div className="flex flex-col">
-                            <span className="text-[9px] text-[var(--pm-text-dim)]/50 uppercase tracking-wider">Operador</span>
+                            <span className="text-[10px] text-[var(--pm-text-dim)]/70 uppercase tracking-wider">Operador</span>
                             <span className="text-xs font-mono text-[var(--pm-text-primary)] truncate">
                               {firstLot?.operator || '—'}
                             </span>
                           </div>
                           <div className="flex flex-col">
-                            <span className="text-[9px] text-[var(--pm-text-dim)]/50 uppercase tracking-wider">Crisol/Molde</span>
+                            <span className="text-[10px] text-[var(--pm-text-dim)]/70 uppercase tracking-wider">Crisol/Molde</span>
                             <span className="text-xs font-mono text-[var(--pm-text-primary)] truncate">
                               {firstLot?.moldCode || '—'}
                             </span>
                           </div>
                           <div className="flex flex-col">
-                            <span className="text-[9px] text-[var(--pm-text-dim)]/50 uppercase tracking-wider">Temp. Colada</span>
+                            <span className="text-[10px] text-[var(--pm-text-dim)]/70 uppercase tracking-wider">Temp. Colada</span>
                             <span className="text-xs font-mono text-[var(--pm-text-primary)] truncate">
                               {firstLot?.castingTemp ? `${firstLot.castingTemp}°C` : '—'}
                             </span>
@@ -81,7 +81,7 @@ export function CompletedProcessesSection({
                         </div>
                         <div className="flex items-center justify-end gap-3">
                           <div className="flex flex-col items-end">
-                            <span className="text-[9px] text-[var(--pm-text-dim)]/50 uppercase tracking-wider">Recuperado</span>
+                            <span className="text-[10px] text-[var(--pm-text-dim)]/70 uppercase tracking-wider">Recuperado</span>
                             <span className="text-xs font-mono font-bold text-[var(--pm-accent-emerald)]">
                               {formatNumber(totalRecovered, 2)} g
                             </span>

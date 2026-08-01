@@ -120,14 +120,14 @@ export default function V2ClientesPage() {
             <h1 className="text-lg font-semibold text-[var(--pm-text-primary)] font-sans tracking-tight">
               Directorio Comercial
             </h1>
-            <p className="text-[10px] text-[var(--pm-text-dim)] font-mono uppercase tracking-wider mt-0.5">
+            <p className="text-[11px] text-[var(--pm-text-dim)] font-mono uppercase tracking-wider mt-0.5">
               Registro oficial de entidades autorizadas
             </p>
           </div>
         </div>
         <button
           onClick={openCreateModal}
-          className="premium-card px-4 py-2.5 rounded-xl font-mono text-[10px] uppercase tracking-widest font-bold flex items-center gap-2 active:scale-95 transition-all duration-150 cursor-pointer hover:border-[var(--pm-accent-gold)]/40"
+          className="premium-card px-4 py-2.5 rounded-xl font-mono text-[11px] uppercase tracking-wider font-bold flex items-center gap-2 active:scale-95 transition-all duration-150 cursor-pointer hover:border-[var(--pm-accent-gold)]/40"
           style={{ borderColor: 'rgba(212,175,55,0.25)' }}
         >
           <Plus className="w-3.5 h-3.5 text-[var(--pm-accent-gold)]" />
@@ -189,34 +189,34 @@ export default function V2ClientesPage() {
       >
         <div className="grid grid-cols-2 gap-3">
           <div className="p-3 rounded-xl border border-[var(--pm-border)] bg-[var(--pm-bg-deepest)]/50">
-            <div className="flex items-center gap-2 text-[var(--pm-text-dim)] text-[10px] font-mono mb-1">
+            <div className="flex items-center gap-2 text-[var(--pm-text-dim)] text-[11px] font-mono mb-1">
               <Package className="w-3.5 h-3.5" />
               Barras asociadas
             </div>
             <span className={`text-lg font-mono font-bold ${deleteTarget && deleteTarget.barCount > 0 ? 'text-[var(--pm-accent-red)]' : 'text-[var(--pm-accent-emerald)]'}`}>
               {deleteTarget?.barCount || 0}
             </span>
-            <span className="text-[10px] font-mono text-[var(--pm-text-dim)] ml-1">barras</span>
+            <span className="text-[11px] font-mono text-[var(--pm-text-dim)] ml-1">barras</span>
           </div>
           <div className="p-3 rounded-xl border border-[var(--pm-border)] bg-[var(--pm-bg-deepest)]/50">
-            <div className="flex items-center gap-2 text-[var(--pm-text-dim)] text-[10px] font-mono mb-1">
+            <div className="flex items-center gap-2 text-[var(--pm-text-dim)] text-[11px] font-mono mb-1">
               <Layers className="w-3.5 h-3.5" />
               Procesos vinculados
             </div>
             <span className={`text-lg font-mono font-bold ${deleteTarget && deleteTarget.processCount > 0 ? 'text-[var(--pm-accent-red)]' : 'text-[var(--pm-accent-emerald)]'}`}>
               {deleteTarget?.processCount || 0}
             </span>
-            <span className="text-[10px] font-mono text-[var(--pm-text-dim)] ml-1">procesos</span>
+            <span className="text-[11px] font-mono text-[var(--pm-text-dim)] ml-1">procesos</span>
           </div>
         </div>
         <div className="p-3 rounded-lg border" style={{ background: 'rgba(239,68,68,0.06)', borderColor: 'rgba(239,68,68,0.2)' }}>
-          <p className="text-[10px] font-mono text-[var(--pm-accent-red)] leading-relaxed">
+          <p className="text-[11px] font-mono text-[var(--pm-accent-red)] leading-relaxed">
             {deleteTarget && (deleteTarget.barCount > 0 || deleteTarget.processCount > 0)
               ? `Esta entidad tiene ${deleteTarget.barCount} barra${deleteTarget.barCount !== 1 ? 's' : ''} y ${deleteTarget.processCount} proceso${deleteTarget.processCount !== 1 ? 's' : ''} asociados. La eliminación no se completará hasta que se reasignen o eliminen estos registros.`
               : 'Esta entidad no tiene barras ni procesos asociados. Se puede eliminar de forma segura.'}
           </p>
         </div>
-        <div className="flex justify-between items-center px-3 py-2 rounded-lg border border-[var(--pm-border)] bg-[var(--pm-bg-deepest)]/50 text-[10px] font-mono">
+        <div className="flex justify-between items-center px-3 py-2 rounded-lg border border-[var(--pm-border)] bg-[var(--pm-bg-deepest)]/50 text-[11px] font-mono">
           <span className="text-[var(--pm-text-dim)]">RIF:</span>
           <span className="text-[var(--pm-accent-gold)] font-bold">{deleteTarget ? formatRif(deleteTarget.client.rif) : ''}</span>
         </div>

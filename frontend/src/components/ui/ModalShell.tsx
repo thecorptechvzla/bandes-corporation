@@ -87,7 +87,7 @@ export function ModalShell({
               </h3>
             )}
             {subtitle && (
-              <p className="text-[10px] font-mono text-[var(--hud-text-dim)] mt-0.5">
+              <p className="text-[11px] font-mono text-[var(--hud-text-dim)] mt-0.5">
                 {subtitle}
               </p>
             )}

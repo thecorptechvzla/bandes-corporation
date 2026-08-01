@@ -66,12 +66,12 @@ export function ExitsTable({
         <table className="w-full">
           <thead>
             <tr className="border-b border-[var(--pm-border)]/40 bg-[var(--pm-bg-tertiary)]/30">
-              <th className="text-left px-4 py-3 text-[10px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider">Despacho</th>
-              <th className="text-left px-4 py-3 text-[10px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider">Proveedores</th>
-              <th className="text-left px-4 py-3 text-[10px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider">Lotes</th>
-              <th className="text-left px-4 py-3 text-[10px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider">Peso Total</th>
-              <th className="text-left px-4 py-3 text-[10px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider">Fecha</th>
-              <th className="text-center px-4 py-3 text-[10px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider">Comprobantes</th>
+              <th className="text-left px-4 py-3 text-[11px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider">Despacho</th>
+              <th className="text-left px-4 py-3 text-[11px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider">Proveedores</th>
+              <th className="text-left px-4 py-3 text-[11px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider">Lotes</th>
+              <th className="text-left px-4 py-3 text-[11px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider">Peso Total</th>
+              <th className="text-left px-4 py-3 text-[11px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider">Fecha</th>
+              <th className="text-center px-4 py-3 text-[11px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider">Comprobantes</th>
               <th className="px-4 py-3 w-10" />
             </tr>
           </thead>
@@ -100,7 +100,7 @@ export function ExitsTable({
                     <td className="px-4 py-3.5">
                       <div className="flex flex-wrap gap-1">
                         {providerNames.map(name => (
-                          <span key={name} className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono bg-[var(--pm-bg-tertiary)] text-[var(--pm-text-primary)] border border-[var(--pm-border)]/30">
+                          <span key={name} className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-mono bg-[var(--pm-bg-tertiary)] text-[var(--pm-text-primary)] border border-[var(--pm-border)]/30">
                             {name}
                           </span>
                         ))}
@@ -128,7 +128,7 @@ export function ExitsTable({
                         <button
                           type="button"
                           onClick={() => onPDFCliente(e)}
-                          className="inline-flex items-center gap-1 px-2 py-1 rounded text-[9px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer border"
+                          className="inline-flex items-center gap-1 px-2 py-1 rounded text-[10px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer border"
                           style={{ background: 'rgba(212,175,55,0.08)', color: 'var(--pm-accent-gold)', borderColor: 'rgba(212,175,55,0.2)' }}
                           title="Descargar Comprobante Cliente"
                         >
@@ -137,7 +137,7 @@ export function ExitsTable({
                         <button
                           type="button"
                           onClick={() => onPDFEmpresa(e)}
-                          className="inline-flex items-center gap-1 px-2 py-1 rounded text-[9px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer border"
+                          className="inline-flex items-center gap-1 px-2 py-1 rounded text-[10px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer border"
                           style={{ background: 'rgba(212,175,55,0.04)', color: 'var(--pm-accent-gold)', borderColor: 'rgba(212,175,55,0.12)' }}
                           title="Descargar Comprobante Empresa"
                         >
@@ -167,13 +167,13 @@ export function ExitsTable({
                                 Detalle del Despacho
                               </h4>
                               <div className="flex items-center gap-2" onClick={ev => ev.stopPropagation()}>
-                                <span className="text-[10px] font-mono text-[var(--pm-text-dim)] mr-1">
+                                <span className="text-[11px] font-mono text-[var(--pm-text-dim)] mr-1">
                                   Destino: <span className="text-[var(--pm-text-primary)]">{e.destination}</span>
                                 </span>
                                 <button
                                   type="button"
                                   onClick={() => onPDFCliente(e)}
-                                  className="inline-flex items-center gap-1 px-2 py-1 rounded text-[9px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer border"
+                                  className="inline-flex items-center gap-1 px-2 py-1 rounded text-[10px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer border"
                                   style={{ background: 'rgba(212,175,55,0.08)', color: 'var(--pm-accent-gold)', borderColor: 'rgba(212,175,55,0.2)' }}
                                 >
                                   <Download className="w-3 h-3" /> Cliente
@@ -181,7 +181,7 @@ export function ExitsTable({
                                 <button
                                   type="button"
                                   onClick={() => onPDFEmpresa(e)}
-                                  className="inline-flex items-center gap-1 px-2 py-1 rounded text-[9px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer border"
+                                  className="inline-flex items-center gap-1 px-2 py-1 rounded text-[10px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer border"
                                   style={{ background: 'rgba(212,175,55,0.04)', color: 'var(--pm-accent-gold)', borderColor: 'rgba(212,175,55,0.12)' }}
                                 >
                                   <Download className="w-3 h-3" /> Empresa
@@ -217,7 +217,7 @@ export function ExitsTable({
                                       <td className="py-2 px-3">
                                         <div className="flex flex-wrap gap-1">
                                           {detail.bars?.map(bar => (
-                                            <span key={bar.id} className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] bg-[var(--pm-bg-tertiary)] text-[var(--pm-text-dim)] border border-[var(--pm-border)]/30">
+                                            <span key={bar.id} className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] bg-[var(--pm-bg-tertiary)] text-[var(--pm-text-dim)] border border-[var(--pm-border)]/30">
                                               {bar.barNumber}
                                               <span className="text-[var(--pm-accent-gold)]">({formatWeight(Number(bar.fineWeight), 1)})</span>
                                             </span>

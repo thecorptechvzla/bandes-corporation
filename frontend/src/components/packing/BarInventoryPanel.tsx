@@ -42,7 +42,7 @@ export function BarInventoryPanel({
             onChange={e => onSearchChange(e.target.value)}
             className="flex-1 bg-transparent py-2 px-3 outline-none text-xs font-mono text-[var(--pm-text-primary)] placeholder:text-[var(--pm-text-dim)]/30" />
         </div>
-        <span className="text-[10px] font-mono text-[var(--pm-text-dim)] whitespace-nowrap">{totalBars} barras</span>
+        <span className="text-[11px] font-mono text-[var(--pm-text-dim)] whitespace-nowrap">{totalBars} barras</span>
       </div>
 
       <div className="divide-y divide-[var(--pm-border)]/20 overflow-y-auto max-h-[calc(100vh-280px)] v2-scroll">
@@ -69,10 +69,10 @@ export function BarInventoryPanel({
                     {isOpen ? <ChevronDown className="w-3.5 h-3.5 shrink-0 text-[var(--pm-accent-gold)]" /> : <ChevronUp className="w-3.5 h-3.5 shrink-0 text-[var(--pm-text-dim)]" />}
                     <div className="text-left min-w-0">
                       <span className="text-xs font-sans font-semibold text-[var(--pm-text-primary)] truncate block">{client.name}</span>
-                      <span className="text-[9px] font-mono text-[var(--pm-text-dim)]">{barCount} barras · FA: {formatNumber(clientFA, 2)} g</span>
+                      <span className="text-[10px] font-mono text-[var(--pm-text-dim)]">{barCount} barras · FA: {formatNumber(clientFA, 2)} g</span>
                     </div>
                   </div>
-                  <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded ${barCount > 0 ? 'text-[var(--pm-accent-gold)] bg-[var(--pm-accent-gold)]/10' : 'text-[var(--pm-text-dim)] bg-[var(--pm-bg-tertiary)]'}`}>
+                  <span className={`text-[11px] font-mono font-bold px-2 py-0.5 rounded ${barCount > 0 ? 'text-[var(--pm-accent-gold)] bg-[var(--pm-accent-gold)]/10' : 'text-[var(--pm-text-dim)] bg-[var(--pm-bg-tertiary)]'}`}>
                     {barCount} uds
                   </span>
                 </button>
@@ -80,7 +80,7 @@ export function BarInventoryPanel({
                   {isOpen && (
                     <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }}>
                       {barCount === 0 ? (
-                        <div className="px-5 pb-4 text-[10px] font-mono text-[var(--pm-text-dim)]/50 italic">Sin barras registradas</div>
+                        <div className="px-5 pb-4 text-[11px] font-mono text-[var(--pm-text-dim)]/70 italic">Sin barras registradas</div>
                       ) : (
                         <div className="px-0 pb-2">
                           <table className="premium-table w-full">
@@ -120,14 +120,14 @@ export function BarInventoryPanel({
                           </table>
                           {totalPages > 1 && (
                             <div className="flex items-center justify-between px-5 py-2 border-t border-[var(--pm-border)]/20">
-                              <span className="text-[9px] font-mono text-[var(--pm-text-dim)]">Pág. {currentPage + 1} de {totalPages}</span>
+                              <span className="text-[10px] font-mono text-[var(--pm-text-dim)]">Pág. {currentPage + 1} de {totalPages}</span>
                               <div className="flex gap-1">
                                 <button type="button" onClick={() => onSetPage(client.id, Math.max(0, currentPage - 1))}
                                   disabled={currentPage === 0}
-                                  className="px-2.5 py-1 rounded text-[9px] font-mono border border-[var(--pm-border)] text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] hover:bg-[var(--pm-bg-tertiary)] transition-all disabled:opacity-30 active:scale-95 cursor-pointer">Anterior</button>
+                                  className="px-2.5 py-1 rounded text-[10px] font-mono border border-[var(--pm-border)] text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] hover:bg-[var(--pm-bg-tertiary)] transition-all disabled:opacity-30 active:scale-95 cursor-pointer">Anterior</button>
                                 <button type="button" onClick={() => onSetPage(client.id, Math.min(totalPages - 1, currentPage + 1))}
                                   disabled={currentPage >= totalPages - 1}
-                                  className="px-2.5 py-1 rounded text-[9px] font-mono border border-[var(--pm-border)] text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] hover:bg-[var(--pm-bg-tertiary)] transition-all disabled:opacity-30 active:scale-95 cursor-pointer">Siguiente</button>
+                                  className="px-2.5 py-1 rounded text-[10px] font-mono border border-[var(--pm-border)] text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] hover:bg-[var(--pm-bg-tertiary)] transition-all disabled:opacity-30 active:scale-95 cursor-pointer">Siguiente</button>
                               </div>
                             </div>
                           )}

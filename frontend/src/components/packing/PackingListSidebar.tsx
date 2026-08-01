@@ -22,10 +22,10 @@ export function PackingListSidebar({ pendingPackings, selectedPackingId, onSelec
     <motion.div initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1, duration: 0.4 }}
       className="xl:col-span-2 glass-panel rounded-2xl border border-[var(--pm-border)]/40 overflow-hidden">
       <div className="p-4 border-b border-[var(--pm-border)]/20">
-        <span className="text-[10px] font-mono font-bold text-[var(--pm-accent-gold)] uppercase tracking-wider flex items-center gap-2">
+        <span className="text-[11px] font-mono font-bold text-[var(--pm-accent-gold)] uppercase tracking-wider flex items-center gap-2">
           <FileSpreadsheet className="w-3.5 h-3.5" /> Packings Pendientes
           {pendingPackings.length > 0 && (
-            <span className="ml-auto px-2 py-0.5 rounded-full bg-[var(--pm-accent-amber)]/15 text-[var(--pm-accent-amber)] text-[9px]">{pendingPackings.length}</span>
+            <span className="ml-auto px-2 py-0.5 rounded-full bg-[var(--pm-accent-amber)]/15 text-[var(--pm-accent-amber)] text-[10px]">{pendingPackings.length}</span>
           )}
         </span>
       </div>
@@ -42,12 +42,12 @@ export function PackingListSidebar({ pendingPackings, selectedPackingId, onSelec
               <button key={p.id} onClick={() => onSelectPacking(p.id)}
                 className={`w-full text-left px-4 py-3.5 transition-all active:scale-[0.99] cursor-pointer ${isSelected ? 'bg-[var(--pm-accent-gold)]/8 border-l-2 border-[var(--pm-accent-gold)]' : 'hover:bg-[var(--pm-bg-tertiary)]/40 border-l-2 border-transparent'}`}>
                 <div className="flex items-center justify-between gap-2">
-                  <span className="text-[10px] font-mono font-bold text-[var(--pm-text-primary)] truncate">{p.fileName}</span>
-                  <span className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded ${isSelected ? 'text-[var(--pm-accent-amber)] bg-[var(--pm-accent-amber)]/10' : 'text-[var(--pm-text-dim)]'}`}>
+                  <span className="text-[11px] font-mono font-bold text-[var(--pm-text-primary)] truncate">{p.fileName}</span>
+                  <span className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded ${isSelected ? 'text-[var(--pm-accent-amber)] bg-[var(--pm-accent-amber)]/10' : 'text-[var(--pm-text-dim)]'}`}>
                     {p._count?.pending ?? '?'} pend.
                   </span>
                 </div>
-                <div className="flex items-center gap-2 mt-1 text-[9px] font-mono text-[var(--pm-text-dim)]">
+                <div className="flex items-center gap-2 mt-1 text-[10px] font-mono text-[var(--pm-text-dim)]">
                   <span>{p.client?.name || p.clientId?.slice(0, 8)}</span>
                   <span>·</span>
                   <span>{new Date(p.createdAt).toLocaleDateString('es-ES')}</span>

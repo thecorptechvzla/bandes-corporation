@@ -46,7 +46,7 @@ export function BalanceTable({ clientRows, totals, hasActiveFilters }: BalanceTa
         <div className="overflow-x-auto premium-table">
           <table className="w-full text-left text-xs font-sans">
             <thead>
-              <tr className="border-b border-[var(--pm-border)]/20 text-[10px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider">
+              <tr className="border-b border-[var(--pm-border)]/20 text-[11px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider">
                 <th className="py-3 px-4 bg-[var(--pm-bg-base)]/50 text-left sticky left-0 z-10 min-w-[180px]">Cliente</th>
                 <th className="py-3 px-4 bg-[var(--pm-bg-base)]/50 text-right">Peso Fino (g)</th>
                 <th className="py-3 px-4 bg-[var(--pm-bg-base)]/50 text-right">R (g)</th>

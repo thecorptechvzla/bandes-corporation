@@ -56,21 +56,21 @@ export function BulkUploadSection({
                 <p className="text-[11px] font-mono text-[var(--pm-text-dim)]">
                   {bulkFile ? <span className="text-[var(--pm-accent-amber)] font-bold">{bulkFile.name}</span> : 'Arrastra un archivo .xlsx o haz clic para seleccionar'}
                 </p>
-                <p className="text-[9px] font-mono text-[var(--pm-text-dim)]/50 mt-1">Tamaño máximo: 10 MB</p>
+                <p className="text-[10px] font-mono text-[var(--pm-text-dim)]/70 mt-1">Tamaño máximo: 10 MB</p>
               </div>
               <div className="flex gap-2">
                 <button type="button" onClick={onDownloadTemplate}
-                  className="flex-1 py-2 rounded-lg border border-[var(--pm-border)] text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] hover:bg-[var(--pm-bg-tertiary)] text-[10px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1.5">
+                  className="flex-1 py-2 rounded-lg border border-[var(--pm-border)] text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] hover:bg-[var(--pm-bg-tertiary)] text-[11px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1.5">
                   <Download className="w-3 h-3" /> Plantilla</button>
                 <button type="button" onClick={onUpload} disabled={!bulkFile || isPending}
-                  className="flex-1 py-2 rounded-lg text-[10px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer disabled:opacity-40 flex items-center justify-center gap-1.5"
+                  className="flex-1 py-2 rounded-lg text-[11px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer disabled:opacity-40 flex items-center justify-center gap-1.5"
                   style={{ background: bulkFile ? 'rgba(212,175,55,0.12)' : 'transparent', color: 'var(--pm-accent-amber)', border: '1px solid rgba(212,175,55,0.2)' }}>
                   {isPending ? 'Subiendo...' : <><Upload className="w-3 h-3" /> Subir</>}
                 </button>
               </div>
-              {bulkError && <p className="text-[10px] font-mono text-[var(--pm-accent-red)]">{bulkError}</p>}
+              {bulkError && <p className="text-[11px] font-mono text-[var(--pm-accent-red)]">{bulkError}</p>}
               {bulkResult && (
-                <div className="p-3 rounded-lg border text-[10px] font-mono bg-[var(--pm-accent-emerald)]/5 border-[var(--pm-accent-emerald)]/20 text-[var(--pm-accent-emerald)]">
+                <div className="p-3 rounded-lg border text-[11px] font-mono bg-[var(--pm-accent-emerald)]/5 border-[var(--pm-accent-emerald)]/20 text-[var(--pm-accent-emerald)]">
                   <Check className="w-3 h-3 inline mr-1" /> Creadas: <strong>{bulkResult.created}</strong> | Saltadas: <strong>{bulkResult.skipped}</strong>
                   {bulkResult.packingId && (
                     <span className="ml-2 text-[var(--pm-accent-amber)]">Packing #{bulkResult.packingId.slice(0, 8)}</span>
@@ -78,7 +78,7 @@ export function BulkUploadSection({
                   {bulkResult.errors.length > 0 && (
                     <div className="mt-2 max-h-24 overflow-y-auto space-y-0.5">
                       {bulkResult.errors.map((e, i) => (
-                        <div key={i} className="text-[var(--pm-accent-red)] text-[9px]">Fila {e.row}: {e.message}</div>
+                        <div key={i} className="text-[var(--pm-accent-red)] text-[10px]">Fila {e.row}: {e.message}</div>
                       ))}
                     </div>
                   )}

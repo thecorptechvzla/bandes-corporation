@@ -65,7 +65,7 @@ export function UnifiedItemPanel({
             className="flex-1 bg-transparent py-2 px-3 outline-none text-xs font-mono text-[var(--pm-text-primary)] placeholder:text-[var(--pm-text-dim)]/30"
           />
         </div>
-        <div className="flex items-center gap-3 text-[10px] font-mono text-[var(--pm-text-dim)]">
+        <div className="flex items-center gap-3 text-[11px] font-mono text-[var(--pm-text-dim)]">
           <span>{filteredItems.filter(i => i.type === 'lot').length} lotes</span>
           <span className="text-[var(--pm-border)]">·</span>
           <span>{filteredItems.filter(i => i.type === 'bar').length} barras</span>

@@ -125,7 +125,7 @@ export function BarDetailModal({
         {/* Header */}
         <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-[var(--pm-border)]/20">
           <div>
-            <span className="text-[9px] font-mono font-bold text-[var(--pm-accent-cyan)] uppercase tracking-wider flex items-center gap-1.5">
+            <span className="text-[10px] font-mono font-bold text-[var(--pm-accent-cyan)] uppercase tracking-wider flex items-center gap-1.5">
               <ClipboardCheck className="w-3.5 h-3.5" /> DETALLE DE BARRA
             </span>
             <h2 className="text-lg font-mono font-bold text-[var(--pm-text-primary)] mt-0.5 tracking-tight">
@@ -137,7 +137,7 @@ export function BarDetailModal({
               <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-[var(--pm-border)]/40">
                 <StatusBadge status={bar.status} size="sm" className="border-0 bg-transparent px-0" />
               </div>
-              <span className="text-[8px] font-mono text-[var(--pm-text-dim)] block mt-1">
+              <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block mt-1">
                 {new Date(bar.updatedAt).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
               </span>
             </div>
@@ -166,7 +166,7 @@ export function BarDetailModal({
                 {/* Repeat button overlay */}
                 <div className="absolute bottom-2 right-2">
                   <button type="button" onClick={handleRepeatPhoto}
-                    className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-black/60 backdrop-blur-sm border border-white/20 text-white hover:bg-black/80 text-[10px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer">
+                    className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-black/60 backdrop-blur-sm border border-white/20 text-white hover:bg-black/80 text-[11px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer">
                     <Camera className="w-3 h-3" />
                     REPETIR FOTO
                   </button>
@@ -176,7 +176,7 @@ export function BarDetailModal({
                   <div className="absolute top-2 right-2">
                     <span className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-[var(--pm-accent-emerald)]/20 backdrop-blur-sm border border-[var(--pm-accent-emerald)]/30">
                       <Check className="w-3 h-3 text-[var(--pm-accent-emerald)]" />
-                      <span className="text-[9px] font-mono font-bold text-[var(--pm-accent-emerald)]">Foto lista</span>
+                      <span className="text-[10px] font-mono font-bold text-[var(--pm-accent-emerald)]">Foto lista</span>
                     </span>
                   </div>
                 )}
@@ -187,7 +187,7 @@ export function BarDetailModal({
                   <div className="w-10 h-10 mx-auto mb-2 flex items-center justify-center rounded-lg" style={{ background: 'rgba(100,100,100,0.15)', border: '1px solid rgba(100,100,100,0.25)' }}>
                     <Camera className="w-5 h-5 text-[var(--pm-text-dim)]/40" />
                   </div>
-                  <p className="text-[10px] font-mono text-[var(--pm-text-dim)]/50">Sin evidencia fotográfica</p>
+                  <p className="text-[11px] font-mono text-[var(--pm-text-dim)]/70">Sin evidencia fotográfica</p>
                 </div>
               </div>
             )}
@@ -197,14 +197,14 @@ export function BarDetailModal({
           <div className="grid grid-cols-2 gap-3">
             {/* SP Values */}
             <div className="p-3 rounded-xl border border-[var(--pm-border)]/40 bg-[var(--pm-bg-deepest)]/30">
-              <span className="text-[8px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider block text-center">SEGÚN PACKING (SP)</span>
+              <span className="text-[9px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider block text-center">SEGÚN PACKING (SP)</span>
               <div className="mt-2 space-y-1 text-center">
                 <div>
-                  <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block">Bruto</span>
+                  <span className="text-[10px] font-mono text-[var(--pm-text-dim)] block">Bruto</span>
                   <span className="text-sm font-mono font-medium text-slate-200">{formatNumber(spGross, 2)} g</span>
                 </div>
                 <div>
-                  <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block">Ley Au</span>
+                  <span className="text-[10px] font-mono text-[var(--pm-text-dim)] block">Ley Au</span>
                   <span className="text-sm font-mono font-medium text-slate-200">{formatNumber(spPurity, 1)} ‰</span>
                 </div>
               </div>
@@ -212,12 +212,12 @@ export function BarDetailModal({
 
             {/* Validated / Editable Values */}
             <div className={`p-3 rounded-xl border transition-all ${isEditing ? 'border-[var(--pm-accent-gold)]/40 bg-[var(--pm-accent-gold)]/5' : 'border-[var(--pm-accent-cyan)]/30 bg-[var(--pm-accent-cyan)]/5'}`}>
-              <span className={`text-[8px] font-mono uppercase tracking-wider block text-center ${isEditing ? 'text-[var(--pm-accent-gold)]' : 'text-[var(--pm-accent-cyan)]'}`}>
+              <span className={`text-[9px] font-mono uppercase tracking-wider block text-center ${isEditing ? 'text-[var(--pm-accent-gold)]' : 'text-[var(--pm-accent-cyan)]'}`}>
                 {isEditing ? 'EDITANDO' : 'REAL (VALIDADO)'}
               </span>
               <div className="mt-2 space-y-2 text-center">
                 <div>
-                  <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block">Bruto</span>
+                  <span className="text-[10px] font-mono text-[var(--pm-text-dim)] block">Bruto</span>
                   {isEditing ? (
                     <input
                       type="number"
@@ -231,7 +231,7 @@ export function BarDetailModal({
                   )}
                 </div>
                 <div>
-                  <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block">Ley Au</span>
+                  <span className="text-[10px] font-mono text-[var(--pm-text-dim)] block">Ley Au</span>
                   {isEditing ? (
                     <input
                       type="number"
@@ -252,7 +252,7 @@ export function BarDetailModal({
 
           {/* Fine Weight */}
           <div className="p-3 rounded-xl border border-[var(--pm-accent-gold)]/20 bg-[var(--pm-accent-gold)]/5">
-            <span className="text-[8px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider block text-center">PESO FINO</span>
+            <span className="text-[9px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider block text-center">PESO FINO</span>
             <span className="text-sm font-mono font-bold text-[var(--pm-accent-gold)] block text-center">{formatNumber(fa, 4)} g</span>
           </div>
 
@@ -264,14 +264,14 @@ export function BarDetailModal({
                 style={{ WebkitTapHighlightColor: 'transparent' }}>
                 <Scale className="w-5 h-5 text-[var(--pm-accent-gold)] group-hover:drop-shadow-[0_0_6px_rgba(212,175,55,0.4)]" />
                 <span>OBTENER PESO</span>
-                <span className="text-[7px] font-mono text-[var(--pm-text-dim)]/50 normal-case tracking-normal">Próximamente</span>
+                <span className="text-[9px] font-mono text-[var(--pm-text-dim)]/70 normal-case tracking-normal">Próximamente</span>
               </button>
               <button type="button" onClick={() => {}}
                 className="group relative py-4 rounded-xl border border-[var(--pm-border)]/60 text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] hover:bg-[var(--pm-bg-hover)]/60 text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer flex flex-col items-center gap-2"
                 style={{ WebkitTapHighlightColor: 'transparent' }}>
                 <Microscope className="w-5 h-5 text-[var(--pm-accent-gold)] group-hover:drop-shadow-[0_0_6px_rgba(212,175,55,0.4)]" />
                 <span>OBTENER LEYES</span>
-                <span className="text-[7px] font-mono text-[var(--pm-text-dim)]/50 normal-case tracking-normal">Próximamente</span>
+                <span className="text-[9px] font-mono text-[var(--pm-text-dim)]/70 normal-case tracking-normal">Próximamente</span>
               </button>
               <button type="button" onClick={() => setShowCameraModal(true)}
                 className="group relative py-4 rounded-xl border border-[var(--pm-accent-cyan)]/30 bg-[var(--pm-accent-cyan)]/5 text-[var(--pm-accent-cyan)] hover:bg-[var(--pm-accent-cyan)]/10 text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer flex flex-col items-center gap-2"
@@ -279,7 +279,7 @@ export function BarDetailModal({
                 <Camera className="w-5 h-5 group-hover:drop-shadow-[0_0_6px_rgba(6,182,212,0.4)]" />
                 <span>ADJUNTAR FOTO</span>
                 {hasPhoto && (
-                  <span className="text-[7px] font-mono text-[var(--pm-accent-emerald)] normal-case tracking-normal">✓ Capturada</span>
+                  <span className="text-[9px] font-mono text-[var(--pm-accent-emerald)] normal-case tracking-normal">✓ Capturada</span>
                 )}
               </button>
             </div>
@@ -364,7 +364,7 @@ export function BarDetailModal({
           <div className="w-full max-w-lg rounded-2xl overflow-hidden border border-[var(--pm-border)] bg-[var(--pm-bg-primary)] shadow-2xl">
             {/* Camera header */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--pm-border)]/30">
-              <span className="text-[10px] font-mono font-bold text-[var(--pm-accent-cyan)] uppercase tracking-wider flex items-center gap-1.5">
+              <span className="text-[11px] font-mono font-bold text-[var(--pm-accent-cyan)] uppercase tracking-wider flex items-center gap-1.5">
                 <Camera className="w-3.5 h-3.5" /> CAPTURA DE EVIDENCIA
               </span>
               <button type="button" onClick={() => setShowCameraModal(false)}

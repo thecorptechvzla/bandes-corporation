@@ -31,7 +31,7 @@ export function HudButton({ variant = 'primary', prefix, loading, disabled, onCl
       onClick={onClick}
       disabled={disabled || loading}
       className={`
-        relative overflow-hidden font-mono text-[10px] font-bold uppercase tracking-[0.12em]
+        relative overflow-hidden font-mono text-[11px] font-bold uppercase tracking-[0.12em]
         px-3 py-2 border transition-all duration-150
         active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100
         ${variants[variant]}

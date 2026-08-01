@@ -423,7 +423,7 @@ export default function V2DashboardPage() {
       </div>
 
       {/* Footer note */}
-      <p className="text-[9px] text-[var(--hud-text-muted)] font-mono text-center mt-6">
+      <p className="text-[10px] text-[var(--hud-text-muted)] font-mono text-center mt-6">
         Datos actualizados en tiempo real · Bandes Analytics
       </p>
 

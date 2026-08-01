@@ -63,11 +63,11 @@ export function ClientTable({
           <table className="w-full table-fixed border-collapse font-sans text-xs">
             <thead>
               <tr className="border-b border-[var(--pm-border)]">
-                <th className="w-[20%] text-center px-4 py-3 text-[10px] text-[var(--pm-text-dim)] font-mono font-bold uppercase tracking-widest">RIF</th>
-                <th className="w-[35%] text-left px-4 py-3 text-[10px] text-[var(--pm-text-dim)] font-mono font-bold uppercase tracking-widest">Nombre</th>
-                <th className="w-[15%] text-center px-4 py-3 text-[10px] text-[var(--pm-text-dim)] font-mono font-bold uppercase tracking-widest">Rol</th>
-                <th className="w-[20%] text-left px-4 py-3 text-[10px] text-[var(--pm-text-dim)] font-mono font-bold uppercase tracking-widest hidden sm:table-cell">Contacto</th>
-                <th className="w-[10%] text-center px-4 py-3 text-[10px] text-[var(--pm-text-dim)] font-mono font-bold uppercase tracking-widest">Acciones</th>
+                <th className="w-[20%] text-center px-4 py-3 text-[11px] text-[var(--pm-text-dim)] font-mono font-bold uppercase tracking-wider">RIF</th>
+                <th className="w-[35%] text-left px-4 py-3 text-[11px] text-[var(--pm-text-dim)] font-mono font-bold uppercase tracking-wider">Nombre</th>
+                <th className="w-[15%] text-center px-4 py-3 text-[11px] text-[var(--pm-text-dim)] font-mono font-bold uppercase tracking-wider">Rol</th>
+                <th className="w-[20%] text-left px-4 py-3 text-[11px] text-[var(--pm-text-dim)] font-mono font-bold uppercase tracking-wider hidden sm:table-cell">Contacto</th>
+                <th className="w-[10%] text-center px-4 py-3 text-[11px] text-[var(--pm-text-dim)] font-mono font-bold uppercase tracking-wider">Acciones</th>
               </tr>
             </thead>
             <SkeletonRows />
@@ -107,11 +107,11 @@ export function ClientTable({
           <table className="w-full table-fixed border-collapse font-sans text-xs">
             <thead>
               <tr className="border-b border-[var(--pm-border)]">
-                <th className="w-[20%] text-center px-4 py-3 text-[10px] text-[var(--pm-text-dim)] font-mono font-bold uppercase tracking-widest">RIF</th>
-                <th className="w-[35%] text-left px-4 py-3 text-[10px] text-[var(--pm-text-dim)] font-mono font-bold uppercase tracking-widest">Nombre</th>
-                <th className="w-[15%] text-center px-4 py-3 text-[10px] text-[var(--pm-text-dim)] font-mono font-bold uppercase tracking-widest">Rol</th>
-                <th className="w-[20%] text-left px-4 py-3 text-[10px] text-[var(--pm-text-dim)] font-mono font-bold uppercase tracking-widest hidden sm:table-cell">Contacto</th>
-                <th className="w-[10%] text-center px-4 py-3 text-[10px] text-[var(--pm-text-dim)] font-mono font-bold uppercase tracking-widest">Acciones</th>
+                <th className="w-[20%] text-center px-4 py-3 text-[11px] text-[var(--pm-text-dim)] font-mono font-bold uppercase tracking-wider">RIF</th>
+                <th className="w-[35%] text-left px-4 py-3 text-[11px] text-[var(--pm-text-dim)] font-mono font-bold uppercase tracking-wider">Nombre</th>
+                <th className="w-[15%] text-center px-4 py-3 text-[11px] text-[var(--pm-text-dim)] font-mono font-bold uppercase tracking-wider">Rol</th>
+                <th className="w-[20%] text-left px-4 py-3 text-[11px] text-[var(--pm-text-dim)] font-mono font-bold uppercase tracking-wider hidden sm:table-cell">Contacto</th>
+                <th className="w-[10%] text-center px-4 py-3 text-[11px] text-[var(--pm-text-dim)] font-mono font-bold uppercase tracking-wider">Acciones</th>
               </tr>
             </thead>
             <tbody>
@@ -159,7 +159,7 @@ export function ClientTable({
               ))}
             </tbody>
           </table>
-          <div className="px-5 py-3 border-t border-[var(--pm-border)] text-[10px] font-mono text-[var(--pm-text-dim)] flex items-center gap-4">
+          <div className="px-5 py-3 border-t border-[var(--pm-border)] text-[11px] font-mono text-[var(--pm-text-dim)] flex items-center gap-4">
             <span className="flex items-center gap-1">
               <Database className="w-3 h-3" />
               {totalCount} entidad{totalCount !== 1 ? 'es' : ''}

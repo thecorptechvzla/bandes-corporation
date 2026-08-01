@@ -146,14 +146,14 @@ export function BovedaModal({ isOpen, lots, bars, clients, lotGrossWeight, lotFi
                 <button
                   key={t.key}
                   onClick={() => setTab(t.key)}
-                  className={`px-4 py-2 text-[10px] font-mono font-bold tracking-wider rounded-t-lg transition-all border-b-2 ${
+                  className={`px-4 py-2 text-[11px] font-mono font-bold tracking-wider rounded-t-lg transition-all border-b-2 ${
                     tab === t.key
                       ? 'bg-[var(--hud-bg-deepest)]/50 text-[var(--hud-accent-gold)] border-[var(--hud-accent-gold)]'
                       : 'text-[var(--hud-text-dim)] border-transparent hover:text-[var(--hud-text-primary)] hover:bg-[var(--hud-bg-deepest)]/30'
                   }`}
                 >
                   {t.label}
-                  <span className="ml-1.5 text-[9px] opacity-60">({t.count})</span>
+                  <span className="ml-1.5 text-[10px] opacity-60">({t.count})</span>
                 </button>
               ))}
             </div>
@@ -187,16 +187,16 @@ export function BovedaModal({ isOpen, lots, bars, clients, lotGrossWeight, lotFi
                                 <p className="text-sm font-bold text-[var(--hud-text-primary)] uppercase tracking-wider truncate">
                                   {clientName}
                                 </p>
-                                <p className="text-[10px] text-[var(--hud-text-dim)] font-mono truncate">
+                                <p className="text-[11px] text-[var(--hud-text-dim)] font-mono truncate">
                                   RIF: {rif}
                                 </p>
                               </div>
                             </div>
                             <div className="flex items-center gap-3 flex-shrink-0">
-                              <span className="text-[10px] font-mono text-[var(--hud-text-dim)] whitespace-nowrap">
+                              <span className="text-[11px] font-mono text-[var(--hud-text-dim)] whitespace-nowrap">
                                 Bruto: {formatNumber(clientTotal, 2)} g
                               </span>
-                              <span className="text-[10px] font-mono text-[var(--hud-text-dim)] bg-[var(--hud-bg-deepest)]/50 px-2 py-0.5 border border-[var(--hud-border)] rounded whitespace-nowrap">
+                              <span className="text-[11px] font-mono text-[var(--hud-text-dim)] bg-[var(--hud-bg-deepest)]/50 px-2 py-0.5 border border-[var(--hud-border)] rounded whitespace-nowrap">
                                 {clientLots.length} LOTES
                               </span>
                               <ChevronDown
@@ -227,19 +227,19 @@ export function BovedaModal({ isOpen, lots, bars, clients, lotGrossWeight, lotFi
                                         <thead>
                                           <tr>
                                             <th className="w-[20%] text-left px-4 py-3 bg-[var(--hud-bg-primary)]">
-                                              <span className="text-[9px] font-mono font-bold tracking-[0.1em] uppercase text-[var(--hud-text-muted)]">Proceso</span>
+                                              <span className="text-[10px] font-mono font-bold tracking-wider uppercase text-[var(--hud-text-muted)]">Proceso</span>
                                             </th>
                                             <th className="w-[15%] text-left px-4 py-3 bg-[var(--hud-bg-primary)]">
-                                              <span className="text-[9px] font-mono font-bold tracking-[0.1em] uppercase text-[var(--hud-text-muted)]">Lote</span>
+                                              <span className="text-[10px] font-mono font-bold tracking-wider uppercase text-[var(--hud-text-muted)]">Lote</span>
                                             </th>
                                             <th className="w-[15%] text-left px-4 py-3 bg-[var(--hud-bg-primary)]">
-                                              <span className="text-[9px] font-mono font-bold tracking-[0.1em] uppercase text-[var(--hud-text-muted)]">Operador</span>
+                                              <span className="text-[10px] font-mono font-bold tracking-wider uppercase text-[var(--hud-text-muted)]">Operador</span>
                                             </th>
                                             <th className="w-[25%] text-right px-4 py-3 bg-[var(--hud-bg-primary)]">
-                                              <span className="text-[9px] font-mono font-bold tracking-[0.1em] uppercase text-[var(--hud-text-muted)]">Peso Bruto (g)</span>
+                                              <span className="text-[10px] font-mono font-bold tracking-wider uppercase text-[var(--hud-text-muted)]">Peso Bruto (g)</span>
                                             </th>
                                             <th className="w-[25%] text-right px-4 py-3 bg-[var(--hud-bg-primary)]">
-                                              <span className="text-[9px] font-mono font-bold tracking-[0.1em] uppercase text-[var(--hud-text-muted)]">Fecha</span>
+                                              <span className="text-[10px] font-mono font-bold tracking-wider uppercase text-[var(--hud-text-muted)]">Fecha</span>
                                             </th>
                                           </tr>
                                         </thead>
@@ -272,7 +272,7 @@ export function BovedaModal({ isOpen, lots, bars, clients, lotGrossWeight, lotFi
                                         {clientLots.length > 0 && (
                                           <tfoot>
                                             <tr className="border-t border-[var(--hud-border)] bg-[var(--hud-bg-deepest)]/50">
-                                              <td className="sticky left-0 bg-[var(--hud-bg-deepest)]/50 px-3 py-2 text-[9px] font-bold text-[var(--hud-text-dim)] uppercase tracking-widest">
+                                              <td className="sticky left-0 bg-[var(--hud-bg-deepest)]/50 px-3 py-2 text-[10px] font-bold text-[var(--hud-text-dim)] uppercase tracking-wider">
                                                 Total {clientName}
                                               </td>
                                               <td />
@@ -288,7 +288,7 @@ export function BovedaModal({ isOpen, lots, bars, clients, lotGrossWeight, lotFi
                                     </div>
                                     {lotTotalPages > 1 && (
                                       <div className="flex items-center justify-center gap-3 pt-2">
-                                        <span className="text-[9px] font-mono text-[var(--hud-text-dim)]">
+                                        <span className="text-[10px] font-mono text-[var(--hud-text-dim)]">
                                           Página {safeLotPage} de {lotTotalPages}
                                         </span>
                                         <div className="flex items-center gap-1">
@@ -345,7 +345,7 @@ export function BovedaModal({ isOpen, lots, bars, clients, lotGrossWeight, lotFi
             {/* Unified GRAN TOTAL Footer */}
             <div className="flex-shrink-0 border-t border-[var(--hud-accent-gold)]/30 bg-[var(--hud-bg-deepest)]">
               <div className="hidden sm:flex items-center justify-between px-4 sm:px-5 py-3 sm:py-3.5">
-                <span className="text-xs font-bold text-[var(--hud-text-primary)] uppercase tracking-widest">
+                <span className="text-xs font-bold text-[var(--hud-text-primary)] uppercase tracking-wider">
                   GRAN TOTAL
                 </span>
                 <div className="flex items-center gap-5">
@@ -354,25 +354,25 @@ export function BovedaModal({ isOpen, lots, bars, clients, lotGrossWeight, lotFi
                     <span className="text-[var(--hud-accent-gold)] font-bold text-sm">
                       {formatNumber(grandTotalBruto, 2)}
                     </span>{' '}
-                    <span className="text-[10px] text-[var(--hud-text-dim)]">g</span>
+                    <span className="text-[11px] text-[var(--hud-text-dim)]">g</span>
                   </span>
-                  <span className="text-[10px] text-[var(--hud-text-dim)]/30">|</span>
+                  <span className="text-[11px] text-[var(--hud-text-dim)]/30">|</span>
                   <span className="text-xs font-mono text-[var(--hud-text-dim)]">
                     Peso Fino:{' '}
                     <span className="text-[var(--hud-accent-gold)] font-bold text-sm">
                       {formatNumber(grandTotalFino, 2)}
                     </span>{' '}
-                    <span className="text-[10px] text-[var(--hud-text-dim)]">g</span>
+                    <span className="text-[11px] text-[var(--hud-text-dim)]">g</span>
                   </span>
                   {tab === 'fundido' && (
                     <>
-                      <span className="text-[10px] text-[var(--hud-text-dim)]/30">|</span>
+                      <span className="text-[11px] text-[var(--hud-text-dim)]/30">|</span>
                       <span className="text-xs font-mono text-[var(--hud-text-dim)]">
                         Merma:{' '}
                         <span className="text-[var(--hud-accent-amber)] font-bold text-sm">
                           {formatNumber(totalMerma, 2)}
                         </span>{' '}
-                        <span className="text-[10px] text-[var(--hud-text-dim)]">g</span>
+                        <span className="text-[11px] text-[var(--hud-text-dim)]">g</span>
                       </span>
                     </>
                   )}
@@ -380,30 +380,30 @@ export function BovedaModal({ isOpen, lots, bars, clients, lotGrossWeight, lotFi
               </div>
 
               <div className="sm:hidden px-4 py-3">
-                <div className="text-[10px] font-bold text-[var(--hud-text-primary)] uppercase tracking-widest mb-2">
+                <div className="text-[11px] font-bold text-[var(--hud-text-primary)] uppercase tracking-wider mb-2">
                   GRAN TOTAL
                 </div>
                 <div className="grid grid-cols-2 gap-x-4 gap-y-2">
                   <div>
-                    <div className="text-[9px] text-[var(--hud-text-dim)] uppercase tracking-wider">Peso Bruto</div>
+                    <div className="text-[10px] text-[var(--hud-text-dim)] uppercase tracking-wider">Peso Bruto</div>
                     <div className="text-[13px] font-mono font-bold text-[var(--hud-accent-gold)] leading-tight whitespace-nowrap">
                       {formatNumber(grandTotalBruto, 2)}{' '}
-                      <span className="text-[10px] font-normal text-[var(--hud-text-dim)]">g</span>
+                      <span className="text-[11px] font-normal text-[var(--hud-text-dim)]">g</span>
                     </div>
                   </div>
                   <div>
-                    <div className="text-[9px] text-[var(--hud-text-dim)] uppercase tracking-wider">Peso Fino</div>
+                    <div className="text-[10px] text-[var(--hud-text-dim)] uppercase tracking-wider">Peso Fino</div>
                     <div className="text-[13px] font-mono font-bold text-[var(--hud-accent-gold)] leading-tight whitespace-nowrap">
                       {formatNumber(grandTotalFino, 2)}{' '}
-                      <span className="text-[10px] font-normal text-[var(--hud-text-dim)]">g</span>
+                      <span className="text-[11px] font-normal text-[var(--hud-text-dim)]">g</span>
                     </div>
                   </div>
                   {tab === 'fundido' && (
                     <div>
-                      <div className="text-[9px] text-[var(--hud-text-dim)] uppercase tracking-wider">Merma</div>
+                      <div className="text-[10px] text-[var(--hud-text-dim)] uppercase tracking-wider">Merma</div>
                       <div className="text-[13px] font-mono font-bold text-[var(--hud-accent-amber)] leading-tight whitespace-nowrap">
                         {formatNumber(totalMerma, 2)}{' '}
-                        <span className="text-[10px] font-normal text-[var(--hud-text-dim)]">g</span>
+                        <span className="text-[11px] font-normal text-[var(--hud-text-dim)]">g</span>
                       </div>
                     </div>
                   )}

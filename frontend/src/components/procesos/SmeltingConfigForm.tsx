@@ -113,11 +113,11 @@ export function SmeltingConfigForm({
         {/* ─── Multi-Provider Selector ─── */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <label className="text-[10px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider flex items-center gap-1">
+            <label className="text-[11px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider flex items-center gap-1">
               <Users className="w-3 h-3" /> Proveedores con Material Disponible
             </label>
             <button type="button" onClick={onSelectAllClients}
-              className="text-[9px] font-mono text-[var(--pm-accent-amber)] hover:text-[var(--pm-accent-gold)] active:scale-95 transition-all cursor-pointer"
+              className="text-[10px] font-mono text-[var(--pm-accent-amber)] hover:text-[var(--pm-accent-gold)] active:scale-95 transition-all cursor-pointer"
             >
               {allClientsSelected ? 'Deseleccionar todos' : 'Seleccionar todos'}
             </button>
@@ -129,19 +129,19 @@ export function SmeltingConfigForm({
               const count = availableBars.filter(b => b.clientId === client.id).length;
               return (
                 <button key={client.id} type="button" onClick={() => onToggleClient(client.id)}
-                  className={`px-3 py-2 rounded-lg text-[10px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer border ${
+                  className={`px-3 py-2 rounded-lg text-[11px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer border ${
                     isSelected
                       ? 'border-[var(--pm-accent-amber)]/50 bg-[var(--pm-accent-amber)]/10 text-[var(--pm-accent-amber)]'
                       : 'border-[var(--pm-border)] bg-[var(--pm-bg-deepest)]/50 text-[var(--pm-text-dim)] hover:border-[var(--pm-accent-amber)]/30 hover:text-[var(--pm-text-primary)]'
                   }`}
                 >
                   {client.name}
-                  <span className="ml-1.5 text-[8px] opacity-60">{count}b</span>
+                  <span className="ml-1.5 text-[9px] opacity-60">{count}b</span>
                 </button>
               );
             })}
             {clientsWithBars.length === 0 && (
-              <span className="text-[10px] font-mono text-[var(--pm-text-dim)] italic py-2">
+              <span className="text-[11px] font-mono text-[var(--pm-text-dim)] italic py-2">
                 No hay proveedores con material disponible.
               </span>
             )}
@@ -152,10 +152,10 @@ export function SmeltingConfigForm({
         {visibleGroups.length > 0 && (
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider">
+              <span className="text-[11px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider">
                 Barras Disponibles — {selectedClientCount > 0 ? `${selectedClientCount} proveedor${selectedClientCount > 1 ? 'es' : ''}` : 'todos los proveedores'}
               </span>
-              <span className="text-[10px] font-mono text-[var(--pm-accent-amber)]">
+              <span className="text-[11px] font-mono text-[var(--pm-accent-amber)]">
                 {allSelectedCount} seleccionada{allSelectedCount !== 1 ? 's' : ''}
               </span>
             </div>
@@ -181,24 +181,24 @@ export function SmeltingConfigForm({
           >
             <div className="flex items-center gap-2 mb-2">
               <Weight className="w-3.5 h-3.5 text-[var(--pm-accent-amber)]" />
-              <span className="text-[10px] font-mono font-bold text-[var(--pm-accent-amber)] uppercase tracking-wider">Consolidado</span>
+              <span className="text-[11px] font-mono font-bold text-[var(--pm-accent-amber)] uppercase tracking-wider">Consolidado</span>
             </div>
             <div className="grid grid-cols-3 gap-3 text-center">
               <div>
-                <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block">Barras</span>
+                <span className="text-[10px] font-mono text-[var(--pm-text-dim)] block">Barras</span>
                 <span className="text-sm font-mono font-bold text-[var(--pm-text-primary)]">{allSelectedCount}</span>
               </div>
               <div>
-                <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block">Peso Bruto</span>
+                <span className="text-[10px] font-mono text-[var(--pm-text-dim)] block">Peso Bruto</span>
                 <span className="text-sm font-mono font-bold text-[var(--pm-accent-amber)]">{formatNumber(allGross, 2)} g</span>
               </div>
               <div>
-                <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block">Peso Fino</span>
+                <span className="text-[10px] font-mono text-[var(--pm-text-dim)] block">Peso Fino</span>
                 <span className="text-sm font-mono font-bold text-[var(--pm-accent-gold)]">{formatNumber(allFa, 4)} g</span>
               </div>
             </div>
             {selectedClientCount > 1 && (
-              <p className="text-[8px] font-mono text-[var(--pm-text-dim)] text-center mt-2 italic">
+              <p className="text-[9px] font-mono text-[var(--pm-text-dim)] text-center mt-2 italic">
                 Se creará un proceso por proveedor ({selectedClientCount} procesos)
               </p>
             )}

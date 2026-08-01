@@ -159,7 +159,7 @@ export function RecoveryModal({ lot, lotBarsMap, processLotsMap, onClose, upload
               <Microscope className="w-4 h-4 text-[var(--pm-accent-amber)]" />
             </div>
             <div>
-              <span className="text-[9px] font-mono font-bold text-[var(--pm-accent-amber)] uppercase tracking-wider">Calibrar Colada</span>
+              <span className="text-[10px] font-mono font-bold text-[var(--pm-accent-amber)] uppercase tracking-wider">Calibrar Colada</span>
               <h3 className="text-sm font-sans font-semibold text-[var(--pm-text-primary)] mt-0.5">{lot.name}</h3>
             </div>
           </div>
@@ -172,22 +172,22 @@ export function RecoveryModal({ lot, lotBarsMap, processLotsMap, onClose, upload
           {/* KPI cards */}
           <div className="grid grid-cols-3 gap-2">
             <div className="p-2 rounded-lg border border-[var(--pm-border)] bg-[var(--pm-bg-deepest)]/50 text-center">
-              <span className="text-[8px] font-mono text-[var(--pm-text-dim)] block">Barras</span>
+              <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block">Barras</span>
               <span className="text-sm font-mono font-bold text-[var(--pm-text-primary)]">{lotBars.length}</span>
             </div>
             <div className="p-2 rounded-lg border border-[var(--pm-border)] bg-[var(--pm-bg-deepest)]/50 text-center">
-              <span className="text-[8px] font-mono text-[var(--pm-text-dim)] block">Peso Bruto</span>
+              <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block">Peso Bruto</span>
               <span className="text-xs font-mono font-bold text-[var(--pm-text-primary)]">{formatNumber(lotGross, 2)} g</span>
             </div>
             <div className="p-2 rounded-lg border border-[var(--pm-border)] bg-[var(--pm-bg-deepest)]/50 text-center">
-              <span className="text-[8px] font-mono text-[var(--pm-text-dim)] block">Peso Fino</span>
+              <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block">Peso Fino</span>
               <span className="text-xs font-mono font-bold text-[var(--pm-accent-gold)]">{formatNumber(lotFA, 2)} g</span>
             </div>
           </div>
 
           {/* Photo Evidence — mandatory */}
           <div className="space-y-2">
-            <label className="text-[9px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider flex items-center gap-1.5">
+            <label className="text-[10px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider flex items-center gap-1.5">
               <Camera className="w-3 h-3 text-[var(--pm-accent-cyan)]" />
               Foto de Evidencia
               <span className="text-[var(--pm-accent-red)]">*</span>
@@ -209,10 +209,10 @@ export function RecoveryModal({ lot, lotBarsMap, processLotsMap, onClose, upload
                 className="w-full p-4 rounded-xl border-2 border-dashed border-[var(--pm-accent-cyan)]/30 bg-[var(--pm-accent-cyan)]/5 hover:bg-[var(--pm-accent-cyan)]/10 transition-all flex flex-col items-center gap-2 cursor-pointer"
               >
                 <ImagePlus className="w-6 h-6 text-[var(--pm-accent-cyan)]/50" />
-                <span className="text-[10px] font-mono text-[var(--pm-accent-cyan)] font-bold uppercase tracking-wider">
+                <span className="text-[11px] font-mono text-[var(--pm-accent-cyan)] font-bold uppercase tracking-wider">
                   Capturar Foto
                 </span>
-                <span className="text-[9px] font-mono text-[var(--pm-text-dim)]">
+                <span className="text-[10px] font-mono text-[var(--pm-text-dim)]">
                   Obligatorio para cerrar la colada
                 </span>
               </button>
@@ -225,7 +225,7 @@ export function RecoveryModal({ lot, lotBarsMap, processLotsMap, onClose, upload
                   <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                     <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[var(--pm-bg-deepest)]/90 border border-[var(--pm-border)]">
                       <LoadingSpinner size="sm" className="text-[var(--pm-accent-cyan)]" />
-                      <span className="text-[10px] font-mono text-[var(--pm-text-dim)]">Subiendo foto...</span>
+                      <span className="text-[11px] font-mono text-[var(--pm-text-dim)]">Subiendo foto...</span>
                     </div>
                   </div>
                 )}
@@ -233,7 +233,7 @@ export function RecoveryModal({ lot, lotBarsMap, processLotsMap, onClose, upload
                   <div className="absolute top-2 right-2">
                     <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-[var(--pm-accent-emerald)]/15 border border-[var(--pm-accent-emerald)]/30">
                       <CheckCircle2 className="w-3 h-3 text-[var(--pm-accent-emerald)]" />
-                      <span className="text-[8px] font-mono text-[var(--pm-accent-emerald)] font-bold">EVIDENCIA CAPTURADA</span>
+                      <span className="text-[9px] font-mono text-[var(--pm-accent-emerald)] font-bold">EVIDENCIA CAPTURADA</span>
                     </div>
                   </div>
                 )}
@@ -253,7 +253,7 @@ export function RecoveryModal({ lot, lotBarsMap, processLotsMap, onClose, upload
 
           {/* Peso Bruto + button */}
           <div className="space-y-1">
-            <label className="text-[9px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider">Peso Bruto (g)</label>
+            <label className="text-[10px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider">Peso Bruto (g)</label>
             <div className="flex gap-2">
               <input type="number" step="0.01" value={recoveredWeight}
                 onChange={e => setRecoveredWeight(e.target.value)}
@@ -261,7 +261,7 @@ export function RecoveryModal({ lot, lotBarsMap, processLotsMap, onClose, upload
                 onPaste={handlePasteNumeric}
                 className="flex-1 bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] rounded-lg px-3 py-2 text-sm font-mono text-[var(--pm-text-primary)] focus:outline-none focus:border-[var(--pm-accent-amber)] transition-colors"
               />
-              <HudButton variant="ghost" className="text-[9px] px-3 shrink-0"
+              <HudButton variant="ghost" className="text-[10px] px-3 shrink-0"
                 onClick={() => { setActiveHardwareMode('WEIGHT'); setHwWeight(recoveredWeight); }}
               >
                 ⚖️ Peso
@@ -271,7 +271,7 @@ export function RecoveryModal({ lot, lotBarsMap, processLotsMap, onClose, upload
 
           {/* Ley Au + button */}
           <div className="space-y-1">
-            <label className="text-[9px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider">Ley Au (‰)</label>
+            <label className="text-[10px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider">Ley Au (‰)</label>
             <div className="flex gap-2">
               <input type="number" min="0" max="1000" step="0.1" value={recoveredLeyAu}
                 onChange={e => setRecoveredLeyAu(e.target.value)}
@@ -279,7 +279,7 @@ export function RecoveryModal({ lot, lotBarsMap, processLotsMap, onClose, upload
                 onPaste={handlePasteNumeric}
                 className="flex-1 bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] rounded-lg px-3 py-2 text-sm font-mono text-[var(--pm-text-primary)] focus:outline-none focus:border-[var(--pm-accent-amber)] transition-colors"
               />
-              <HudButton variant="ghost" className="text-[9px] px-3 shrink-0"
+              <HudButton variant="ghost" className="text-[10px] px-3 shrink-0"
                 onClick={() => { setActiveHardwareMode('LEY'); setHwLeyAu(recoveredLeyAu); }}
               >
                 🔬 Leyes
@@ -292,7 +292,7 @@ export function RecoveryModal({ lot, lotBarsMap, processLotsMap, onClose, upload
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}
               className="flex items-center justify-between p-2.5 rounded-lg border border-[var(--pm-accent-gold)]/20 bg-[var(--pm-accent-gold)]/5"
             >
-              <span className="text-[9px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider">Fino Calculado (FA)</span>
+              <span className="text-[10px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider">Fino Calculado (FA)</span>
               <span className="text-sm font-mono font-bold text-[var(--pm-accent-gold)]">{formatNumber(calculatedFineWeight, 2)} g</span>
             </motion.div>
           )}
@@ -303,7 +303,7 @@ export function RecoveryModal({ lot, lotBarsMap, processLotsMap, onClose, upload
               className={`p-3 rounded-xl border ${Math.abs(discrepancy) > 5 ? 'border-[var(--pm-accent-red)]/25 bg-[var(--pm-accent-red)]/5' : 'border-[var(--pm-accent-emerald)]/25 bg-[var(--pm-accent-emerald)]/5'}`}
             >
               <div className="flex items-center justify-between gap-2 mb-1.5">
-                <span className="text-[9px] font-mono font-bold uppercase tracking-wider" style={{ color: Math.abs(discrepancy) > 5 ? 'var(--pm-accent-red)' : 'var(--pm-accent-emerald)' }}>
+                <span className="text-[10px] font-mono font-bold uppercase tracking-wider" style={{ color: Math.abs(discrepancy) > 5 ? 'var(--pm-accent-red)' : 'var(--pm-accent-emerald)' }}>
                   <Zap className="w-3 h-3 inline mr-1" />
                   {Math.abs(discrepancy) > 5 ? 'Discrepancia Alta' : 'Discrepancia Normal'}
                 </span>
@@ -314,23 +314,23 @@ export function RecoveryModal({ lot, lotBarsMap, processLotsMap, onClose, upload
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 font-mono">
                 <div className="space-y-3">
                   <div className="flex justify-between items-baseline">
-                    <span className="text-[10px] uppercase tracking-widest text-slate-500">Peso Fino</span>
+                    <span className="text-[11px] uppercase tracking-wider text-slate-500">Peso Fino</span>
                     <span className="text-lg font-bold text-slate-200">{formatNumber(lotFA, 2)} g</span>
                   </div>
                   <div className="flex justify-between items-baseline">
-                    <span className="text-[10px] uppercase tracking-widest text-slate-500">Peso Bruto</span>
+                    <span className="text-[11px] uppercase tracking-wider text-slate-500">Peso Bruto</span>
                     <span className="text-base text-slate-200">{formatNumber(recWeightNum, 2)} g</span>
                   </div>
                 </div>
                 <div className="space-y-3">
                   <div className="flex justify-between items-baseline">
-                    <span className="text-[10px] uppercase tracking-widest text-slate-500">Diferencia</span>
+                    <span className="text-[11px] uppercase tracking-wider text-slate-500">Diferencia</span>
                     <span className={`text-lg font-bold ${mermaGramos >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
                       {mermaGramos >= 0 ? '+' : ''}{formatNumber(mermaGramos, 2)} g
                     </span>
                   </div>
                   <div className="flex justify-between items-baseline">
-                    <span className="text-[10px] uppercase tracking-widest text-slate-500">Merma</span>
+                    <span className="text-[11px] uppercase tracking-wider text-slate-500">Merma</span>
                     <span className={`text-base font-bold ${Math.abs(mermaPct) <= 5 ? 'text-emerald-400' : 'text-rose-400'}`}>
                       {mermaPct.toFixed(2)}%
                     </span>
@@ -413,7 +413,7 @@ export function RecoveryModal({ lot, lotBarsMap, processLotsMap, onClose, upload
                 <CheckCircle2 className="w-7 h-7 text-[var(--pm-accent-emerald)]" strokeWidth={2} />
               </div>
               <span className="text-sm font-sans font-bold text-[var(--pm-accent-emerald)]">Colada Calibrada</span>
-              <span className="text-[10px] font-mono text-[var(--pm-text-dim)] text-center">
+              <span className="text-[11px] font-mono text-[var(--pm-text-dim)] text-center">
                 Oro recuperado y registrado correctamente.
               </span>
             </motion.div>

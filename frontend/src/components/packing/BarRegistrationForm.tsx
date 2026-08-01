@@ -45,7 +45,7 @@ export function BarRegistrationForm({
       </div>
       <form onSubmit={onSubmit} className="p-5 space-y-4">
         <div className="space-y-1">
-          <label className="text-[10px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider">Proveedor</label>
+          <label className="text-[11px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider">Proveedor</label>
           <select value={clientId} onChange={e => onClientIdChange(e.target.value)}
             className="w-full bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] rounded-lg px-3 py-2.5 text-xs font-sans text-[var(--pm-text-primary)] focus:outline-none focus:border-[var(--pm-accent-gold)] transition-colors cursor-pointer">
             <option value="" disabled>Seleccionar...</option>
@@ -54,26 +54,26 @@ export function BarRegistrationForm({
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="space-y-1">
-            <label className="text-[10px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider">Código de Barra</label>
+            <label className="text-[11px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider">Código de Barra</label>
             <input type="text" placeholder="Ej: BARRA-A001" value={barNumber}
               onChange={e => onBarNumberChange(e.target.value.toUpperCase())}
               className="w-full bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] rounded-lg px-3 py-2.5 text-xs font-mono text-[var(--pm-text-primary)] focus:outline-none focus:border-[var(--pm-accent-gold)] transition-colors uppercase placeholder:text-[var(--pm-text-dim)]/30" required />
           </div>
           <div className="space-y-1">
-            <label className="text-[10px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider flex items-center gap-1">
+            <label className="text-[11px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider flex items-center gap-1">
               <Weight className="w-3 h-3" /> Peso Bruto
             </label>
             <input type="number" step="any" placeholder="0.00" value={grossWeight}
               onChange={e => onGrossWeightChange(e.target.value)}
               className="w-full bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] rounded-lg px-3 py-2.5 text-xs font-mono text-[var(--pm-text-primary)] focus:outline-none focus:border-[var(--pm-accent-gold)] transition-colors placeholder:text-[var(--pm-text-dim)]/30" required />
             {weightWarning && (
-              <span className="text-[9px] font-mono text-[var(--pm-accent-amber)] flex items-center gap-1 mt-1">
+              <span className="text-[10px] font-mono text-[var(--pm-accent-amber)] flex items-center gap-1 mt-1">
                 <AlertTriangle className="w-3 h-3" /> Peso superior a 24,900 g
               </span>
             )}
           </div>
           <div className="space-y-1">
-            <label className="text-[10px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider flex items-center gap-1">
+            <label className="text-[11px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider flex items-center gap-1">
               <Microscope className="w-3 h-3" /> Ley Au (‰)
             </label>
             <input type="number" min="0" max="1000" step="0.1" placeholder="999.9" value={purity}
@@ -86,10 +86,10 @@ export function BarRegistrationForm({
             className="p-4 rounded-xl border" style={{ background: 'rgba(212,175,55,0.06)', borderColor: 'rgba(212,175,55,0.2)' }}>
             <div className="flex items-center gap-1.5 mb-2">
               <Zap className="w-3.5 h-3.5 text-[var(--pm-accent-gold)]" />
-              <span className="text-[9px] font-mono font-bold text-[var(--pm-accent-gold)] uppercase tracking-wider">Cálculo en Tiempo Real</span>
+              <span className="text-[10px] font-mono font-bold text-[var(--pm-accent-gold)] uppercase tracking-wider">Cálculo en Tiempo Real</span>
             </div>
             <div className="text-center">
-              <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block">Peso Fino</span>
+              <span className="text-[10px] font-mono text-[var(--pm-text-dim)] block">Peso Fino</span>
               <span className="text-sm font-mono font-bold text-[var(--pm-text-primary)]">{formatNumber(liveFA, 4)} g</span>
             </div>
           </motion.div>

@@ -84,7 +84,7 @@ export function CameraTerminal({ onCapture, onClose }: CameraTerminalProps) {
           <select
             value={selectedDeviceId}
             onChange={e => { setSelectedDeviceId(e.target.value); setFacing('user'); }}
-            className="w-full bg-[var(--pm-bg-deepest)] border border-[var(--pm-accent-cyan)]/30 rounded-lg px-3 py-2 text-[10px] font-mono text-[var(--pm-text-primary)] focus:outline-none focus:border-[var(--pm-accent-cyan)] appearance-none cursor-pointer"
+            className="w-full bg-[var(--pm-bg-deepest)] border border-[var(--pm-accent-cyan)]/30 rounded-lg px-3 py-2 text-[11px] font-mono text-[var(--pm-text-primary)] focus:outline-none focus:border-[var(--pm-accent-cyan)] appearance-none cursor-pointer"
           >
             <option value="">Cámara frontal/posterior</option>
             {devices.map((d, index) => (
@@ -103,7 +103,7 @@ export function CameraTerminal({ onCapture, onClose }: CameraTerminalProps) {
           <div className="text-center p-6">
             <Camera className="w-8 h-8 text-[var(--pm-accent-red)]/50 mx-auto mb-2" />
             <p className="text-[11px] font-mono text-[var(--pm-accent-red)]">{error}</p>
-            <p className="text-[9px] font-mono text-[var(--pm-text-dim)] mt-1">
+            <p className="text-[10px] font-mono text-[var(--pm-text-dim)] mt-1">
               Verifica los permisos de cámara en tu navegador
             </p>
           </div>
@@ -152,7 +152,7 @@ export function CameraTerminal({ onCapture, onClose }: CameraTerminalProps) {
           type="button"
           onClick={onClose}
           disabled={capturing}
-          className="px-4 py-2 rounded-lg border border-[var(--pm-border)] text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] hover:bg-[var(--pm-bg-tertiary)] text-[10px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer disabled:opacity-40"
+          className="px-4 py-2 rounded-lg border border-[var(--pm-border)] text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] hover:bg-[var(--pm-bg-tertiary)] text-[11px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer disabled:opacity-40"
         >
           Cancelar
         </button>
@@ -181,7 +181,7 @@ export function CameraTerminal({ onCapture, onClose }: CameraTerminalProps) {
           type="button"
           onClick={toggleCamera}
           disabled={!stream || !!error || capturing}
-          className="px-4 py-2 rounded-lg border border-[var(--pm-accent-cyan)]/30 text-[var(--pm-accent-cyan)] hover:bg-[var(--pm-accent-cyan)]/10 text-[10px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer disabled:opacity-30 flex items-center gap-1.5"
+          className="px-4 py-2 rounded-lg border border-[var(--pm-accent-cyan)]/30 text-[var(--pm-accent-cyan)] hover:bg-[var(--pm-accent-cyan)]/10 text-[11px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer disabled:opacity-30 flex items-center gap-1.5"
         >
           <RefreshCw className="w-3 h-3" /> Girar
         </button>

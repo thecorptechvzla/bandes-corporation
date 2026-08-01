@@ -62,7 +62,7 @@ export function BarAccordion({
       <div className="flex flex-col items-center justify-center py-16 text-[var(--pm-text-dim)]">
         <Package className="w-10 h-10 text-[var(--pm-accent-gold)]/20 mb-3 animate-pulse" />
         <span className="text-sm font-sans">Sin ítems disponibles</span>
-        <p className="text-[10px] font-mono mt-1">Asegúrese de que haya procesos cerrados o barras en stock.</p>
+        <p className="text-[11px] font-mono mt-1">Asegúrese de que haya procesos cerrados o barras en stock.</p>
       </div>
     );
   }
@@ -104,7 +104,7 @@ export function BarAccordion({
                     <span className="text-xs font-sans font-semibold text-white truncate">
                       {items[0].clientName}
                     </span>
-                    <span className="text-[9px] font-mono text-blue-200/60">
+                    <span className="text-[10px] font-mono text-blue-200/60">
                       {items[0].clientRif}
                     </span>
                   </div>
@@ -112,7 +112,7 @@ export function BarAccordion({
               </div>
 
               <div className="flex items-center gap-3 shrink-0">
-                <span className="text-[10px] font-mono text-blue-200/80">
+                <span className="text-[11px] font-mono text-blue-200/80">
                   {barCount > 0 && `${barCount} barra(s)`}
                   {barCount > 0 && lotCount > 0 && ' · '}
                   {lotCount > 0 && `${lotCount} lote(s)`}
@@ -137,7 +137,7 @@ export function BarAccordion({
                   <div className="overflow-x-auto border-t border-[var(--pm-border)]/20">
                     <table className="w-full border-collapse text-xs">
                       <thead className="sticky top-0 z-10 bg-[var(--pm-bg-secondary)]">
-                        <tr className="text-[9px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider">
+                        <tr className="text-[10px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider">
                           <th className="w-10 px-4 py-2.5 bg-[var(--pm-bg-secondary)]">
                             {/* checkbox column spacer */}
                           </th>
@@ -180,7 +180,7 @@ export function BarAccordion({
                                {/* Status */}
                                <td className="px-4 py-1.5 text-left">
                                  <span
-                                   className={`text-[7px] font-mono font-bold px-1.5 py-0.5 rounded shrink-0 w-20 text-center ${
+                                   className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded shrink-0 w-20 text-center ${
                                      item.type === 'lot'
                                        ? 'text-[var(--pm-accent-amber)] bg-[var(--pm-accent-amber)]/10'
                                        : 'text-slate-400 bg-slate-500/10'

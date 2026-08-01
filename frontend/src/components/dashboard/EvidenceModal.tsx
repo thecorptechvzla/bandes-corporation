@@ -62,7 +62,7 @@ export function EvidenceModal({ barId, bars, onClose }: EvidenceModalProps) {
       >
         <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-[var(--hud-border)]/30">
           <div>
-            <span className="text-[9px] font-mono font-bold text-[var(--hud-accent-sky)] uppercase tracking-wider flex items-center gap-1.5">
+            <span className="text-[10px] font-mono font-bold text-[var(--hud-accent-sky)] uppercase tracking-wider flex items-center gap-1.5">
               <ClipboardCheck className="w-3.5 h-3.5" /> EVIDENCIA
             </span>
             <h2 className="text-lg font-mono font-bold text-[var(--hud-text-primary)] mt-0.5 tracking-tight">
@@ -72,9 +72,9 @@ export function EvidenceModal({ barId, bars, onClose }: EvidenceModalProps) {
           <div className="text-right">
             <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border ${STATUS_STYLES[bar.status] || ''}`}>
               <Check className={`w-3 h-3 ${bar.status === 'PROCESANDO' ? 'text-cyan-400' : bar.status === 'EXITED' ? 'text-[var(--hud-text-dim)]' : 'text-[var(--hud-accent-emerald)]'}`} />
-              <span className={`text-[9px] font-mono font-bold ${bar.status === 'PROCESANDO' ? 'text-cyan-400' : bar.status === 'EXITED' ? 'text-[var(--hud-text-dim)]' : 'text-[var(--hud-accent-emerald)]'}`}>{STATUS_LABELS[bar.status] || bar.status}</span>
+              <span className={`text-[10px] font-mono font-bold ${bar.status === 'PROCESANDO' ? 'text-cyan-400' : bar.status === 'EXITED' ? 'text-[var(--hud-text-dim)]' : 'text-[var(--hud-accent-emerald)]'}`}>{STATUS_LABELS[bar.status] || bar.status}</span>
             </div>
-            <span className="text-[8px] font-mono text-[var(--hud-text-dim)] block mt-1">
+            <span className="text-[9px] font-mono text-[var(--hud-text-dim)] block mt-1">
               {new Date(bar.updatedAt).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
             </span>
           </div>
@@ -91,22 +91,22 @@ export function EvidenceModal({ barId, bars, onClose }: EvidenceModalProps) {
             ) : (
               <div className="text-center p-6">
                 <Camera className="w-8 h-8 text-[var(--hud-text-dim)]/30 mx-auto mb-2" />
-                <p className="text-[10px] font-mono text-[var(--hud-text-dim)]/40">Sin evidencia fotográfica</p>
+                <p className="text-[11px] font-mono text-[var(--hud-text-dim)]/60">Sin evidencia fotográfica</p>
               </div>
             )}
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="p-3 rounded-xl border border-[var(--hud-accent-gold)]/20 bg-[var(--hud-accent-gold)]/5">
-              <span className="text-[8px] font-mono text-[var(--hud-text-dim)] uppercase tracking-wider block text-center">Peso Bruto</span>
+              <span className="text-[9px] font-mono text-[var(--hud-text-dim)] uppercase tracking-wider block text-center">Peso Bruto</span>
               <span className="text-sm font-mono font-bold text-[var(--hud-accent-gold)] block text-center mt-1">{formatNumber(Number(bar.grossWeight), 2)} g</span>
             </div>
             <div className="p-3 rounded-xl border border-[var(--hud-accent-sky)]/20 bg-[var(--hud-accent-sky)]/5">
-              <span className="text-[8px] font-mono text-[var(--hud-text-dim)] uppercase tracking-wider block text-center">Ley Au</span>
+              <span className="text-[9px] font-mono text-[var(--hud-text-dim)] uppercase tracking-wider block text-center">Ley Au</span>
               <span className="text-sm font-mono font-bold text-[var(--hud-accent-sky)] block text-center mt-1">{formatNumber(Number(bar.purity), 1)} ‰</span>
             </div>
             <div className="p-3 rounded-xl border border-[var(--hud-accent-gold)]/20 bg-[var(--hud-accent-gold)]/5">
-              <span className="text-[8px] font-mono text-[var(--hud-text-dim)] uppercase tracking-wider block text-center">Peso Fino</span>
+              <span className="text-[9px] font-mono text-[var(--hud-text-dim)] uppercase tracking-wider block text-center">Peso Fino</span>
               <span className="text-sm font-mono font-bold text-[var(--hud-accent-gold)] block text-center mt-1">{formatNumber(Number(bar.fineWeight), 4)} g</span>
             </div>
           </div>

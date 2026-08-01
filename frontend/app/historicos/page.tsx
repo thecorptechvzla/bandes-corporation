@@ -246,7 +246,7 @@ export default function V2HistoricosPage() {
           </div>
           <div>
             <h1 className="text-lg font-bold text-[var(--pm-text-primary)] tracking-tight">Históricos</h1>
-            <p className="text-[10px] font-mono text-[var(--pm-text-dim)]">Registro auditable de movimientos del sistema</p>
+            <p className="text-[11px] font-mono text-[var(--pm-text-dim)]">Registro auditable de movimientos del sistema</p>
           </div>
         </div>
       </div>
@@ -258,7 +258,7 @@ export default function V2HistoricosPage() {
             <div className="w-7 h-7 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
               <ArrowDownToLine className="w-3.5 h-3.5 text-emerald-400" />
             </div>
-            <span className="text-[10px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider">Ingresado</span>
+            <span className="text-[11px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider">Ingresado</span>
           </div>
           <div className="space-y-1.5">
             <div className="flex justify-between text-[11px] font-mono">
@@ -281,7 +281,7 @@ export default function V2HistoricosPage() {
             <div className="w-7 h-7 rounded-lg bg-rose-500/10 border border-rose-500/20 flex items-center justify-center">
               <ArrowUpFromLine className="w-3.5 h-3.5 text-rose-400" />
             </div>
-            <span className="text-[10px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider">Egresado</span>
+            <span className="text-[11px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider">Egresado</span>
           </div>
           <div className="space-y-1.5">
             <div className="flex justify-between text-[11px] font-mono">
@@ -304,7 +304,7 @@ export default function V2HistoricosPage() {
             <div className="w-7 h-7 rounded-lg bg-[var(--pm-accent-gold)]/10 border border-[var(--pm-accent-gold)]/20 flex items-center justify-center">
               <Scale className="w-3.5 h-3.5 text-[var(--pm-accent-gold)]" />
             </div>
-            <span className="text-[10px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider">Balance</span>
+            <span className="text-[11px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider">Balance</span>
           </div>
           <div className="space-y-1.5">
             <div className="flex justify-between text-[11px] font-mono">
@@ -385,7 +385,7 @@ export default function V2HistoricosPage() {
             <BalanceTable clientRows={clientRows} totals={totals} hasActiveFilters={hasAnyFilter} />
             <button onClick={handleExportPDF} disabled={exporting}
               className="absolute top-5 right-5 flex items-center gap-2 px-4 py-2 bg-[var(--pm-accent-gold)]/10 hover:bg-[var(--pm-accent-gold)]/20
-                border border-[var(--pm-accent-gold)]/30 text-[var(--pm-accent-gold)] text-[10px] font-mono font-bold
+                border border-[var(--pm-accent-gold)]/30 text-[var(--pm-accent-gold)] text-[11px] font-mono font-bold
                 uppercase tracking-wider rounded-lg transition-all active:scale-95 disabled:opacity-50 cursor-pointer z-10">
               {exporting ? (
                 <RefreshCw className="w-3.5 h-3.5 animate-spin" />

@@ -20,7 +20,7 @@ export function FinalizeConfirmationModal({ isOpen, onClose, onConfirm }: Finali
             <ClipboardCheck className="w-7 h-7 text-[var(--pm-accent-emerald)]" strokeWidth={2.5} />
           </div>
           <h2 className="text-sm font-mono font-bold text-[var(--pm-text-primary)] uppercase tracking-wider">Confirmar Validación</h2>
-          <p className="text-[10px] font-mono text-[var(--pm-text-dim)] mt-2 leading-relaxed">
+          <p className="text-[11px] font-mono text-[var(--pm-text-dim)] mt-2 leading-relaxed">
             ¿Confirmar recepción técnica del material? Se marcará el Packing como <strong className="text-[var(--pm-accent-emerald)]">VALIDADO</strong>{' '}
             y las barras estarán disponibles para fundición.
           </p>

@@ -122,10 +122,10 @@ export function PinPadModal({
               <Shield className="w-6 h-6 text-[var(--pm-accent-gold)]" />
             )}
           </div>
-          <h2 className="text-sm font-mono font-bold text-[var(--pm-text-primary)] tracking-widest uppercase">
+          <h2 className="text-sm font-mono font-bold text-[var(--pm-text-primary)] tracking-wider uppercase">
             {unlocked ? 'ACCESO CONCEDIDO' : title}
           </h2>
-          <p className="text-[10px] font-mono text-[var(--pm-text-dim)] mt-1">
+          <p className="text-[11px] font-mono text-[var(--pm-text-dim)] mt-1">
             {unlocked ? '>_ BARRA DESBLOQUEADA' : subtitle}
           </p>
         </motion.div>
@@ -168,7 +168,7 @@ export function PinPadModal({
               className="flex items-center gap-2 px-4 py-2 rounded-lg mb-4"
               style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)' }}
             >
-              <span className="text-[10px] font-mono font-bold text-[var(--pm-accent-red)] tracking-wider">
+              <span className="text-[11px] font-mono font-bold text-[var(--pm-accent-red)] tracking-wider">
                 {'>_ ACCESO DENEGADO'}
               </span>
             </motion.div>
@@ -210,7 +210,7 @@ export function PinPadModal({
           <button
             type="button"
             onClick={() => setShowPin(!showPin)}
-            className="flex items-center gap-1.5 text-[9px] font-mono text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] transition-colors mb-4 cursor-pointer pointer-events-auto"
+            className="flex items-center gap-1.5 text-[10px] font-mono text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] transition-colors mb-4 cursor-pointer pointer-events-auto"
           >
             {showPin ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
             {showPin ? 'OCULTAR' : 'MOSTRAR'} PIN
@@ -225,14 +225,14 @@ export function PinPadModal({
             className="w-full space-y-4 pointer-events-auto"
           >
             <div className="text-center mb-2">
-              <span className="text-[10px] font-mono text-[var(--pm-accent-gold)] tracking-wider">
+              <span className="text-[11px] font-mono text-[var(--pm-accent-gold)] tracking-wider">
                 EDITAR VALORES — {barInfo.barNumber}
               </span>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <label className="text-[9px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider">
+                <label className="text-[10px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider">
                   PESO FÍSICO (g)
                 </label>
                 <input
@@ -244,7 +244,7 @@ export function PinPadModal({
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-[9px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider">
+                <label className="text-[10px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider">
                   LEY FÍSICA (‰)
                 </label>
                 <input
@@ -304,7 +304,7 @@ export function PinPadModal({
             style={{ background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.2)' }}
           >
             <Check className="w-3.5 h-3.5 text-[var(--pm-accent-emerald)]" />
-            <span className="text-[10px] font-mono font-bold text-[var(--pm-accent-emerald)] tracking-wider">
+            <span className="text-[11px] font-mono font-bold text-[var(--pm-accent-emerald)] tracking-wider">
               {'>_ EDICIÓN HABILITADA'}
             </span>
           </motion.div>

@@ -32,7 +32,7 @@ export function ConfirmBulkUploadModal({ data, fileName, onClose, onConfirm }: C
 
         <div className="p-4 rounded-xl border border-[var(--pm-border)]/40 bg-[var(--pm-bg-deepest)]/30 text-center">
           <FileSpreadsheet className="w-5 h-5 text-[var(--pm-accent-amber)] mx-auto mb-1" />
-          <p className="text-[10px] font-mono text-[var(--pm-text-dim)] truncate">{fileName}</p>
+          <p className="text-[11px] font-mono text-[var(--pm-text-dim)] truncate">{fileName}</p>
         </div>
 
         <div className="p-4 rounded-xl border border-[var(--pm-accent-cyan)]/30 bg-[var(--pm-accent-cyan)]/5 text-center">

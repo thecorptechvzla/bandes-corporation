@@ -41,9 +41,9 @@ export function LotDetailModal({ lot, bars, onClose }: LotDetailModalProps) {
               <Package className="w-4 h-4 text-[var(--pm-accent-gold)]" />
             </div>
             <div className="min-w-0">
-              <span className="text-[9px] font-mono font-bold text-[var(--pm-accent-gold)] uppercase tracking-wider">Detalle de Lote</span>
+              <span className="text-[10px] font-mono font-bold text-[var(--pm-accent-gold)] uppercase tracking-wider">Detalle de Lote</span>
               <h3 className="text-sm font-sans font-semibold text-[var(--pm-text-primary)] mt-0.5 truncate">{lot.name}</h3>
-              <p className="text-[10px] font-mono text-[var(--pm-text-dim)] mt-0.5 truncate">Proceso: {lot.processName} · {lot.clientName}</p>
+              <p className="text-[11px] font-mono text-[var(--pm-text-dim)] mt-0.5 truncate">Proceso: {lot.processName} · {lot.clientName}</p>
             </div>
           </div>
         </div>
@@ -54,11 +54,11 @@ export function LotDetailModal({ lot, bars, onClose }: LotDetailModalProps) {
           <div className="flex flex-col items-center justify-center py-10 text-[var(--pm-text-dim)]">
             <Package className="w-8 h-8 text-[var(--pm-text-dim)]/30 mb-2" />
             <span className="text-xs font-sans mb-1">Sin barras asociadas</span>
-            <p className="text-[9px] font-mono">No se encontraron barras para este lote.</p>
+            <p className="text-[10px] font-mono">No se encontraron barras para este lote.</p>
           </div>
         ) : (
           <div className="space-y-5">
-            <div className="flex items-center justify-between text-[10px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider">
+            <div className="flex items-center justify-between text-[11px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider">
               <span>Desglose de Barras Fundidas</span>
               <span>{lotBars.length} barra{lotBars.length !== 1 ? 's' : ''}</span>
             </div>
@@ -66,7 +66,7 @@ export function LotDetailModal({ lot, bars, onClose }: LotDetailModalProps) {
               <div className="rounded-xl border border-[var(--pm-border)]/30 w-full">
                 <table className="w-full table-fixed border-collapse text-xs font-sans">
                   <thead>
-                    <tr className="text-[10px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider">
+                    <tr className="text-[11px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider">
                       <th className="w-[25%] text-left px-4 py-3 border-b border-[var(--pm-border)]/50">Código</th>
                       <th className="w-[25%] text-right px-4 py-3 border-b border-[var(--pm-border)]/50">Peso Bruto (g)</th>
                       <th className="w-[25%] text-right px-4 py-3 border-b border-[var(--pm-border)]/50">Ley Au (‰)</th>
@@ -100,7 +100,7 @@ export function LotDetailModal({ lot, bars, onClose }: LotDetailModalProps) {
                   <Package className="w-4 h-4 text-[var(--pm-accent-gold)]" />
                 </div>
                 <div className="min-w-0">
-                  <span className="text-[9px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider">R (Recuperado)</span>
+                  <span className="text-[10px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider">R (Recuperado)</span>
                   <p className="text-sm font-mono font-bold text-[var(--pm-text-primary)]">{formatNumber(Number(lot.availableWeight || 0), 2)} g</p>
                 </div>
               </div>
@@ -117,7 +117,7 @@ export function LotDetailModal({ lot, bars, onClose }: LotDetailModalProps) {
                   </svg>
                 </div>
                 <div className="min-w-0">
-                  <span className="text-[9px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider">Eficiencia</span>
+                  <span className="text-[10px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider">Eficiencia</span>
                   <p className={`text-sm font-mono font-bold ${
                     efficiency !== null && efficiency >= 99
                       ? 'text-[var(--pm-accent-emerald)]'
