@@ -6,6 +6,7 @@ import { ShoppingCart, Package, Building2, Send } from 'lucide-react';
 import { formatNumber } from '@/lib/format';
 import { ClientDropdown } from '@/components/egresos/ClientDropdown';
 import type { Bar } from '@/types/api';
+import type { UnifiedItem } from '@/types/egresos';
 
 interface AvailableLot {
   id: string;
@@ -29,7 +30,7 @@ interface BuyerClient {
 interface CheckoutSummaryPanelProps {
   selectedLots: AvailableLot[];
   selectedBars: Bar[];
-  groupedByClient: Record<string, any[]>;
+  groupedByClient: Record<string, UnifiedItem[]>;
   totalWeight: number;
   grossTotal: number;
   clientCount: number;
@@ -95,8 +96,8 @@ export function CheckoutSummaryPanel({
               </span>
               {Object.entries(groupedByClient).map(([cId, items]) => {
                 const first = items[0];
-                const clientName = first.clientName || first.client?.name || 'DESCONOCIDO';
-                const clientTotal = items.reduce((s: number, item: any) => s + (item.pesoFino || item.availableWeight || Number(item.fineWeight)), 0);
+                const clientName = first.clientName || 'DESCONOCIDO';
+                const clientTotal = items.reduce((s, item) => s + item.pesoFino, 0);
                 return (
                   <div key={cId} className="p-3 rounded-lg border border-[var(--pm-border)] bg-[var(--pm-bg-deepest)]/40">
                     <div className="flex items-center justify-between mb-2">
@@ -107,7 +108,7 @@ export function CheckoutSummaryPanel({
                       <span className="text-[11px] font-mono font-bold text-[var(--pm-accent-gold)]">{fmtWeightDisplay(clientTotal)}</span>
                     </div>
                     <div className="space-y-1">
-                      {items.map((item: any) => {
+                      {items.map((item) => {
                         const isLot = item.type === 'lot';
                         const badgeLabel = isLot ? 'REFUNDIDO' : 'SIN REFUNDIR';
                         return (
@@ -116,9 +117,9 @@ export function CheckoutSummaryPanel({
                               <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded w-20 text-center ${
                                 isLot ? 'bg-[var(--pm-accent-amber)]/10 text-[var(--pm-accent-amber)]' : 'bg-slate-500/10 text-slate-400'
                               }`}>{badgeLabel}</span>
-                              <span className="text-[var(--pm-text-primary)]">{label}</span>
+                              <span className="text-[var(--pm-text-primary)]">{item.code}</span>
                             </div>
-                            <span className="text-[var(--pm-text-primary)]">{formatNumber(weight, 4)} g</span>
+                            <span className="text-[var(--pm-text-primary)]">{formatNumber(item.pesoFino, 4)} g</span>
                           </div>
                         );
                       })}
