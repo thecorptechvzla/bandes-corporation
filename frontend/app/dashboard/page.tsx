@@ -215,6 +215,18 @@ export default function V2DashboardPage() {
     [clientBalances],
   );
 
+  const lotGrossWeight = useMemo(() => {
+    const map: Record<string, number> = {};
+    for (const b of bars) if (b.lotId) map[b.lotId] = (map[b.lotId] || 0) + Number(b.grossWeight);
+    return map;
+  }, [bars]);
+
+  const lotFineWeight = useMemo(() => {
+    const map: Record<string, number> = {};
+    for (const b of bars) if (b.lotId) map[b.lotId] = (map[b.lotId] || 0) + Number(b.fineWeight);
+    return map;
+  }, [bars]);
+
   const ingresosTreemap = useMemo(() => {
     const map: Record<string, number> = {};
     filteredBars.forEach(b => {
@@ -444,6 +456,8 @@ export default function V2DashboardPage() {
         lots={bovedaLots}
         bars={inStockBars}
         clients={clients}
+        lotGrossWeight={lotGrossWeight}
+        lotFineWeight={lotFineWeight}
         onClose={() => setIsBovedaModalOpen(false)}
         onBarClick={(id) => setEvidenceBarId(id)}
       />

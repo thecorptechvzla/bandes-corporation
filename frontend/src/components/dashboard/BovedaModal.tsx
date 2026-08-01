@@ -34,11 +34,13 @@ interface BovedaModalProps {
   lots: BovedaLot[];
   bars: Bar[];
   clients: Client[];
+  lotGrossWeight?: Record<string, number>;
+  lotFineWeight?: Record<string, number>;
   onClose: () => void;
   onBarClick?: (barId: string) => void;
 }
 
-export function BovedaModal({ isOpen, lots, bars, clients, onClose, onBarClick }: BovedaModalProps) {
+export function BovedaModal({ isOpen, lots, bars, clients, lotGrossWeight, lotFineWeight, onClose, onBarClick }: BovedaModalProps) {
   const [tab, setTab] = useState<Tab>('fundido');
   const [expandedFundidoId, setExpandedFundidoId] = useState<string | null>(null);
   const [fundidoLotPages, setFundidoLotPages] = useState<Record<string, number>>({});
@@ -71,6 +73,18 @@ export function BovedaModal({ isOpen, lots, bars, clients, onClose, onBarClick }
     [lots],
   );
 
+  const totalFundidoBruto = useMemo(
+    () => lots.reduce((s, l) => s + (lotGrossWeight?.[l.id] ?? 0), 0),
+    [lots, lotGrossWeight],
+  );
+
+  const totalFundidoFino = useMemo(
+    () => lots.reduce((s, l) => s + (lotFineWeight?.[l.id] ?? 0), 0),
+    [lots, lotFineWeight],
+  );
+
+  const totalMerma = Math.max(0, totalFundidoFino - totalRecovered);
+
   const totalFineWeight = useMemo(
     () => bars.reduce((s, b) => s + Number(b.fineWeight ?? 0), 0),
     [bars],
@@ -81,8 +95,8 @@ export function BovedaModal({ isOpen, lots, bars, clients, onClose, onBarClick }
     [bars],
   );
 
-  const grandTotalBruto = tab === 'fundido' ? 0 : totalGrossWeight;
-  const grandTotalFino = tab === 'fundido' ? totalRecovered : totalFineWeight;
+  const grandTotalBruto = tab === 'fundido' ? totalFundidoBruto : totalGrossWeight;
+  const grandTotalFino = tab === 'fundido' ? totalFundidoFino : totalFineWeight;
 
   const tabDefs: { key: Tab; label: string; count: number }[] = [
     { key: 'fundido', label: 'FUNDIDO', count: lots.length },
@@ -159,7 +173,7 @@ export function BovedaModal({ isOpen, lots, bars, clients, onClose, onBarClick }
 
                   {grouped.map(({ id, clientName, rif, lots: clientLots }) => {
                     const isExpanded = expandedFundidoId === id;
-                    const clientTotal = clientLots.reduce((s, l) => s + Number(l.recovered ?? 0), 0);
+                    const clientTotal = clientLots.reduce((s, l) => s + (lotGrossWeight?.[l.id] ?? 0), 0);
                     return (
                       <div key={id}>
                         <div
@@ -180,7 +194,7 @@ export function BovedaModal({ isOpen, lots, bars, clients, onClose, onBarClick }
                             </div>
                             <div className="flex items-center gap-3 flex-shrink-0">
                               <span className="text-[10px] font-mono text-[var(--hud-text-dim)] whitespace-nowrap">
-                                Fino: {formatNumber(clientTotal, 2)} g
+                                Bruto: {formatNumber(clientTotal, 2)} g
                               </span>
                               <span className="text-[10px] font-mono text-[var(--hud-text-dim)] bg-[var(--hud-bg-deepest)]/50 px-2 py-0.5 border border-[var(--hud-border)] rounded whitespace-nowrap">
                                 {clientLots.length} LOTES
@@ -222,7 +236,7 @@ export function BovedaModal({ isOpen, lots, bars, clients, onClose, onBarClick }
                                               <span className="text-[9px] font-mono font-bold tracking-[0.1em] uppercase text-[var(--hud-text-muted)]">Operador</span>
                                             </th>
                                             <th className="w-[25%] text-right px-4 py-3 bg-[var(--hud-bg-primary)]">
-                                              <span className="text-[9px] font-mono font-bold tracking-[0.1em] uppercase text-[var(--hud-text-muted)]">Peso Recuperado (g)</span>
+                                              <span className="text-[9px] font-mono font-bold tracking-[0.1em] uppercase text-[var(--hud-text-muted)]">Peso Bruto (g)</span>
                                             </th>
                                             <th className="w-[25%] text-right px-4 py-3 bg-[var(--hud-bg-primary)]">
                                               <span className="text-[9px] font-mono font-bold tracking-[0.1em] uppercase text-[var(--hud-text-muted)]">Fecha</span>
@@ -245,7 +259,7 @@ export function BovedaModal({ isOpen, lots, bars, clients, onClose, onBarClick }
                                                 {lot.operator ?? '—'}
                                               </td>
                                               <td className="text-right px-4 py-3 font-mono text-[11px] text-[var(--hud-accent-gold)] tabular-nums">
-                                                {formatNumber(Number(lot.recovered ?? 0), 2)}
+                                                {formatNumber(lotGrossWeight?.[lot.id] ?? 0, 2)}
                                               </td>
                                               <td className="text-right px-4 py-3 font-mono text-[11px] text-[var(--hud-text-dim)]">
                                                 {lot.recoveryAt
@@ -350,6 +364,18 @@ export function BovedaModal({ isOpen, lots, bars, clients, onClose, onBarClick }
                     </span>{' '}
                     <span className="text-[10px] text-[var(--hud-text-dim)]">g</span>
                   </span>
+                  {tab === 'fundido' && (
+                    <>
+                      <span className="text-[10px] text-[var(--hud-text-dim)]/30">|</span>
+                      <span className="text-xs font-mono text-[var(--hud-text-dim)]">
+                        Merma:{' '}
+                        <span className="text-[var(--hud-accent-amber)] font-bold text-sm">
+                          {formatNumber(totalMerma, 2)}
+                        </span>{' '}
+                        <span className="text-[10px] text-[var(--hud-text-dim)]">g</span>
+                      </span>
+                    </>
+                  )}
                 </div>
               </div>
 
@@ -372,6 +398,15 @@ export function BovedaModal({ isOpen, lots, bars, clients, onClose, onBarClick }
                       <span className="text-[10px] font-normal text-[var(--hud-text-dim)]">g</span>
                     </div>
                   </div>
+                  {tab === 'fundido' && (
+                    <div>
+                      <div className="text-[9px] text-[var(--hud-text-dim)] uppercase tracking-wider">Merma</div>
+                      <div className="text-[13px] font-mono font-bold text-[var(--hud-accent-amber)] leading-tight whitespace-nowrap">
+                        {formatNumber(totalMerma, 2)}{' '}
+                        <span className="text-[10px] font-normal text-[var(--hud-text-dim)]">g</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
