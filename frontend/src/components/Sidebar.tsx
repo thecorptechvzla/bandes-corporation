@@ -32,6 +32,7 @@ export const Sidebar: React.FC = () => {
     { id: 'reportes', name: 'Reportes', icon: FileText },
     { id: 'historicos', name: 'Históricos', icon: History },
   ];
+  // test
 
   return (
     <>
