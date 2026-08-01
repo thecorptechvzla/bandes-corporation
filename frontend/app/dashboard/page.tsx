@@ -211,7 +211,7 @@ export default function V2DashboardPage() {
   }, [clients, filteredBars, processes, filteredExits]);
 
   const totalBalance = useMemo(
-    () => clientBalances.reduce((s, c) => s + c.balance, 0),
+    () => clientBalances.reduce((s, c) => s + c.ingresoBruto, 0),
     [clientBalances],
   );
 
