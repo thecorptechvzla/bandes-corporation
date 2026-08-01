@@ -227,6 +227,18 @@ export default function V2DashboardPage() {
     return map;
   }, [bars]);
 
+  const sinFundirGross = useMemo(
+    () => inStockBars.reduce((s, b) => s + Number(b.grossWeight), 0),
+    [inStockBars],
+  );
+
+  const fundidoGross = useMemo(
+    () => bovedaLots.reduce((s, l) => s + (lotGrossWeight[l.id] ?? 0), 0),
+    [bovedaLots, lotGrossWeight],
+  );
+
+  const bovedaGross = fundidoGross + sinFundirGross;
+
   const ingresosTreemap = useMemo(() => {
     const map: Record<string, number> = {};
     filteredBars.forEach(b => {
@@ -288,7 +300,7 @@ export default function V2DashboardPage() {
     },
     {
       label: 'Oro en Bóveda',
-      value: metrics?.oroEnBoveda.fineWeight ?? 0,
+      value: bovedaGross,
       subicon: Warehouse,
       sublabel: '',
       accent: KPI_COLORS[2].accent,
@@ -300,15 +312,15 @@ export default function V2DashboardPage() {
         { data: sparkSinFundir, color: '#F97316', label: 'Sin Fundir' },
       ],
       subValues: [
-        { label: 'Fundido', value: metrics?.oroEnBoveda.fundido ?? 0, icon: Warehouse },
-        { label: 'Sin Fundir', value: metrics?.oroEnBoveda.sinFundir ?? 0, icon: Inbox },
+        { label: 'Fundido', value: fundidoGross, icon: Warehouse },
+        { label: 'Sin Fundir', value: sinFundirGross, icon: Inbox },
       ],
     },
     {
       label: 'Por Refundir',
-      value: metrics?.porRefundir.fineWeight ?? 0,
+      value: sinFundirGross,
       subicon: Inbox,
-      sublabel: `Barras en stock: ${formatNumber(metrics?.porRefundir.fineWeight ?? 0, 2)} g en espera`,
+      sublabel: `Barras en stock: ${formatNumber(sinFundirGross, 2)} g en espera`,
       accent: KPI_COLORS[3].accent,
       tag: KPI_COLORS[3].label,
       postfix: '',
