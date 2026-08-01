@@ -165,7 +165,7 @@ export function SupplierDirectory({
                       </div>
                       <div className="flex items-center gap-3 flex-shrink-0">
                         <span className="text-[11px] font-mono text-[var(--hud-text-dim)] whitespace-nowrap">
-                          Bruto: {formatNumber(clientTotals.grossWeight, 2)} g · Fino: {formatNumber(clientTotals.fa, 2)} g
+                          Bruto: <span className="text-[var(--hud-accent-gold)] font-bold">{formatNumber(clientTotals.grossWeight, 2)} g</span> · Fino: <span className="text-[var(--hud-text-primary)] font-bold">{formatNumber(clientTotals.fa, 2)} g</span>
                         </span>
                         <span className="text-[11px] font-mono text-[var(--hud-text-dim)] bg-[var(--hud-bg-deepest)]/50 px-2 py-0.5 border border-[var(--hud-border)] rounded whitespace-nowrap">
                           {clientBars.length} BARRAS
@@ -206,13 +206,13 @@ export function SupplierDirectory({
                                     <span className="text-[11px]">{bar.barNumber}</span>
                                   </td>
                                   {purityFirst && (
-                                    <td className="text-right px-4 py-3 font-mono text-[var(--hud-text-primary)]">{formatNumber(Number(bar.purity), 2)}</td>
+                                    <td className="text-right px-4 py-3 font-mono text-[var(--hud-accent-cyan)]">{formatNumber(Number(bar.purity), 2)}</td>
                                   )}
-                                  <td className="text-right px-4 py-3 font-mono text-[var(--hud-text-primary)]">{formatNumber(Number(bar.grossWeight), 2)}</td>
+                                  <td className="text-right px-4 py-3 font-mono text-[var(--hud-accent-gold)]">{formatNumber(Number(bar.grossWeight), 2)}</td>
                                   {!purityFirst && (
-                                    <td className="text-right px-4 py-3 font-mono text-[var(--hud-text-primary)]">{formatNumber(Number(bar.purity), 2)}</td>
+                                    <td className="text-right px-4 py-3 font-mono text-[var(--hud-accent-cyan)]">{formatNumber(Number(bar.purity), 2)}</td>
                                   )}
-                                  <td className="text-right px-4 py-3 font-mono text-[var(--hud-accent-gold)]">{formatNumber(Number(bar.fineWeight), 2)}</td>
+                                  <td className="text-right px-4 py-3 font-mono text-[var(--hud-text-primary)]">{formatNumber(Number(bar.fineWeight), 2)}</td>
                                   <td className="text-right px-4 py-3 whitespace-nowrap">
                                     <StatusBadge status={bar.status} size="sm" />
                                   </td>
@@ -227,9 +227,9 @@ export function SupplierDirectory({
                                   Total {client.name}
                                 </td>
                                 {purityFirst && <td />}
-                                <td className="text-right px-4 py-3 font-mono text-xs text-[var(--hud-text-primary)]">{formatNumber(clientTotals.grossWeight, 2)}</td>
+                                <td className="text-right px-4 py-3 font-mono text-xs text-[var(--hud-accent-gold)]">{formatNumber(clientTotals.grossWeight, 2)}</td>
                                 {!purityFirst && <td />}
-                                <td className="text-right px-4 py-3 font-mono text-xs text-[var(--hud-accent-gold)]">{formatNumber(clientTotals.fa, 2)}</td>
+                                <td className="text-right px-4 py-3 font-mono text-xs text-[var(--hud-text-primary)]">{formatNumber(clientTotals.fa, 2)}</td>
                                 <td colSpan={1} />
                               </tr>
                             </tfoot>
@@ -299,7 +299,7 @@ export function SupplierDirectory({
               <span className="text-[11px] text-[var(--hud-text-dim)]/30">|</span>
               <span className="text-xs font-mono text-[var(--hud-text-dim)]">
                 Peso Fino:{' '}
-                <span className="text-[var(--hud-accent-gold)] font-bold text-sm">
+                <span className="text-[var(--hud-text-primary)] font-bold text-sm">
                   {formatNumber(grandTotal.fa, 2)}
                 </span>{' '}
                 <span className="text-[11px] text-[var(--hud-text-dim)]">g</span>
@@ -321,7 +321,7 @@ export function SupplierDirectory({
               </div>
               <div>
                 <div className="text-[10px] text-[var(--hud-text-dim)] uppercase tracking-wider">Peso Fino</div>
-                <div className="text-[13px] font-mono font-bold text-[var(--hud-accent-gold)] leading-tight whitespace-nowrap">
+                <div className="text-[13px] font-mono font-bold text-[var(--hud-text-primary)] leading-tight whitespace-nowrap">
                   {formatNumber(grandTotal.fa, 2)}{' '}
                   <span className="text-[11px] font-normal text-[var(--hud-text-dim)]">g</span>
                 </div>

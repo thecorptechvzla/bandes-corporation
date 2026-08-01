@@ -88,10 +88,10 @@ export function BalancesTable({ clientBalances, totalBalance, onClientClick }: B
                   <td className="sticky left-0 z-10 text-left text-xs font-sans font-semibold text-[var(--hud-text-primary)] px-5 py-3 truncate max-w-[180px] balances-row-sticky">
                     {c.name}
                   </td>
-                  <td className="text-right text-xs font-mono text-[var(--hud-text-dim)] px-4 py-3">
+                  <td className="text-right text-xs font-mono text-[var(--hud-accent-gold)] px-4 py-3">
                     {fmtG(c.ingresoBruto)}
                   </td>
-                  <td className="text-right text-xs font-mono text-[var(--hud-accent-gold)] px-4 py-3">
+                  <td className="text-right text-xs font-mono text-[var(--hud-text-primary)] px-4 py-3">
                     {fmtG(c.fa)}
                   </td>
                   <td className="text-right text-xs font-mono text-slate-400 px-4 py-3">
