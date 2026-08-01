@@ -23,6 +23,25 @@ export function BalancesTable({ clientBalances, totalBalance, onClientClick }: B
     [clientBalances]
   );
 
+  const totals = useMemo(
+    () =>
+      sorted.reduce(
+        (acc, c) => {
+          acc.ingresoBruto += c.ingresoBruto;
+          acc.fa += c.fa;
+          acc.r += c.r;
+          acc.egresos += c.egresos;
+          acc.balance += c.balance;
+          acc.mermaG += c.mermaG;
+          return acc;
+        },
+        { ingresoBruto: 0, fa: 0, r: 0, egresos: 0, balance: 0, mermaG: 0 },
+      ),
+    [sorted],
+  );
+
+  const leyTotal = totals.ingresoBruto > 0 ? (totals.fa / totals.ingresoBruto) * 100 : null;
+
   const handleRowClick = useCallback((e: React.MouseEvent<HTMLTableSectionElement>) => {
     const tr = (e.target as HTMLElement).closest('tr');
     if (tr?.dataset?.clientId) onClientClick(tr.dataset.clientId);
@@ -114,6 +133,39 @@ export function BalancesTable({ clientBalances, totalBalance, onClientClick }: B
                 </tr>
               ))}
             </tbody>
+            <tfoot>
+              <tr className="border-t border-[var(--hud-border)] bg-[var(--hud-bg-base)] sticky bottom-0">
+                <td
+                  className="sticky left-0 z-10 text-left text-xs font-sans font-bold uppercase tracking-wider text-[var(--hud-text-primary)] px-5 py-3"
+                  style={{ background: 'var(--hud-bg-base)' }}
+                >
+                  TOTALES
+                </td>
+                <td className="text-right text-xs font-mono font-bold text-[var(--hud-accent-gold)] px-4 py-3">
+                  {fmtG(totals.ingresoBruto)}
+                </td>
+                <td className="text-right text-xs font-mono font-bold text-[var(--hud-accent-gold)] px-4 py-3">
+                  {fmtG(totals.fa)}
+                </td>
+                <td className="text-right text-xs font-mono font-bold text-[var(--hud-accent-gold)] px-4 py-3">
+                  {leyTotal !== null ? `${formatNumber(leyTotal, 2)}%` : '—'}
+                </td>
+                <td className="text-right text-xs font-mono font-bold text-[var(--hud-accent-gold)] px-4 py-3">
+                  {fmtG(totals.r)}
+                </td>
+                <td className="text-right text-xs font-mono font-bold text-[var(--hud-accent-gold)] px-4 py-3">
+                  {fmtG(totals.egresos)}
+                </td>
+                <td className={`text-right text-xs font-mono font-bold px-4 py-3 ${totals.balance >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                  {fmtG(Math.abs(totals.balance))}
+                  {totals.balance < 0 ? ' −' : ''}
+                </td>
+                <td className="text-right text-xs font-mono font-bold text-[var(--hud-accent-gold)] px-4 py-3">
+                  {fmtG(totals.mermaG)}
+                  <span className="text-[var(--hud-text-muted)] ml-1">(—)</span>
+                </td>
+              </tr>
+            </tfoot>
           </table>
         </div>
       )}
