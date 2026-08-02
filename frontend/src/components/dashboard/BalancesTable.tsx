@@ -29,13 +29,12 @@ export function BalancesTable({ clientBalances, totalBalance, onClientClick }: B
         (acc, c) => {
           acc.ingresoBruto += c.ingresoBruto;
           acc.fa += c.fa;
-          acc.r += c.r;
           acc.egresos += c.egresos;
           acc.balance += c.balance;
           acc.mermaG += c.mermaG;
           return acc;
         },
-        { ingresoBruto: 0, fa: 0, r: 0, egresos: 0, balance: 0, mermaG: 0 },
+        { ingresoBruto: 0, fa: 0, egresos: 0, balance: 0, mermaG: 0 },
       ),
     [sorted],
   );
@@ -91,7 +90,6 @@ export function BalancesTable({ clientBalances, totalBalance, onClientClick }: B
                 <th className={TH}>Ingreso Bruto</th>
                 <th className={TH}>Peso Fino</th>
                 <th className={TH}>Ley Au</th>
-                <th className={TH}>Recuperado (R)</th>
                 <th className={TH}>Egresos</th>
                 <th className={TH}>Balance</th>
                 <th className={TH}>Merma</th>
@@ -115,9 +113,6 @@ export function BalancesTable({ clientBalances, totalBalance, onClientClick }: B
                   </td>
                   <td className="text-right text-xs font-mono text-slate-400 px-4 py-3">
                     {formatNumber(c.leyAu, 1)}%
-                  </td>
-                  <td className="text-right text-xs font-mono text-[var(--hud-accent-amber)] px-4 py-3">
-                    {fmtG(c.r)}
                   </td>
                   <td className="text-right text-xs font-mono text-[var(--hud-accent-red)] px-4 py-3">
                     {fmtG(c.egresos)}
@@ -149,9 +144,6 @@ export function BalancesTable({ clientBalances, totalBalance, onClientClick }: B
                 </td>
                 <td className="text-right text-xs font-mono font-bold text-[var(--hud-accent-gold)] px-4 py-3">
                   {leyTotal !== null ? `${formatNumber(leyTotal, 2)}%` : '—'}
-                </td>
-                <td className="text-right text-xs font-mono font-bold text-[var(--hud-accent-gold)] px-4 py-3">
-                  {fmtG(totals.r)}
                 </td>
                 <td className="text-right text-xs font-mono font-bold text-[var(--hud-accent-gold)] px-4 py-3">
                   {fmtG(totals.egresos)}
