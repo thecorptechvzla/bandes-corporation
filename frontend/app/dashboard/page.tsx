@@ -202,7 +202,7 @@ export default function V2DashboardPage() {
       const clientExits = filteredExits.filter(e =>
         e.exitDetails.some(d => d.lot?.process?.client?.id === client.id));
       const egresos = clientExits.reduce((s, e) => s + Number(e.totalWeight), 0);
-      const balance = fa + r - egresos;
+      const balance = ingresoBruto - egresos;
       const leyAu = ingresoBruto > 0 ? (fa / ingresoBruto) * 100 : 0;
       const sinFundir = Math.max(0, fa - r);
       const faProcesado = clientBars
