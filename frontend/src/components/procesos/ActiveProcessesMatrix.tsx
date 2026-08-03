@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { motion } from 'motion/react';
-import { Layers, Flame, Boxes, GitMerge, X, XCircle, AlertTriangle } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { Layers, Flame, Boxes, GitMerge, ChevronDown, X, XCircle, AlertTriangle } from 'lucide-react';
 import { formatNumber } from '@/lib/format';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import type { Process, Lot, Bar, Client } from '@/types/api';
@@ -20,6 +20,13 @@ export function ActiveProcessesMatrix({ activeProcesses, lotBarsMap, processLots
   const [pendingCancel, setPendingCancel] = useState<{ id: string; name: string } | null>(null);
   const [cancelLoading, setCancelLoading] = useState(false);
   const [cancelError, setCancelError] = useState('');
+  const [openSections, setOpenSections] = useState<Set<string>>(() => new Set(['estandar', 'mixtos']));
+
+  const toggleSection = (key: string) => setOpenSections(prev => {
+    const next = new Set(prev);
+    if (next.has(key)) next.delete(key); else next.add(key);
+    return next;
+  });
 
   const handleConfirmCancel = async () => {
     if (!pendingCancel || !onCancelProcess) return;
@@ -45,14 +52,17 @@ export function ActiveProcessesMatrix({ activeProcesses, lotBarsMap, processLots
     const totalGross = allBars.reduce((s, b) => s + Number(b.grossWeight), 0);
     const lot = pLots[0];
     const mixed = !!proc.isMixed;
+    const glow = mixed
+      ? 'shadow-[0_10px_30px_rgba(0,0,0,0.35)] hover:shadow-[0_18px_48px_rgba(168,85,247,0.15)]'
+      : 'shadow-[0_10px_30px_rgba(0,0,0,0.35)] hover:shadow-[0_18px_48px_rgba(0,0,0,0.5)]';
 
     return (
       <div key={proc.id}
-        className={`p-3 rounded-lg border bg-[var(--pm-bg-deepest)]/40 transition-transform active:scale-95 cursor-pointer ${mixed ? 'border-cyan-500/25' : 'border-[var(--pm-border)]'}`}
+        className={`p-6 rounded-lg border border-[var(--pm-border)] border-l-4 transition-all active:scale-95 cursor-pointer bg-[var(--pm-bg-deepest)]/40 ${glow} ${mixed ? 'border-l-purple-500/50' : 'border-l-blue-500/50'}`}
       >
-        <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <span className="text-[11px] font-mono font-bold text-[var(--pm-accent-gold)]">
+            <span className="text-sm font-mono font-bold text-[var(--pm-accent-gold)]">
               {proc.name}
             </span>
             {mixed && (
@@ -64,13 +74,13 @@ export function ActiveProcessesMatrix({ activeProcesses, lotBarsMap, processLots
               EN FUNDICIÓN
             </span>
           </div>
-          <span className="text-[10px] font-mono text-[var(--pm-text-dim)]">
+          <span className="text-[9px] font-mono text-[var(--pm-text-dim)]">
             {totalBars} barra{totalBars !== 1 ? 's' : ''} · <span className="text-[var(--pm-accent-gold)] font-bold">{formatNumber(totalGross, 2)} g bruto</span>
           </span>
         </div>
         {lot && (
           <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-3 text-[10px] font-mono text-[var(--pm-text-dim)]">
+            <div className="flex items-center gap-3 text-[8px] font-mono text-[var(--pm-text-dim)] opacity-80">
               <span>{lot.name}</span>
               {lot.moldCode && <span>({lot.moldCode})</span>}
               {lot.castingTemp && <span>Temp: {lot.castingTemp}°C</span>}
@@ -101,27 +111,48 @@ export function ActiveProcessesMatrix({ activeProcesses, lotBarsMap, processLots
   );
 
   const renderSection = (
+    key: string,
     title: string,
     icon: React.ReactNode,
     procs: Process[],
     emptyMessage: string,
     containerClass: string,
-  ) => (
-    <div className={containerClass}>
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <span className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: 'rgba(34,211,238,0.08)', border: '1px solid rgba(34,211,238,0.15)' }}>
-            {icon}
-          </span>
-          <span className="text-xs font-mono font-bold text-[var(--pm-text-primary)] uppercase tracking-wider">{title}</span>
-        </div>
-        <span className="text-[11px] font-mono text-[var(--pm-text-dim)]">{procs.length} proceso{procs.length !== 1 ? 's' : ''}</span>
+  ) => {
+    const isOpen = openSections.has(key);
+    return (
+      <div className={containerClass}>
+        <button type="button" onClick={() => toggleSection(key)}
+          className="w-full flex items-center justify-between gap-3 border-b border-neutral-800/50 pb-3 mb-6 cursor-pointer select-none text-left"
+        >
+          <div className="flex items-center gap-2">
+            <span className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: 'rgba(34,211,238,0.08)', border: '1px solid rgba(34,211,238,0.15)' }}>
+              {icon}
+            </span>
+            <span className="text-xs font-mono font-bold text-[var(--pm-text-primary)] uppercase tracking-wider">{title}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] font-mono text-[var(--pm-text-dim)]">{procs.length} proceso{procs.length !== 1 ? 's' : ''}</span>
+            <ChevronDown className={`w-4 h-4 text-[var(--pm-text-dim)] transition-transform duration-300 ease-out ${isOpen ? '' : '-rotate-90'}`} />
+          </div>
+        </button>
+        <AnimatePresence initial={false}>
+          {isOpen && (
+            <motion.div key="list"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.3, ease: 'easeOut' }}
+              className="overflow-hidden"
+            >
+              {procs.length === 0 ? renderEmpty(emptyMessage) : (
+                <div className="space-y-6">{procs.map(renderCard)}</div>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
-      {procs.length === 0 ? renderEmpty(emptyMessage) : (
-        <div className="space-y-2">{procs.map(renderCard)}</div>
-      )}
-    </div>
-  );
+    );
+  };
 
   return (
     <motion.div initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.15, duration: 0.4 }}
@@ -137,21 +168,23 @@ export function ActiveProcessesMatrix({ activeProcesses, lotBarsMap, processLots
         </span>
       </div>
 
-      <div className="p-5 space-y-6 overflow-y-auto max-h-[calc(100vh-280px)] v2-scroll">
+      <div className="p-5 overflow-y-auto max-h-[calc(100vh-280px)] v2-scroll">
         {renderSection(
+          'estandar',
           'Procesos Estándar',
           <Boxes className="w-3.5 h-3.5 text-[var(--pm-accent-cyan)]" />,
           estandar,
           'Sin procesos estándar activos.',
-          '',
+          'mb-12',
         )}
 
         {renderSection(
+          'mixtos',
           'Procesos Mixtos',
           <GitMerge className="w-3.5 h-3.5 text-[var(--pm-accent-gold)]" />,
           mixtos,
           'Sin procesos mixtos activos.',
-          'glass-panel rounded-2xl border border-cyan-500/20 p-4 shadow-[0_4px_16px_rgba(34,211,238,0.06)]',
+          'mt-2 glass-panel rounded-2xl border border-cyan-500/20 p-5 shadow-[0_4px_16px_rgba(34,211,238,0.06)]',
         )}
       </div>
 
