@@ -1,9 +1,10 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { Layers, Flame } from 'lucide-react';
+import { Layers, Flame, X, XCircle, AlertTriangle } from 'lucide-react';
 import { formatNumber } from '@/lib/format';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import type { Process, Lot, Bar, Client } from '@/types/api';
 
 interface ActiveProcessesMatrixProps {
@@ -12,9 +13,28 @@ interface ActiveProcessesMatrixProps {
   lotBarsMap: Record<string, Bar[]>;
   processLotsMap: Record<string, Lot[]>;
   onOpenRecovery: (lot: Lot) => void;
+  onCancelProcess?: (processId: string) => Promise<void>;
 }
 
-export function ActiveProcessesMatrix({ groupedProcesses, clients, lotBarsMap, processLotsMap, onOpenRecovery }: ActiveProcessesMatrixProps) {
+export function ActiveProcessesMatrix({ groupedProcesses, clients, lotBarsMap, processLotsMap, onOpenRecovery, onCancelProcess }: ActiveProcessesMatrixProps) {
+  const [pendingCancel, setPendingCancel] = useState<{ id: string; name: string } | null>(null);
+  const [cancelLoading, setCancelLoading] = useState(false);
+  const [cancelError, setCancelError] = useState('');
+
+  const handleConfirmCancel = async () => {
+    if (!pendingCancel || !onCancelProcess) return;
+    setCancelLoading(true);
+    setCancelError('');
+    try {
+      await onCancelProcess(pendingCancel.id);
+      setPendingCancel(null);
+    } catch (err: any) {
+      setCancelError(err?.response?.data?.message || err?.message || 'Error al cancelar el proceso');
+    } finally {
+      setCancelLoading(false);
+    }
+  };
+
   return (
     <motion.div initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.15, duration: 0.4 }}
       className="premium-card overflow-hidden"
@@ -77,16 +97,24 @@ export function ActiveProcessesMatrix({ groupedProcesses, clients, lotBarsMap, p
                           </span>
                         </div>
                         {lot && (
-                          <div className="flex items-center justify-between">
+                          <div className="flex items-center justify-between gap-2">
                             <div className="flex items-center gap-3 text-[10px] font-mono text-[var(--pm-text-dim)]">
                               <span>{lot.name}</span>
                               {lot.moldCode && <span>({lot.moldCode})</span>}
                               {lot.castingTemp && <span>Temp: {lot.castingTemp}°C</span>}
                             </div>
-                            <button type="button" onClick={() => onOpenRecovery(lot)}
-                              className="px-3 py-1.5 rounded text-[9px] font-mono font-bold uppercase tracking-wider transition-all active:scale-90 cursor-pointer"
-                              style={{ background: 'rgba(245,158,11,0.1)', color: 'var(--pm-accent-amber)', border: '1px solid rgba(245,158,11,0.2)' }}
-                            >⚡ Calibrar Colada</button>
+                            <div className="flex items-center gap-2 shrink-0">
+                              {onCancelProcess && (
+                                <button type="button" onClick={() => { setCancelError(''); setPendingCancel({ id: proc.id, name: proc.name }); }}
+                                  className="px-2.5 py-1.5 rounded text-[9px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer flex items-center gap-1"
+                                  style={{ background: 'rgba(244,63,94,0.1)', color: '#fb7185', border: '1px solid rgba(244,63,94,0.25)' }}
+                                ><X className="w-3 h-3" /> Cancelar Proceso</button>
+                              )}
+                              <button type="button" onClick={() => onOpenRecovery(lot)}
+                                className="px-3 py-1.5 rounded text-[9px] font-mono font-bold uppercase tracking-wider transition-all active:scale-90 cursor-pointer"
+                                style={{ background: 'rgba(245,158,11,0.1)', color: 'var(--pm-accent-amber)', border: '1px solid rgba(245,158,11,0.2)' }}
+                              >⚡ Calibrar Colada</button>
+                            </div>
                           </div>
                         )}
                       </div>
@@ -98,6 +126,31 @@ export function ActiveProcessesMatrix({ groupedProcesses, clients, lotBarsMap, p
           })
         )}
       </div>
+
+      <ConfirmDialog
+        isOpen={!!pendingCancel}
+        onClose={() => { if (!cancelLoading) setPendingCancel(null); }}
+        onConfirm={handleConfirmCancel}
+        icon={<XCircle className="w-4 h-4 text-rose-500" />}
+        title="Cancelar Proceso"
+        description="¿Está seguro de cancelar la fundición? Esto liberará todas las barras asociadas al inventario."
+        confirmLabel="CONFIRMAR Y LIBERAR"
+        cancelLabel="VOLVER"
+        variant="danger"
+        loading={cancelLoading}
+        size="md"
+      >
+        {pendingCancel && (
+          <p className="text-[10px] font-mono text-[var(--pm-text-dim)]">
+            Proceso: <span className="text-[var(--pm-text-primary)] font-bold">{pendingCancel.name}</span>
+          </p>
+        )}
+        {cancelError && (
+          <div className="flex items-center gap-2 p-2.5 rounded-lg text-[11px] font-mono bg-[var(--pm-accent-red)]/10 border border-[var(--pm-accent-red)]/25 text-[var(--pm-accent-red)]">
+            <AlertTriangle className="w-3.5 h-3.5 shrink-0" />{cancelError}
+          </div>
+        )}
+      </ConfirmDialog>
     </motion.div>
   );
 }

@@ -22,6 +22,7 @@ enum PackingStatus {
 enum ProcessStatus {
   OPEN
   CLOSED
+  CANCELLED
 }
 
 enum ClientRole {

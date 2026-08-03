@@ -68,7 +68,21 @@ export function useUpdateProcess() {
       api.patch(`/processes/${id}`, data).then((r) => r.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['processes'] });
+      queryClient.invalidateQueries({ queryKey: ['bars'] });
       queryClient.invalidateQueries({ queryKey: ['available-lots'] });
+    },
+  });
+}
+
+export function useCancelProcess() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api.patch(`/processes/${id}/cancel`).then((r) => r.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['processes'] });
+      queryClient.invalidateQueries({ queryKey: ['bars'] });
+      queryClient.invalidateQueries({ queryKey: ['available-lots'] });
+      queryClient.invalidateQueries({ queryKey: ['lots'] });
     },
   });
 }

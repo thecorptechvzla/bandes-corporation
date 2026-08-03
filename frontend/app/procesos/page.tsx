@@ -5,7 +5,7 @@ import { motion } from 'motion/react';
 import { Flame, Layers } from 'lucide-react';
 import { useClients } from '@/hooks/useClients';
 import { useBars } from '@/hooks/useBars';
-import { useProcesses, useCreateProcess } from '@/hooks/useProcesses';
+import { useProcesses, useCreateProcess, useCancelProcess } from '@/hooks/useProcesses';
 import { useLots } from '@/hooks/useLots';
 import { ProcessDetailModal } from '@/components/procesos/ProcessDetailModal';
 import { ActiveProcessesMatrix } from '@/components/procesos/ActiveProcessesMatrix';
@@ -20,6 +20,7 @@ export default function V2ProcesosPage() {
   const { data: processes = [] } = useProcesses();
   const { data: lots = [] } = useLots();
   const createProcess = useCreateProcess();
+  const cancelProcess = useCancelProcess();
 
   const [selectedClientIds, setSelectedClientIds] = useState<string[]>([]);
   const [selectedBarIds, setSelectedBarIds] = useState<string[]>([]);
@@ -271,6 +272,7 @@ export default function V2ProcesosPage() {
           lotBarsMap={lotBarsMap}
           processLotsMap={processLotsMap}
           onOpenRecovery={handleOpenRecovery}
+          onCancelProcess={(id) => cancelProcess.mutateAsync(id)}
         />
       </div>
 

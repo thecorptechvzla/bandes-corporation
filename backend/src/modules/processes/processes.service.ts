@@ -166,6 +166,49 @@ export class ProcessesService {
     });
   }
 
+  async cancel(id: string) {
+    return this.prisma.$transaction(
+      async (tx) => {
+        const process = await tx.process.findUnique({
+          where: { id },
+          include: {
+            lots: { select: { id: true } },
+          },
+        });
+
+        if (!process) {
+          throw new NotFoundException('Proceso no encontrado');
+        }
+
+        if (process.status !== 'OPEN') {
+          throw new BadRequestException(
+            `Solo se pueden cancelar procesos abiertos (estado actual: ${process.status})`,
+          );
+        }
+
+        const lotIds = process.lots.map((l) => l.id);
+
+        // Liberar todas las barras del proceso: PROCESANDO → IN_STOCK y desvincular del lote
+        const freed = await tx.bar.updateMany({
+          where: { lotId: { in: lotIds } },
+          data: { status: 'IN_STOCK', lotId: null },
+        });
+
+        const cancelled = await tx.process.update({
+          where: { id },
+          data: { status: 'CANCELLED' },
+          include: {
+            client: { select: { id: true, name: true } },
+            lots: true,
+          },
+        });
+
+        return { process: cancelled, freedBars: freed.count };
+      },
+      { timeout: 15_000 },
+    );
+  }
+
   async findAvailableLots(clientId: string) {
     const processes = await this.prisma.process.findMany({
       where: { clientId, status: 'CLOSED' },

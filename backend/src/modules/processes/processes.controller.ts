@@ -55,6 +55,11 @@ export class ProcessesController {
     }
   }
 
+  @Patch(':id/cancel')
+  cancel(@Param('id') id: string) {
+    return this.service.cancel(id);
+  }
+
   @Patch(':id')
   update(
     @Param('id') id: string,

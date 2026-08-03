@@ -15,7 +15,7 @@ export interface Process {
   name: string;
   clientId: string;
   isMixed?: boolean;
-  status: 'OPEN' | 'CLOSED';
+  status: 'OPEN' | 'CLOSED' | 'CANCELLED';
   createdAt: string;
   updatedAt: string;
   client?: Client;
