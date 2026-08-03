@@ -198,8 +198,8 @@ export function SmeltingConfigForm({
               </div>
             </div>
             {selectedClientCount > 1 && (
-              <p className="text-[9px] font-mono text-[var(--pm-text-dim)] text-center mt-2 italic">
-                Se creará un proceso por proveedor ({selectedClientCount} procesos)
+              <p className="text-[9px] font-mono text-[var(--pm-accent-amber)] text-center mt-2">
+                Se consolidará en 1 solo proceso mixto ({selectedClientCount} proveedores)
               </p>
             )}
           </motion.div>

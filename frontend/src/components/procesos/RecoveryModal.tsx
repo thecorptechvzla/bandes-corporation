@@ -180,7 +180,7 @@ export function RecoveryModal({ lot, lotBarsMap, processLotsMap, onClose, upload
               <span className="text-xs font-mono font-bold text-[var(--pm-text-primary)]">{formatNumber(lotGross, 2)} g</span>
             </div>
             <div className="p-2 rounded-lg border border-[var(--pm-border)] bg-[var(--pm-bg-deepest)]/50 text-center">
-              <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block">Peso Fino</span>
+              <span className="text-[8px] font-mono text-[var(--pm-text-dim)] block">FA Cargado</span>
               <span className="text-xs font-mono font-bold text-[var(--pm-accent-gold)]">{formatNumber(lotFA, 2)} g</span>
             </div>
           </div>

@@ -186,31 +186,25 @@ export default function V2ProcesosPage() {
       return;
     }
 
-    // Group selected bars by client
+    // Pick representative clientId from first selected bar
     const selectedBars = bars.filter(b => selectedBarIds.includes(b.id));
-    const barsByClient: Record<string, string[]> = {};
-    selectedBars.forEach(b => {
-      if (!barsByClient[b.clientId]) barsByClient[b.clientId] = [];
-      barsByClient[b.clientId].push(b.id);
-    });
+    if (selectedBars.length === 0) {
+      setFormError('No se encontraron barras seleccionadas.');
+      return;
+    }
+    const representativeClientId = selectedBars[0].clientId;
 
-    const clientIds = Object.keys(barsByClient);
     setCreating(true);
     try {
-      // Create one process per client (API constraint: single clientId per process)
-      const results = await Promise.all(
-        clientIds.map(clientId =>
-          createProcess.mutateAsync({
-            clientId,
-            barIds: barsByClient[clientId],
-            operator: 'SISTEMA',
-            moldCode: `FND-${Date.now().toString(36).toUpperCase()}`,
-          }),
-        ),
-      );
-      const processCount = results.length;
+      // Single consolidated process for all selected bars
+      await createProcess.mutateAsync({
+        clientId: representativeClientId,
+        barIds: selectedBarIds,
+        operator: 'SISTEMA',
+        moldCode: `FND-${Date.now().toString(36).toUpperCase()}`,
+      });
       setFormSuccess(
-        `Fundición iniciada — ${selectedBarIds.length} barra(s) en ${processCount} proceso(s).`,
+        `Fundición iniciada — ${selectedBarIds.length} barra(s) consolidadas en 1 solo proceso.`,
       );
       setSelectedBarIds([]);
       setSelectedClientIds([]);

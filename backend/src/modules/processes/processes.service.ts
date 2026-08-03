@@ -84,28 +84,9 @@ export class ProcessesService {
   }) {
     return this.prisma.$transaction(
       async (tx) => {
-        const count = await tx.process.count({
-          where: { clientId: data.clientId },
-        });
-        const seq = count + 1;
-        const name = `P-${seq}`;
-
-        const process = await tx.process.create({
-          data: { name, clientId: data.clientId },
-        });
-
-        const lot = await tx.lot.create({
-          data: {
-            name: `LOTE-${data.moldCode}`,
-            processId: process.id,
-            operator: data.operator,
-            castingTemp: data.castingTemp ?? 1064,
-            moldCode: data.moldCode,
-          },
-        });
-
         const bars = await tx.bar.findMany({
           where: { id: { in: data.barIds } },
+          include: { client: { select: { id: true, name: true } } },
         });
 
         const invalid = bars.filter(
@@ -117,6 +98,41 @@ export class ProcessesService {
           );
         }
 
+        // Detect mixed (bars from >1 supplier)
+        const uniqueClientIds = [...new Set(bars.map((b) => b.clientId))];
+        const isMixed = uniqueClientIds.length > 1;
+
+        // Representative clientId = first bar's client (required FK)
+        const representativeClientId = data.clientId;
+
+        // Generate sequential name
+        const count = await tx.process.count({
+          where: { clientId: representativeClientId },
+        });
+        const seq = count + 1;
+        const name = isMixed ? `PROCESO MIXTO-${seq}` : `P-${seq}`;
+
+        // Create single master process
+        const process = await tx.process.create({
+          data: {
+            name,
+            clientId: representativeClientId,
+            isMixed,
+          },
+        });
+
+        // Create ONE consolidated lot for all bars
+        const lot = await tx.lot.create({
+          data: {
+            name: `LOTE-${data.moldCode}`,
+            processId: process.id,
+            operator: data.operator,
+            castingTemp: data.castingTemp ?? 1064,
+            moldCode: data.moldCode,
+          },
+        });
+
+        // Assign ALL bars to the single lot
         await tx.bar.updateMany({
           where: { id: { in: data.barIds } },
           data: { status: 'PROCESANDO', lotId: lot.id },
@@ -124,12 +140,12 @@ export class ProcessesService {
 
         return {
           process,
-          lot,
-          barCount: data.barIds.length,
+          lots: [lot],
+          barCount: bars.length,
           barNumbers: bars.map((b) => b.barNumber),
         };
       },
-      { timeout: 10_000 },
+      { timeout: 15_000 },
     );
   }
 
