@@ -40,6 +40,7 @@ export function SmeltingConfigForm({
   onToggleClient, onSelectAllClients, onBarToggle, onSelectAllBarsOfClient,
   onToggleSupplier, isSupplierAllSelected, onSubmit,
 }: SmeltingConfigFormProps) {
+  const MAX_PROCESS_GROSS_G = 5000;
 
   const availableBars = useMemo(
     () => bars.filter(b => b.status === 'IN_STOCK' && !b.lotId),
@@ -69,6 +70,7 @@ export function SmeltingConfigForm({
   const allGross = clientGroups.reduce((s, g) => s + g.grossTotal, 0);
   const allFa = clientGroups.reduce((s, g) => s + g.faTotal, 0);
   const selectedClientCount = selectedClientIds.length;
+  const overMaxGross = allGross > MAX_PROCESS_GROSS_G;
   const allClientsSelected = selectedClientIds.length === clientsWithBars.length && clientsWithBars.length > 0;
 
   const visibleGroups = useMemo(() => {
@@ -203,6 +205,16 @@ export function SmeltingConfigForm({
               </p>
             )}
           </motion.div>
+        )}
+
+        {/* ─── Weight Warning ─── */}
+        {allSelectedCount > 0 && overMaxGross && (
+          <div className="flex items-center gap-2 p-3 rounded-lg text-xs font-mono bg-[var(--pm-accent-amber)]/10 border border-[var(--pm-accent-amber)]/25 text-[var(--pm-accent-amber)]">
+            <AlertTriangle className="w-4 h-4 shrink-0" />
+            <span>
+              El peso bruto seleccionado (<span className="font-bold">{formatNumber(allGross, 2)} g</span>) supera el máximo recomendado de 5 kg para un proceso de fundición. Puedes continuar, pero verifica la capacidad del horno.
+            </span>
+          </div>
         )}
 
         {/* ─── Errors / Success ─── */}
