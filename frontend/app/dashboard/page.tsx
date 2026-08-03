@@ -15,6 +15,7 @@ import { formatNumber } from '@/lib/format';
 import DashboardFilters from '@/components/DashboardFilters';
 import { EvidenceModal } from '@/components/dashboard/EvidenceModal';
 import { SupplierDirectoryModal } from '@/components/dashboard/SupplierDirectoryModal';
+import { ProcesoModal } from '@/components/dashboard/ProcesoModal';
 import { BovedaModal } from '@/components/dashboard/BovedaModal';
 import { KpiCardGrid, KPI_COLORS } from '@/components/dashboard/KpiCardGrid';
 import { BalancesTable } from '@/components/dashboard/BalancesTable';
@@ -457,12 +458,11 @@ export default function V2DashboardPage() {
       />
 
       {/* Oro en Proceso modal */}
-      <SupplierDirectoryModal
+      <ProcesoModal
         isOpen={isProcesoModalOpen}
         title="Oro en Proceso"
-        showSearch
+        processes={processes}
         bars={procesoBars}
-        clients={clients}
         onClose={() => setIsProcesoModalOpen(false)}
         onBarClick={(id) => setEvidenceBarId(id)}
       />
