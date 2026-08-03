@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import type { Bar, Client } from '@/types/api';
 import { LotDetailModal } from '@/components/egresos/LotDetailModal';
+import { EvidenceModal } from '@/components/packing/EvidenceModal';
 import { ConfirmDispatchModal } from '@/components/egresos/ConfirmDispatchModal';
 import { DispatchSuccessOverlay } from '@/components/egresos/DispatchSuccessOverlay';
 import { UnifiedItemPanel, type UnifiedItem } from '@/components/egresos/UnifiedItemPanel';
@@ -50,6 +51,7 @@ export default function V2EgresosPage() {
   const [message, setMessage] = useState('');
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [detailLotId, setDetailLotId] = useState<string | null>(null);
+  const [evidenceBarId, setEvidenceBarId] = useState<string | null>(null);
 
   const allAvailableLots: AvailableLot[] = useMemo(() => {
     return processes
@@ -113,8 +115,10 @@ export default function V2EgresosPage() {
       clientId: l.clientId,
       clientName: l.clientName,
       clientRif: l.clientRif,
-      pesoBruto: null,
-      leyAu: null,
+      pesoBruto: l.grossWeight > 0 ? l.grossWeight : null,
+      leyAu: l.grossWeight > 0 && l.availableWeight > 0
+        ? (l.availableWeight / l.grossWeight) * 1000
+        : null,
       pesoFino: l.availableWeight,
       barCount: l.barCount,
       isMixed: l.isMixed,
@@ -234,7 +238,11 @@ export default function V2EgresosPage() {
       groups[l.clientId].push({
         type: 'lot', id: l.id, code: l.name, provider: l.clientName,
         clientId: l.clientId, clientName: l.clientName, clientRif: l.clientRif,
-        pesoBruto: l.grossWeight > 0 ? l.grossWeight : null, leyAu: null, pesoFino: l.availableWeight, barCount: l.barCount,
+        pesoBruto: l.grossWeight > 0 ? l.grossWeight : null,
+        leyAu: l.grossWeight > 0 && l.availableWeight > 0
+          ? (l.availableWeight / l.grossWeight) * 1000
+          : null,
+        pesoFino: l.availableWeight, barCount: l.barCount,
         isMixed: l.isMixed, composition: l.composition,
       });
     });
@@ -307,6 +315,12 @@ export default function V2EgresosPage() {
     if (!destinationClient) return;
     setShowConfirmModal(true);
   };
+
+  const handleOpenDetail = useCallback((id: string) => {
+    const isLot = allAvailableLots.some(l => l.id === id);
+    if (isLot) setDetailLotId(id);
+    else setEvidenceBarId(id);
+  }, [allAvailableLots]);
 
   const handleDispatch = async () => {
     if (!destinationClient) return;
@@ -429,7 +443,7 @@ export default function V2EgresosPage() {
           onToggleSupplier={toggleSupplier}
           onToggleSupplierItems={toggleSupplierItems}
           isSupplierAllSelected={isSupplierAllSelected}
-          onSetDetailLotId={setDetailLotId}
+          onOpenDetail={handleOpenDetail}
         />
 
         <CheckoutSummaryPanel
@@ -487,6 +501,16 @@ export default function V2EgresosPage() {
       {detailLotId && detailLot && (
         <LotDetailModal lot={detailLot} bars={bars} onClose={() => setDetailLotId(null)} />
       )}
+
+      {/* Evidence Modal — Bar detail from table row tap */}
+      <EvidenceModal
+        barId={evidenceBarId}
+        bars={bars}
+        spValues={{}}
+        barPhotoUrls={{}}
+        label="DETALLE DE BARRA"
+        onClose={() => setEvidenceBarId(null)}
+      />
 
       <p className="text-[10px] text-[var(--pm-text-dim)] font-mono text-center opacity-70">
         Bandes v2 Premium · {allAvailableLots.length} lotes + {availableBars.length} barras disponibles · {totalSelectedCount} seleccionados

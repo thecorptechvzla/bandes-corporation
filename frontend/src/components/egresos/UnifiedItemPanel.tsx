@@ -21,13 +21,13 @@ interface UnifiedItemPanelProps {
   onToggleSupplier: (clientId: string) => void;
   onToggleSupplierItems: (clientId: string) => void;
   isSupplierAllSelected: (clientId: string) => boolean;
-  onSetDetailLotId?: (id: string | null) => void;
+  onOpenDetail?: (id: string) => void;
 }
 
 export function UnifiedItemPanel({
   items, searchQuery, onSearchChange, mixedOnly, onMixedToggle, filteredItems, groupedItems,
   openGroups, selectedIds, onToggleItem, onToggleSupplier, onToggleSupplierItems,
-  isSupplierAllSelected, onSetDetailLotId,
+  isSupplierAllSelected, onOpenDetail,
 }: UnifiedItemPanelProps) {
   const mixedCount = useMemo(() => items.filter(i => i.type === 'lot' && i.isMixed).length, [items]);
   const accordionGroups = useMemo(() => {
@@ -42,6 +42,8 @@ export function UnifiedItemPanel({
         pesoFino: item.pesoFino,
         clientName: item.clientName,
         clientRif: item.clientRif,
+        isMixed: item.isMixed,
+        composition: item.composition,
       }));
     });
     return result;
@@ -108,6 +110,7 @@ export function UnifiedItemPanel({
           onToggleSupplier={onToggleSupplier}
           onToggleSupplierItems={onToggleSupplierItems}
           isSupplierAllSelected={isSupplierAllSelected}
+          onOpenDetail={onOpenDetail}
         />
       </div>
     </motion.div>

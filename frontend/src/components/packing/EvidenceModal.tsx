@@ -14,9 +14,10 @@ interface EvidenceModalProps {
   spValues: Record<string, { grossWeight: number; purity: number; leyAg?: number }>;
   barPhotoUrls: Record<string, string>;
   onClose: () => void;
+  label?: string;
 }
 
-export function EvidenceModal({ barId, bars, packingBars, spValues, barPhotoUrls, onClose }: EvidenceModalProps) {
+export function EvidenceModal({ barId, bars, packingBars, spValues, barPhotoUrls, onClose, label = 'EVIDENCIA DE VALIDACIÓN' }: EvidenceModalProps) {
   const bar = bars.find(b => b.id === barId) || packingBars?.find(b => b.id === barId);
   if (!bar) return null;
 
@@ -37,7 +38,7 @@ export function EvidenceModal({ barId, bars, packingBars, spValues, barPhotoUrls
       <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-[var(--pm-border)]/20">
         <div>
           <span className="text-[10px] font-mono font-bold text-[var(--pm-accent-cyan)] uppercase tracking-wider flex items-center gap-1.5">
-            <ClipboardCheck className="w-3.5 h-3.5" /> EVIDENCIA DE VALIDACIÓN
+            <ClipboardCheck className="w-3.5 h-3.5" /> {label}
           </span>
           <h2 className="text-lg font-mono font-bold text-[var(--pm-text-primary)] mt-0.5 tracking-tight">
             {bar.barNumber}

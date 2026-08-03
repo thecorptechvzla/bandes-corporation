@@ -27,6 +27,7 @@ interface BarAccordionProps {
   onToggleSupplier: (clientId: string) => void;
   onToggleSupplierItems: (clientId: string) => void;
   isSupplierAllSelected: (clientId: string) => boolean;
+  onOpenDetail?: (id: string) => void;
 }
 
 function CheckboxIcon({ checked, indeterminate }: { checked: boolean; indeterminate?: boolean }) {
@@ -57,6 +58,7 @@ export function BarAccordion({
   onToggleSupplier,
   onToggleSupplierItems,
   isSupplierAllSelected,
+  onOpenDetail,
 }: BarAccordionProps) {
   const entries = useMemo(() => Object.entries(groups), [groups]);
 
@@ -157,8 +159,8 @@ export function BarAccordion({
                           return (
                             <tr
                               key={item.id}
-                              onClick={() => onToggleItem(item.id)}
-                              className={`group transition-all duration-100 cursor-pointer ${
+                              onClick={onOpenDetail ? () => onOpenDetail(item.id) : () => onToggleItem(item.id)}
+                              className={`group transition-all duration-100 cursor-pointer active:scale-[0.99] ${
                                 isSelected
                                   ? 'bg-[var(--pm-accent-amber)]/10'
                                   : idx % 2 === 0
@@ -209,7 +211,7 @@ export function BarAccordion({
                               </td>
                               {/* Ley Au */}
                               <td className="px-4 py-1.5 text-right font-mono font-medium text-cyan-400/80 text-[12px]">
-                                {item.leyAu !== null ? `${Number(item.leyAu)}‰` : '—'}
+                                {item.leyAu !== null ? `${formatNumber(Number(item.leyAu), 2)}‰` : '—'}
                               </td>
                               {/* Peso Fino */}
                               <td className="px-4 py-1.5 text-right font-mono font-medium text-slate-400 text-[12px]">
