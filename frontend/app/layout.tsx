@@ -8,8 +8,9 @@ import Link from 'next/link';
 import {
   LayoutDashboard, Users, Flame,
   ArrowLeftRight, FolderUp, LogOut,
-  Calendar, History, Menu, X,
+  Calendar, History, Menu, X, Loader2,
 } from 'lucide-react';
+import { getSession, clearSession } from '@/lib/auth';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 
@@ -62,9 +63,31 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
   const activeTab = pathname.split('/').pop() || 'dashboard';
+  const isLoginPage = pathname === '/login';
   const [sysTime, setSysTime] = useState('');
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [sessionReady, setSessionReady] = useState(false);
+  const [hasSession, setHasSession] = useState(false);
+
+  useEffect(() => {
+    setHasSession(Boolean(getSession()));
+    setSessionReady(true);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!sessionReady) return;
+    const authed = Boolean(getSession());
+    if (pathname === '/login' && authed) router.replace('/dashboard');
+    if (pathname !== '/login' && !authed) router.replace('/login');
+  }, [sessionReady, pathname, router]);
+
+  const handleLogout = () => {
+    clearSession();
+    setHasSession(false);
+    router.push('/login');
+  };
 
   useEffect(() => {
     const tick = () => {
@@ -103,14 +126,51 @@ export default function RootLayout({
       );
     });
 
+  const bodyClass = `${geistSans.variable} ${geistMono.variable} min-h-screen font-sans antialiased text-[var(--hud-text-primary)] bg-[var(--hud-bg-deepest)]`;
+
+  const head = (
+    <>
+      <title>Control Mining</title>
+      <link rel="icon" type="image/png" href="/Bandes2.png" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    </>
+  );
+
+  if (!sessionReady) {
+    return (
+      <html lang="es">
+        <head>{head}</head>
+        <body className={bodyClass}>
+          <div className="flex min-h-screen items-center justify-center bg-[var(--hud-bg-deepest)]">
+            <div className="flex items-center gap-3">
+              <Loader2 className="h-5 w-5 animate-spin text-[var(--hud-accent-gold)]" />
+              <span className="text-xs font-mono uppercase tracking-[0.2em] text-[var(--hud-text-dim)]">
+                Cargando…
+              </span>
+            </div>
+          </div>
+        </body>
+      </html>
+    );
+  }
+
+  if (isLoginPage && !hasSession) {
+    return (
+      <html lang="es">
+        <head>{head}</head>
+        <body className={bodyClass}>
+          <QueryClientProvider client={queryClient}>
+            <GoldTraceabilityProvider>{children}</GoldTraceabilityProvider>
+          </QueryClientProvider>
+        </body>
+      </html>
+    );
+  }
+
   return (
     <html lang="es">
-      <head>
-        <title>Control Mining</title>
-        <link rel="icon" type="image/png" href="/Bandes2.png" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      </head>
-      <body className={`${geistSans.variable} ${geistMono.variable} min-h-screen font-sans antialiased text-[var(--hud-text-primary)] bg-[var(--hud-bg-deepest)]`}>
+      <head>{head}</head>
+      <body className={bodyClass}>
         <QueryClientProvider client={queryClient}>
           <GoldTraceabilityProvider>
             <div className="hud-grid min-h-screen text-[var(--hud-text-primary)] font-sans flex overflow-hidden">
@@ -127,7 +187,7 @@ export default function RootLayout({
                     {renderNavItems()}
                   </nav>
                   <div className="px-3 py-4 space-y-1">
-                  <button className="nav-item w-full text-[11px] active:scale-95">
+                  <button onClick={handleLogout} className="nav-item w-full text-[11px] active:scale-95">
                     <LogOut className="w-3.5 h-3.5 shrink-0" />
                     <span>Salir</span>
                   </button>
@@ -168,7 +228,7 @@ export default function RootLayout({
                   {renderNavItems(() => setMobileOpen(false))}
                 </nav>
                 <div className="px-3 py-4 space-y-1">
-                  <button className="nav-item w-full text-[11px] active:scale-95">
+                  <button onClick={handleLogout} className="nav-item w-full text-[11px] active:scale-95">
                     <LogOut className="w-3.5 h-3.5 shrink-0" />
                     <span>Salir</span>
                   </button>
