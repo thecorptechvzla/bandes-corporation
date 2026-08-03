@@ -2,8 +2,9 @@
 
 import React from 'react';
 import { motion } from 'motion/react';
-import { ShoppingCart, Package, Building2, Send } from 'lucide-react';
+import { ShoppingCart, Package, Building2, Send, GitMerge } from 'lucide-react';
 import { formatNumber } from '@/lib/format';
+import { formatComposition } from '@/lib/composition';
 import { ClientDropdown } from '@/components/egresos/ClientDropdown';
 import type { Bar } from '@/types/api';
 import type { UnifiedItem } from '@/types/egresos';
@@ -111,15 +112,29 @@ export function CheckoutSummaryPanel({
                       {items.map((item) => {
                         const isLot = item.type === 'lot';
                         const badgeLabel = isLot ? 'REFUNDIDO' : 'SIN REFUNDIR';
+                        const isMixed = isLot && item.isMixed && item.composition && item.composition.length > 1;
                         return (
                           <div key={item.id} className="flex items-center justify-between text-[11px] font-mono">
-                            <div className="flex items-center gap-2">
-                              <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded w-20 text-center ${
-                                isLot ? 'bg-[var(--pm-accent-amber)]/10 text-[var(--pm-accent-amber)]' : 'bg-slate-500/10 text-slate-400'
-                              }`}>{badgeLabel}</span>
-                              <span className="text-[var(--pm-text-primary)]">{item.code}</span>
+                            <div className="flex flex-col gap-0.5 min-w-0">
+                              <div className="flex items-center gap-2">
+                                <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded w-20 text-center ${
+                                  isLot ? 'bg-[var(--pm-accent-amber)]/10 text-[var(--pm-accent-amber)]' : 'bg-slate-500/10 text-slate-400'
+                                }`}>{badgeLabel}</span>
+                                <span className="text-[var(--pm-text-primary)] truncate">{item.code}</span>
+                                {isMixed && (
+                                  <span className="flex items-center gap-1 text-[8px] font-mono">
+                                    <GitMerge className="w-2.5 h-2.5 text-purple-400 shrink-0" />
+                                    <span className="font-bold text-purple-400">MIXTO</span>
+                                  </span>
+                                )}
+                              </div>
+                              {isMixed && (
+                                <span className="pl-[4.75rem] text-[8px] font-mono text-purple-300/80">
+                                  {formatComposition(item.composition!)}
+                                </span>
+                              )}
                             </div>
-                            <span className="text-[var(--pm-text-primary)]">{formatNumber(item.pesoFino, 4)} g</span>
+                            <span className="text-[var(--pm-text-primary)] shrink-0">{formatNumber(item.pesoFino, 4)} g</span>
                           </div>
                         );
                       })}

@@ -1,9 +1,48 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service.js';
 
 @Injectable()
 export class ProcessesService {
   constructor(private prisma: PrismaService) {}
+
+  private buildLotComposition(
+    bars: {
+      clientId: string;
+      client?: { name?: string } | null;
+      fineWeight: number | string | { toString(): string };
+    }[],
+  ) {
+    const byClient = new Map<
+      string,
+      { clientId: string; clientName: string; weight: number }
+    >();
+    let total = 0;
+
+    for (const b of bars) {
+      const weight = Number(b.fineWeight) || 0;
+      total += weight;
+      const prev = byClient.get(b.clientId) || {
+        clientId: b.clientId,
+        clientName: b.client?.name || 'DESCONOCIDO',
+        weight: 0,
+      };
+      prev.weight += weight;
+      byClient.set(b.clientId, prev);
+    }
+
+    const composition = Array.from(byClient.values()).map((c) => ({
+      clientId: c.clientId,
+      clientName: c.clientName,
+      weight: Number(c.weight.toFixed(4)),
+      percentage: total > 0 ? Number(((c.weight / total) * 100).toFixed(2)) : 0,
+    }));
+
+    return { isMixed: composition.length > 1, composition };
+  }
 
   async findAll() {
     return this.prisma.process.findMany({
@@ -94,7 +133,10 @@ export class ProcessesService {
     );
   }
 
-  async update(id: string, data: { name?: string; status?: 'OPEN' | 'CLOSED' }) {
+  async update(
+    id: string,
+    data: { name?: string; status?: 'OPEN' | 'CLOSED' },
+  ) {
     const process = await this.findOne(id);
 
     if (data.status === 'CLOSED' && process.status === 'CLOSED') {
@@ -116,7 +158,13 @@ export class ProcessesService {
           include: {
             bars: {
               where: { status: { in: ['IN_STOCK', 'COMPLETADO'] } },
-              select: { fineWeight: true, leyAg: true, fineWeightAg: true },
+              select: {
+                fineWeight: true,
+                leyAg: true,
+                fineWeightAg: true,
+                clientId: true,
+                client: { select: { id: true, name: true } },
+              },
             },
           },
         },
@@ -131,14 +179,19 @@ export class ProcessesService {
       clientId: p.clientId,
       lots: p.lots
         .filter((l) => l.bars.length > 0)
-        .map((l) => ({
-          id: l.id,
-          name: l.name,
-          availableWeight: Number(
-            l.bars.reduce((sum, b) => sum + Number(b.fineWeight), 0),
-          ),
-          barCount: l.bars.length,
-        })),
+        .map((l) => {
+          const meta = this.buildLotComposition(l.bars);
+          return {
+            id: l.id,
+            name: l.name,
+            availableWeight: Number(
+              l.bars.reduce((sum, b) => sum + Number(b.fineWeight), 0),
+            ),
+            barCount: l.bars.length,
+            isMixed: meta.isMixed,
+            composition: meta.composition,
+          };
+        }),
     }));
   }
 
@@ -151,7 +204,13 @@ export class ProcessesService {
           include: {
             bars: {
               where: { status: { in: ['IN_STOCK', 'COMPLETADO'] } },
-              select: { fineWeight: true, leyAg: true, fineWeightAg: true },
+              select: {
+                fineWeight: true,
+                leyAg: true,
+                fineWeightAg: true,
+                clientId: true,
+                client: { select: { id: true, name: true } },
+              },
             },
           },
         },
@@ -168,14 +227,19 @@ export class ProcessesService {
         clientName: p.client.name,
         lots: p.lots
           .filter((l) => l.bars.length > 0)
-          .map((l) => ({
-            id: l.id,
-            name: l.name,
-            availableWeight: Number(
-              l.bars.reduce((sum, b) => sum + Number(b.fineWeight), 0),
-            ),
-            barCount: l.bars.length,
-          })),
+          .map((l) => {
+            const meta = this.buildLotComposition(l.bars);
+            return {
+              id: l.id,
+              name: l.name,
+              availableWeight: Number(
+                l.bars.reduce((sum, b) => sum + Number(b.fineWeight), 0),
+              ),
+              barCount: l.bars.length,
+              isMixed: meta.isMixed,
+              composition: meta.composition,
+            };
+          }),
       }))
       .filter((p) => p.lots.length > 0);
   }

@@ -1,5 +1,6 @@
 import { jsPDF } from 'jspdf';
 import { formatWeight, fetchLogoAsBase64 } from '@/lib/format';
+import { computeComposition } from '@/lib/composition';
 import type { MaterialExit } from '@/types/api';
 
 interface BarItem {
@@ -14,6 +15,7 @@ interface LotItem {
   name: string;
   weight: number;
   provider: string;
+  isMixed?: boolean;
 }
 
 export interface DispatchResult {
@@ -42,11 +44,29 @@ export function convertExitToDispatchResult(exit: MaterialExit): DispatchResult 
   let bars: BarItem[] = [];
 
   if (hasLots) {
-    lots = (exit.exitDetails || []).map(d => ({
-      name: d.lot?.name || '—',
-      weight: Number(d.weightAported),
-      provider: d.lot?.process?.client?.name || 'DESCONOCIDO',
-    }));
+    lots = (exit.exitDetails || []).flatMap<LotItem>(d => {
+      const composition = computeComposition(
+        (d.bars || []).map(b => ({
+          clientId: b.clientId || '',
+          clientName: b.client?.name || 'DESCONOCIDO',
+          fineWeight: Number(b.fineWeight || 0),
+        })),
+      );
+      if (composition.length > 1) {
+        return composition.map(entry => ({
+          name: d.lot?.name || '—',
+          weight: entry.weight,
+          provider: entry.clientName,
+          isMixed: true,
+        } as LotItem));
+      }
+      return [{
+        name: d.lot?.name || '—',
+        weight: Number(d.weightAported),
+        provider: d.lot?.process?.client?.name || 'DESCONOCIDO',
+        isMixed: false,
+      } as LotItem];
+    });
     lots.forEach(l => {
       const prev = providerMap.get(l.provider) || { count: 0, weight: 0 };
       providerMap.set(l.provider, { count: prev.count + 1, weight: prev.weight + l.weight });
@@ -100,6 +120,7 @@ export async function generateDispatchPDF(
   const isLotMode = data.type === 'lots';
   const itemCount = (data.lotCount ?? 0) + (data.barCount ?? 0);
   const isEmpresa = copyType === 'EMPRESA';
+  const hasMixedLot = (data.lots || []).some(l => l.isMixed);
 
   doc.setFillColor(7, 11, 20);
   doc.rect(0, 0, pw, 48, 'F');
@@ -170,6 +191,15 @@ export async function generateDispatchPDF(
   if (isEmpresa) {
     doc.text('DETALLE POR PROVEEDOR', m, y); y += 8;
 
+    if (hasMixedLot) {
+      doc.setTextColor(168, 85, 247);
+      doc.setFontSize(7);
+      doc.text('Nota: los lotes marcados con ◈ son MIXTOS y consolidan material de múltiples proveedores.', m, y); y += 6;
+      doc.setTextColor(40, 40, 40);
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'bold');
+    }
+
     data.providers.forEach((pv) => {
       if (y > 250) { doc.addPage(); y = 20; }
       doc.setFillColor(7, 11, 20);
@@ -201,13 +231,16 @@ export async function generateDispatchPDF(
             doc.setFillColor(248, 248, 248);
             doc.rect(m, y - 4, cw, 7, 'F');
           }
-          doc.setTextColor(80, 80, 80);
+          if (lot.isMixed) {
+            doc.setTextColor(168, 85, 247);
+          } else {
+            doc.setTextColor(245, 158, 11);
+          }
           doc.setFontSize(7);
           doc.setFont('helvetica', 'normal');
-          doc.setTextColor(245, 158, 11);
-          doc.text('REFUNDIDA', m + 3, y + 1);
+          doc.text(lot.isMixed ? 'MIXTA' : 'REFUNDIDA', m + 3, y + 1);
           doc.setTextColor(80, 80, 80);
-          doc.text(lot.name, m + 20, y + 1);
+          doc.text(`${lot.name}${lot.isMixed ? '  ◈' : ''}`, m + 20, y + 1);
           doc.text(formatWeight(Number(lot.weight)), pw - m - 2, y + 1, { align: 'right' });
           y += 7;
         });
@@ -263,6 +296,11 @@ export async function generateDispatchPDF(
       doc.text(`Total de ${itemLabel}: ${itemCount}`, m, y); y += 5;
     }
     doc.text(`Peso Fino Total: ${formatWeight(Number(data.totalWeight))}`, m, y); y += 5;
+    if (hasMixedLot) {
+      doc.setTextColor(168, 85, 247);
+      doc.text('Incluye lote(s) MIXTO(s): material consolidado de varios proveedores.', m, y); y += 5;
+      doc.setTextColor(80, 80, 80);
+    }
   }
 
   y += 4;

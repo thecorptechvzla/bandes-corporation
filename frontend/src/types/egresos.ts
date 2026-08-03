@@ -10,4 +10,6 @@ export interface UnifiedItem {
   leyAu: number | null;
   pesoFino: number;
   barCount?: number;
+  isMixed?: boolean;
+  composition?: { clientId: string; clientName: string; weight: number; percentage: number }[];
 }

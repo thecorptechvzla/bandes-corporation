@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import { Package } from 'lucide-react';
+import { Package, GitMerge } from 'lucide-react';
 import { ModalShell } from '@/components/ui/ModalShell';
 import { formatNumber } from '@/lib/format';
 import type { Bar } from '@/types/api';
@@ -15,6 +15,8 @@ interface AvailableLot {
   clientRif: string;
   availableWeight: number;
   barCount: number;
+  isMixed?: boolean;
+  composition?: { clientId: string; clientName: string; weight: number; percentage: number }[];
 }
 
 interface LotDetailModalProps {
@@ -58,6 +60,30 @@ export function LotDetailModal({ lot, bars, onClose }: LotDetailModalProps) {
           </div>
         ) : (
           <div className="space-y-5">
+            {lot.isMixed && lot.composition && lot.composition.length > 1 && (
+              <div className="p-4 rounded-xl border border-[rgba(168,85,247,0.3)] bg-[rgba(168,85,247,0.06)]">
+                <div className="flex items-center gap-2 mb-3">
+                  <GitMerge className="w-4 h-4 text-purple-400 shrink-0" />
+                  <span className="text-[10px] font-mono font-bold text-purple-300 uppercase tracking-wider">Composición Multi-Proveedor</span>
+                  <span className="ml-auto text-[9px] font-mono text-purple-300/70">Lote Mixto</span>
+                </div>
+                <div className="space-y-2">
+                  {lot.composition.map(entry => (
+                    <div key={entry.clientId} className="flex items-center gap-3">
+                      <span className="text-[10px] font-mono text-[var(--pm-text-primary)] w-32 truncate">{entry.clientName}</span>
+                      <div className="flex-1 h-1.5 rounded-full bg-[var(--pm-bg-deepest)]/80 overflow-hidden">
+                        <div
+                          className="h-full rounded-full"
+                          style={{ width: `${Math.min(entry.percentage, 100)}%`, background: 'linear-gradient(90deg, rgba(168,85,247,0.7), rgba(168,85,247,0.4))' }}
+                        />
+                      </div>
+                      <span className="text-[10px] font-mono font-bold text-purple-300 w-16 text-right">{entry.percentage}%</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div className="flex items-center justify-between text-[11px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider">
               <span>Desglose de Barras Fundidas</span>
               <span>{lotBars.length} barra{lotBars.length !== 1 ? 's' : ''}</span>

@@ -8,6 +8,7 @@ import { useBars } from '@/hooks/useBars';
 import { useCreateMaterialExit } from '@/hooks/useExits';
 import { formatNumber } from '@/lib/format';
 import { generateDispatchPDF, type DispatchResult } from '@/lib/generateDispatchPDF';
+import { computeComposition, isMixedLot } from '@/lib/composition';
 import {
   ArrowLeftRight, X, AlertTriangle, Package,
 } from 'lucide-react';
@@ -28,6 +29,8 @@ interface AvailableLot {
   availableWeight: number;
   grossWeight: number;
   barCount: number;
+  isMixed: boolean;
+  composition: { clientId: string; clientName: string; weight: number; percentage: number }[];
 }
 
 export default function V2EgresosPage() {
@@ -41,6 +44,7 @@ export default function V2EgresosPage() {
   const [openGroups, setOpenGroups] = useState<Set<string>>(new Set());
   const [destinationClient, setDestinationClient] = useState<{ id: string; name: string; rif: string; contactInfo?: string } | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [mixedOnly, setMixedOnly] = useState(false);
   const [status, setStatus] = useState<'idle' | 'processing' | 'success' | 'error'>('idle');
   const [dispatchResult, setDispatchResult] = useState<DispatchResult | null>(null);
   const [message, setMessage] = useState('');
@@ -58,6 +62,13 @@ export default function V2EgresosPage() {
             b => b.lotId === l.id && (b.status === 'IN_STOCK' || b.status === 'COMPLETADO'),
           );
           if (eligibleBars.length === 0) return null;
+          const composition = computeComposition(
+            eligibleBars.map(b => ({
+              clientId: b.clientId,
+              clientName: clients.find(c => c.id === b.clientId)?.name || 'DESCONOCIDO',
+              fineWeight: Number(b.fineWeight),
+            })),
+          );
           return {
             id: l.id,
             name: l.name,
@@ -72,6 +83,8 @@ export default function V2EgresosPage() {
               eligibleBars.reduce((s, b) => s + Number(b.grossWeight), 0),
             ),
             barCount: eligibleBars.length,
+            isMixed: isMixedLot(eligibleBars),
+            composition,
           };
         }),
       )
@@ -104,6 +117,8 @@ export default function V2EgresosPage() {
       leyAu: null,
       pesoFino: l.availableWeight,
       barCount: l.barCount,
+      isMixed: l.isMixed,
+      composition: l.composition,
     }));
     const barItems: UnifiedItem[] = availableBars.map(b => ({
       type: 'bar' as const,
@@ -121,13 +136,17 @@ export default function V2EgresosPage() {
   }, [allAvailableLots, availableBars, clients]);
 
   const filteredItems = useMemo(() => {
-    if (!searchQuery) return allUnifiedItems;
+    let items = allUnifiedItems;
+    if (mixedOnly) {
+      items = items.filter(i => i.type === 'lot' && i.isMixed);
+    }
+    if (!searchQuery) return items;
     const q = searchQuery.toLowerCase();
-    return allUnifiedItems.filter(i =>
+    return items.filter(i =>
       i.code.toLowerCase().includes(q) ||
       i.clientName.toLowerCase().includes(q),
     );
-  }, [allUnifiedItems, searchQuery]);
+  }, [allUnifiedItems, searchQuery, mixedOnly]);
 
   const groupedItems = useMemo(() => {
     const groups: Record<string, UnifiedItem[]> = {};
@@ -216,6 +235,7 @@ export default function V2EgresosPage() {
         type: 'lot', id: l.id, code: l.name, provider: l.clientName,
         clientId: l.clientId, clientName: l.clientName, clientRif: l.clientRif,
         pesoBruto: l.grossWeight > 0 ? l.grossWeight : null, leyAu: null, pesoFino: l.availableWeight, barCount: l.barCount,
+        isMixed: l.isMixed, composition: l.composition,
       });
     });
     selectedBars.forEach(b => {
@@ -305,10 +325,22 @@ export default function V2EgresosPage() {
 
       const result = await createExit.mutateAsync(payload);
 
+      const lotEntries = selectedLots.flatMap(l => {
+        if (l.isMixed && l.composition.length > 1) {
+          return l.composition.map(entry => ({
+            name: l.name,
+            weight: entry.weight,
+            provider: entry.clientName,
+            isMixed: true,
+          }));
+        }
+        return [{ name: l.name, weight: l.availableWeight, provider: l.clientName, isMixed: false }];
+      });
+
       const allProviders = new Map<string, { count: number; weight: number }>();
-      selectedLots.forEach(l => {
-        const prev = allProviders.get(l.clientName) || { count: 0, weight: 0 };
-        allProviders.set(l.clientName, { count: prev.count + 1, weight: prev.weight + l.availableWeight });
+      lotEntries.forEach(l => {
+        const prev = allProviders.get(l.provider) || { count: 0, weight: 0 };
+        allProviders.set(l.provider, { count: prev.count + 1, weight: prev.weight + l.weight });
       });
       selectedBars.forEach(b => {
         const name = b.client?.name || 'DESCONOCIDO';
@@ -325,9 +357,7 @@ export default function V2EgresosPage() {
         lotCount: selectedLots.length || undefined,
         barCount: selectedBars.length || undefined,
         providerCount: allProviders.size,
-        lots: selectedLots.length > 0
-          ? selectedLots.map(l => ({ name: l.name, weight: l.availableWeight, provider: l.clientName }))
-          : undefined,
+        lots: lotEntries.length > 0 ? lotEntries : undefined,
         bars: selectedBars.length > 0
           ? selectedBars.map(b => ({
               barNumber: b.barNumber,
@@ -390,6 +420,7 @@ export default function V2EgresosPage() {
         <UnifiedItemPanel
           items={allUnifiedItems}
           searchQuery={searchQuery} onSearchChange={setSearchQuery}
+          mixedOnly={mixedOnly} onMixedToggle={() => setMixedOnly(v => !v)}
           filteredItems={filteredItems}
           groupedItems={groupedItems}
           openGroups={openGroups}

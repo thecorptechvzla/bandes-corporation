@@ -2,7 +2,7 @@
 
 import React, { useMemo } from 'react';
 import { motion } from 'motion/react';
-import { Search, Package } from 'lucide-react';
+import { Search, Package, GitMerge } from 'lucide-react';
 import { BarAccordion, type BarAccordionRow } from '@/components/selection/BarAccordion';
 import type { UnifiedItem } from '@/types/egresos';
 export type { UnifiedItem };
@@ -11,6 +11,8 @@ interface UnifiedItemPanelProps {
   items: UnifiedItem[];
   searchQuery: string;
   onSearchChange: (v: string) => void;
+  mixedOnly: boolean;
+  onMixedToggle: () => void;
   filteredItems: UnifiedItem[];
   groupedItems: Record<string, UnifiedItem[]>;
   openGroups: Set<string>;
@@ -23,10 +25,11 @@ interface UnifiedItemPanelProps {
 }
 
 export function UnifiedItemPanel({
-  items, searchQuery, onSearchChange, filteredItems, groupedItems,
+  items, searchQuery, onSearchChange, mixedOnly, onMixedToggle, filteredItems, groupedItems,
   openGroups, selectedIds, onToggleItem, onToggleSupplier, onToggleSupplierItems,
   isSupplierAllSelected, onSetDetailLotId,
 }: UnifiedItemPanelProps) {
+  const mixedCount = useMemo(() => items.filter(i => i.type === 'lot' && i.isMixed).length, [items]);
   const accordionGroups = useMemo(() => {
     const result: Record<string, BarAccordionRow[]> = {};
     Object.entries(groupedItems).forEach(([clientId, uiItems]) => {
@@ -52,18 +55,41 @@ export function UnifiedItemPanel({
       className="xl:col-span-3 glass-panel rounded-2xl border border-[var(--pm-border)]/40 overflow-hidden"
     >
       {/* Search header */}
-      <div className="px-5 py-3.5 border-b border-[var(--pm-border)]/20 flex items-center justify-between gap-3">
-        <div className="flex items-center flex-1 max-w-xs bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] rounded-lg overflow-hidden transition-colors focus-within:border-[var(--pm-accent-gold)]">
-          <div className="pl-3 flex items-center justify-center">
-            <Search className="w-3.5 h-3.5 text-[var(--pm-text-dim)]/40" />
+      <div className="px-5 py-3.5 border-b border-[var(--pm-border)]/20 flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex items-center gap-2 flex-1 min-w-[200px]">
+          <div className="flex items-center flex-1 max-w-xs bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] rounded-lg overflow-hidden transition-colors focus-within:border-[var(--pm-accent-gold)]">
+            <div className="pl-3 flex items-center justify-center">
+              <Search className="w-3.5 h-3.5 text-[var(--pm-text-dim)]/40" />
+            </div>
+            <input
+              type="text"
+              placeholder="Buscar lote, barra o proveedor..."
+              value={searchQuery}
+              onChange={e => onSearchChange(e.target.value)}
+              className="flex-1 bg-transparent py-2 px-3 outline-none text-xs font-mono text-[var(--pm-text-primary)] placeholder:text-[var(--pm-text-dim)]/30"
+            />
           </div>
-          <input
-            type="text"
-            placeholder="Buscar lote, barra o proveedor..."
-            value={searchQuery}
-            onChange={e => onSearchChange(e.target.value)}
-            className="flex-1 bg-transparent py-2 px-3 outline-none text-xs font-mono text-[var(--pm-text-primary)] placeholder:text-[var(--pm-text-dim)]/30"
-          />
+          <button
+            type="button"
+            onClick={onMixedToggle}
+            aria-pressed={mixedOnly}
+            title={`${mixedCount} lote(s) mixto(s) disponibles`}
+            className={`shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-lg text-[10px] font-mono font-bold uppercase tracking-wider border transition-all active:scale-95 cursor-pointer ${
+              mixedOnly
+                ? 'bg-[rgba(168,85,247,0.15)] border-[rgba(168,85,247,0.4)] text-purple-300'
+                : 'bg-[var(--pm-bg-deepest)] border-[var(--pm-border)] text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] hover:border-[rgba(168,85,247,0.4)]'
+            }`}
+          >
+            <GitMerge className={`w-3.5 h-3.5 ${mixedOnly ? 'text-purple-400' : ''}`} />
+            Barras Mixtas
+            <span className={`px-1.5 py-0.5 rounded text-[8px] font-bold ${
+              mixedOnly
+                ? 'bg-purple-500/20 text-purple-200'
+                : 'bg-[var(--pm-bg-base)] text-[var(--pm-text-dim)]'
+            }`}>
+              {mixedCount}
+            </span>
+          </button>
         </div>
         <div className="flex items-center gap-3 text-[11px] font-mono text-[var(--pm-text-dim)]">
           <span>{filteredItems.filter(i => i.type === 'lot').length} lotes</span>

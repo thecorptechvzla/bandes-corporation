@@ -2,8 +2,9 @@
 
 import React, { useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ChevronDown, ChevronUp, Building2, Package, Check } from 'lucide-react';
+import { ChevronDown, ChevronUp, Building2, Package, Check, GitMerge } from 'lucide-react';
 import { formatNumber } from '@/lib/format';
+import { formatComposition } from '@/lib/composition';
 
 export interface BarAccordionRow {
   id: string;
@@ -14,6 +15,8 @@ export interface BarAccordionRow {
   pesoFino: number;
   clientName: string;
   clientRif: string;
+  isMixed?: boolean;
+  composition?: { clientId: string; clientName: string; weight: number; percentage: number }[];
 }
 
 interface BarAccordionProps {
@@ -173,22 +176,33 @@ export function BarAccordion({
                                   className="accent-[var(--pm-accent-amber)] cursor-pointer w-3.5 h-3.5"
                                 />
                               </td>
-                               {/* Código */}
-                               <td className="px-4 py-1.5 text-left font-mono font-bold text-amber-400 tracking-wider text-[11px] hover:text-amber-300 transition-colors">
-                                 {item.code}
-                               </td>
-                               {/* Status */}
-                               <td className="px-4 py-1.5 text-left">
-                                 <span
-                                   className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded shrink-0 w-20 text-center ${
-                                     item.type === 'lot'
-                                       ? 'text-[var(--pm-accent-amber)] bg-[var(--pm-accent-amber)]/10'
-                                       : 'text-slate-400 bg-slate-500/10'
-                                   }`}
-                                 >
-                                   {item.type === 'lot' ? 'REFUNDIDO' : 'SIN REFUNDIR'}
-                                 </span>
-                               </td>
+                              {/* Código */}
+                              <td className="px-4 py-1.5 text-left">
+                                <div className="flex flex-col gap-0.5">
+                                  <span className="font-mono font-bold text-amber-400 tracking-wider text-[11px] hover:text-amber-300 transition-colors">
+                                    {item.code}
+                                  </span>
+                                  {item.type === 'lot' && item.isMixed && item.composition && item.composition.length > 1 && (
+                                    <span className="flex items-center gap-1 text-[8px] font-mono">
+                                      <GitMerge className="w-2.5 h-2.5 text-purple-400 shrink-0" />
+                                      <span className="font-bold text-purple-400">MIXTO</span>
+                                      <span className="text-purple-300/80">{formatComposition(item.composition)}</span>
+                                    </span>
+                                  )}
+                                </div>
+                              </td>
+                              {/* Status */}
+                              <td className="px-4 py-1.5 text-left">
+                                <span
+                                  className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded shrink-0 w-20 text-center ${
+                                    item.type === 'lot'
+                                      ? 'text-[var(--pm-accent-amber)] bg-[var(--pm-accent-amber)]/10'
+                                      : 'text-slate-400 bg-slate-500/10'
+                                  }`}
+                                >
+                                  {item.type === 'lot' ? 'REFUNDIDO' : 'SIN REFUNDIR'}
+                                </span>
+                              </td>
                               {/* Peso Bruto */}
                               <td className="px-4 py-1.5 text-right font-mono font-medium text-slate-100 text-[12px]">
                                 {item.pesoBruto !== null ? formatNumber(item.pesoBruto, 2) : '—'}

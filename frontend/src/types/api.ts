@@ -75,7 +75,7 @@ export interface ExitDetail {
   exitId: string;
   lotId: string;
   lot?: Lot & { process: Process & { client: Client } };
-  bars?: { id: string; barNumber: string; fineWeight?: number }[];
+  bars?: { id: string; barNumber: string; fineWeight?: number; clientId?: string; client?: { id: string; name: string } }[];
 }
 
 export interface BalanceResponse {
@@ -92,6 +92,8 @@ export interface AvailableLot {
   name: string;
   availableWeight: number;
   barCount: number;
+  isMixed?: boolean;
+  composition?: { clientId: string; clientName: string; weight: number; percentage: number }[];
 }
 
 export interface AvailableLotsResponse {
