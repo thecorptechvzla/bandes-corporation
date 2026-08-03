@@ -105,12 +105,19 @@ export class ProcessesService {
         // Representative clientId = first bar's client (required FK)
         const representativeClientId = data.clientId;
 
-        // Generate sequential name
-        const count = await tx.process.count({
-          where: { clientId: representativeClientId },
-        });
-        const seq = count + 1;
-        const name = isMixed ? `PROCESO MIXTO-${seq}` : `P-${seq}`;
+        // Generate sequential name (unique per type)
+        let name: string;
+        if (isMixed) {
+          const mixedCount = await tx.process.count({
+            where: { isMixed: true },
+          });
+          name = `PROCESO MIXTO - ${String(mixedCount + 1).padStart(2, '0')}`;
+        } else {
+          const seq = (await tx.process.count({
+            where: { clientId: representativeClientId },
+          })) + 1;
+          name = `P-${seq}`;
+        }
 
         // Create single master process
         const process = await tx.process.create({

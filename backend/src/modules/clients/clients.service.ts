@@ -71,7 +71,7 @@ export class ClientsService {
   async balance(id: string) {
     const client = await this.findOne(id);
 
-    const [barsResult, exitedBarsResult, inStockResult] = await Promise.all([
+    const [barsResult, exitedBarsResult, inStockResult, typeBars] = await Promise.all([
       this.prisma.bar.aggregate({
         where: { clientId: id },
         _sum: { fineWeight: true },
@@ -84,11 +84,23 @@ export class ClientsService {
         where: { clientId: id, status: 'IN_STOCK' },
         _sum: { fineWeight: true },
       }),
+      this.prisma.bar.findMany({
+        where: { clientId: id },
+        select: { fineWeight: true, lot: { select: { process: { select: { isMixed: true } } } } },
+      }),
     ]);
 
     const totalReceived = Number(barsResult._sum.fineWeight ?? 0);
     const totalExited = Number(exitedBarsResult._sum.fineWeight ?? 0);
     const inStock = Number(inStockResult._sum.fineWeight ?? 0);
+
+    let fundidoPuro = 0;
+    let fundidoMixto = 0;
+    for (const bar of typeBars) {
+      const mix = bar.lot?.process?.isMixed;
+      if (mix === true) fundidoMixto += Number(bar.fineWeight);
+      else if (mix === false) fundidoPuro += Number(bar.fineWeight);
+    }
 
     return {
       clientId: id,
@@ -97,6 +109,8 @@ export class ClientsService {
       totalExited,
       inStock,
       currentBalance: totalReceived - totalExited,
+      fundidoPuro,
+      fundidoMixto,
     };
   }
 }

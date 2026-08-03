@@ -20,11 +20,12 @@ interface RecoveryModalProps {
   processLotsMap: Record<string, Lot[]>;
   onClose: () => void;
   uploadPhoto: (blob: Blob) => Promise<string>;
+  isMixedProcess?: boolean;
 }
 
 type CameraMode = 'idle' | 'camera' | 'preview';
 
-export function RecoveryModal({ lot, lotBarsMap, processLotsMap, onClose, uploadPhoto }: RecoveryModalProps) {
+export function RecoveryModal({ lot, lotBarsMap, processLotsMap, onClose, uploadPhoto, isMixedProcess }: RecoveryModalProps) {
   const updateLot = useUpdateLot();
   const updateProcess = useUpdateProcess();
   const updateBar = useUpdateBar();
@@ -160,7 +161,14 @@ export function RecoveryModal({ lot, lotBarsMap, processLotsMap, onClose, upload
             </div>
             <div>
               <span className="text-[10px] font-mono font-bold text-[var(--pm-accent-amber)] uppercase tracking-wider">Calibrar Colada</span>
-              <h3 className="text-sm font-sans font-semibold text-[var(--pm-text-primary)] mt-0.5">{lot.name}</h3>
+              <h3 className="text-sm font-sans font-semibold text-[var(--pm-text-primary)] mt-0.5 flex items-center gap-2">
+                {lot.name}
+                {isMixedProcess && (
+                  <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider bg-[var(--pm-accent-gold)]/15 border border-[var(--pm-accent-gold)]/30 text-[var(--pm-accent-gold)]">
+                    MIXTO
+                  </span>
+                )}
+              </h3>
             </div>
           </div>
           <button type="button" onClick={onClose} disabled={confirming}
@@ -175,9 +183,9 @@ export function RecoveryModal({ lot, lotBarsMap, processLotsMap, onClose, upload
               <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block">Barras</span>
               <span className="text-sm font-mono font-bold text-[var(--pm-text-primary)]">{lotBars.length}</span>
             </div>
-            <div className="p-2 rounded-lg border border-[var(--pm-border)] bg-[var(--pm-bg-deepest)]/50 text-center">
+            <div className="p-2 rounded-lg border border-[var(--pm-accent-gold)]/25 bg-[var(--pm-bg-deepest)]/50 text-center">
               <span className="text-[9px] font-mono text-[var(--pm-text-dim)] block">Peso Bruto</span>
-              <span className="text-xs font-mono font-bold text-[var(--pm-text-primary)]">{formatNumber(lotGross, 2)} g</span>
+              <span className="text-lg font-mono font-bold text-[var(--pm-accent-gold)]">{formatNumber(lotGross, 2)} g</span>
             </div>
             <div className="p-2 rounded-lg border border-[var(--pm-border)] bg-[var(--pm-bg-deepest)]/50 text-center">
               <span className="text-[8px] font-mono text-[var(--pm-text-dim)] block">FA Cargado</span>
@@ -259,7 +267,7 @@ export function RecoveryModal({ lot, lotBarsMap, processLotsMap, onClose, upload
                 onChange={e => setRecoveredWeight(e.target.value)}
                 onKeyDown={blockNonNumeric}
                 onPaste={handlePasteNumeric}
-                className="flex-1 bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] rounded-lg px-3 py-2 text-sm font-mono text-[var(--pm-text-primary)] focus:outline-none focus:border-[var(--pm-accent-amber)] transition-colors"
+                className="flex-1 bg-[var(--pm-bg-deepest)] border border-[var(--pm-accent-gold)]/30 rounded-lg px-3 py-2 text-xl font-bold font-mono text-[var(--pm-accent-gold)] focus:outline-none focus:border-[var(--pm-accent-gold)] transition-colors"
               />
               <HudButton variant="ghost" className="text-[10px] px-3 shrink-0"
                 onClick={() => { setActiveHardwareMode('WEIGHT'); setHwWeight(recoveredWeight); }}
@@ -315,11 +323,11 @@ export function RecoveryModal({ lot, lotBarsMap, processLotsMap, onClose, upload
                 <div className="space-y-3">
                   <div className="flex justify-between items-baseline">
                     <span className="text-[11px] uppercase tracking-wider text-slate-500">Peso Fino</span>
-                    <span className="text-lg font-bold text-slate-200">{formatNumber(lotFA, 2)} g</span>
+                    <span className="text-base text-slate-200">{formatNumber(lotFA, 2)} g</span>
                   </div>
                   <div className="flex justify-between items-baseline">
                     <span className="text-[11px] uppercase tracking-wider text-slate-500">Peso Bruto</span>
-                    <span className="text-base text-slate-200">{formatNumber(recWeightNum, 2)} g</span>
+                    <span className="text-lg font-bold text-[var(--pm-accent-gold)]">{formatNumber(recWeightNum, 2)} g</span>
                   </div>
                 </div>
                 <div className="space-y-3">

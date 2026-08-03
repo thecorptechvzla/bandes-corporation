@@ -27,7 +27,7 @@ interface ReportData {
   oroRecibido: { fineWeight: number; barCount: number; clientCount: number };
   oroFundido: { totalRecovered: number; lotCount: number; barCount: number; eficiencia: number; totalExpected: number };
   oroEnEspera: { count: number; fineWeight: number; clientCount: number };
-  totals: { fa: number; fe: number; r: number; entregado: number; balance: number };
+  totals: { fa: number; fe: number; r: number; entregado: number; balance: number; puro: number; mixto: number };
   clientRows: ClientRow[];
   filters: {
     dateFrom: string;
@@ -158,6 +158,13 @@ export async function generateReportPDF(data: ReportData) {
   pdf.setDrawColor(...C.red);
   pdf.setLineWidth(0.4);
   pdf.line(m, y, pw - m, y);
+  y += 10;
+
+  // Pure vs Mixed summary
+  pdf.setTextColor(...C.textMuted);
+  pdf.setFontSize(7);
+  pdf.setFont('helvetica', 'bold');
+  pdf.text(`FUNDIDO PURO (1 proveedor): ${formatWeight(totals.puro)}   |   FUNDIDO MIXTO (2+ proveedores): ${formatWeight(totals.mixto)}`, m, y);
   y += 10;
 
   // Balance table header

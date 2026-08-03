@@ -13,11 +13,13 @@ interface BalanceRow {
   r: number;
   entregado: number;
   balance: number;
+  puro: number;
+  mixto: number;
 }
 
 interface BalanceTableProps {
   clientRows: BalanceRow[];
-  totals: { fa: number; r: number; entregado: number; balance: number };
+  totals: { fa: number; r: number; entregado: number; balance: number; puro: number; mixto: number };
   hasActiveFilters: boolean;
 }
 
@@ -49,6 +51,8 @@ export function BalanceTable({ clientRows, totals, hasActiveFilters }: BalanceTa
               <tr className="border-b border-[var(--pm-border)]/20 text-[11px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider">
                 <th className="py-3 px-4 bg-[var(--pm-bg-base)]/50 text-left sticky left-0 z-10 min-w-[180px]">Cliente</th>
                 <th className="py-3 px-4 bg-[var(--pm-bg-base)]/50 text-right">Peso Fino (g)</th>
+                <th className="py-3 px-4 bg-[var(--pm-bg-base)]/50 text-right">Puro (g)</th>
+                <th className="py-3 px-4 bg-[var(--pm-bg-base)]/50 text-right">Mixto (g)</th>
                 <th className="py-3 px-4 bg-[var(--pm-bg-base)]/50 text-right">R (g)</th>
                 <th className="py-3 px-4 bg-[var(--pm-bg-base)]/50 text-right">Entregado (g)</th>
                 <th className="py-3 px-4 bg-[var(--pm-bg-base)]/50 text-right">Balance (g)</th>
@@ -70,6 +74,12 @@ export function BalanceTable({ clientRows, totals, hasActiveFilters }: BalanceTa
                     </td>
                     <td className="py-3 px-4 text-right font-mono font-bold text-[var(--pm-accent-emerald)]">
                       {formatWeight(row.fa)}
+                    </td>
+                    <td className="py-3 px-4 text-right font-mono text-[var(--pm-accent-cyan)]">
+                      {formatWeight(row.puro)}
+                    </td>
+                    <td className="py-3 px-4 text-right font-mono text-[var(--pm-accent-gold)]">
+                      {formatWeight(row.mixto)}
                     </td>
                     <td className="py-3 px-4 text-right font-mono text-[var(--pm-accent-amber)]">
                       {formatWeight(row.r)}
@@ -94,6 +104,12 @@ export function BalanceTable({ clientRows, totals, hasActiveFilters }: BalanceTa
                 </td>
                 <td className="py-4 px-4 text-right font-mono font-bold text-[var(--pm-accent-emerald)] text-sm">
                   {formatWeight(totals.fa)}
+                </td>
+                <td className="py-4 px-4 text-right font-mono font-bold text-[var(--pm-accent-cyan)] text-sm">
+                  {formatWeight(totals.puro)}
+                </td>
+                <td className="py-4 px-4 text-right font-mono font-bold text-[var(--pm-accent-gold)] text-sm">
+                  {formatWeight(totals.mixto)}
                 </td>
                 <td className="py-4 px-4 text-right font-mono font-bold text-[var(--pm-accent-amber)] text-sm">
                   {formatWeight(totals.r)}

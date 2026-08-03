@@ -56,15 +56,6 @@ export default function V2ProcesosPage() {
     [processes],
   );
 
-  const groupedProcesses = useMemo(() => {
-    const groups: Record<string, Process[]> = {};
-    activeProcesses.forEach(p => {
-      if (!groups[p.clientId]) groups[p.clientId] = [];
-      groups[p.clientId].push(p);
-    });
-    return groups;
-  }, [activeProcesses]);
-
   const groupedCompleted = useMemo(() => {
     const groups: Record<string, Process[]> = {};
     completedProcesses.forEach(p => {
@@ -267,7 +258,7 @@ export default function V2ProcesosPage() {
 
         {/* ═══ RIGHT: Active Processes Matrix ═══ */}
         <ActiveProcessesMatrix
-          groupedProcesses={groupedProcesses}
+          activeProcesses={activeProcesses}
           clients={clients}
           lotBarsMap={lotBarsMap}
           processLotsMap={processLotsMap}
@@ -295,6 +286,7 @@ export default function V2ProcesosPage() {
           processLotsMap={processLotsMap}
           onClose={() => setActiveLot(null)}
           uploadPhoto={uploadPhoto}
+          isMixedProcess={processes.some(p => p.id === activeLot.processId && p.isMixed)}
         />
       )}
 

@@ -2,7 +2,7 @@
 
 import React, { useMemo } from 'react';
 import { motion } from 'motion/react';
-import { Play, Sparkles, AlertTriangle, CheckCircle2, Users, Weight } from 'lucide-react';
+import { Play, Sparkles, AlertTriangle, CheckCircle2, Users, Weight, GitMerge } from 'lucide-react';
 import { formatNumber } from '@/lib/format';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { BarAccordion, type BarAccordionRow } from '@/components/selection/BarAccordion';
@@ -70,6 +70,12 @@ export function SmeltingConfigForm({
   const allGross = clientGroups.reduce((s, g) => s + g.grossTotal, 0);
   const allFa = clientGroups.reduce((s, g) => s + g.faTotal, 0);
   const selectedClientCount = selectedClientIds.length;
+
+  const supplierCount = useMemo(
+    () => new Set(bars.filter(b => selectedBarIds.includes(b.id)).map(b => b.clientId)).size,
+    [bars, selectedBarIds],
+  );
+  const isMixedSelection = supplierCount > 1;
   const overMaxGross = allGross > MAX_PROCESS_GROSS_G;
   const allClientsSelected = selectedClientIds.length === clientsWithBars.length && clientsWithBars.length > 0;
 
@@ -232,14 +238,24 @@ export function SmeltingConfigForm({
         {/* ─── Execute Button ─── */}
         <button type="submit" disabled={creating || allSelectedCount === 0}
           className="w-full py-4 rounded-lg text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-[0.98] cursor-pointer disabled:opacity-40 flex items-center justify-center gap-2"
-          style={{
-            background: 'linear-gradient(135deg, rgba(245,158,11,0.2), rgba(245,158,11,0.08))',
-            color: 'var(--pm-accent-amber)', border: '1px solid rgba(245,158,11,0.3)',
-            boxShadow: '0 0 20px rgba(245,158,11,0.1)',
-          }}
+          style={
+            isMixedSelection
+              ? {
+                  background: 'linear-gradient(135deg, rgba(139,92,246,0.22), rgba(34,211,238,0.08))',
+                  color: '#a78bfa', border: '1px solid rgba(139,92,246,0.35)',
+                  boxShadow: '0 0 20px rgba(139,92,246,0.12)',
+                }
+              : {
+                  background: 'linear-gradient(135deg, rgba(245,158,11,0.2), rgba(245,158,11,0.08))',
+                  color: 'var(--pm-accent-amber)', border: '1px solid rgba(245,158,11,0.3)',
+                  boxShadow: '0 0 20px rgba(245,158,11,0.1)',
+                }
+          }
         >
           {creating ? (
             <><LoadingSpinner size="sm" className="text-[var(--pm-accent-amber)]" /> Iniciando Fundición...</>
+          ) : isMixedSelection ? (
+            <><GitMerge className="w-4 h-4" /> ⚡ Iniciar Fundición Mixta ({allSelectedCount} barra{allSelectedCount !== 1 ? 's' : ''})</>
           ) : (
             <><Sparkles className="w-4 h-4" /> ⚡ Iniciar Fundición ({allSelectedCount} barra{allSelectedCount !== 1 ? 's' : ''})</>
           )}

@@ -28,6 +28,8 @@ interface ClientRow {
   r: number;
   entregado: number;
   balance: number;
+  puro: number;
+  mixto: number;
 }
 
 export default function V2HistoricosPage() {
@@ -176,13 +178,25 @@ export default function V2HistoricosPage() {
     return filtered;
   }, [clients, clientSearch]);
 
+  const lotIsMixed = useMemo(() => {
+    const map = new Map<string, boolean>();
+    lots.forEach(l => {
+      const p = processes.find(x => x.id === l.processId);
+      map.set(l.id, !!p?.isMixed);
+    });
+    return map;
+  }, [lots, processes]);
+
   const clientRows: ClientRow[] = useMemo(() => {
-    const map = new Map<string, { name: string; fa: number; entregado: number; r: number }>();
+    const map = new Map<string, { name: string; fa: number; entregado: number; r: number; puro: number; mixto: number }>();
     filteredBars.forEach(b => {
       const clientName = clients.find(c => c.id === b.clientId)?.name || 'Desconocido';
-      const entry = map.get(b.clientId) || { name: clientName, fa: 0, entregado: 0, r: 0 };
-      entry.fa += Number(b.fineWeight || 0);
-      if (b.status === 'EXITED') entry.entregado += Number(b.fineWeight || 0);
+      const entry = map.get(b.clientId) || { name: clientName, fa: 0, entregado: 0, r: 0, puro: 0, mixto: 0 };
+      const fw = Number(b.fineWeight || 0);
+      entry.fa += fw;
+      const mixed = b.lotId ? !!lotIsMixed.get(b.lotId) : false;
+      if (mixed) entry.mixto += fw; else entry.puro += fw;
+      if (b.status === 'EXITED') entry.entregado += fw;
       if ((b.status === 'COMPLETADO' || b.status === 'EXITED') && b.lotId) {
         const lot = lots.find(l => l.id === b.lotId);
         if (lot && lot.recovered != null) {
@@ -199,8 +213,10 @@ export default function V2HistoricosPage() {
       r: e.r,
       entregado: e.entregado,
       balance: e.fa - e.entregado,
+      puro: e.puro,
+      mixto: e.mixto,
     })).sort((a, b) => a.name.localeCompare(b.name));
-  }, [filteredBars, clients, lots]);
+  }, [filteredBars, clients, lots, lotIsMixed]);
 
   const totals = useMemo(() => ({
     fa: clientRows.reduce((s, r) => s + r.fa, 0),
@@ -208,6 +224,8 @@ export default function V2HistoricosPage() {
     r: clientRows.reduce((s, r) => s + r.r, 0),
     entregado: clientRows.reduce((s, r) => s + r.entregado, 0),
     balance: clientRows.reduce((s, r) => s + r.balance, 0),
+    puro: clientRows.reduce((s, r) => s + r.puro, 0),
+    mixto: clientRows.reduce((s, r) => s + r.mixto, 0),
   }), [clientRows]);
 
   const hasAnyFilter = !!(searchQuery || dateFrom || dateTo || selectedProvider || filterClientId || statusFilter !== 'ALL');
