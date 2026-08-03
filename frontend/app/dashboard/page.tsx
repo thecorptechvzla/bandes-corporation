@@ -119,6 +119,11 @@ export default function V2DashboardPage() {
     [filteredBars],
   );
 
+  const procesoGross = useMemo(
+    () => procesoBars.reduce((s, b) => s + Number(b.grossWeight), 0),
+    [procesoBars],
+  );
+
   const inStockBars = useMemo(
     () => filteredBars.filter((b) => b.status === 'IN_STOCK'),
     [filteredBars],
@@ -290,7 +295,7 @@ export default function V2DashboardPage() {
     },
     {
       label: 'Oro en Proceso',
-      value: metrics?.oroEnProceso.fineWeight ?? 0,
+      value: procesoGross,
       subicon: Flame,
       sublabel: `Barras en horno: ${metrics?.oroEnProceso.barCount ?? 0} u`,
       accent: KPI_COLORS[1].accent,
