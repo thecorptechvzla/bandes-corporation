@@ -2,7 +2,7 @@
 
 import React, { useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ChevronDown, ChevronUp, Building2, Package, Check, GitMerge } from 'lucide-react';
+import { ChevronDown, ChevronUp, Building2, Package, Check, GitMerge, Eye } from 'lucide-react';
 import { formatNumber } from '@/lib/format';
 import { formatComposition } from '@/lib/composition';
 
@@ -151,6 +151,9 @@ export function BarAccordion({
                           <th className="px-4 py-2.5 text-right bg-[var(--pm-bg-secondary)]">Bruto (g)</th>
                           <th className="px-4 py-2.5 text-right bg-[var(--pm-bg-secondary)]">Ley (‰)</th>
                           <th className="px-4 py-2.5 text-right bg-[var(--pm-bg-secondary)]">Fino (g)</th>
+                          <th className="w-8 px-2 py-2.5 bg-[var(--pm-bg-secondary)]">
+                            <span className="sr-only">Ver detalle</span>
+                          </th>
                         </tr>
                       </thead>
                       <tbody>
@@ -216,6 +219,10 @@ export function BarAccordion({
                               {/* Peso Fino */}
                               <td className="px-4 py-1.5 text-right font-mono font-medium text-slate-400 text-[12px]">
                                 {formatNumber(item.pesoFino, 2)}
+                              </td>
+                              {/* Detalle affordance */}
+                              <td className="px-3 py-1.5 text-right">
+                                <Eye className="w-3.5 h-3.5 text-[var(--pm-text-dim)]/40 group-hover:text-[var(--pm-accent-gold)] transition-colors ml-auto" />
                               </td>
                             </tr>
                           );
