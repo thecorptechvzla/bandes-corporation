@@ -162,21 +162,20 @@ export function BarAccordion({
                           return (
                             <tr
                               key={item.id}
-                              onClick={onOpenDetail ? () => onOpenDetail(item.id) : () => onToggleItem(item.id)}
+                              onClick={() => onToggleItem(item.id)}
                               className={`group transition-all duration-100 cursor-pointer active:scale-[0.99] ${
                                 isSelected
                                   ? 'bg-[var(--pm-accent-amber)]/10'
                                   : idx % 2 === 0
                                     ? 'bg-transparent'
                                     : 'bg-[var(--pm-bg-deepest)]/20'
-                              } hover:bg-[var(--pm-bg-hover)]/30`}
+                              } hover:bg-neutral-800/50`}
                             >
-                              {/* Checkbox */}
+                              {/* Checkbox — toggles selection (stopPropagation evita doble toggle con la fila) */}
                               <td className="px-4 py-1.5 text-center" onClick={e => e.stopPropagation()}>
                                 <input
                                   type="checkbox"
                                   checked={isSelected}
-                                  readOnly
                                   onChange={() => onToggleItem(item.id)}
                                   className="accent-[var(--pm-accent-amber)] cursor-pointer w-3.5 h-3.5"
                                 />
@@ -220,9 +219,17 @@ export function BarAccordion({
                               <td className="px-4 py-1.5 text-right font-mono font-medium text-slate-400 text-[12px]">
                                 {formatNumber(item.pesoFino, 2)}
                               </td>
-                              {/* Detalle affordance */}
+                              {/* Detalle affordance — Eye abre el detalle sin seleccionar */}
                               <td className="px-3 py-1.5 text-right">
-                                <Eye className="w-3.5 h-3.5 text-[var(--pm-text-dim)]/40 group-hover:text-[var(--pm-accent-gold)] transition-colors ml-auto" />
+                                <button
+                                  type="button"
+                                  title="Ver detalle"
+                                  aria-label={`Ver detalle de ${item.code}`}
+                                  onClick={(e) => { e.stopPropagation(); onOpenDetail?.(item.id); }}
+                                  className="inline-flex items-center justify-center w-7 h-7 rounded-lg cursor-pointer transition-all active:scale-90 hover:bg-[var(--pm-bg-hover)]/40"
+                                >
+                                  <Eye className="w-3.5 h-3.5 text-[var(--pm-text-dim)]/40 group-hover:text-amber-400 hover:text-amber-400 transition-colors" />
+                                </button>
                               </td>
                             </tr>
                           );

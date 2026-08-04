@@ -11,6 +11,7 @@ import { ProcessDetailModal } from '@/components/procesos/ProcessDetailModal';
 import { ActiveProcessesMatrix } from '@/components/procesos/ActiveProcessesMatrix';
 import { RecoveryModal } from '@/components/procesos/RecoveryModal';
 import { SmeltingConfigForm } from '@/components/procesos/SmeltingConfigForm';
+import { EvidenceModal } from '@/components/packing/EvidenceModal';
 import { CompletedProcessesSection } from '@/components/procesos/CompletedProcessesSection';
 import type { Process, Lot, Bar } from '@/types/api';
 
@@ -31,6 +32,7 @@ export default function V2ProcesosPage() {
 
   const [showCompleted, setShowCompleted] = useState(false);
   const [activeLot, setActiveLot] = useState<Lot | null>(null);
+  const [evidenceBarId, setEvidenceBarId] = useState<string | null>(null);
 
   const uploadPhoto = useCallback(async (blob: Blob): Promise<string> => {
     const fd = new FormData();
@@ -253,6 +255,7 @@ export default function V2ProcesosPage() {
           onSelectAllBarsOfClient={handleSelectAllBarsOfClient}
           onToggleSupplier={handleToggleSupplier}
           isSupplierAllSelected={isSupplierAllSelected}
+          onOpenDetail={setEvidenceBarId}
           onSubmit={handleStartSmelting}
         />
 
@@ -300,6 +303,16 @@ export default function V2ProcesosPage() {
           onClose={() => setSelectedProcessId(null)}
         />
       )}
+
+      {/* Evidence Modal — bar detail from Eye icon */}
+      <EvidenceModal
+        barId={evidenceBarId}
+        bars={bars}
+        spValues={{}}
+        barPhotoUrls={{}}
+        label="DETALLE DE BARRA"
+        onClose={() => setEvidenceBarId(null)}
+      />
 
       <p className="text-[10px] text-[var(--pm-text-dim)] font-mono text-center opacity-70">
         Datos actualizados en tiempo real · Bandes v2 Premium · {activeProcesses.length} procesos activos

@@ -23,6 +23,7 @@ interface SmeltingConfigFormProps {
   onSelectAllBarsOfClient: (clientId: string) => void;
   onToggleSupplier: (clientId: string) => void;
   isSupplierAllSelected: (clientId: string) => boolean;
+  onOpenDetail?: (barId: string) => void;
   onSubmit: (e: React.FormEvent) => void;
 }
 
@@ -38,7 +39,7 @@ export function SmeltingConfigForm({
   clients, bars, selectedClientIds, selectedBarIds, openGroups,
   formError, formSuccess, creating,
   onToggleClient, onSelectAllClients, onBarToggle, onSelectAllBarsOfClient,
-  onToggleSupplier, isSupplierAllSelected, onSubmit,
+  onToggleSupplier, isSupplierAllSelected, onOpenDetail, onSubmit,
 }: SmeltingConfigFormProps) {
   const MAX_PROCESS_GROSS_G = 5000;
 
@@ -177,6 +178,7 @@ export function SmeltingConfigForm({
                 onToggleSupplier={onToggleSupplier}
                 onToggleSupplierItems={onSelectAllBarsOfClient}
                 isSupplierAllSelected={isSupplierAllSelected}
+                onOpenDetail={onOpenDetail}
               />
             </div>
           </div>
