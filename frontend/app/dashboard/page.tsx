@@ -199,9 +199,14 @@ export default function V2DashboardPage() {
         .filter(p => p.status === 'CLOSED')
         .reduce((s, p) =>
           s + (p.lots?.reduce((sl, l) => sl + Number(l.recovered ?? 0), 0) ?? 0), 0);
-      const clientExits = filteredExits.filter(e =>
-        e.exitDetails.some(d => d.lot?.process?.client?.id === client.id));
-      const egresos = clientExits.reduce((s, e) => s + Number(e.totalWeight), 0);
+      const egresos = filteredExits.reduce((sum, e) =>
+        sum
+        + (e.bars ?? []).filter(b => b.clientId === client.id)
+            .reduce((s, b) => s + Number(b.grossWeight), 0)
+        + (e.exitDetails ?? []).reduce((s, d) =>
+            s + (d.bars ?? []).filter(b => b.clientId === client.id)
+              .reduce((s2, b) => s2 + Number(b.grossWeight), 0), 0),
+        0);
       const balance = ingresoBruto - egresos;
       const leyAu = ingresoBruto > 0 ? (fa / ingresoBruto) * 100 : 0;
       const sinFundir = Math.max(0, fa - r);

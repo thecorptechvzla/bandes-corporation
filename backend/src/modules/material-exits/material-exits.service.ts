@@ -329,6 +329,7 @@ export class MaterialExitsService {
             bars: {
               select: {
                 barNumber: true,
+                grossWeight: true,
                 fineWeight: true,
                 clientId: true,
                 client: { select: { id: true, name: true } },
