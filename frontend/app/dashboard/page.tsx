@@ -228,13 +228,13 @@ export default function V2DashboardPage() {
 
   const lotGrossWeight = useMemo(() => {
     const map: Record<string, number> = {};
-    for (const b of bars) if (b.lotId) map[b.lotId] = (map[b.lotId] || 0) + Number(b.grossWeight);
+    for (const b of bars) if (b.lotId && b.status !== 'EXITED') map[b.lotId] = (map[b.lotId] || 0) + Number(b.grossWeight);
     return map;
   }, [bars]);
 
   const lotFineWeight = useMemo(() => {
     const map: Record<string, number> = {};
-    for (const b of bars) if (b.lotId) map[b.lotId] = (map[b.lotId] || 0) + Number(b.fineWeight);
+    for (const b of bars) if (b.lotId && b.status !== 'EXITED') map[b.lotId] = (map[b.lotId] || 0) + Number(b.fineWeight);
     return map;
   }, [bars]);
 
