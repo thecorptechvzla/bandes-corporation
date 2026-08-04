@@ -271,9 +271,15 @@ export default function V2DashboardPage() {
   const egresosTreemap = useMemo(() => {
     const map: Record<string, number> = {};
     filteredExits.forEach(e => {
-      e.exitDetails.forEach(d => {
-        const clientName = d.lot?.process?.client?.name || e.destination || 'Desconocido';
-        map[clientName] = (map[clientName] || 0) + Number(d.weightAported);
+      (e.bars ?? []).forEach(b => {
+        const name = b.client?.name || e.destination || 'Desconocido';
+        map[name] = (map[name] || 0) + Number(b.grossWeight);
+      });
+      (e.exitDetails ?? []).forEach(d => {
+        (d.bars ?? []).forEach(b => {
+          const name = d.lot?.process?.client?.name || b.client?.name || e.destination || 'Desconocido';
+          map[name] = (map[name] || 0) + Number(b.grossWeight);
+        });
       });
     });
     const total = Object.values(map).reduce((s, v) => s + v, 0);
