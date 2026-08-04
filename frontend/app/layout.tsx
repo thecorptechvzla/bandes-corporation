@@ -8,7 +8,7 @@ import Link from 'next/link';
 import {
   LayoutDashboard, Users, Flame,
   ArrowLeftRight, FolderUp, LogOut,
-  Calendar, History, Menu, X, Loader2,
+  Calendar, History, Menu, X, Loader2, ChevronDown,
 } from 'lucide-react';
 import { getSession, clearSession } from '@/lib/auth';
 import { Geist, Geist_Mono } from 'next/font/google';
@@ -57,6 +57,12 @@ const routeLabels: Record<string, string> = {
   historicos: 'Históricos',
 };
 
+const historicoChilds = [
+  { href: '/historicos/consolidado', label: 'Consolidado' },
+  { href: '/historicos/balance', label: 'Balance' },
+  { href: '/historicos/barras', label: 'Barras' },
+];
+
 export default function RootLayout({
   children,
 }: {
@@ -65,11 +71,19 @@ export default function RootLayout({
   const pathname = usePathname();
   const router = useRouter();
   const activeTab = pathname.split('/').pop() || 'dashboard';
+  const isHistoricoRoute = pathname.startsWith('/historicos');
+  const [manualOpen, setManualOpen] = useState(false);
   const isLoginPage = pathname === '/login';
   const [sysTime, setSysTime] = useState('');
   const [mobileOpen, setMobileOpen] = useState(false);
   const [sessionReady, setSessionReady] = useState(false);
   const [hasSession, setHasSession] = useState(false);
+
+  useEffect(() => {
+    setManualOpen(isHistoricoRoute);
+  }, [isHistoricoRoute]);
+
+  const historicoOpen = manualOpen;
 
   useEffect(() => {
     setHasSession(Boolean(getSession()));
@@ -110,6 +124,62 @@ export default function RootLayout({
       const IconComponent = item.icon;
       const isActive = activeTab === item.id;
       const href = `/${item.id}`;
+
+      if (item.id === 'historicos') {
+        return (
+          <div key={item.id} className="flex flex-col w-full">
+            <div className={`
+              nav-item group ${isHistoricoRoute ? 'active' : ''}
+              active:scale-[0.97] transition-all duration-150
+            `}>
+              <Link
+                href={href}
+                onClick={() => {
+                  setManualOpen(prev => !prev);
+                  onItemClick?.();
+                }}
+                className="flex items-center gap-[0.69rem] flex-1 min-w-0"
+              >
+                <IconComponent className={`w-4 h-4 shrink-0 ${isHistoricoRoute ? 'text-[#D5B042]' : 'text-[var(--hud-text-dim)] group-hover:text-[var(--hud-text-primary)]'}`} />
+                <span className="truncate">{item.name}</span>
+              </Link>
+              <button
+                type="button"
+                aria-label={historicoOpen ? 'Colapsar submenú de Históricos' : 'Expandir submenú de Históricos'}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setManualOpen(o => !o);
+                }}
+                className="shrink-0 p-1 rounded-md hover:bg-[var(--hud-bg-elevated)] text-[var(--hud-text-dim)] hover:text-[var(--hud-text-primary)] transition-colors duration-150 cursor-pointer"
+              >
+                <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${historicoOpen ? 'rotate-180' : ''}`} />
+              </button>
+            </div>
+            <div className={`overflow-hidden transition-all duration-300 ${historicoOpen ? 'max-h-64 opacity-100' : 'max-h-0 opacity-0'}`}>
+              {historicoChilds.map(sub => {
+                const subActive = pathname === sub.href;
+                return (
+                  <Link
+                    key={sub.href}
+                    href={sub.href}
+                    onClick={onItemClick}
+                    className={`
+                      flex items-center gap-2 pl-10 pr-3 py-2 text-sm font-medium
+                      border-l-2 transition-all duration-200 active:scale-[0.97]
+                      ${subActive
+                        ? 'text-white border-yellow-500 bg-[var(--hud-bg-elevated)]'
+                        : 'text-slate-400 border-transparent hover:text-white hover:bg-[var(--hud-bg-elevated)]'}
+                    `}
+                  >
+                    <span className="truncate">{sub.label}</span>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        );
+      }
+
       return (
         <Link
           key={item.id}
