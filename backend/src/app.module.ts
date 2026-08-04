@@ -8,6 +8,7 @@ import { ProcessesModule } from './modules/processes/processes.module.js';
 import { LotsModule } from './modules/lots/lots.module.js';
 import { DashboardModule } from './modules/dashboard/dashboard.module.js';
 import { PackingsModule } from './modules/packings/packings.module.js';
+import { ScaleModule } from './modules/scale/scale.module.js';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { PackingsModule } from './modules/packings/packings.module.js';
     LotsModule,
     DashboardModule,
     PackingsModule,
+    ScaleModule,
   ],
 })
 export class AppModule {}

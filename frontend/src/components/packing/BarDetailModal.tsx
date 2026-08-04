@@ -36,6 +36,9 @@ export function BarDetailModal({
   const [photoPreviewUrl, setPhotoPreviewUrl] = useState<string | null>(null);
   const [photoUploadedUrl, setPhotoUploadedUrl] = useState<string | null>(null);
 
+  const [isReadingWeight, setIsReadingWeight] = useState(false);
+  const [scaleError, setScaleError] = useState<string | null>(null);
+
   const isPorValidar = bar.status === 'POR_VALIDAR';
 
   useEffect(() => {
@@ -100,6 +103,34 @@ export function BarDetailModal({
     const la = parseFloat(purity);
     if (isNaN(bw) || isNaN(la)) return;
     onValidate(bar.id, { grossWeight: bw, purity: la, photoUrl: photoUploadedUrl || undefined });
+  };
+
+  const obtenerPeso = async (): Promise<number> => {
+    const res = await fetch('/api/scale/weight', { method: 'GET', cache: 'no-store' });
+
+    if (!res.ok) {
+      if (res.status === 408) throw new Error('Báscula sin respuesta (timeout de 5 s)');
+      if (res.status === 409) throw new Error('El puerto de la báscula está ocupado');
+      throw new Error('No se pudo leer la báscula');
+    }
+
+    const data = await res.json();
+    const value = Number(data.weight);
+    if (!Number.isFinite(value)) throw new Error('La báscula no devolvió un peso válido');
+    return value;
+  };
+
+  const handleGetWeight = async () => {
+    setScaleError(null);
+    setIsReadingWeight(true);
+    try {
+      const w = await obtenerPeso();
+      setGrossWeight(String(w));
+    } catch (err) {
+      setScaleError(err instanceof Error ? err.message : 'No se pudo leer la báscula');
+    } finally {
+      setIsReadingWeight(false);
+    }
   };
 
   const handleSaveChanges = () => {
@@ -259,12 +290,19 @@ export function BarDetailModal({
           {/* Device Capture Buttons — industrial size */}
           {(isPorValidar || isEditing) && (
             <div className="grid grid-cols-3 gap-2">
-              <button type="button" onClick={() => {}}
-                className="group relative py-4 rounded-xl border border-[var(--pm-border)]/60 text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] hover:bg-[var(--pm-bg-hover)]/60 text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer flex flex-col items-center gap-2"
+              <button type="button" onClick={handleGetWeight} disabled={isReadingWeight}
+                className="group relative py-4 rounded-xl border border-[var(--pm-border)]/60 text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] hover:bg-[var(--pm-bg-hover)]/60 text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer disabled:opacity-50 disabled:cursor-wait flex flex-col items-center gap-2"
                 style={{ WebkitTapHighlightColor: 'transparent' }}>
                 <Scale className="w-5 h-5 text-[var(--pm-accent-gold)] group-hover:drop-shadow-[0_0_6px_rgba(212,175,55,0.4)]" />
                 <span>OBTENER PESO</span>
-                <span className="text-[9px] font-mono text-[var(--pm-text-dim)]/70 normal-case tracking-normal">Próximamente</span>
+                <span className="text-[9px] font-mono text-[var(--pm-text-dim)]/70 normal-case tracking-normal">
+                  {isReadingWeight ? (
+                    <span className="flex items-center gap-1.5">
+                      <span className="w-3 h-3 border-2 border-[var(--pm-accent-gold)]/30 border-t-[var(--pm-accent-gold)] rounded-full animate-spin" />
+                      Leyendo báscula...
+                    </span>
+                  ) : 'Báscula serial'}
+                </span>
               </button>
               <button type="button" onClick={() => {}}
                 className="group relative py-4 rounded-xl border border-[var(--pm-border)]/60 text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] hover:bg-[var(--pm-bg-hover)]/60 text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer flex flex-col items-center gap-2"
@@ -282,6 +320,12 @@ export function BarDetailModal({
                   <span className="text-[9px] font-mono text-[var(--pm-accent-emerald)] normal-case tracking-normal">✓ Capturada</span>
                 )}
               </button>
+            </div>
+          )}
+
+          {scaleError && (
+            <div className="flex items-center gap-2 p-3 rounded-lg text-xs font-mono bg-[var(--pm-accent-red)]/10 border border-[var(--pm-accent-red)]/25 text-[var(--pm-accent-red)]">
+              <Zap className="w-4 h-4 shrink-0" />{scaleError}
             </div>
           )}
 

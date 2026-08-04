@@ -1,4 +1,5 @@
 allowBuilds:
   '@prisma/engines': true
+  '@serialport/bindings-cpp': false
   prisma: true
   unrs-resolver: true
