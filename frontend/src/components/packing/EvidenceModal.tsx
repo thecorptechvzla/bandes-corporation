@@ -68,7 +68,7 @@ export function EvidenceModal({ barId, bars, packingBars, spValues, barPhotoUrls
           ) : (
             <div className="text-center p-6">
               <Camera className="w-8 h-8 text-[var(--pm-text-dim)]/30 mx-auto mb-2" />
-              <p className="text-[11px] font-mono text-[var(--pm-text-dim)]/60">Sin evidencia fotográfica</p>
+              <p className="text-[11px] font-mono text-[var(--pm-text-dim)]/60">Sin evidencia fotográfica registrada</p>
             </div>
           )}
         </div>

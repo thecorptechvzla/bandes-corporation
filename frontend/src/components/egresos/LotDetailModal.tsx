@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import { Package, GitMerge } from 'lucide-react';
+import { Package, GitMerge, Camera } from 'lucide-react';
 import { ModalShell } from '@/components/ui/ModalShell';
 import { formatNumber } from '@/lib/format';
 import type { Bar } from '@/types/api';
@@ -34,6 +34,14 @@ export function LotDetailModal({ lot, bars, onClose }: LotDetailModalProps) {
     [totalFine, lot],
   );
 
+  const lotPhotoUrl = useMemo(
+    () => lotBars.find(b => b.photoUrl)?.photoUrl || null,
+    [lotBars],
+  );
+  const srcProxy = lotPhotoUrl?.startsWith('data:')
+    ? lotPhotoUrl
+    : `/api/blob/view?url=${encodeURIComponent(lotPhotoUrl || '')}`;
+
   return (
     <ModalShell isOpen onClose={onClose} size="lg" noPadding>
       <div className="px-6 pt-5 sm:pt-6 pb-4 border-b border-[var(--pm-border)]/20">
@@ -60,6 +68,21 @@ export function LotDetailModal({ lot, bars, onClose }: LotDetailModalProps) {
           </div>
         ) : (
           <div className="space-y-5">
+            <div className="rounded-xl overflow-hidden border border-[var(--pm-border)] bg-black/60 flex items-center justify-center min-h-[140px]">
+              {lotPhotoUrl ? (
+                <img
+                  src={srcProxy}
+                  alt={`Lote ${lot.name}`}
+                  className="w-full object-cover max-h-48"
+                />
+              ) : (
+                <div className="text-center p-6">
+                  <Camera className="w-8 h-8 text-[var(--pm-text-dim)]/30 mx-auto mb-2" />
+                  <p className="text-[11px] font-mono text-[var(--pm-text-dim)]/60">Sin evidencia fotográfica registrada</p>
+                </div>
+              )}
+            </div>
+
             {lot.isMixed && lot.composition && lot.composition.length > 1 && (
               <div className="p-4 rounded-xl border border-[rgba(168,85,247,0.3)] bg-[rgba(168,85,247,0.06)]">
                 <div className="flex items-center gap-2 mb-3">

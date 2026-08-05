@@ -253,7 +253,7 @@ export function BarAccordion({
                                   onClick={(e) => { e.stopPropagation(); onOpenDetail?.(item.id); }}
                                   className="inline-flex items-center justify-center w-7 h-7 rounded-lg cursor-pointer transition-all active:scale-90 hover:bg-[var(--pm-bg-hover)]/40"
                                 >
-                                  <Eye className="w-3.5 h-3.5 text-[var(--pm-text-dim)]/40 group-hover:text-amber-400 hover:text-amber-400 transition-colors" />
+                                  <Eye className="w-3.5 h-3.5 text-slate-500 hover:text-[var(--pm-accent-gold)] transition-colors" />
                                 </button>
                               </td>
                             </tr>

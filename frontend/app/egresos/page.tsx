@@ -103,6 +103,11 @@ export default function V2EgresosPage() {
     }));
   }, [bars, clients]);
 
+  const barPhotoUrls = useMemo(
+    () => Object.fromEntries(bars.map(b => [b.id, b.photoUrl || '']).filter(([, v]) => v)),
+    [bars],
+  );
+
   const buyerClients = useMemo(() =>
     clients.filter(c => c.role === 'CLIENTE' || c.role === 'AMBOS'),
   [clients]);
@@ -508,12 +513,12 @@ export default function V2EgresosPage() {
         <LotDetailModal lot={detailLot} bars={bars} onClose={() => setDetailLotId(null)} />
       )}
 
-      {/* Evidence Modal — Bar detail from table row tap */}
+      {/* Evidence Modal — Bar detail from Eye icon */}
       <EvidenceModal
         barId={evidenceBarId}
         bars={bars}
         spValues={{}}
-        barPhotoUrls={{}}
+        barPhotoUrls={barPhotoUrls}
         label="DETALLE DE BARRA"
         onClose={() => setEvidenceBarId(null)}
       />
