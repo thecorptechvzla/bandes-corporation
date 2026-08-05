@@ -149,16 +149,27 @@ export class DashboardService {
         '1 day'::interval
       ) AS d(date)
       LEFT JOIN (
-        SELECT DATE(b."createdAt") AS date, SUM(b."fineWeight") AS ingresos
+        SELECT DATE(b."createdAt") AS date, SUM(b."grossWeight") AS ingresos
         FROM "Bar" b
         WHERE ${barWhereClauses.join(' AND ')}
         GROUP BY DATE(b."createdAt")
       ) ing ON ing.date = d.date
       LEFT JOIN (
-        SELECT DATE(e."createdAt") AS date, SUM(e."totalWeight") AS egresos
-        FROM "MaterialExit" e
-        WHERE ${exitWhereClauses.join(' AND ')}
-        GROUP BY DATE(e."createdAt")
+        SELECT date, SUM(egresos) AS egresos
+        FROM (
+          SELECT DATE(e."createdAt") AS date,
+            COALESCE((
+              SELECT SUM(b."grossWeight") FROM "Bar" b WHERE b."exitId" = e."id"
+            ), 0)
+            + COALESCE((
+              SELECT SUM(b."grossWeight")
+              FROM "ExitDetail" ed JOIN "Bar" b ON b."exitDetailId" = ed."id"
+              WHERE ed."exitId" = e."id"
+            ), 0) AS egresos
+          FROM "MaterialExit" e
+          WHERE ${exitWhereClauses.join(' AND ')}
+        ) sub
+        GROUP BY date
       ) eg ON eg.date = d.date
       ORDER BY d.date
     `);

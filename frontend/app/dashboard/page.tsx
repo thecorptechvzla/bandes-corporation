@@ -149,12 +149,18 @@ export default function V2DashboardPage() {
     filteredBars.forEach(b => {
       const d = new Date(b.createdAt).toISOString().split('T')[0];
       if (!days[d]) days[d] = { in: 0, out: 0 };
-      days[d].in += Number(b.fineWeight);
+      days[d].in += Number(b.grossWeight);
     });
     filteredExits.forEach(e => {
       const d = new Date(e.createdAt).toISOString().split('T')[0];
       if (!days[d]) days[d] = { in: 0, out: 0 };
-      days[d].out += Number(e.totalWeight);
+      const outGross =
+        (e.bars ?? []).reduce((s, b) => s + Number(b.grossWeight), 0)
+        + (e.exitDetails ?? []).reduce(
+            (s, dt) => s + (dt.bars ?? []).reduce((s2, b) => s2 + Number(b.grossWeight), 0),
+            0,
+          );
+      days[d].out += outGross;
     });
     return Object.values(days);
   }, [filteredBars, filteredExits]);
@@ -170,7 +176,7 @@ export default function V2DashboardPage() {
       .filter(b => b.status === 'COMPLETADO' || b.status === 'EXITED')
       .forEach(b => {
         const d = new Date(b.createdAt).toISOString().split('T')[0];
-        days[d] = (days[d] || 0) + Number(b.fineWeight);
+        days[d] = (days[d] || 0) + Number(b.grossWeight);
       });
     return Object.values(days).slice(-14);
   }, [filteredBars]);
@@ -181,7 +187,7 @@ export default function V2DashboardPage() {
       .filter(b => b.status === 'IN_STOCK')
       .forEach(b => {
         const d = new Date(b.createdAt).toISOString().split('T')[0];
-        days[d] = (days[d] || 0) + Number(b.fineWeight);
+        days[d] = (days[d] || 0) + Number(b.grossWeight);
       });
     return Object.values(days).slice(-14);
   }, [filteredBars]);
