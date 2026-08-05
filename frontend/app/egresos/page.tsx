@@ -34,6 +34,8 @@ interface AvailableLot {
   composition: { clientId: string; clientName: string; weight: number; percentage: number }[];
 }
 
+const MIXED_GROUP_KEY = '__MIXED__';
+
 export default function V2EgresosPage() {
   const { data: clients = [] } = useClients();
   const { data: bars = [] } = useBars();
@@ -45,7 +47,6 @@ export default function V2EgresosPage() {
   const [openGroups, setOpenGroups] = useState<Set<string>>(new Set());
   const [destinationClient, setDestinationClient] = useState<{ id: string; name: string; rif: string; contactInfo?: string } | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [mixedOnly, setMixedOnly] = useState(false);
   const [status, setStatus] = useState<'idle' | 'processing' | 'success' | 'error'>('idle');
   const [dispatchResult, setDispatchResult] = useState<DispatchResult | null>(null);
   const [message, setMessage] = useState('');
@@ -141,29 +142,34 @@ export default function V2EgresosPage() {
 
   const filteredItems = useMemo(() => {
     let items = allUnifiedItems;
-    if (mixedOnly) {
-      items = items.filter(i => i.type === 'lot' && i.isMixed);
-    }
     if (!searchQuery) return items;
     const q = searchQuery.toLowerCase();
     return items.filter(i =>
       i.code.toLowerCase().includes(q) ||
       i.clientName.toLowerCase().includes(q),
     );
-  }, [allUnifiedItems, searchQuery, mixedOnly]);
+  }, [allUnifiedItems, searchQuery]);
+
+  const hasMixedItems = useMemo(
+    () => allUnifiedItems.some(i => i.type === 'lot' && i.isMixed),
+    [allUnifiedItems],
+  );
 
   const groupedItems = useMemo(() => {
     const groups: Record<string, UnifiedItem[]> = {};
     filteredItems.forEach(i => {
-      if (!groups[i.clientId]) groups[i.clientId] = [];
-      groups[i.clientId].push(i);
+      const key = i.type === 'lot' && i.isMixed ? MIXED_GROUP_KEY : i.clientId;
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(i);
     });
     return groups;
   }, [filteredItems]);
 
-  const allClientIds = useMemo(() =>
-    [...new Set(allUnifiedItems.map(i => i.clientId))],
-  [allUnifiedItems]);
+  const allClientIds = useMemo(() => {
+    const ids = [...new Set(allUnifiedItems.map(i => i.clientId))];
+    if (hasMixedItems) ids.unshift(MIXED_GROUP_KEY);
+    return ids;
+  }, [allUnifiedItems, hasMixedItems]);
 
   React.useEffect(() => {
     setOpenGroups(prev => {
@@ -434,7 +440,6 @@ export default function V2EgresosPage() {
         <UnifiedItemPanel
           items={allUnifiedItems}
           searchQuery={searchQuery} onSearchChange={setSearchQuery}
-          mixedOnly={mixedOnly} onMixedToggle={() => setMixedOnly(v => !v)}
           filteredItems={filteredItems}
           groupedItems={groupedItems}
           openGroups={openGroups}
@@ -444,6 +449,7 @@ export default function V2EgresosPage() {
           onToggleSupplierItems={toggleSupplierItems}
           isSupplierAllSelected={isSupplierAllSelected}
           onOpenDetail={handleOpenDetail}
+          mixedGroupKey={MIXED_GROUP_KEY}
         />
 
         <CheckoutSummaryPanel

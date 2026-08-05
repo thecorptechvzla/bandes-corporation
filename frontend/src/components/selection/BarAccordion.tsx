@@ -16,6 +16,7 @@ export interface BarAccordionRow {
   clientName: string;
   clientRif: string;
   isMixed?: boolean;
+  barCount?: number;
   composition?: { clientId: string; clientName: string; weight: number; percentage: number }[];
 }
 
@@ -28,6 +29,7 @@ interface BarAccordionProps {
   onToggleSupplierItems: (clientId: string) => void;
   isSupplierAllSelected: (clientId: string) => boolean;
   onOpenDetail?: (id: string) => void;
+  mixedGroupKey?: string;
 }
 
 function CheckboxIcon({ checked, indeterminate }: { checked: boolean; indeterminate?: boolean }) {
@@ -59,6 +61,7 @@ export function BarAccordion({
   onToggleSupplierItems,
   isSupplierAllSelected,
   onOpenDetail,
+  mixedGroupKey,
 }: BarAccordionProps) {
   const entries = useMemo(() => Object.entries(groups), [groups]);
 
@@ -75,20 +78,33 @@ export function BarAccordion({
   return (
     <div className="space-y-2">
       {entries.map(([clientId, items]) => {
+        const isMixedGroup = mixedGroupKey !== undefined && clientId === mixedGroupKey;
         const isOpen = openGroups.has(clientId);
         const allSelected = isSupplierAllSelected(clientId);
         const someSelected = items.some(i => selectedIds.has(i.id)) && !allSelected;
         const barCount = items.filter(i => i.type === 'bar').length;
         const lotCount = items.filter(i => i.type === 'lot').length;
+        const totalBars = items.reduce((s, i) => s + (i.barCount ?? 0), 0);
         const pesoFinoTotal = items.reduce((s, i) => s + i.pesoFino, 0);
 
         return (
-          <div key={clientId} className="rounded-xl border border-[var(--pm-border)]/30 overflow-hidden">
+          <div
+            key={clientId}
+            className={`rounded-xl border overflow-hidden ${
+              isMixedGroup
+                ? 'border-purple-500/30 bg-purple-950/10'
+                : 'border-[var(--pm-border)]/30'
+            }`}
+          >
             {/* ─── Supplier Header ─── */}
             <button
               type="button"
               onClick={() => onToggleSupplier(clientId)}
-              className="w-full flex items-center justify-between px-4 py-3 bg-blue-950/30 border-b border-blue-900/50 hover:bg-blue-950/50 active:scale-[0.995] transition-all cursor-pointer"
+              className={`w-full flex items-center justify-between px-4 py-3 border-b active:scale-[0.995] transition-all cursor-pointer ${
+                isMixedGroup
+                  ? 'bg-purple-950/30 border-purple-900/50 hover:bg-purple-950/50'
+                  : 'bg-blue-950/30 border-blue-900/50 hover:bg-blue-950/50'
+              }`}
             >
               <div className="flex items-center gap-3 min-w-0">
                 {/* Select-all checkbox */}
@@ -105,27 +121,36 @@ export function BarAccordion({
                 {/* Client name + info */}
                 <div className="text-left min-w-0">
                   <div className="flex items-center gap-2">
-                    <Building2 className="w-3.5 h-3.5 text-blue-300 shrink-0" />
-                    <span className="text-xs font-sans font-semibold text-white truncate">
-                      {items[0].clientName}
+                    {isMixedGroup
+                      ? <GitMerge className="w-3.5 h-3.5 text-purple-400 shrink-0" />
+                      : <Building2 className="w-3.5 h-3.5 text-blue-300 shrink-0" />
+                    }
+                    <span className={`text-xs font-sans font-semibold truncate ${isMixedGroup ? 'text-purple-200' : 'text-white'}`}>
+                      {isMixedGroup ? '📦 BARRAS MIXTAS' : items[0].clientName}
                     </span>
-                    <span className="text-[10px] font-mono text-blue-200/60">
-                      {items[0].clientRif}
-                    </span>
+                    {isMixedGroup ? (
+                      <span className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-purple-500/20 text-purple-200">
+                        MIXTO ({items.length})
+                      </span>
+                    ) : (
+                      <span className="text-[10px] font-mono text-blue-200/60">
+                        {items[0].clientRif}
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
 
               <div className="flex items-center gap-3 shrink-0">
-                <span className="text-[11px] font-mono text-blue-200/80">
-                  {barCount > 0 && `${barCount} barra(s)`}
-                  {barCount > 0 && lotCount > 0 && ' · '}
-                  {lotCount > 0 && `${lotCount} lote(s)`}
+                <span className={`text-[11px] font-mono ${isMixedGroup ? 'text-purple-200/80' : 'text-blue-200/80'}`}>
+                  {isMixedGroup
+                    ? `${totalBars} BARRAS`
+                    : `${barCount > 0 ? `${barCount} barra(s)` : ''}${barCount > 0 && lotCount > 0 ? ' · ' : ''}${lotCount > 0 ? `${lotCount} lote(s)` : ''}`}
                 </span>
                 {/* Chevron */}
                 {isOpen
-                  ? <ChevronUp className="w-4 h-4 text-blue-300" />
-                  : <ChevronDown className="w-4 h-4 text-blue-300" />
+                  ? <ChevronUp className={`w-4 h-4 ${isMixedGroup ? 'text-purple-300' : 'text-blue-300'}`} />
+                  : <ChevronDown className={`w-4 h-4 ${isMixedGroup ? 'text-purple-300' : 'text-blue-300'}`} />
                 }
               </div>
             </button>
