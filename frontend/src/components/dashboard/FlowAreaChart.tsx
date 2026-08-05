@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { TrendingUp } from 'lucide-react';
 import {
@@ -56,7 +56,10 @@ function FlowTooltip({ active, payload, label }: any) {
 }
 
 export function FlowAreaChart({ data, isMounted }: FlowAreaChartProps) {
+  const [mode, setMode] = useState<'AMBAS' | 'INGRESOS' | 'EGRESOS'>('AMBAS');
   const hasData = data.some(d => d.ingresos > 0 || d.egresos > 0);
+
+  const modes = ['AMBAS', 'INGRESOS', 'EGRESOS'] as const;
 
   return (
     <motion.div
@@ -65,11 +68,28 @@ export function FlowAreaChart({ data, isMounted }: FlowAreaChartProps) {
       transition={{ delay: 0.15, duration: 0.45 }}
       className="hud-card overflow-hidden h-full"
     >
-      <div className="flex items-center gap-2 px-5 pt-4 pb-2 border-b border-[var(--hud-border)]">
-        <TrendingUp className="w-3.5 h-3.5 text-[var(--hud-accent-sky)]" />
-        <h3 className="text-[11px] font-bold text-[var(--hud-text-primary)] font-mono tracking-wider uppercase">
-          Flujo de Material (30 días)
-        </h3>
+      <div className="flex items-center justify-between gap-2 px-5 pt-4 pb-2 border-b border-[var(--hud-border)]">
+        <div className="flex items-center gap-2">
+          <TrendingUp className="w-3.5 h-3.5 text-[var(--hud-accent-sky)]" />
+          <h3 className="text-[11px] font-bold text-[var(--hud-text-primary)] font-mono tracking-wider uppercase">
+            Flujo de Material (30 días)
+          </h3>
+        </div>
+        <div className="flex items-center gap-0.5 rounded-lg bg-[var(--hud-bg-deepest)]/60 border border-[var(--hud-border)] p-0.5">
+          {modes.map(m => (
+            <button
+              key={m}
+              onClick={() => setMode(m)}
+              className={`px-2.5 py-1 rounded-md text-[10px] font-mono font-bold tracking-wider uppercase transition-all active:scale-95 ${
+                mode === m
+                  ? 'text-[var(--hud-accent-gold)] bg-[var(--hud-accent-gold)]/15 border border-[var(--hud-accent-gold)]/30'
+                  : 'text-[var(--hud-text-dim)] border border-transparent hover:text-[var(--hud-text-primary)]'
+              }`}
+            >
+              {m}
+            </button>
+          ))}
+        </div>
       </div>
 
       {!hasData || !isMounted ? (
@@ -144,6 +164,7 @@ export function FlowAreaChart({ data, isMounted }: FlowAreaChartProps) {
                 strokeLinejoin="round"
                 fill="url(#grad-sky)"
                 filter="url(#glow-sky)"
+                hide={mode === 'EGRESOS'}
                 dot={false}
                 activeDot={{
                   r: 5,
@@ -165,6 +186,7 @@ export function FlowAreaChart({ data, isMounted }: FlowAreaChartProps) {
                 strokeLinejoin="round"
                 fill="url(#grad-gold)"
                 filter="url(#glow-gold)"
+                hide={mode === 'INGRESOS'}
                 dot={false}
                 activeDot={{
                   r: 5,
