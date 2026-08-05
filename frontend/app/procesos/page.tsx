@@ -8,6 +8,7 @@ import { useBars } from '@/hooks/useBars';
 import { useProcesses, useCreateProcess, useCancelProcess } from '@/hooks/useProcesses';
 import { useLots } from '@/hooks/useLots';
 import { ProcessDetailModal } from '@/components/procesos/ProcessDetailModal';
+import { ProcessAuditModal } from '@/components/procesos/ProcessAuditModal';
 import { ActiveProcessesMatrix } from '@/components/procesos/ActiveProcessesMatrix';
 import { RecoveryModal } from '@/components/procesos/RecoveryModal';
 import { SmeltingConfigForm } from '@/components/procesos/SmeltingConfigForm';
@@ -91,6 +92,8 @@ export default function V2ProcesosPage() {
   const [expandedLotId, setExpandedLotId] = useState<string | null>(null);
   const handleViewDetail = (id: string) => { setSelectedProcessId(id); setExpandedLotId(null); };
 
+  const [auditProcessId, setAuditProcessId] = useState<string | null>(null);
+
   const selectedProcess = useMemo(
     () => selectedProcessId ? processes.find(p => p.id === selectedProcessId) ?? null : null,
     [selectedProcessId, processes],
@@ -98,6 +101,15 @@ export default function V2ProcesosPage() {
   const selectedProcessLots = useMemo(
     () => selectedProcessId ? (processLotsMap[selectedProcessId] || []) : [],
     [selectedProcessId, processLotsMap],
+  );
+
+  const auditProcess = useMemo(
+    () => auditProcessId ? processes.find(p => p.id === auditProcessId) ?? null : null,
+    [auditProcessId, processes],
+  );
+  const auditProcessLots = useMemo(
+    () => auditProcessId ? (processLotsMap[auditProcessId] || []) : [],
+    [auditProcessId, processLotsMap],
   );
 
   const handleToggleClient = (clientId: string) => {
@@ -267,6 +279,7 @@ export default function V2ProcesosPage() {
           processLotsMap={processLotsMap}
           onOpenRecovery={handleOpenRecovery}
           onCancelProcess={(id) => cancelProcess.mutateAsync(id)}
+          onOpenProcess={(proc) => setAuditProcessId(proc.id)}
         />
       </div>
 
@@ -301,6 +314,17 @@ export default function V2ProcesosPage() {
           lotBarsMap={lotBarsMap}
           clients={clients}
           onClose={() => setSelectedProcessId(null)}
+        />
+      )}
+
+      {/* Process Audit Modal — Ficha Técnica del Proceso */}
+      {auditProcess && (
+        <ProcessAuditModal
+          process={auditProcess}
+          lots={auditProcessLots}
+          lotBarsMap={lotBarsMap}
+          clients={clients}
+          onClose={() => setAuditProcessId(null)}
         />
       )}
 

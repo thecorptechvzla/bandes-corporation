@@ -14,9 +14,10 @@ interface ActiveProcessesMatrixProps {
   processLotsMap: Record<string, Lot[]>;
   onOpenRecovery: (lot: Lot) => void;
   onCancelProcess?: (processId: string) => Promise<void>;
+  onOpenProcess?: (process: Process) => void;
 }
 
-export function ActiveProcessesMatrix({ activeProcesses, lotBarsMap, processLotsMap, onOpenRecovery, onCancelProcess }: ActiveProcessesMatrixProps) {
+export function ActiveProcessesMatrix({ activeProcesses, lotBarsMap, processLotsMap, onOpenRecovery, onCancelProcess, onOpenProcess }: ActiveProcessesMatrixProps) {
   const [pendingCancel, setPendingCancel] = useState<{ id: string; name: string } | null>(null);
   const [cancelLoading, setCancelLoading] = useState(false);
   const [cancelError, setCancelError] = useState('');
@@ -58,6 +59,10 @@ export function ActiveProcessesMatrix({ activeProcesses, lotBarsMap, processLots
 
     return (
       <div key={proc.id}
+        role="button"
+        tabIndex={0}
+        onClick={() => onOpenProcess?.(proc)}
+        onKeyDown={e => { if ((e.key === 'Enter' || e.key === ' ') && onOpenProcess) { e.preventDefault(); onOpenProcess(proc); } }}
         className={`p-6 rounded-lg border border-[var(--pm-border)] border-l-4 transition-all active:scale-95 cursor-pointer bg-[var(--pm-bg-deepest)]/40 ${glow} ${mixed ? 'border-l-purple-500/50' : 'border-l-blue-500/50'}`}
       >
         <div className="flex items-center justify-between mb-3">
@@ -87,12 +92,12 @@ export function ActiveProcessesMatrix({ activeProcesses, lotBarsMap, processLots
             </div>
             <div className="flex items-center gap-2 shrink-0">
               {onCancelProcess && (
-                <button type="button" onClick={() => { setCancelError(''); setPendingCancel({ id: proc.id, name: proc.name }); }}
+                <button type="button" onClick={e => { e.stopPropagation(); setCancelError(''); setPendingCancel({ id: proc.id, name: proc.name }); }}
                   className="px-2.5 py-1.5 rounded text-[9px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer flex items-center gap-1"
                   style={{ background: 'rgba(244,63,94,0.1)', color: '#fb7185', border: '1px solid rgba(244,63,94,0.25)' }}
                 ><X className="w-3 h-3" /> Cancelar Proceso</button>
               )}
-              <button type="button" onClick={() => onOpenRecovery(lot)}
+              <button type="button" onClick={e => { e.stopPropagation(); onOpenRecovery(lot); }}
                 className="px-3 py-1.5 rounded text-[9px] font-mono font-bold uppercase tracking-wider transition-all active:scale-90 cursor-pointer"
                 style={{ background: 'rgba(245,158,11,0.1)', color: 'var(--pm-accent-amber)', border: '1px solid rgba(245,158,11,0.2)' }}
               >⚡ Calibrar Colada</button>

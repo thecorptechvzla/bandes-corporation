@@ -54,7 +54,14 @@ export class ProcessesService {
   async findOne(id: string) {
     const process = await this.prisma.process.findUnique({
       where: { id },
-      include: { client: { select: { id: true, name: true } }, lots: true },
+      include: {
+        client: { select: { id: true, name: true } },
+        lots: {
+          include: {
+            bars: { include: { client: { select: { id: true, name: true } } } },
+          },
+        },
+      },
     });
     if (!process) throw new NotFoundException('Process not found');
     return process;
