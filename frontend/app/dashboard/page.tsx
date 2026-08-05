@@ -21,8 +21,9 @@ import { KpiCardGrid, KPI_COLORS } from '@/components/dashboard/KpiCardGrid';
 import { BalancesTable } from '@/components/dashboard/BalancesTable';
 import { TreemapPanel } from '@/components/dashboard/TreemapPanel';
 import { FlowAreaChart } from '@/components/dashboard/FlowAreaChart';
-import { InventoryDonutChart } from '@/components/dashboard/InventoryDonutChart';
 import { ClientBalancesBarChart } from '@/components/dashboard/ClientBalancesBarChart';
+import { DashboardCardGlass } from '@/components/dashboard/DashboardCardGlass';
+import { InventoryDonutChart } from '@/components/dashboard/InventoryDonutChart';
 
 function SparklineArea({ data, color, id }: { data: number[]; color: string; id: string }) {
   const chartData = data.map((v, i) => ({ i, v }));
@@ -386,9 +387,11 @@ export default function V2DashboardPage() {
           />
         </div>
 
-        {/* ── Fila 2: Flujo (8 col) + Donut Bóveda (4 col) ── */}
+        {/* ── Fila 2: Flujo de Material (Glass) + Donut Bóveda ── */}
         <div className="col-span-12 lg:col-span-8">
-          <FlowAreaChart data={metrics?.dailyFlow ?? []} isMounted={isMounted} />
+          <DashboardCardGlass>
+            <FlowAreaChart data={metrics?.dailyFlow ?? []} isMounted={isMounted} hideHeader bare />
+          </DashboardCardGlass>
         </div>
         <div className="col-span-12 lg:col-span-4">
           <InventoryDonutChart
