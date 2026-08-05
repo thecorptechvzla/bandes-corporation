@@ -192,7 +192,7 @@ export default function V2HistoricosPage() {
     filteredBars.forEach(b => {
       const clientName = clients.find(c => c.id === b.clientId)?.name || 'Desconocido';
       const entry = map.get(b.clientId) || { name: clientName, fa: 0, entregado: 0, r: 0, puro: 0, mixto: 0 };
-      const fw = Number(b.fineWeight || 0);
+      const fw = Number(b.grossWeight || 0);
       entry.fa += fw;
       const mixed = b.lotId ? !!lotIsMixed.get(b.lotId) : false;
       if (mixed) entry.mixto += fw; else entry.puro += fw;
@@ -241,7 +241,7 @@ export default function V2HistoricosPage() {
       const eficiencia = totalExpected > 0 ? (totalRecovered / totalExpected) * 100 : 0;
       const oroFundido = { totalRecovered, lotCount: closedLots.length, barCount: filteredBars.filter(b => b.status === 'COMPLETADO' || b.status === 'EXITED').length, eficiencia, totalExpected };
       const waiting = filteredBars.filter(b => b.status === 'IN_STOCK');
-      const oroEnEspera = { count: waiting.length, fineWeight: waiting.reduce((s, b) => s + Number(b.fineWeight || 0), 0), clientCount: new Set(waiting.map(b => b.clientId)).size };
+      const oroEnEspera = { count: waiting.length, fineWeight: waiting.reduce((s, b) => s + Number(b.grossWeight || 0), 0), clientCount: new Set(waiting.map(b => b.clientId)).size };
 
       await generateReportPDF({
         oroRecibido, oroFundido, oroEnEspera, totals, clientRows,

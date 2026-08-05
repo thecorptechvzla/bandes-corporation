@@ -99,7 +99,7 @@ export async function generateReportPDF(data: ReportData) {
 
   const kpiW = (cw - 12) / 4;
   const kpis = [
-    { label: 'ORO RECIBIDO (Peso Fino)', value: formatWeight(oroRecibido.fineWeight), sub: `${oroRecibido.barCount} barras` },
+    { label: 'ORO RECIBIDO (Peso Bruto)', value: formatWeight(oroRecibido.fineWeight), sub: `${oroRecibido.barCount} barras` },
     { label: 'ORO FUNDIDO (R)', value: formatWeight(oroFundido.totalRecovered), sub: `${oroFundido.lotCount} lotes` },
     { label: 'ORO EN ESPERA', value: formatWeight(oroEnEspera.fineWeight), sub: `${oroEnEspera.count} barras` },
     { label: 'BALANCE GLOBAL', value: formatWeight(totals.balance), sub: `${formatNumber(oroFundido.eficiencia, 1)}% eficiencia` },
@@ -183,7 +183,7 @@ export async function generateReportPDF(data: ReportData) {
 
   const cols = [
     { label: 'CLIENTE', x: m + 2, align: 'left' as const },
-    { label: 'PESO FINO (g)', x: m + 52, align: 'right' as const },
+    { label: 'PESO BRUTO (g)', x: m + 52, align: 'right' as const },
     { label: 'R (g)', x: m + 92, align: 'right' as const },
     { label: 'ENTREGADO (g)', x: m + 112, align: 'right' as const },
     { label: 'BALANCE (g)', x: m + 145, align: 'right' as const },

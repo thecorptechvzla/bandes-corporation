@@ -32,7 +32,7 @@ export function BalanceTable({ clientRows, totals, hasActiveFilters }: BalanceTa
         <div className="flex items-center gap-2">
           <TrendingUp className="w-4 h-4 text-[var(--pm-accent-gold)]" />
           <span className="text-[11px] font-semibold text-[var(--pm-text-primary)] uppercase tracking-wider">
-            Balance por Cliente — Peso Fino · R
+            Balance por Cliente — Peso Bruto
           </span>
         </div>
       </div>
@@ -50,7 +50,7 @@ export function BalanceTable({ clientRows, totals, hasActiveFilters }: BalanceTa
             <thead>
               <tr className="border-b border-[var(--pm-border)]/20 text-[11px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider">
                 <th className="py-3 px-4 bg-[var(--pm-bg-base)]/50 text-left sticky left-0 z-10 min-w-[180px]">Cliente</th>
-                <th className="py-3 px-4 bg-[var(--pm-bg-base)]/50 text-right">Peso Fino (g)</th>
+                <th className="py-3 px-4 bg-[var(--pm-bg-base)]/50 text-right">Peso Bruto (g)</th>
                 <th className="py-3 px-4 bg-[var(--pm-bg-base)]/50 text-right">Puro (g)</th>
                 <th className="py-3 px-4 bg-[var(--pm-bg-base)]/50 text-right">Mixto (g)</th>
                 <th className="py-3 px-4 bg-[var(--pm-bg-base)]/50 text-right">R (g)</th>
@@ -72,7 +72,7 @@ export function BalanceTable({ clientRows, totals, hasActiveFilters }: BalanceTa
                       <Coins className="w-3.5 h-3.5 text-[var(--pm-accent-gold)] shrink-0" />
                       {row.name}
                     </td>
-                    <td className="py-3 px-4 text-right font-mono font-bold text-[var(--pm-accent-emerald)]">
+                    <td className="py-3 px-4 text-right font-mono font-bold text-[var(--pm-accent-gold)]">
                       {formatWeight(row.fa)}
                     </td>
                     <td className="py-3 px-4 text-right font-mono text-[var(--pm-accent-cyan)]">
@@ -102,7 +102,7 @@ export function BalanceTable({ clientRows, totals, hasActiveFilters }: BalanceTa
                 <td className="py-4 px-4 font-mono text-sm font-bold text-[var(--pm-accent-gold)] sticky left-0 z-10 bg-[var(--pm-bg-primary)]/95">
                   TOTALES
                 </td>
-                <td className="py-4 px-4 text-right font-mono font-bold text-[var(--pm-accent-emerald)] text-sm">
+                <td className="py-4 px-4 text-right font-mono font-bold text-[var(--pm-accent-gold)] text-sm">
                   {formatWeight(totals.fa)}
                 </td>
                 <td className="py-4 px-4 text-right font-mono font-bold text-[var(--pm-accent-cyan)] text-sm">
