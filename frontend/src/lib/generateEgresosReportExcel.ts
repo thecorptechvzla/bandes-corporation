@@ -54,27 +54,41 @@ export async function generateEgresosReportExcel(params: GenerateEgresosReportEx
 
   // KPIs
   const kpiRow = 5;
+  const kpiFill: ExcelJS.Fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: `FF${greenLight}` } };
+  const kpiBorder: Partial<ExcelJS.Borders> = {
+    top: { style: 'thin', color: { argb: `FF${green}` } },
+    bottom: { style: 'thin', color: { argb: `FF${green}` } },
+    left: { style: 'thin', color: { argb: `FF${green}` } },
+    right: { style: 'thin', color: { argb: `FF${green}` } },
+  };
+
   sheet.getCell(`A${kpiRow}`).value = 'TOTAL EGRESOS';
   sheet.getCell(`A${kpiRow}`).font = { bold: true, size: 9, color: { argb: `FF${green}` } };
+  sheet.getCell(`A${kpiRow}`).fill = kpiFill;
+  sheet.getCell(`A${kpiRow}`).border = kpiBorder;
   sheet.getCell(`B${kpiRow}`).value = summary.totalEgresos;
   sheet.getCell(`B${kpiRow}`).font = { bold: true, size: 12, color: { argb: `FF${green}` } };
+  sheet.getCell(`B${kpiRow}`).fill = kpiFill;
+  sheet.getCell(`B${kpiRow}`).border = kpiBorder;
 
   sheet.getCell(`C${kpiRow}`).value = 'TOTAL LINGOTES';
   sheet.getCell(`C${kpiRow}`).font = { bold: true, size: 9, color: { argb: `FF${green}` } };
+  sheet.getCell(`C${kpiRow}`).fill = kpiFill;
+  sheet.getCell(`C${kpiRow}`).border = kpiBorder;
   sheet.getCell(`D${kpiRow}`).value = summary.totalLingotes;
   sheet.getCell(`D${kpiRow}`).font = { bold: true, size: 12, color: { argb: `FF${green}` } };
+  sheet.getCell(`D${kpiRow}`).fill = kpiFill;
+  sheet.getCell(`D${kpiRow}`).border = kpiBorder;
 
   sheet.getCell(`E${kpiRow}`).value = 'PESO BRUTO TOTAL';
   sheet.getCell(`E${kpiRow}`).font = { bold: true, size: 9, color: { argb: `FF${green}` } };
+  sheet.getCell(`E${kpiRow}`).fill = kpiFill;
+  sheet.getCell(`E${kpiRow}`).border = kpiBorder;
   sheet.getCell(`F${kpiRow}`).value = summary.pesoBrutoTotal;
   sheet.getCell(`F${kpiRow}`).font = { bold: true, size: 12, color: { argb: `FF${green}` } };
   sheet.getCell(`F${kpiRow}`).numFmt = '#,##0.00';
-
-  sheet.getCell(`G${kpiRow}`).value = 'PESO FINO TOTAL';
-  sheet.getCell(`G${kpiRow}`).font = { bold: true, size: 9, color: { argb: `FF${green}` } };
-  sheet.getCell(`H${kpiRow}`).value = summary.pesoFinoTotal;
-  sheet.getCell(`H${kpiRow}`).font = { bold: true, size: 12, color: { argb: `FF${green}` } };
-  sheet.getCell(`H${kpiRow}`).numFmt = '#,##0.00';
+  sheet.getCell(`F${kpiRow}`).fill = kpiFill;
+  sheet.getCell(`F${kpiRow}`).border = kpiBorder;
 
   sheet.getRow(kpiRow).height = 22;
 
@@ -175,6 +189,8 @@ export async function generateEgresosReportExcel(params: GenerateEgresosReportEx
       tr.getCell(c).border = {
         top: { style: 'medium', color: { argb: `FF${green}` } },
         bottom: { style: 'medium', color: { argb: `FF${green}` } },
+        left: { style: 'thin', color: { argb: `FF${green}` } },
+        right: { style: 'thin', color: { argb: `FF${green}` } },
       };
     }
   } else {
@@ -272,7 +288,7 @@ export async function generateEgresosReportExcel(params: GenerateEgresosReportEx
     sheet.getCell(`D${currentRow}`).font = { bold: true, size: 12, color: { argb: `FF${green}` } };
     sheet.getCell(`D${currentRow}`).numFmt = '#,##0.00';
 
-    sheet.getCell(`E${currentRow}`).value = 'Peso Fino Total';
+    sheet.getCell(`E${currentRow}`).value = 'Peso Bruto Total';
     sheet.getCell(`E${currentRow}`).font = { bold: true, size: 9, color: { argb: `FF${green}` } };
     sheet.getCell(`F${currentRow}`).value = summary.pesoFinoTotal;
     sheet.getCell(`F${currentRow}`).font = { bold: true, size: 12, color: { argb: `FF${green}` } };

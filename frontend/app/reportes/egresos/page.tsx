@@ -13,6 +13,8 @@ import { fetchEgresosReport } from '@/hooks/useEgresosReport';
 import { useClients } from '@/hooks/useClients';
 import { generateEgresosReportPDF } from '@/lib/generateEgresosReportPDF';
 import { generateEgresosReportExcel } from '@/lib/generateEgresosReportExcel';
+import { convertExitToDispatchResult, generateDispatchPDF } from '@/lib/generateDispatchPDF';
+import type { CopyType } from '@/lib/generateDispatchPDF';
 
 const toISODate = (d: Date) =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -59,6 +61,19 @@ export default function EgresosReportPage() {
   });
 
   const clienteName = clients.find((c) => c.id === clienteId)?.name || 'Todos los Clientes';
+
+  const handleReportTypeChange = useCallback((t: EgresoReportType) => {
+    setReportType(t);
+  }, []);
+
+  const handleReprint = useCallback((record: EgresoRecord, copyType: CopyType) => {
+    if (!record.exit) return;
+    const destinatario = clients.find((c) => c.id === record.clienteId);
+    const destinoClient = destinatario
+      ? { rif: destinatario.rif, contactInfo: destinatario.contactInfo }
+      : undefined;
+    generateDispatchPDF(convertExitToDispatchResult(record.exit), destinoClient, copyType);
+  }, [clients]);
 
   const handleGenerate = useCallback(async () => {
     setIsGenerating(true);
@@ -169,11 +184,13 @@ export default function EgresosReportPage() {
                 summary={filteredSummary}
                 dateFrom={appliedDateFrom}
                 dateTo={appliedDateTo}
+                onReprint={handleReprint}
               />
             ) : (
               <EgresosReportDetailTable
                 records={filteredDetailed}
                 summary={filteredSummary}
+                onReprint={handleReprint}
               />
             )}
           </div>

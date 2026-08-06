@@ -106,7 +106,7 @@ export default function PackingReportFilters({
             color: 'var(--report-text-main)',
           }}
         >
-          <option value="resumido">Resumido</option>
+          <option value="resumido">Resumen</option>
           <option value="detallado">Detallado</option>
         </select>
 

@@ -1,4 +1,5 @@
 import { api } from '@/lib/api';
+import type { MaterialExit } from '@/types/api';
 import type {
   EgresoDetailedRecord,
   EgresoRecord,
@@ -88,6 +89,7 @@ export function toEgresoRecord(e: ReportEgresoDTO, index: number): EgresoRecord 
     leyProm,
     pesoFino,
     destino: e.destination,
+    exit: e as unknown as MaterialExit,
   };
 }
 
