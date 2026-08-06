@@ -1,6 +1,8 @@
 'use client';
 
 import { formatNumber } from '@/lib/format';
+import { User, Building } from 'lucide-react';
+import type { CopyType } from '@/lib/generateDispatchPDF';
 import type { EgresoRecord, EgresoSummary } from './types';
 
 interface EgresosReportTableProps {
@@ -8,9 +10,10 @@ interface EgresosReportTableProps {
   summary: EgresoSummary;
   dateFrom: string;
   dateTo: string;
+  onReprint?: (record: EgresoRecord, copyType: CopyType) => void;
 }
 
-export default function EgresosReportTable({ records, summary, dateFrom, dateTo }: EgresosReportTableProps) {
+export default function EgresosReportTable({ records, summary, dateFrom, dateTo, onReprint }: EgresosReportTableProps) {
   const showFecha = dateFrom !== dateTo;
 
   return (
@@ -30,6 +33,7 @@ export default function EgresosReportTable({ records, summary, dateFrom, dateTo 
               { label: 'Cant. Lingotes', align: 'center' },
               { label: 'Peso Bruto (gr)', align: 'right' },
               { label: 'Ley Prom.', align: 'center' },
+              { label: 'Comprobantes', align: 'center' },
             ].map((h) => (
               <th
                 key={h.label}
@@ -99,6 +103,28 @@ export default function EgresosReportTable({ records, summary, dateFrom, dateTo 
               >
                 {formatNumber(row.leyProm, 4)}
               </td>
+              <td className="px-4 py-3 text-center">
+                <div className="flex items-center justify-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => onReprint?.(row, 'CLIENTE')}
+                    className="inline-flex items-center gap-1 px-2 py-1 rounded text-[10px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer border"
+                    style={{ background: 'rgba(19,145,105,0.08)', color: 'var(--report-color-primary)', borderColor: 'rgba(19,145,105,0.25)' }}
+                    title="Reimprimir comprobante Cliente"
+                  >
+                    <User className="w-3 h-3" /> Cliente
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onReprint?.(row, 'EMPRESA')}
+                    className="inline-flex items-center gap-1 px-2 py-1 rounded text-[10px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer border"
+                    style={{ background: 'rgba(19,145,109,0.06)', color: 'var(--report-color-primary)', borderColor: 'rgba(19,145,109,0.15)' }}
+                    title="Descargar comprobante Empresa"
+                  >
+                    <Building className="w-3 h-3" /> Empresa
+                  </button>
+                </div>
+              </td>
             </tr>
           ))}
           <tr
@@ -113,7 +139,7 @@ export default function EgresosReportTable({ records, summary, dateFrom, dateTo 
             >
               TOTALES ({summary.totalEgresos} Egresos)
             </td>
-            {showFecha && <td className="px-4 py-3" />}
+{showFecha && <td className="px-4 py-3" />}
             <td className="px-4 py-3" />
             <td
               className="px-4 py-3 text-center text-[12px] font-bold"
@@ -127,6 +153,7 @@ export default function EgresosReportTable({ records, summary, dateFrom, dateTo 
             >
               {formatNumber(summary.pesoBrutoTotal)} gr
             </td>
+            <td className="px-4 py-3" />
             <td className="px-4 py-3" />
           </tr>
         </tbody>

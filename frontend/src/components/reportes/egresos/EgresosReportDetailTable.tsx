@@ -1,14 +1,17 @@
 'use client';
 
 import { formatNumber } from '@/lib/format';
+import { User, Building } from 'lucide-react';
+import type { CopyType } from '@/lib/generateDispatchPDF';
 import type { EgresoDetailedRecord, EgresoSummary } from './types';
 
 interface EgresosReportDetailTableProps {
   records: EgresoDetailedRecord[];
   summary: EgresoSummary;
+  onReprint?: (record: EgresoDetailedRecord, copyType: CopyType) => void;
 }
 
-export default function EgresosReportDetailTable({ records, summary }: EgresosReportDetailTableProps) {
+export default function EgresosReportDetailTable({ records, summary, onReprint }: EgresosReportDetailTableProps) {
   return (
     <div className="space-y-4">
       {records.map((egreso) => (
@@ -48,6 +51,26 @@ export default function EgresosReportDetailTable({ records, summary }: EgresosRe
             >
               {egreso.fecha} | {egreso.destino}
             </span>
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => onReprint?.(egreso, 'CLIENTE')}
+                className="inline-flex items-center gap-1 px-2 py-1 rounded text-[10px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer border"
+                style={{ background: 'rgba(19,145,105,0.08)', color: 'var(--report-color-primary)', borderColor: 'rgba(19,145,105,0.25)' }}
+                title="Reimprimir comprobante Cliente"
+              >
+                <User className="w-3 h-3" /> Cliente
+              </button>
+              <button
+                type="button"
+                onClick={() => onReprint?.(egreso, 'EMPRESA')}
+                className="inline-flex items-center gap-1 px-2 py-1 rounded text-[10px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer border"
+                style={{ background: 'rgba(19,145,109,0.06)', color: 'var(--report-color-primary)', borderColor: 'rgba(19,145,109,0.15)' }}
+                title="Descargar comprobante Empresa"
+              >
+                <Building className="w-3 h-3" /> Empresa
+              </button>
+            </div>
           </div>
 
           {/* Tabla de lingotes */}

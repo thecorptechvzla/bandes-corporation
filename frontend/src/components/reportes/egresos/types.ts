@@ -18,6 +18,7 @@ export interface EgresoRecord {
   leyProm: number;
   pesoFino: number;
   destino: string;
+  exit?: import('@/types/api').MaterialExit;
 }
 
 export interface EgresoDetailedRecord extends EgresoRecord {
