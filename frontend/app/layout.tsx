@@ -67,6 +67,8 @@ const historicoChilds = [
 
 const reportesChilds = [
   { href: '/reportes/packing', label: 'Detalle del Packing' },
+  { href: '/reportes/procesos', label: 'Procesos' },
+  { href: '/reportes/egresos', label: 'Egresos' },
 ];
 
 export default function RootLayout({
