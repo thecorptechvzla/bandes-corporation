@@ -55,7 +55,7 @@ export default function EgresosReportDetailTable({ records, summary, onReprint }
               <button
                 type="button"
                 onClick={() => onReprint?.(egreso, 'CLIENTE')}
-                className="inline-flex items-center gap-1 px-2 py-1 rounded text-[10px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer border"
+                className="inline-flex items-center gap-1 px-2 py-1 rounded text-[10px] font-mono font-bold uppercase tracking-wider transition-all hover:brightness-110 active:scale-95 cursor-pointer border"
                 style={{ background: 'rgba(19,145,105,0.08)', color: 'var(--report-color-primary)', borderColor: 'rgba(19,145,105,0.25)' }}
                 title="Reimprimir comprobante Cliente"
               >
@@ -64,7 +64,7 @@ export default function EgresosReportDetailTable({ records, summary, onReprint }
               <button
                 type="button"
                 onClick={() => onReprint?.(egreso, 'EMPRESA')}
-                className="inline-flex items-center gap-1 px-2 py-1 rounded text-[10px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer border"
+                className="inline-flex items-center gap-1 px-2 py-1 rounded text-[10px] font-mono font-bold uppercase tracking-wider transition-all hover:brightness-110 active:scale-95 cursor-pointer border"
                 style={{ background: 'rgba(19,145,109,0.06)', color: 'var(--report-color-primary)', borderColor: 'rgba(19,145,109,0.15)' }}
                 title="Descargar comprobante Empresa"
               >
