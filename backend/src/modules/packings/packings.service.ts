@@ -51,6 +51,7 @@ export class PackingsService {
     if (Number.isNaN(fromDate.getTime()) || Number.isNaN(toDate.getTime())) {
       throw new BadRequestException('Rango de fechas inválido');
     }
+    toDate.setUTCHours(23, 59, 59, 999);
 
     const where = {
       createdAt: { gte: fromDate, lte: toDate },

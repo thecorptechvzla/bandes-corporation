@@ -14,9 +14,15 @@ import type { PackingRecord, PackingDetailedRecord, PackingSummary, ReportType }
 import { generatePackingReportPDF } from '@/lib/generatePackingReportPDF';
 import { generatePackingReportExcel } from '@/lib/generatePackingReportExcel';
 
+const toISODate = (d: Date) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
 export default function PackingReportPage() {
-  const [dateFrom, setDateFrom] = useState('2026-08-01');
-  const [dateTo, setDateTo] = useState('2026-08-05');
+  const [dateFrom, setDateFrom] = useState(() => {
+    const now = new Date();
+    return `${toISODate(now).slice(0, 7)}-01`;
+  });
+  const [dateTo, setDateTo] = useState(() => toISODate(new Date()));
   const [clientId, setClientId] = useState('');
   const [reportType, setReportType] = useState<ReportType>('resumido');
   const [showReport, setShowReport] = useState(false);
@@ -37,8 +43,11 @@ export default function PackingReportPage() {
   });
 
   const [appliedClientName, setAppliedClientName] = useState('Todos los Proveedores');
-  const [appliedDateFrom, setAppliedDateFrom] = useState('2026-08-01');
-  const [appliedDateTo, setAppliedDateTo] = useState('2026-08-05');
+  const [appliedDateFrom, setAppliedDateFrom] = useState(() => {
+    const now = new Date();
+    return `${toISODate(now).slice(0, 7)}-01`;
+  });
+  const [appliedDateTo, setAppliedDateTo] = useState(() => toISODate(new Date()));
   const [appliedReportType, setAppliedReportType] = useState<ReportType>('resumido');
 
   const reportId = '#REP-BANDES-2026-08';

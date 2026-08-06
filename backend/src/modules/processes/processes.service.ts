@@ -75,17 +75,13 @@ export class ProcessesService {
     });
   }
 
-  async getReportData(
-    from: string,
-    to: string,
-    type: 'resumido' | 'detallado',
-    clientId?: string,
-  ) {
+  async getReportData(from: string, to: string, clientId?: string) {
     const fromDate = new Date(from);
     const toDate = new Date(to);
     if (Number.isNaN(fromDate.getTime()) || Number.isNaN(toDate.getTime())) {
       throw new BadRequestException('Rango de fechas inválido');
     }
+    toDate.setUTCHours(23, 59, 59, 999);
 
     const where = {
       createdAt: { gte: fromDate, lte: toDate },

@@ -345,114 +345,63 @@ export class MaterialExitsService {
     });
   }
 
-  async getReportData(
-    from: string,
-    to: string,
-    type: 'resumido' | 'detallado',
-    clientId?: string,
-  ) {
+  async getReportData(from: string, to: string, clientId?: string) {
     const fromDate = new Date(from);
     const toDate = new Date(to);
     if (Number.isNaN(fromDate.getTime()) || Number.isNaN(toDate.getTime())) {
       throw new BadRequestException('Rango de fechas inválido');
     }
+    toDate.setUTCHours(23, 59, 59, 999);
 
-    const where = {
+    const where: any = {
       createdAt: { gte: fromDate, lte: toDate },
-      ...(clientId
-        ? {
-            OR: [
-              { bars: { some: { clientId } } },
-              { exitDetails: { some: { bars: { some: { clientId } } } } },
-            ],
-          }
-        : {}),
+      ...(clientId ? { OR: [] } : {}),
     };
 
-    if (type === 'detallado') {
-      return this.prisma.materialExit.findMany({
-        where,
-        orderBy: { createdAt: 'asc' },
-        include: {
-          exitDetails: {
-            include: {
-              lot: {
-                include: {
-                  process: {
-                    include: { client: { select: { id: true, name: true } } },
-                  },
-                },
-              },
-              bars: {
-                select: {
-                  id: true,
-                  barNumber: true,
-                  grossWeight: true,
-                  purity: true,
-                  fineWeight: true,
-                  clientId: true,
-                  client: { select: { id: true, name: true } },
+    if (clientId) {
+      const client = await this.prisma.client.findUnique({
+        where: { id: clientId },
+        select: { name: true },
+      });
+      const or: any[] = [
+        { bars: { some: { clientId } } },
+        { exitDetails: { some: { bars: { some: { clientId } } } } },
+      ];
+      if (client?.name) {
+        const destName = client.name.toUpperCase();
+        or.push({ destination: { contains: destName } });
+      }
+      where.OR = or;
+    }
+
+    return this.prisma.materialExit.findMany({
+      where,
+      orderBy: { createdAt: 'asc' },
+      include: {
+        exitDetails: {
+          include: {
+            lot: {
+              include: {
+                process: {
+                  include: { client: { select: { id: true, name: true } } },
                 },
               },
             },
+            bars: {
+              select: {
+                id: true,
+                barNumber: true,
+                grossWeight: true,
+                purity: true,
+                fineWeight: true,
+                clientId: true,
+                client: { select: { id: true, name: true } },
+              },
+            },
           },
-          bars: { include: { client: { select: { id: true, name: true } } } },
         },
-      });
-    }
-
-    // Modo resumido: agregados por egreso con groupBy sobre las barras
-    // (las barras viven en exitDetails o directas vía exitId).
-    const exits = await this.prisma.materialExit.findMany({
-      where,
-      orderBy: { createdAt: 'asc' },
-      include: { exitDetails: { select: { id: true } } },
-    });
-
-    const exitIds = exits.map((e) => e.id);
-    const detailIds = exits.flatMap((e) => e.exitDetails.map((d) => d.id));
-
-    const byExit = exitIds.length
-      ? await this.prisma.bar.groupBy({
-          by: ['exitId'],
-          where: { exitId: { in: exitIds } },
-          _sum: { grossWeight: true, fineWeight: true },
-          _count: { _all: true },
-        })
-      : [];
-    const byDetail = detailIds.length
-      ? await this.prisma.bar.groupBy({
-          by: ['exitDetailId'],
-          where: { exitDetailId: { in: detailIds } },
-          _sum: { grossWeight: true, fineWeight: true },
-          _count: { _all: true },
-        })
-      : [];
-
-    const sumsByExit = new Map(byExit.map((g) => [g.exitId, g]));
-    const sumsByDetail = new Map(byDetail.map((g) => [g.exitDetailId, g]));
-
-    return exits.map((e) => {
-      let barras = 0;
-      let pesoBruto = 0;
-      let pesoFino = 0;
-
-      const gExit = sumsByExit.get(e.id);
-      if (gExit) {
-        barras += gExit._count._all ?? 0;
-        pesoBruto += Number(gExit._sum.grossWeight ?? 0);
-        pesoFino += Number(gExit._sum.fineWeight ?? 0);
-      }
-      for (const d of e.exitDetails) {
-        const gDetail = sumsByDetail.get(d.id);
-        if (gDetail) {
-          barras += gDetail._count._all ?? 0;
-          pesoBruto += Number(gDetail._sum.grossWeight ?? 0);
-          pesoFino += Number(gDetail._sum.fineWeight ?? 0);
-        }
-      }
-
-      return { ...e, barras, pesoBruto, pesoFino };
+        bars: { include: { client: { select: { id: true, name: true } } } },
+      },
     });
   }
 

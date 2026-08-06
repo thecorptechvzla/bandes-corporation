@@ -14,11 +14,9 @@ export class MaterialExitsController {
   report(
     @Query('from') from: string,
     @Query('to') to: string,
-    @Query('type') type?: string,
     @Query('clientId') clientId?: string,
   ) {
-    const reportType = type === 'detallado' ? 'detallado' : 'resumido';
-    return this.service.getReportData(from, to, reportType, clientId);
+    return this.service.getReportData(from, to, clientId);
   }
 
   @Post()

@@ -14,9 +14,15 @@ import { useClients } from '@/hooks/useClients';
 import { generateProcesosReportPDF } from '@/lib/generateProcesosReportPDF';
 import { generateProcesosReportExcel } from '@/lib/generateProcesosReportExcel';
 
+const toISODate = (d: Date) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
 export default function ProcesosReportPage() {
-  const [dateFrom, setDateFrom] = useState('2026-08-01');
-  const [dateTo, setDateTo] = useState('2026-08-05');
+  const [dateFrom, setDateFrom] = useState(() => {
+    const now = new Date();
+    return `${toISODate(now).slice(0, 7)}-01`;
+  });
+  const [dateTo, setDateTo] = useState(() => toISODate(new Date()));
   const [proveedorId, setProveedorId] = useState('');
   const [reportType, setReportType] = useState<ProcesoReportType>('resumido');
   const [showReport, setShowReport] = useState(false);
@@ -36,8 +42,11 @@ export default function ProcesosReportPage() {
   });
 
   const [appliedProveedorName, setAppliedProveedorName] = useState('Todos los Proveedores');
-  const [appliedDateFrom, setAppliedDateFrom] = useState('2026-08-01');
-  const [appliedDateTo, setAppliedDateTo] = useState('2026-08-05');
+  const [appliedDateFrom, setAppliedDateFrom] = useState(() => {
+    const now = new Date();
+    return `${toISODate(now).slice(0, 7)}-01`;
+  });
+  const [appliedDateTo, setAppliedDateTo] = useState(() => toISODate(new Date()));
   const [appliedReportType, setAppliedReportType] = useState<ProcesoReportType>('resumido');
 
   const reportId = '#REP-PROC-BANDES-2026-08';

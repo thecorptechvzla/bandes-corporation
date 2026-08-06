@@ -14,9 +14,15 @@ import { useClients } from '@/hooks/useClients';
 import { generateEgresosReportPDF } from '@/lib/generateEgresosReportPDF';
 import { generateEgresosReportExcel } from '@/lib/generateEgresosReportExcel';
 
+const toISODate = (d: Date) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
 export default function EgresosReportPage() {
-  const [dateFrom, setDateFrom] = useState('2026-08-01');
-  const [dateTo, setDateTo] = useState('2026-08-05');
+  const [dateFrom, setDateFrom] = useState(() => {
+    const now = new Date();
+    return `${toISODate(now).slice(0, 7)}-01`;
+  });
+  const [dateTo, setDateTo] = useState(() => toISODate(new Date()));
   const [clienteId, setClienteId] = useState('');
   const [reportType, setReportType] = useState<EgresoReportType>('resumido');
   const [showReport, setShowReport] = useState(false);
@@ -24,7 +30,7 @@ export default function EgresosReportPage() {
   const [isGenerating, setIsGenerating] = useState(false);
   const pdfRef = useRef<HTMLDivElement>(null);
 
-  const { data: proveedores = [] } = useClients({ role: 'PROVEEDOR' });
+  const { data: clients = [] } = useClients();
 
   const [filteredRecords, setFilteredRecords] = useState<EgresoRecord[]>([]);
   const [filteredDetailed, setFilteredDetailed] = useState<EgresoDetailedRecord[]>([]);
@@ -36,8 +42,11 @@ export default function EgresosReportPage() {
   });
 
   const [appliedClienteName, setAppliedClienteName] = useState('Todos los Clientes');
-  const [appliedDateFrom, setAppliedDateFrom] = useState('2026-08-01');
-  const [appliedDateTo, setAppliedDateTo] = useState('2026-08-05');
+  const [appliedDateFrom, setAppliedDateFrom] = useState(() => {
+    const now = new Date();
+    return `${toISODate(now).slice(0, 7)}-01`;
+  });
+  const [appliedDateTo, setAppliedDateTo] = useState(() => toISODate(new Date()));
   const [appliedReportType, setAppliedReportType] = useState<EgresoReportType>('resumido');
 
   const reportId = '#REP-EGR-BANDES-2026-08';
@@ -49,7 +58,7 @@ export default function EgresosReportPage() {
     minute: '2-digit',
   });
 
-  const clienteName = proveedores.find((c) => c.id === clienteId)?.name || 'Todos los Clientes';
+  const clienteName = clients.find((c) => c.id === clienteId)?.name || 'Todos los Clientes';
 
   const handleGenerate = useCallback(async () => {
     setIsGenerating(true);
@@ -120,7 +129,7 @@ export default function EgresosReportPage() {
         dateTo={dateTo}
         clienteId={clienteId}
         reportType={reportType}
-        clients={proveedores}
+        clients={clients}
         isLoading={isGenerating}
         onDateFromChange={setDateFrom}
         onDateToChange={setDateTo}
