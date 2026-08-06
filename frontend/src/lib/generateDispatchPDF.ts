@@ -89,10 +89,15 @@ export function convertExitToDispatchResult(exit: MaterialExit): DispatchResult 
 
   const type = hasLots && hasBars ? 'mixed' : hasBars ? 'bars' : 'lots';
 
+  const grossTotal = [
+    ...(exit.exitDetails ?? []).flatMap((d) => d.bars ?? []),
+    ...(exit.bars ?? []),
+  ].reduce((sum, b) => sum + Number(b.grossWeight ?? 0), 0);
+
   return {
     reference: `DESP-${exit.id.slice(0, 8).toUpperCase()}`,
     destination: exit.destination,
-    totalWeight: Number(exit.totalWeight),
+    totalWeight: grossTotal > 0 ? grossTotal : Number(exit.totalWeight),
     lotCount: lots.length || undefined,
     barCount: bars.length || undefined,
     providerCount: providerMap.size,
