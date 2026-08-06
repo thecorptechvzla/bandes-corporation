@@ -2,7 +2,6 @@
 
 import { formatNumber } from '@/lib/format';
 import type { PackingReportData, ReportType } from './mockData';
-import { MOCK_DETAILED_DATA } from './mockData';
 
 interface PackingReportPdfTemplateProps {
   data: PackingReportData;
@@ -158,7 +157,7 @@ export default function PackingReportPdfTemplate({
         </table>
       ) : (
         <>
-          {MOCK_DETAILED_DATA.map((packing) => (
+          {(data.detailed ?? []).map((packing) => (
             <div key={packing.id} className="pdf-packing-block" style={{ border: '1px solid #e0e0e0', borderRadius: '4px', overflow: 'hidden' }}>
               {/* Banner de identificación */}
               <div className="pdf-banner" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'linear-gradient(135deg, rgba(19,145,105,0.12), rgba(19,145,105,0.04))', borderBottom: '2px solid #139169' }}>

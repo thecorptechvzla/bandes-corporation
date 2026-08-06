@@ -8,18 +8,11 @@ import PackingReportMetrics from '@/components/reportes/packing/PackingReportMet
 import PackingReportTable from '@/components/reportes/packing/PackingReportTable';
 import PackingReportDetailTable from '@/components/reportes/packing/PackingReportDetailTable';
 import PackingReportPdfTemplate from '@/components/reportes/packing/PackingReportPdfTemplate';
-import { MOCK_PACKING_DATA, MOCK_DETAILED_DATA, MOCK_CLIENTS, type PackingRecord, type PackingDetailedRecord, type PackingSummary, type ReportType } from '@/components/reportes/packing/mockData';
+import { useClients } from '@/hooks/useClients';
+import { fetchPackingReport } from '@/hooks/usePackingReport';
+import type { PackingRecord, PackingDetailedRecord, PackingSummary, ReportType } from '@/components/reportes/packing/mockData';
 import { generatePackingReportPDF } from '@/lib/generatePackingReportPDF';
 import { generatePackingReportExcel } from '@/lib/generatePackingReportExcel';
-
-function computeSummary(records: PackingRecord[]): PackingSummary {
-  const totalPackings = records.length;
-  const totalBarras = records.reduce((acc, r) => acc + r.barras, 0);
-  const pesoBrutoTotal = records.reduce((acc, r) => acc + r.pesoBruto, 0);
-  const pesoFinoTotal = records.reduce((acc, r) => acc + r.pesoFino, 0);
-  const leyProm = pesoBrutoTotal > 0 ? pesoFinoTotal / pesoBrutoTotal : 0;
-  return { totalPackings, totalBarras, pesoBrutoTotal, pesoFinoTotal, leyProm };
-}
 
 export default function PackingReportPage() {
   const [dateFrom, setDateFrom] = useState('2026-08-01');
@@ -28,13 +21,22 @@ export default function PackingReportPage() {
   const [reportType, setReportType] = useState<ReportType>('resumido');
   const [showReport, setShowReport] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   const pdfRef = useRef<HTMLDivElement>(null);
 
-  const [filteredRecords, setFilteredRecords] = useState<PackingRecord[]>(MOCK_PACKING_DATA.records);
-  const [filteredDetailed, setFilteredDetailed] = useState<PackingDetailedRecord[]>(MOCK_DETAILED_DATA);
-  const [filteredSummary, setFilteredSummary] = useState<PackingSummary>(MOCK_PACKING_DATA.summary);
+  const { data: proveedores = [] } = useClients({ role: 'PROVEEDOR' });
 
-  const [appliedClientName, setAppliedClientName] = useState('Todos los Clientes');
+  const [filteredRecords, setFilteredRecords] = useState<PackingRecord[]>([]);
+  const [filteredDetailed, setFilteredDetailed] = useState<PackingDetailedRecord[]>([]);
+  const [filteredSummary, setFilteredSummary] = useState<PackingSummary>({
+    totalPackings: 0,
+    totalBarras: 0,
+    pesoBrutoTotal: 0,
+    leyProm: 0,
+    pesoFinoTotal: 0,
+  });
+
+  const [appliedClientName, setAppliedClientName] = useState('Todos los Proveedores');
   const [appliedDateFrom, setAppliedDateFrom] = useState('2026-08-01');
   const [appliedDateTo, setAppliedDateTo] = useState('2026-08-05');
   const [appliedReportType, setAppliedReportType] = useState<ReportType>('resumido');
@@ -48,35 +50,35 @@ export default function PackingReportPage() {
     minute: '2-digit',
   });
 
-  const clientName = MOCK_CLIENTS.find((c) => c.id === clientId)?.name || 'Todos los Clientes';
+  const clientName = proveedores.find((c) => c.id === clientId)?.name || 'Todos los Proveedores';
 
-  const handleGenerate = useCallback(() => {
-    const selectedClient = MOCK_CLIENTS.find((c) => c.id === clientId);
-    const matchName = selectedClient && selectedClient.id !== '' ? selectedClient.name : '';
-
-    const records = MOCK_PACKING_DATA.records.filter((item) => {
-      return matchName === '' || item.client === matchName;
-    });
-
-    const detailed = MOCK_DETAILED_DATA.filter((item) => {
-      return matchName === '' || item.client === matchName;
-    });
-
-    setFilteredRecords(records);
-    setFilteredDetailed(detailed);
-    setFilteredSummary(computeSummary(records));
-    setAppliedClientName(clientName);
-    setAppliedDateFrom(dateFrom);
-    setAppliedDateTo(dateTo);
-    setAppliedReportType(reportType);
-    setShowReport(true);
+  const handleGenerate = useCallback(async () => {
+    setIsGenerating(true);
+    try {
+      const reportData = await fetchPackingReport({
+        from: dateFrom,
+        to: dateTo,
+        reportType,
+        clientId,
+      });
+      setFilteredRecords(reportData.records);
+      setFilteredDetailed(reportData.detailed ?? []);
+      setFilteredSummary(reportData.summary);
+      setAppliedClientName(clientName);
+      setAppliedDateFrom(dateFrom);
+      setAppliedDateTo(dateTo);
+      setAppliedReportType(reportType);
+      setShowReport(true);
+    } finally {
+      setIsGenerating(false);
+    }
   }, [clientId, clientName, dateFrom, dateTo, reportType]);
 
   const handleExportPDF = async () => {
     setIsExporting(true);
     try {
       await generatePackingReportPDF({
-        data: { summary: filteredSummary, records: filteredRecords },
+        data: { summary: filteredSummary, records: filteredRecords, detailed: filteredDetailed },
         reportId,
         generatedAt,
         dateFrom: appliedDateFrom,
@@ -93,7 +95,7 @@ export default function PackingReportPage() {
     setIsExporting(true);
     try {
       await generatePackingReportExcel({
-        data: { summary: filteredSummary, records: filteredRecords },
+        data: { summary: filteredSummary, records: filteredRecords, detailed: filteredDetailed },
         reportId,
         generatedAt,
         dateFrom: appliedDateFrom,
@@ -119,6 +121,8 @@ export default function PackingReportPage() {
         dateTo={dateTo}
         clientId={clientId}
         reportType={reportType}
+        clients={proveedores}
+        isLoading={isGenerating}
         onDateFromChange={setDateFrom}
         onDateToChange={setDateTo}
         onClientChange={setClientId}
@@ -186,7 +190,7 @@ export default function PackingReportPage() {
         }}
       >
         <PackingReportPdfTemplate
-          data={{ summary: filteredSummary, records: filteredRecords }}
+          data={{ summary: filteredSummary, records: filteredRecords, detailed: filteredDetailed }}
           reportId={reportId}
           generatedAt={generatedAt}
           dateFrom={appliedDateFrom}

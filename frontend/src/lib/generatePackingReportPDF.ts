@@ -33,6 +33,13 @@ export async function generatePackingReportPDF(params: GeneratePackingReportPDFP
   const element = document.getElementById('packing-pdf-template');
   if (!element) return;
 
+  // Esperar a que fuentes y el último commit de React hayan renderizado el DOM
+  // antes de capturarlo, para que el PDF refleje siempre los datos reales.
+  await document.fonts.ready;
+  await new Promise<void>((resolve) =>
+    requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+  );
+
   const { reportType } = params;
   // Landscape solo para el reporte detallado (tabla con muchos datos financieros)
   const isLandscape = reportType === 'detallado';

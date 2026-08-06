@@ -1,6 +1,5 @@
 import ExcelJS from 'exceljs';
 import type { PackingReportData, ReportType } from '@/components/reportes/packing/mockData';
-import { MOCK_DETAILED_DATA } from '@/components/reportes/packing/mockData';
 import { formatNumber } from '@/lib/format';
 
 interface GeneratePackingReportExcelParams {
@@ -47,7 +46,7 @@ const doubleBorder = (color: string): ExcelJS.Borders => ({
 
 export async function generatePackingReportExcel(params: GeneratePackingReportExcelParams) {
   const { data, reportId, generatedAt, dateFrom, dateTo, clientName, reportType } = params;
-  const { summary, records } = data;
+  const { summary, records, detailed } = data;
 
   const wb = new ExcelJS.Workbook();
   wb.creator = 'BANDES - Sistema de Custodia';
@@ -250,7 +249,8 @@ export async function generatePackingReportExcel(params: GeneratePackingReportEx
     totalsValueRow.getCell(6).alignment = { horizontal: 'right', vertical: 'middle' };
   } else {
     // Detallado mode — independent blocks per packing
-    MOCK_DETAILED_DATA.forEach((packing, packIdx) => {
+    const detailedBlocks = detailed ?? [];
+    detailedBlocks.forEach((packing, packIdx) => {
       // ── Banner: Packing ID + file + client ──
       const bannerRow = ws.addRow([
         `${packing.id}  —  ${packing.file}    |    ${packing.client}`,
@@ -312,7 +312,7 @@ export async function generatePackingReportExcel(params: GeneratePackingReportEx
       subRow.getCell(4).alignment = { horizontal: 'right', vertical: 'middle' };
 
       // ── Spacer between blocks ──
-      if (packIdx < MOCK_DETAILED_DATA.length - 1) {
+      if (packIdx < detailedBlocks.length - 1) {
         const spacer = ws.addRow([]);
         spacer.height = 8;
       }
