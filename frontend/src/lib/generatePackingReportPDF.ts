@@ -34,18 +34,25 @@ export async function generatePackingReportPDF(params: GeneratePackingReportPDFP
   if (!element) return;
 
   const { reportType } = params;
+  // Landscape solo para el reporte detallado (tabla con muchos datos financieros)
   const isLandscape = reportType === 'detallado';
 
-  // Force container width to 750px for consistent capture
-  const CAPTURE_WIDTH = 750;
+  // Ancho base de captura (px CSS). 780px da respiro a las columnas numéricas.
+  const CAPTURE_WIDTH = 780;
+
+  // Fijar el ancho con prioridad máxima para que el CSS !important
+  // (.pdf-container, .pdf-container-detailed) no lo pise y capture
+  // con un ancho distinto al que luego se escala.
   const originalWidth = element.style.width;
   const originalMinWidth = element.style.minWidth;
   const originalMaxWidth = element.style.maxWidth;
-  element.style.width = CAPTURE_WIDTH + 'px';
-  element.style.minWidth = CAPTURE_WIDTH + 'px';
-  element.style.maxWidth = CAPTURE_WIDTH + 'px';
+  element.style.setProperty('width', CAPTURE_WIDTH + 'px', 'important');
+  element.style.setProperty('minWidth', CAPTURE_WIDTH + 'px', 'important');
+  element.style.setProperty('maxWidth', CAPTURE_WIDTH + 'px', 'important');
 
-  const cssW = CAPTURE_WIDTH;
+  // Usar el ancho de contenido real (scrollWidth) como referencia de captura:
+  // evita que si alguna columna desborda, se recorte a la derecha.
+  const cssW = element.scrollWidth;
   const cssH = element.scrollHeight;
 
   const imgData = await toPng(element, {
@@ -53,15 +60,14 @@ export async function generatePackingReportPDF(params: GeneratePackingReportPDFP
     pixelRatio: PIXEL_RATIO,
     width: cssW,
     height: cssH,
+    cacheBust: true,
     style: {
       transform: 'scale(1)',
       transformOrigin: 'top left',
-      width: cssW + 'px',
-      height: cssH + 'px',
     },
   });
 
-  // Restore original styles
+  // Restaurar estilos originales
   element.style.width = originalWidth;
   element.style.minWidth = originalMinWidth;
   element.style.maxWidth = originalMaxWidth;
@@ -70,7 +76,7 @@ export async function generatePackingReportPDF(params: GeneratePackingReportPDFP
   const orientation = isLandscape ? 'l' : 'p';
   const pw = isLandscape ? 279.4 : 215.9;
   const ph = isLandscape ? 215.9 : 279.4;
-  const mx = 10;
+  const mx = isLandscape ? 8 : 10;
   const my = 8;
   const cw = pw - mx * 2;
   const footerReserve = 16;
@@ -78,7 +84,8 @@ export async function generatePackingReportPDF(params: GeneratePackingReportPDFP
 
   const pdf = new jsPDF(orientation, 'mm', 'letter');
 
-  // Scale: CSS pixels → mm
+  // La imagen ocupa SIEMPRE el 100% del ancho útil (cw): el contenido se
+  // reduce proporcionalmente, nunca se desborda a la derecha.
   const imgW = cw;
   const imgH = (cssH / cssW) * imgW;
 
@@ -86,6 +93,28 @@ export async function generatePackingReportPDF(params: GeneratePackingReportPDFP
   const img = new Image();
   img.src = imgData;
   await new Promise<void>((resolve) => { img.onload = () => resolve(); });
+
+  const placeSlice = (p: number, totalPages: number) => {
+    const cssSliceY = (p * maxImgH / imgH) * cssH;
+    const cssSliceH = Math.min((maxImgH / imgH) * cssH, cssH - cssSliceY);
+    const pdfSliceH = (cssSliceH / cssH) * imgH;
+
+    const sliceCanvas = document.createElement('canvas');
+    sliceCanvas.width = cssW * PIXEL_RATIO;
+    sliceCanvas.height = Math.ceil(cssSliceH * PIXEL_RATIO);
+    const ctx = sliceCanvas.getContext('2d');
+    if (!ctx) return;
+
+    ctx.drawImage(
+      img,
+      0, cssSliceY * PIXEL_RATIO, cssW * PIXEL_RATIO, cssSliceH * PIXEL_RATIO,
+      0, 0, cssW * PIXEL_RATIO, cssSliceH * PIXEL_RATIO,
+    );
+
+    const sliceData = sliceCanvas.toDataURL('image/png');
+    pdf.addImage(sliceData, 'PNG', mx, my, imgW, pdfSliceH);
+    drawFooter(pdf, p + 1, totalPages, pw, ph);
+  };
 
   if (imgH <= maxImgH) {
     pdf.addImage(imgData, 'PNG', mx, my, imgW, imgH);
@@ -95,26 +124,7 @@ export async function generatePackingReportPDF(params: GeneratePackingReportPDFP
 
     for (let p = 0; p < totalPages; p++) {
       if (p > 0) pdf.addPage();
-
-      const cssSliceY = (p * maxImgH / imgH) * cssH;
-      const cssSliceH = Math.min((maxImgH / imgH) * cssH, cssH - cssSliceY);
-      const pdfSliceH = (cssSliceH / cssH) * imgH;
-
-      const sliceCanvas = document.createElement('canvas');
-      sliceCanvas.width = cssW;
-      sliceCanvas.height = Math.ceil(cssSliceH);
-      const ctx = sliceCanvas.getContext('2d');
-      if (!ctx) continue;
-
-      ctx.drawImage(
-        img,
-        0, cssSliceY, cssW, cssSliceH,
-        0, 0, cssW, cssSliceH,
-      );
-
-      const sliceData = sliceCanvas.toDataURL('image/png');
-      pdf.addImage(sliceData, 'PNG', mx, my, imgW, pdfSliceH);
-      drawFooter(pdf, p + 1, totalPages, pw, ph);
+      placeSlice(p, totalPages);
     }
   }
 

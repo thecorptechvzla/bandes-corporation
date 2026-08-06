@@ -31,6 +31,7 @@ export interface PackingSummary {
 export interface PackingReportData {
   summary: PackingSummary;
   records: PackingRecord[];
+  detailed?: PackingDetailedRecord[];
 }
 
 export type ReportType = 'resumido' | 'detallado';

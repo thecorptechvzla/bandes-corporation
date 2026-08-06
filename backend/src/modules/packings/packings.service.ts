@@ -40,6 +40,42 @@ export class PackingsService {
     };
   }
 
+  async getReportData(
+    from: string,
+    to: string,
+    type: 'resumido' | 'detallado',
+    clientId?: string,
+  ) {
+    const fromDate = new Date(from);
+    const toDate = new Date(to);
+    if (Number.isNaN(fromDate.getTime()) || Number.isNaN(toDate.getTime())) {
+      throw new BadRequestException('Rango de fechas inválido');
+    }
+
+    const where = {
+      createdAt: { gte: fromDate, lte: toDate },
+      ...(clientId ? { clientId } : {}),
+    };
+
+    const includeBars = type === 'detallado';
+
+    return this.prisma.packing.findMany({
+      where,
+      orderBy: { createdAt: 'asc' },
+      include: {
+        client: { select: { id: true, name: true } },
+        ...(includeBars
+          ? {
+              bars: {
+                include: { lot: { select: { name: true } } },
+                orderBy: { createdAt: 'asc' as const },
+              },
+            }
+          : {}),
+      },
+    });
+  }
+
   async findAll() {
     const packings = await this.prisma.packing.findMany({
       include: {
