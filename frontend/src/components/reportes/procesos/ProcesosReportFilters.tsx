@@ -1,12 +1,14 @@
 'use client';
 
-import { MOCK_PROVEEDORES, type ProcesoReportType } from './mockData';
+import type { ProcesoReportType } from './mockData';
 
 interface ProcesosReportFiltersProps {
   dateFrom: string;
   dateTo: string;
   proveedorId: string;
   reportType: ProcesoReportType;
+  clients: { id: string; name: string }[];
+  isLoading?: boolean;
   onDateFromChange: (val: string) => void;
   onDateToChange: (val: string) => void;
   onProveedorChange: (val: string) => void;
@@ -19,6 +21,8 @@ export default function ProcesosReportFilters({
   dateTo,
   proveedorId,
   reportType,
+  clients,
+  isLoading = false,
   onDateFromChange,
   onDateToChange,
   onProveedorChange,
@@ -84,7 +88,8 @@ export default function ProcesosReportFilters({
             color: 'var(--report-text-main)',
           }}
         >
-          {MOCK_PROVEEDORES.map((p) => (
+          <option value="">Todos los Proveedores</option>
+          {clients.map((p) => (
             <option key={p.id} value={p.id}>
               {p.name}
             </option>
@@ -107,13 +112,14 @@ export default function ProcesosReportFilters({
 
         <button
           onClick={onGenerate}
-          className="px-6 py-2.5 rounded-md text-[13px] font-semibold text-white cursor-pointer transition-opacity hover:opacity-90"
+          disabled={isLoading}
+          className="px-6 py-2.5 rounded-md text-[13px] font-semibold text-white cursor-pointer transition-opacity hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
           style={{
             background: 'linear-gradient(135deg, #139169, #0e6b4d)',
             boxShadow: '0 2px 8px rgba(19, 145, 105, 0.3)',
           }}
         >
-          Generar
+          {isLoading ? 'Generando…' : 'Generar'}
         </button>
       </div>
     </div>

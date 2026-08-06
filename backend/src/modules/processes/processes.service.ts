@@ -75,6 +75,51 @@ export class ProcessesService {
     });
   }
 
+  async getReportData(
+    from: string,
+    to: string,
+    type: 'resumido' | 'detallado',
+    clientId?: string,
+  ) {
+    const fromDate = new Date(from);
+    const toDate = new Date(to);
+    if (Number.isNaN(fromDate.getTime()) || Number.isNaN(toDate.getTime())) {
+      throw new BadRequestException('Rango de fechas inválido');
+    }
+
+    const where = {
+      createdAt: { gte: fromDate, lte: toDate },
+      ...(clientId
+        ? {
+            OR: [
+              { clientId },
+              { lots: { some: { bars: { some: { clientId } } } } },
+            ],
+          }
+        : {}),
+    };
+
+    return this.prisma.process.findMany({
+      where,
+      orderBy: { createdAt: 'asc' },
+      include: {
+        client: { select: { id: true, name: true } },
+        lots: {
+          orderBy: { createdAt: 'asc' as const },
+          include: {
+            bars: {
+              orderBy: { createdAt: 'asc' as const },
+              include: {
+                client: { select: { id: true, name: true } },
+                packing: { select: { id: true, fileName: true, packingNumber: true } },
+              },
+            },
+          },
+        },
+      },
+    });
+  }
+
   async create(data: { name: string; clientId: string }) {
     return this.prisma.process.create({
       data,

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, InternalServerErrorException } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Query, InternalServerErrorException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { ProcessesService } from './processes.service.js';
 
@@ -9,6 +9,17 @@ export class ProcessesController {
   @Get()
   findAll() {
     return this.service.findAll();
+  }
+
+  @Get('report')
+  report(
+    @Query('from') from: string,
+    @Query('to') to: string,
+    @Query('type') type?: string,
+    @Query('clientId') clientId?: string,
+  ) {
+    const reportType = type === 'detallado' ? 'detallado' : 'resumido';
+    return this.service.getReportData(from, to, reportType, clientId);
   }
 
   @Get('client/:clientId')

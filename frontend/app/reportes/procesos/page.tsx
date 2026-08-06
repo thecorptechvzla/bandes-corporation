@@ -8,18 +8,11 @@ import ProcesosReportMetrics from '@/components/reportes/procesos/ProcesosReport
 import ProcesosReportTable from '@/components/reportes/procesos/ProcesosReportTable';
 import ProcesosReportDetailTable from '@/components/reportes/procesos/ProcesosReportDetailTable';
 import ProcesosReportPdfTemplate from '@/components/reportes/procesos/ProcesosReportPdfTemplate';
-import { MOCK_PROCESOS_DATA, MOCK_PROCESOS_DETAILED, MOCK_PROVEEDORES, type ProcesoRecord, type ProcesoDetailedRecord, type ProcesoSummary, type ProcesoReportType } from '@/components/reportes/procesos/mockData';
+import type { ProcesoRecord, ProcesoDetailedRecord, ProcesoSummary, ProcesoReportType } from '@/components/reportes/procesos/mockData';
+import { fetchProcesosReport } from '@/hooks/useProcesosReport';
+import { useClients } from '@/hooks/useClients';
 import { generateProcesosReportPDF } from '@/lib/generateProcesosReportPDF';
 import { generateProcesosReportExcel } from '@/lib/generateProcesosReportExcel';
-
-function computeSummary(records: ProcesoRecord[]): ProcesoSummary {
-  const totalProcesos = records.length;
-  const totalBarras = records.reduce((a, r) => a + r.barras, 0);
-  const pesoResultanteTotal = records.reduce((a, r) => a + r.pesoObtenido, 0);
-  const pesoInicialTotal = records.reduce((a, r) => a + r.pesoInicial, 0);
-  const rendimientoProm = pesoInicialTotal > 0 ? (pesoResultanteTotal / pesoInicialTotal) * 100 : 0;
-  return { totalProcesos, totalBarras, pesoResultanteTotal, rendimientoProm };
-}
 
 export default function ProcesosReportPage() {
   const [dateFrom, setDateFrom] = useState('2026-08-01');
@@ -28,11 +21,19 @@ export default function ProcesosReportPage() {
   const [reportType, setReportType] = useState<ProcesoReportType>('resumido');
   const [showReport, setShowReport] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   const pdfRef = useRef<HTMLDivElement>(null);
 
-  const [filteredRecords, setFilteredRecords] = useState<ProcesoRecord[]>(MOCK_PROCESOS_DATA.records);
-  const [filteredDetailed, setFilteredDetailed] = useState<ProcesoDetailedRecord[]>(MOCK_PROCESOS_DETAILED);
-  const [filteredSummary, setFilteredSummary] = useState<ProcesoSummary>(MOCK_PROCESOS_DATA.summary);
+  const { data: proveedores = [] } = useClients({ role: 'PROVEEDOR' });
+
+  const [filteredRecords, setFilteredRecords] = useState<ProcesoRecord[]>([]);
+  const [filteredDetailed, setFilteredDetailed] = useState<ProcesoDetailedRecord[]>([]);
+  const [filteredSummary, setFilteredSummary] = useState<ProcesoSummary>({
+    totalProcesos: 0,
+    totalBarras: 0,
+    pesoResultanteTotal: 0,
+    rendimientoProm: 0,
+  });
 
   const [appliedProveedorName, setAppliedProveedorName] = useState('Todos los Proveedores');
   const [appliedDateFrom, setAppliedDateFrom] = useState('2026-08-01');
@@ -48,39 +49,35 @@ export default function ProcesosReportPage() {
     minute: '2-digit',
   });
 
-  const proveedorName = MOCK_PROVEEDORES.find((p) => p.id === proveedorId)?.name || 'Todos los Proveedores';
+  const proveedorName = proveedores.find((p) => p.id === proveedorId)?.name || 'Todos los Proveedores';
 
-  const handleGenerate = useCallback(() => {
-    const selectedProveedor = MOCK_PROVEEDORES.find((p) => p.id === proveedorId);
-    const matchName = selectedProveedor && selectedProveedor.id !== '' ? selectedProveedor.name : '';
-
-    const records = MOCK_PROCESOS_DATA.records.filter((item) => {
-      if (matchName === '') return true;
-      if (matchName === 'Mixtos') return item.esMixto;
-      return item.proveedores.some((p) => p.toLowerCase().includes(matchName.toLowerCase().split(' ')[0]));
-    });
-
-    const detailed = MOCK_PROCESOS_DETAILED.filter((item) => {
-      if (matchName === '') return true;
-      if (matchName === 'Mixtos') return item.esMixto;
-      return item.proveedores.some((p) => p.toLowerCase().includes(matchName.toLowerCase().split(' ')[0]));
-    });
-
-    setFilteredRecords(records);
-    setFilteredDetailed(detailed);
-    setFilteredSummary(computeSummary(records));
-    setAppliedProveedorName(proveedorName);
-    setAppliedDateFrom(dateFrom);
-    setAppliedDateTo(dateTo);
-    setAppliedReportType(reportType);
-    setShowReport(true);
+  const handleGenerate = useCallback(async () => {
+    setIsGenerating(true);
+    try {
+      const reportData = await fetchProcesosReport({
+        from: dateFrom,
+        to: dateTo,
+        reportType,
+        clientId: proveedorId || undefined,
+      });
+      setFilteredRecords(reportData.records);
+      setFilteredDetailed(reportData.detailed ?? []);
+      setFilteredSummary(reportData.summary);
+      setAppliedProveedorName(proveedorName);
+      setAppliedDateFrom(dateFrom);
+      setAppliedDateTo(dateTo);
+      setAppliedReportType(reportType);
+      setShowReport(true);
+    } finally {
+      setIsGenerating(false);
+    }
   }, [proveedorId, proveedorName, dateFrom, dateTo, reportType]);
 
   const handleExportPDF = async () => {
     setIsExporting(true);
     try {
       await generateProcesosReportPDF({
-        data: { summary: filteredSummary, records: filteredRecords },
+        data: { summary: filteredSummary, records: filteredRecords, detailed: filteredDetailed },
         reportId,
         generatedAt,
         dateFrom: appliedDateFrom,
@@ -97,7 +94,7 @@ export default function ProcesosReportPage() {
     setIsExporting(true);
     try {
       await generateProcesosReportExcel({
-        data: { summary: filteredSummary, records: filteredRecords },
+        data: { summary: filteredSummary, records: filteredRecords, detailed: filteredDetailed },
         reportId,
         generatedAt,
         dateFrom: appliedDateFrom,
@@ -123,6 +120,8 @@ export default function ProcesosReportPage() {
         dateTo={dateTo}
         proveedorId={proveedorId}
         reportType={reportType}
+        clients={proveedores}
+        isLoading={isGenerating}
         onDateFromChange={setDateFrom}
         onDateToChange={setDateTo}
         onProveedorChange={setProveedorId}
@@ -187,7 +186,7 @@ export default function ProcesosReportPage() {
         }}
       >
         <ProcesosReportPdfTemplate
-          data={{ summary: filteredSummary, records: filteredRecords }}
+          data={{ summary: filteredSummary, records: filteredRecords, detailed: filteredDetailed }}
           reportId={reportId}
           generatedAt={generatedAt}
           dateFrom={appliedDateFrom}

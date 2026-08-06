@@ -32,6 +32,7 @@ export interface EgresoSummary {
 export interface EgresosReportData {
   summary: EgresoSummary;
   records: EgresoRecord[];
+  detailed?: EgresoDetailedRecord[];
 }
 
 export type EgresoReportType = 'resumido' | 'detallado';

@@ -1,6 +1,5 @@
 import ExcelJS from 'exceljs';
 import type { EgresosReportData, EgresoReportType } from '@/components/reportes/egresos/mockData';
-import { MOCK_EGRESOS_DETAILED } from '@/components/reportes/egresos/mockData';
 
 interface GenerateEgresosReportExcelParams {
   data: EgresosReportData;
@@ -14,7 +13,7 @@ interface GenerateEgresosReportExcelParams {
 
 export async function generateEgresosReportExcel(params: GenerateEgresosReportExcelParams) {
   const { data, reportId, generatedAt, dateFrom, dateTo, clienteName, reportType } = params;
-  const { summary, records } = data;
+  const { summary, records, detailed = [] } = data;
 
   const workbook = new ExcelJS.Workbook();
   workbook.creator = 'BANDES - Sistema de Custodia';
@@ -182,7 +181,7 @@ export async function generateEgresosReportExcel(params: GenerateEgresosReportEx
     // Detailed mode
     let currentRow = 7;
 
-    MOCK_EGRESOS_DETAILED.forEach((egreso) => {
+    detailed.forEach((egreso) => {
       // Egreso banner
       sheet.mergeCells(`A${currentRow}:H${currentRow}`);
       const bannerCell = sheet.getCell(`A${currentRow}`);

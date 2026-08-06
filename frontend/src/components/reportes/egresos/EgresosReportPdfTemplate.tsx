@@ -2,7 +2,6 @@
 
 import { formatNumber } from '@/lib/format';
 import type { EgresosReportData, EgresoReportType } from './mockData';
-import { MOCK_EGRESOS_DETAILED } from './mockData';
 
 interface EgresosReportPdfTemplateProps {
   data: EgresosReportData;
@@ -23,7 +22,7 @@ export default function EgresosReportPdfTemplate({
   clienteName,
   reportType,
 }: EgresosReportPdfTemplateProps) {
-  const { summary, records } = data;
+  const { summary, records, detailed = [] } = data;
 
   return (
     <div id="egresos-pdf-template" className={reportType === 'detallado' ? 'pdf-container-detailed' : 'pdf-container'}>
@@ -161,9 +160,9 @@ export default function EgresosReportPdfTemplate({
           </tbody>
         </table>
         );
-      })() : (
+      })(      ) : (
         <>
-          {MOCK_EGRESOS_DETAILED.map((egreso) => (
+          {detailed.map((egreso) => (
             <div key={egreso.id} className="pdf-packing-block" style={{ border: '1px solid #e0e0e0', borderRadius: '4px', overflow: 'hidden', marginBottom: '4px', breakInside: 'avoid' }}>
               {/* Banner */}
               <div className="pdf-banner" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'linear-gradient(135deg, rgba(19,145,105,0.12), rgba(19,145,105,0.04))', borderBottom: '2px solid #139169', padding: '2px 6px' }}>

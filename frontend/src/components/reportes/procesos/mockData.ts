@@ -34,6 +34,7 @@ export interface ProcesoSummary {
 export interface ProcesosReportData {
   summary: ProcesoSummary;
   records: ProcesoRecord[];
+  detailed?: ProcesoDetailedRecord[];
 }
 
 export type ProcesoReportType = 'resumido' | 'detallado';

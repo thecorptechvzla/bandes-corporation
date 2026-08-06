@@ -1,9 +1,25 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { MaterialExitsService } from './material-exits.service.js';
 
 @Controller('material-exits')
 export class MaterialExitsController {
   constructor(private service: MaterialExitsService) {}
+
+  @Get()
+  findAll() {
+    return this.service.findAll();
+  }
+
+  @Get('report')
+  report(
+    @Query('from') from: string,
+    @Query('to') to: string,
+    @Query('type') type?: string,
+    @Query('clientId') clientId?: string,
+  ) {
+    const reportType = type === 'detallado' ? 'detallado' : 'resumido';
+    return this.service.getReportData(from, to, reportType, clientId);
+  }
 
   @Post()
   create(
@@ -15,11 +31,6 @@ export class MaterialExitsController {
     },
   ) {
     return this.service.create(body);
-  }
-
-  @Get()
-  findAll() {
-    return this.service.findAll();
   }
 
   @Get(':id/traceability')

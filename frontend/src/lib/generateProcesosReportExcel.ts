@@ -1,6 +1,5 @@
 import ExcelJS from 'exceljs';
 import type { ProcesosReportData, ProcesoReportType } from '@/components/reportes/procesos/mockData';
-import { MOCK_PROCESOS_DETAILED } from '@/components/reportes/procesos/mockData';
 
 interface GenerateProcesosReportExcelParams {
   data: ProcesosReportData;
@@ -14,7 +13,7 @@ interface GenerateProcesosReportExcelParams {
 
 export async function generateProcesosReportExcel(params: GenerateProcesosReportExcelParams) {
   const { data, reportId, generatedAt, dateFrom, dateTo, proveedorName, reportType } = params;
-  const { summary, records } = data;
+  const { summary, records, detailed = [] } = data;
 
   const workbook = new ExcelJS.Workbook();
   workbook.creator = 'BANDES - Sistema de Custodia';
@@ -164,7 +163,7 @@ export async function generateProcesosReportExcel(params: GenerateProcesosReport
     // Detailed mode
     let currentRow = 7;
 
-    MOCK_PROCESOS_DETAILED.forEach((proceso) => {
+    detailed.forEach((proceso) => {
       // Process banner
       sheet.mergeCells(`A${currentRow}:H${currentRow}`);
       const bannerCell = sheet.getCell(`A${currentRow}`);

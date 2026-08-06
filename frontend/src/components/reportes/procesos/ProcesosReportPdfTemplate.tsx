@@ -2,7 +2,6 @@
 
 import { formatNumber } from '@/lib/format';
 import type { ProcesosReportData, ProcesoReportType } from './mockData';
-import { MOCK_PROCESOS_DETAILED } from './mockData';
 
 interface ProcesosReportPdfTemplateProps {
   data: ProcesosReportData;
@@ -23,7 +22,7 @@ export default function ProcesosReportPdfTemplate({
   proveedorName,
   reportType,
 }: ProcesosReportPdfTemplateProps) {
-  const { summary, records } = data;
+  const { summary, records, detailed = [] } = data;
 
   return (
     <div id="procesos-pdf-template" className={reportType === 'detallado' ? 'pdf-container-detailed' : 'pdf-container'}>
@@ -171,7 +170,7 @@ export default function ProcesosReportPdfTemplate({
         </table>
       ) : (
         <>
-          {MOCK_PROCESOS_DETAILED.map((proceso) => (
+          {detailed.map((proceso) => (
             <div key={proceso.id} className="pdf-packing-block" style={{ border: '1px solid #e0e0e0', borderRadius: '4px', overflow: 'hidden', marginBottom: '4px' }}>
               {/* Banner */}
               <div className="pdf-banner" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'linear-gradient(135deg, rgba(19,145,105,0.12), rgba(19,145,105,0.04))', borderBottom: '2px solid #139169', padding: '2px 6px' }}>

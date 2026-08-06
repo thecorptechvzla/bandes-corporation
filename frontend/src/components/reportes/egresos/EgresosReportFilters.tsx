@@ -1,12 +1,14 @@
 'use client';
 
-import { MOCK_CLIENTES_EGRESOS, type EgresoReportType } from './mockData';
+import type { EgresoReportType } from './mockData';
 
 interface EgresosReportFiltersProps {
   dateFrom: string;
   dateTo: string;
   clienteId: string;
   reportType: EgresoReportType;
+  clients: { id: string; name: string }[];
+  isLoading?: boolean;
   onDateFromChange: (val: string) => void;
   onDateToChange: (val: string) => void;
   onClienteChange: (val: string) => void;
@@ -19,6 +21,8 @@ export default function EgresosReportFilters({
   dateTo,
   clienteId,
   reportType,
+  clients,
+  isLoading = false,
   onDateFromChange,
   onDateToChange,
   onClienteChange,
@@ -84,7 +88,8 @@ export default function EgresosReportFilters({
             color: 'var(--report-text-main)',
           }}
         >
-          {MOCK_CLIENTES_EGRESOS.map((c) => (
+          <option value="">Todos los Clientes</option>
+          {clients.map((c) => (
             <option key={c.id} value={c.id}>
               {c.name}
             </option>
@@ -107,13 +112,14 @@ export default function EgresosReportFilters({
 
         <button
           onClick={onGenerate}
-          className="px-6 py-2.5 rounded-md text-[13px] font-semibold text-white cursor-pointer transition-opacity hover:opacity-90"
+          disabled={isLoading}
+          className="px-6 py-2.5 rounded-md text-[13px] font-semibold text-white cursor-pointer transition-opacity hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
           style={{
             background: 'linear-gradient(135deg, #139169, #0e6b4d)',
             boxShadow: '0 2px 8px rgba(19, 145, 105, 0.3)',
           }}
         >
-          Generar
+          {isLoading ? 'Generando…' : 'Generar'}
         </button>
       </div>
     </div>

@@ -8,17 +8,11 @@ import EgresosReportMetrics from '@/components/reportes/egresos/EgresosReportMet
 import EgresosReportTable from '@/components/reportes/egresos/EgresosReportTable';
 import EgresosReportDetailTable from '@/components/reportes/egresos/EgresosReportDetailTable';
 import EgresosReportPdfTemplate from '@/components/reportes/egresos/EgresosReportPdfTemplate';
-import { MOCK_EGRESOS_DATA, MOCK_EGRESOS_DETAILED, MOCK_CLIENTES_EGRESOS, type EgresoRecord, type EgresoDetailedRecord, type EgresoSummary, type EgresoReportType } from '@/components/reportes/egresos/mockData';
+import type { EgresoRecord, EgresoDetailedRecord, EgresoSummary, EgresoReportType } from '@/components/reportes/egresos/mockData';
+import { fetchEgresosReport } from '@/hooks/useEgresosReport';
+import { useClients } from '@/hooks/useClients';
 import { generateEgresosReportPDF } from '@/lib/generateEgresosReportPDF';
 import { generateEgresosReportExcel } from '@/lib/generateEgresosReportExcel';
-
-function computeSummary(records: EgresoRecord[]): EgresoSummary {
-  const totalEgresos = records.length;
-  const totalLingotes = records.reduce((a, r) => a + r.lingotes, 0);
-  const pesoFinoTotal = records.reduce((a, r) => a + r.pesoFino, 0);
-  const pesoBrutoTotal = records.reduce((a, r) => a + r.pesoBruto, 0);
-  return { totalEgresos, totalLingotes, pesoFinoTotal, pesoBrutoTotal };
-}
 
 export default function EgresosReportPage() {
   const [dateFrom, setDateFrom] = useState('2026-08-01');
@@ -27,11 +21,19 @@ export default function EgresosReportPage() {
   const [reportType, setReportType] = useState<EgresoReportType>('resumido');
   const [showReport, setShowReport] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   const pdfRef = useRef<HTMLDivElement>(null);
 
-  const [filteredRecords, setFilteredRecords] = useState<EgresoRecord[]>(MOCK_EGRESOS_DATA.records);
-  const [filteredDetailed, setFilteredDetailed] = useState<EgresoDetailedRecord[]>(MOCK_EGRESOS_DETAILED);
-  const [filteredSummary, setFilteredSummary] = useState<EgresoSummary>(MOCK_EGRESOS_DATA.summary);
+  const { data: proveedores = [] } = useClients({ role: 'PROVEEDOR' });
+
+  const [filteredRecords, setFilteredRecords] = useState<EgresoRecord[]>([]);
+  const [filteredDetailed, setFilteredDetailed] = useState<EgresoDetailedRecord[]>([]);
+  const [filteredSummary, setFilteredSummary] = useState<EgresoSummary>({
+    totalEgresos: 0,
+    totalLingotes: 0,
+    pesoFinoTotal: 0,
+    pesoBrutoTotal: 0,
+  });
 
   const [appliedClienteName, setAppliedClienteName] = useState('Todos los Clientes');
   const [appliedDateFrom, setAppliedDateFrom] = useState('2026-08-01');
@@ -47,37 +49,35 @@ export default function EgresosReportPage() {
     minute: '2-digit',
   });
 
-  const clienteName = MOCK_CLIENTES_EGRESOS.find((c) => c.id === clienteId)?.name || 'Todos los Clientes';
+  const clienteName = proveedores.find((c) => c.id === clienteId)?.name || 'Todos los Clientes';
 
-  const handleGenerate = useCallback(() => {
-    const selectedCliente = MOCK_CLIENTES_EGRESOS.find((c) => c.id === clienteId);
-    const matchName = selectedCliente && selectedCliente.id !== '' ? selectedCliente.name : '';
-
-    const records = MOCK_EGRESOS_DATA.records.filter((item) => {
-      if (matchName === '') return true;
-      return item.cliente === matchName;
-    });
-
-    const detailed = MOCK_EGRESOS_DETAILED.filter((item) => {
-      if (matchName === '') return true;
-      return item.cliente === matchName;
-    });
-
-    setFilteredRecords(records);
-    setFilteredDetailed(detailed);
-    setFilteredSummary(computeSummary(records));
-    setAppliedClienteName(clienteName);
-    setAppliedDateFrom(dateFrom);
-    setAppliedDateTo(dateTo);
-    setAppliedReportType(reportType);
-    setShowReport(true);
+  const handleGenerate = useCallback(async () => {
+    setIsGenerating(true);
+    try {
+      const reportData = await fetchEgresosReport({
+        from: dateFrom,
+        to: dateTo,
+        reportType,
+        clientId: clienteId || undefined,
+      });
+      setFilteredRecords(reportData.records);
+      setFilteredDetailed(reportData.detailed ?? []);
+      setFilteredSummary(reportData.summary);
+      setAppliedClienteName(clienteName);
+      setAppliedDateFrom(dateFrom);
+      setAppliedDateTo(dateTo);
+      setAppliedReportType(reportType);
+      setShowReport(true);
+    } finally {
+      setIsGenerating(false);
+    }
   }, [clienteId, clienteName, dateFrom, dateTo, reportType]);
 
   const handleExportPDF = async () => {
     setIsExporting(true);
     try {
       await generateEgresosReportPDF({
-        data: { summary: filteredSummary, records: filteredRecords },
+        data: { summary: filteredSummary, records: filteredRecords, detailed: filteredDetailed },
         reportId,
         generatedAt,
         dateFrom: appliedDateFrom,
@@ -94,7 +94,7 @@ export default function EgresosReportPage() {
     setIsExporting(true);
     try {
       await generateEgresosReportExcel({
-        data: { summary: filteredSummary, records: filteredRecords },
+        data: { summary: filteredSummary, records: filteredRecords, detailed: filteredDetailed },
         reportId,
         generatedAt,
         dateFrom: appliedDateFrom,
@@ -120,6 +120,8 @@ export default function EgresosReportPage() {
         dateTo={dateTo}
         clienteId={clienteId}
         reportType={reportType}
+        clients={proveedores}
+        isLoading={isGenerating}
         onDateFromChange={setDateFrom}
         onDateToChange={setDateTo}
         onClienteChange={setClienteId}
@@ -186,7 +188,7 @@ export default function EgresosReportPage() {
         }}
       >
         <EgresosReportPdfTemplate
-          data={{ summary: filteredSummary, records: filteredRecords }}
+          data={{ summary: filteredSummary, records: filteredRecords, detailed: filteredDetailed }}
           reportId={reportId}
           generatedAt={generatedAt}
           dateFrom={appliedDateFrom}
