@@ -1,34 +1,30 @@
 'use client';
 
-import type { ReportType } from './types';
+import { MOCK_CLIENTES_SALDOS, type SaldoReportType } from './mockData';
 
-interface PackingReportFiltersProps {
+interface SaldoReportFiltersProps {
   dateFrom: string;
   dateTo: string;
-  clientId: string;
-  reportType: ReportType;
-  clients: { id: string; name: string }[];
-  isLoading?: boolean;
+  clienteId: string;
+  reportType: SaldoReportType;
   onDateFromChange: (val: string) => void;
   onDateToChange: (val: string) => void;
-  onClientChange: (val: string) => void;
-  onReportTypeChange: (val: ReportType) => void;
+  onClienteChange: (val: string) => void;
+  onReportTypeChange: (val: SaldoReportType) => void;
   onGenerate: () => void;
 }
 
-export default function PackingReportFilters({
+export default function SaldoReportFilters({
   dateFrom,
   dateTo,
-  clientId,
+  clienteId,
   reportType,
-  clients,
-  isLoading = false,
   onDateFromChange,
   onDateToChange,
-  onClientChange,
+  onClienteChange,
   onReportTypeChange,
   onGenerate,
-}: PackingReportFiltersProps) {
+}: SaldoReportFiltersProps) {
   return (
     <div
       className="rounded-lg p-4"
@@ -79,8 +75,8 @@ export default function PackingReportFilters({
         </div>
 
         <select
-          value={clientId}
-          onChange={(e) => onClientChange(e.target.value)}
+          value={clienteId}
+          onChange={(e) => onClienteChange(e.target.value)}
           className="px-3 py-2 rounded-md text-[12px] outline-none min-w-[220px]"
           style={{
             backgroundColor: 'var(--report-bg-input)',
@@ -88,8 +84,7 @@ export default function PackingReportFilters({
             color: 'var(--report-text-main)',
           }}
         >
-          <option value="">Todos los Proveedores</option>
-          {clients.map((c) => (
+          {MOCK_CLIENTES_SALDOS.map((c) => (
             <option key={c.id} value={c.id}>
               {c.name}
             </option>
@@ -98,7 +93,7 @@ export default function PackingReportFilters({
 
         <select
           value={reportType}
-          onChange={(e) => onReportTypeChange(e.target.value as ReportType)}
+          onChange={(e) => onReportTypeChange(e.target.value as SaldoReportType)}
           className="px-3 py-2 rounded-md text-[12px] outline-none min-w-[140px]"
           style={{
             backgroundColor: 'var(--report-bg-input)',
@@ -112,14 +107,13 @@ export default function PackingReportFilters({
 
         <button
           onClick={onGenerate}
-          disabled={isLoading}
-          className="px-6 py-2.5 rounded-md text-[13px] font-semibold text-white cursor-pointer transition-opacity hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-6 py-2.5 rounded-md text-[13px] font-semibold text-white cursor-pointer transition-opacity hover:opacity-90"
           style={{
             background: 'linear-gradient(135deg, #139169, #0e6b4d)',
             boxShadow: '0 2px 8px rgba(19, 145, 105, 0.3)',
           }}
         >
-          {isLoading ? 'Generando…' : 'Generar'}
+          Generar
         </button>
       </div>
     </div>

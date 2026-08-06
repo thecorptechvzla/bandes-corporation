@@ -295,7 +295,7 @@ export async function generateDispatchPDF(
       const itemLabel = isBarMode ? 'barras' : 'lotes';
       doc.text(`Total de ${itemLabel}: ${itemCount}`, m, y); y += 5;
     }
-    doc.text(`Peso Fino Total: ${formatWeight(Number(data.totalWeight))}`, m, y); y += 5;
+    doc.text(`Peso Bruto Total : ${formatWeight(Number(data.totalWeight))}`, m, y); y += 5;
     if (hasMixedLot) {
       doc.setTextColor(168, 85, 247);
       doc.text('Incluye lote(s) MIXTO(s): material consolidado de varios proveedores.', m, y); y += 5;
