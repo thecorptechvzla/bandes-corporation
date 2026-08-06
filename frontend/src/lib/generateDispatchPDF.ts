@@ -1,5 +1,5 @@
 import { jsPDF } from 'jspdf';
-import { formatWeight, fetchLogoAsBase64 } from '@/lib/format';
+import { formatWeight } from '@/lib/format';
 import { computeComposition } from '@/lib/composition';
 import type { MaterialExit } from '@/types/api';
 
@@ -113,8 +113,6 @@ export async function generateDispatchPDF(
   const pw = 210, m = 15, cw = pw - m * 2;
   let y = 15;
 
-  const logoBase64 = await fetchLogoAsBase64();
-
   const isMixed = data.type === 'mixed';
   const isBarMode = data.type === 'bars';
   const isLotMode = data.type === 'lots';
@@ -122,26 +120,33 @@ export async function generateDispatchPDF(
   const isEmpresa = copyType === 'EMPRESA';
   const hasMixedLot = (data.lots || []).some(l => l.isMixed);
 
-  doc.setFillColor(7, 11, 20);
-  doc.rect(0, 0, pw, 48, 'F');
-  doc.setFillColor(212, 175, 55);
-  doc.rect(0, 46, pw, 2, 'F');
-
-  doc.addImage(logoBase64, 'PNG', m, 6, 40, 19);
-  doc.setTextColor(200, 200, 200);
-  doc.setFontSize(8);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(22);
+  doc.setTextColor(19, 145, 105);
+  doc.text('BANDES', m, 14);
   doc.setFont('helvetica', 'normal');
-  doc.text('Sistema de Trazabilidad de Oro Fino', m, y + 18);
+  doc.setFontSize(8);
+  doc.setTextColor(100, 100, 100);
+  doc.text('Banco de Desarrollo Económico y Social de Venezuela', m, 20);
+
+  doc.setDrawColor(19, 145, 105);
+  doc.setLineWidth(0.6);
+  doc.line(m, 24, pw - m, 24);
+
+  doc.setTextColor(100, 100, 100);
+  doc.setFontSize(7);
+  doc.text('Sistema de Trazabilidad de Oro Fino', m, 30);
 
   const titleSuffix = isMixed ? ' MIXTO' : isBarMode ? ' (BARRAS)' : ' GLOBAL';
   const copyLabel = isEmpresa ? 'EMPRESA' : 'CLIENTE';
-  doc.setTextColor(212, 175, 55);
-  doc.setFontSize(14);
+  doc.setTextColor(19, 145, 105);
+  doc.setFontSize(13);
   doc.setFont('helvetica', 'bold');
-  doc.text(`COMPROBANTE DE DESPACHO${titleSuffix} — ${copyLabel}`, pw - m, y + 10, { align: 'right' });
-  doc.setTextColor(160, 160, 160);
+  doc.text(`COMPROBANTE DE DESPACHO${titleSuffix} — ${copyLabel}`, pw - m, 14, { align: 'right' });
+  doc.setTextColor(120, 120, 120);
   doc.setFontSize(7);
-  doc.text(`Ref: ${data.reference}`, pw - m, y + 18, { align: 'right' });
+  doc.setFont('helvetica', 'normal');
+  doc.text(`Ref: ${data.reference}`, pw - m, 20, { align: 'right' });
 
   if (isEmpresa) {
     doc.setFontSize(48);
@@ -150,16 +155,14 @@ export async function generateDispatchPDF(
     doc.text('USO INTERNO', pw / 2, 160, { align: 'center', angle: 45 });
   }
 
-  y = 58;
-  doc.setDrawColor(212, 175, 55);
-  doc.setLineWidth(0.4);
-  doc.line(m, y, pw - m, y);
-  y += 10;
+  y = 40;
 
-  doc.setTextColor(40, 40, 40);
+  doc.setFillColor(234, 244, 240);
+  doc.rect(m, y - 4, cw, 7, 'F');
+  doc.setTextColor(19, 145, 105);
   doc.setFontSize(10);
   doc.setFont('helvetica', 'bold');
-  doc.text('DATOS DEL DESTINATARIO', m, y); y += 8;
+  doc.text('DATOS DEL DESTINATARIO', m + 2, y + 1); y += 6;
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(80, 80, 80);
@@ -189,7 +192,12 @@ export async function generateDispatchPDF(
   doc.setFont('helvetica', 'bold');
 
   if (isEmpresa) {
-    doc.text('DETALLE POR PROVEEDOR', m, y); y += 8;
+    doc.setFillColor(234, 244, 240);
+    doc.rect(m, y - 4, cw, 7, 'F');
+    doc.setTextColor(19, 145, 105);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text('DETALLE POR PROVEEDOR', m + 2, y + 1); y += 6;
 
     if (hasMixedLot) {
       doc.setTextColor(168, 85, 247);
@@ -202,9 +210,9 @@ export async function generateDispatchPDF(
 
     data.providers.forEach((pv) => {
       if (y > 250) { doc.addPage(); y = 20; }
-      doc.setFillColor(7, 11, 20);
+      doc.setFillColor(19, 145, 105);
       doc.rect(m, y - 4, cw, 7, 'F');
-      doc.setTextColor(212, 175, 55);
+      doc.setTextColor(255, 255, 255);
       doc.setFontSize(8);
       doc.setFont('helvetica', 'bold');
       doc.text(`${pv.name} — ${pv.count} ítem(s) — ${formatWeight(Number(pv.weight))}`, m + 2, y + 1);
@@ -215,9 +223,9 @@ export async function generateDispatchPDF(
 
       if (providerLots.length > 0) {
         if (y > 255) { doc.addPage(); y = 20; }
-        doc.setFillColor(245, 158, 11);
+        doc.setFillColor(19, 145, 105);
         doc.rect(m, y - 4, cw, 7, 'F');
-        doc.setTextColor(7, 11, 20);
+        doc.setTextColor(255, 255, 255);
         doc.setFontSize(6);
         doc.setFont('helvetica', 'bold');
         doc.text('TIPO', m + 3, y + 1);
@@ -248,9 +256,9 @@ export async function generateDispatchPDF(
 
       if (providerBars.length > 0) {
         if (y > 255) { doc.addPage(); y = 20; }
-        doc.setFillColor(20, 184, 166);
+        doc.setFillColor(19, 145, 105);
         doc.rect(m, y - 4, cw, 7, 'F');
-        doc.setTextColor(7, 11, 20);
+        doc.setTextColor(255, 255, 255);
         doc.setFontSize(6);
         doc.setFont('helvetica', 'bold');
         const barColsW = [20, 30, 40, 30, cw - 120];
@@ -270,7 +278,7 @@ export async function generateDispatchPDF(
           doc.setTextColor(80, 80, 80);
           doc.setFontSize(7);
           doc.setFont('helvetica', 'normal');
-          doc.setTextColor(20, 184, 166);
+          doc.setTextColor(19, 145, 105);
           doc.text('SIN REF.', m + 3, y + 1);
           doc.setTextColor(80, 80, 80);
           doc.text(bar.barNumber, m + 3 + barColsW[0], y + 1);
@@ -284,7 +292,12 @@ export async function generateDispatchPDF(
       y += 4;
     });
   } else {
-    doc.text('RESUMEN DEL DESPACHO', m, y); y += 8;
+    doc.setFillColor(234, 244, 240);
+    doc.rect(m, y - 4, cw, 7, 'F');
+    doc.setTextColor(19, 145, 105);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text('RESUMEN DEL DESPACHO', m + 2, y + 1); y += 6;
 
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
@@ -295,7 +308,7 @@ export async function generateDispatchPDF(
       const itemLabel = isBarMode ? 'barras' : 'lotes';
       doc.text(`Total de ${itemLabel}: ${itemCount}`, m, y); y += 5;
     }
-    doc.text(`Peso Bruto Total : ${formatWeight(Number(data.totalWeight))}`, m, y); y += 5;
+    doc.text(`Peso Fino Total : ${formatWeight(Number(data.totalWeight))}`, m, y); y += 5;
     if (hasMixedLot) {
       doc.setTextColor(168, 85, 247);
       doc.text('Incluye lote(s) MIXTO(s): material consolidado de varios proveedores.', m, y); y += 5;
@@ -304,14 +317,14 @@ export async function generateDispatchPDF(
   }
 
   y += 4;
-  doc.setDrawColor(212, 175, 55);
+  doc.setDrawColor(19, 145, 105);
   doc.setLineWidth(0.6);
   doc.line(m, y, pw - m, y); y += 8;
 
   doc.setTextColor(40, 40, 40);
   doc.setFontSize(11);
   doc.setFont('helvetica', 'bold');
-  doc.text(`PESO FINO: ${formatWeight(Number(data.totalWeight))}`, m, y); y += 7;
+  doc.text(`PESO BRUTO: ${formatWeight(Number(data.totalWeight))}`, m, y); y += 7;
   if (isMixed) {
     doc.text(`LOTES: ${data.lotCount ?? 0}  |  BARRAS: ${data.barCount ?? 0}`, m, y);
   } else {
