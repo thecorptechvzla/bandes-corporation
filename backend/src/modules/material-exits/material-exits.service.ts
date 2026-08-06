@@ -85,7 +85,7 @@ export class MaterialExitsService {
 
       const totalWeight = lots.reduce(
         (sum, lot) =>
-          sum + lot.bars.reduce((s, b) => s + Number(b.fineWeight), 0),
+          sum + lot.bars.reduce((s, b) => s + Number(b.grossWeight), 0),
         0,
       );
 
@@ -95,7 +95,7 @@ export class MaterialExitsService {
 
       for (const lot of lots) {
         const lotWeight = lot.bars.reduce(
-          (s, b) => s + Number(b.fineWeight),
+          (s, b) => s + Number(b.grossWeight),
           0,
         );
 
@@ -174,7 +174,7 @@ export class MaterialExitsService {
       }
 
       const totalWeight = bars.reduce(
-        (sum, b) => sum + Number(b.fineWeight),
+        (sum, b) => sum + Number(b.grossWeight),
         0,
       );
 
@@ -277,10 +277,10 @@ export class MaterialExitsService {
 
       const lotsWeight = lots.reduce(
         (sum, lot) =>
-          sum + lot.bars.reduce((s, b) => s + Number(b.fineWeight), 0),
+          sum + lot.bars.reduce((s, b) => s + Number(b.grossWeight), 0),
         0,
       );
-      const barsWeight = bars.reduce((sum, b) => sum + Number(b.fineWeight), 0);
+      const barsWeight = bars.reduce((sum, b) => sum + Number(b.grossWeight), 0);
       const totalWeight = lotsWeight + barsWeight;
 
       const exit = await tx.materialExit.create({
@@ -289,7 +289,7 @@ export class MaterialExitsService {
 
       for (const lot of lots) {
         const lotWeight = lot.bars.reduce(
-          (s, b) => s + Number(b.fineWeight),
+          (s, b) => s + Number(b.grossWeight),
           0,
         );
 

@@ -98,8 +98,8 @@ export default function PackingReportPdfTemplate({
         </div>
         <div style={{ display: 'table-cell', width: '3.5%' }} />
         <div style={{ display: 'table-cell', width: '31%', backgroundColor: '#f4f9f7', border: '1px solid #c2e5d9', borderRadius: '4px', padding: '4px', textAlign: 'center', boxSizing: 'border-box' }}>
-          <div className="pdf-metric-title" style={{ fontWeight: 700, color: '#139169', textTransform: 'uppercase' }}>Total Peso Fino</div>
-          <div className="pdf-metric-value" style={{ fontWeight: 700, color: '#111111', fontSize: '11px', margin: '1px 0' }}>{formatNumber(summary.pesoFinoTotal)} g</div>
+          <div className="pdf-metric-title" style={{ fontWeight: 700, color: '#139169', textTransform: 'uppercase' }}>Total Peso Bruto</div>
+          <div className="pdf-metric-value" style={{ fontWeight: 700, color: '#111111', fontSize: '11px', margin: '1px 0' }}>{formatNumber(summary.pesoBrutoTotal)} g</div>
           <div className="pdf-metric-footer" style={{ color: '#666666', fontSize: '7px' }}>Ley Prom: {formatNumber(summary.leyProm, 4)}</div>
         </div>
       </div>
