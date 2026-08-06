@@ -5,7 +5,7 @@ import type {
   ProcesoReportType,
   ProcesoSummary,
   BarProceso,
-} from '@/components/reportes/procesos/mockData';
+} from '@/components/reportes/procesos/types';
 
 interface ReportBarProcesoDTO {
   barNumber: string;

@@ -225,17 +225,17 @@ body {
 
 /* ─── Active state: Gold matte with left border accent ─── */
 .nav-item.active {
-  background: rgba(213, 176, 66, 0.08);
-  color: #D5B042;
+  background: rgba(19,145,105,0.08);
+  color: #139169;
   font-weight: 700;
-  border-left: 3px solid #D5B042;
+  border-left: 3px solid #139169;
   padding-left: calc(1.125rem - 3px);
-  box-shadow: inset 0 1px 6px rgba(213, 176, 66, 0.04);
+  box-shadow: inset 0 1px 6px rgba(19,145,105,0.04);
 }
 
 .nav-item.active:hover {
-  background: rgba(213, 176, 66, 0.12);
-  box-shadow: inset 0 1px 8px rgba(213, 176, 66, 0.06);
+  background: rgba(19,145,105, 0.12);
+  box-shadow: inset 0 1px 8px rgba(19,145,105, 0.06);
   transform: none;
 }
 

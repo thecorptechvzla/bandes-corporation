@@ -5,7 +5,7 @@ import type {
   EgresoReportType,
   EgresoSummary,
   LingoteEgreso,
-} from '@/components/reportes/egresos/mockData';
+} from '@/components/reportes/egresos/types';
 
 interface ReportBarEgresoDTO {
   id: string;
@@ -30,6 +30,8 @@ interface ReportDetailEgresoDTO {
 interface ReportEgresoDTO {
   id: string;
   destination: string;
+  clientId?: string | null;
+  client?: { id: string; name: string } | null;
   totalWeight: number | string;
   createdAt: string;
   exitDetails?: ReportDetailEgresoDTO[];
@@ -78,6 +80,8 @@ export function toEgresoRecord(e: ReportEgresoDTO, index: number): EgresoRecord 
     id: `EGR-${padNumber(index + 1)}`,
     guia: e.destination,
     cliente: clienteDeEgreso(bars),
+    clienteId: e.clientId ?? '',
+    clienteDestino: e.client?.name ?? '',
     fecha: e.createdAt.slice(0, 10),
     lingotes: bars.length,
     pesoBruto,

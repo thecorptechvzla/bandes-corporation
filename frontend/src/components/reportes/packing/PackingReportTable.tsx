@@ -1,7 +1,7 @@
 'use client';
 
 import { formatNumber } from '@/lib/format';
-import type { PackingRecord, PackingSummary } from './mockData';
+import type { PackingRecord, PackingSummary } from './types';
 
 interface PackingReportTableProps {
   records: PackingRecord[];

@@ -1,7 +1,7 @@
 'use client';
 
 import { formatNumber } from '@/lib/format';
-import type { PackingDetailedRecord, PackingSummary } from './mockData';
+import type { PackingDetailedRecord, PackingSummary } from './types';
 
 interface PackingReportDetailTableProps {
   records: PackingDetailedRecord[];
@@ -75,7 +75,7 @@ export default function PackingReportDetailTable({ records, summary }: PackingRe
             <tbody>
               {packing.bars.map((bar, barIdx) => (
                 <tr
-                  key={bar.barId}
+                  key={`${packing.id}-${bar.barId}-${barIdx}`}
                   style={{
                     backgroundColor: barIdx % 2 === 0 ? 'transparent' : 'var(--report-bg-table-row-even)',
                     borderBottom: '1px solid rgba(255,255,255,0.03)',

@@ -1,7 +1,7 @@
 'use client';
 
 import { formatNumber } from '@/lib/format';
-import type { PackingSummary } from './mockData';
+import type { PackingSummary } from './types';
 
 interface PackingReportMetricsProps {
   summary: PackingSummary;

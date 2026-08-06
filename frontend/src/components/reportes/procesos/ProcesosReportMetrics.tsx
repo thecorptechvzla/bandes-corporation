@@ -1,6 +1,6 @@
 'use client';
 
-import type { ProcesoSummary } from './mockData';
+import type { ProcesoSummary } from './types';
 import { formatNumber } from '@/lib/format';
 
 interface ProcesosReportMetricsProps {

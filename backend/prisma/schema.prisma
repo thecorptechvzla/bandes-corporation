@@ -40,9 +40,10 @@ model Client {
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
 
-  bars      Bar[]
-  processes Process[]
-  packings  Packing[]
+  bars          Bar[]
+  processes     Process[]
+  packings      Packing[]
+  materialExits MaterialExit[]
 }
 
 model Process {
@@ -125,6 +126,8 @@ model Packing {
 model MaterialExit {
   id          String   @id @default(uuid())
   destination String
+  clientId    String?
+  client      Client?  @relation(fields: [clientId], references: [id])
   totalWeight Decimal  @db.Decimal(15, 4)
   createdAt   DateTime @default(now())
 

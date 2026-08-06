@@ -8,7 +8,7 @@ import ProcesosReportMetrics from '@/components/reportes/procesos/ProcesosReport
 import ProcesosReportTable from '@/components/reportes/procesos/ProcesosReportTable';
 import ProcesosReportDetailTable from '@/components/reportes/procesos/ProcesosReportDetailTable';
 import ProcesosReportPdfTemplate from '@/components/reportes/procesos/ProcesosReportPdfTemplate';
-import type { ProcesoRecord, ProcesoDetailedRecord, ProcesoSummary, ProcesoReportType } from '@/components/reportes/procesos/mockData';
+import type { ProcesoRecord, ProcesoDetailedRecord, ProcesoSummary, ProcesoReportType } from '@/components/reportes/procesos/types';
 import { fetchProcesosReport } from '@/hooks/useProcesosReport';
 import { useClients } from '@/hooks/useClients';
 import { generateProcesosReportPDF } from '@/lib/generateProcesosReportPDF';

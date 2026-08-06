@@ -1,6 +1,6 @@
 'use client';
 
-import type { EgresoReportType } from './mockData';
+import type { EgresoReportType } from './types';
 
 interface EgresosReportFiltersProps {
   dateFrom: string;

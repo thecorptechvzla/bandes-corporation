@@ -1,7 +1,7 @@
 'use client';
 
 import { formatNumber } from '@/lib/format';
-import type { ProcesosReportData, ProcesoReportType } from './mockData';
+import type { ProcesosReportData, ProcesoReportType } from './types';
 
 interface ProcesosReportPdfTemplateProps {
   data: ProcesosReportData;

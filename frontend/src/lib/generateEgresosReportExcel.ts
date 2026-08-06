@@ -1,5 +1,5 @@
 import ExcelJS from 'exceljs';
-import type { EgresosReportData, EgresoReportType } from '@/components/reportes/egresos/mockData';
+import type { EgresosReportData, EgresoReportType } from '@/components/reportes/egresos/types';
 
 interface GenerateEgresosReportExcelParams {
   data: EgresosReportData;

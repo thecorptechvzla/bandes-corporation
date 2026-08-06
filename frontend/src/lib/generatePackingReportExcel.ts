@@ -1,5 +1,5 @@
 import ExcelJS from 'exceljs';
-import type { PackingReportData, ReportType } from '@/components/reportes/packing/mockData';
+import type { PackingReportData, ReportType } from '@/components/reportes/packing/types';
 import { formatNumber } from '@/lib/format';
 
 interface GeneratePackingReportExcelParams {

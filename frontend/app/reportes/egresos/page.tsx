@@ -8,7 +8,7 @@ import EgresosReportMetrics from '@/components/reportes/egresos/EgresosReportMet
 import EgresosReportTable from '@/components/reportes/egresos/EgresosReportTable';
 import EgresosReportDetailTable from '@/components/reportes/egresos/EgresosReportDetailTable';
 import EgresosReportPdfTemplate from '@/components/reportes/egresos/EgresosReportPdfTemplate';
-import type { EgresoRecord, EgresoDetailedRecord, EgresoSummary, EgresoReportType } from '@/components/reportes/egresos/mockData';
+import type { EgresoRecord, EgresoDetailedRecord, EgresoSummary, EgresoReportType } from '@/components/reportes/egresos/types';
 import { fetchEgresosReport } from '@/hooks/useEgresosReport';
 import { useClients } from '@/hooks/useClients';
 import { generateEgresosReportPDF } from '@/lib/generateEgresosReportPDF';

@@ -1,7 +1,7 @@
 'use client';
 
 import { formatNumber } from '@/lib/format';
-import type { EgresoDetailedRecord, EgresoSummary } from './mockData';
+import type { EgresoDetailedRecord, EgresoSummary } from './types';
 
 interface EgresosReportDetailTableProps {
   records: EgresoDetailedRecord[];
@@ -39,7 +39,7 @@ export default function EgresosReportDetailTable({ records, summary }: EgresosRe
                 className="text-[11px] font-semibold"
                 style={{ color: 'var(--report-text-table)' }}
               >
-                {egreso.cliente}
+                {egreso.clienteDestino || '—'}
               </span>
             </div>
             <span
@@ -78,7 +78,7 @@ export default function EgresosReportDetailTable({ records, summary }: EgresosRe
             <tbody>
               {egreso.items.map((item, itemIdx) => (
                 <tr
-                  key={item.lingoteId}
+                  key={`${egreso.id}-${item.lingoteId}-${itemIdx}`}
                   style={{
                     backgroundColor: itemIdx % 2 === 0 ? 'transparent' : 'var(--report-bg-table-row-even)',
                     borderBottom: '1px solid rgba(255,255,255,0.03)',

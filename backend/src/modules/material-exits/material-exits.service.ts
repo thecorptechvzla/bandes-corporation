@@ -11,6 +11,7 @@ export class MaterialExitsService {
 
   async create(data: {
     destination: string;
+    clientId?: string;
     lotIds?: string[];
     barIds?: string[];
   }) {
@@ -21,18 +22,41 @@ export class MaterialExitsService {
       throw new BadRequestException('Debe proporcionar lotIds o barIds');
     }
 
+    const clientId = await this.resolveClientId(data.clientId);
+
     if (hasLots && hasBars) {
-      return this.createFromMixed(data.destination, data.lotIds!, data.barIds!);
+      return this.createFromMixed(
+        data.destination,
+        clientId,
+        data.lotIds!,
+        data.barIds!,
+      );
     }
 
     if (hasLots) {
-      return this.createFromLots(data.destination, data.lotIds!);
+      return this.createFromLots(data.destination, clientId, data.lotIds!);
     }
 
-    return this.createFromBars(data.destination, data.barIds!);
+    return this.createFromBars(data.destination, clientId, data.barIds!);
   }
 
-  private async createFromLots(destination: string, lotIds: string[]) {
+  private async resolveClientId(clientId?: string): Promise<string | null> {
+    if (!clientId) return null;
+    const client = await this.prisma.client.findUnique({
+      where: { id: clientId },
+      select: { id: true },
+    });
+    if (!client) {
+      throw new BadRequestException('El cliente destinatario no existe');
+    }
+    return client.id;
+  }
+
+  private async createFromLots(
+    destination: string,
+    clientId: string | null,
+    lotIds: string[],
+  ) {
     return this.prisma.$transaction(async (tx) => {
       const lots = await tx.lot.findMany({
         where: { id: { in: lotIds } },
@@ -66,7 +90,7 @@ export class MaterialExitsService {
       );
 
       const exit = await tx.materialExit.create({
-        data: { destination, totalWeight },
+        data: { destination, clientId, totalWeight },
       });
 
       for (const lot of lots) {
@@ -118,7 +142,11 @@ export class MaterialExitsService {
     });
   }
 
-  private async createFromBars(destination: string, barIds: string[]) {
+  private async createFromBars(
+    destination: string,
+    clientId: string | null,
+    barIds: string[],
+  ) {
     return this.prisma.$transaction(async (tx) => {
       const bars = await tx.bar.findMany({
         where: { id: { in: barIds } },
@@ -151,7 +179,7 @@ export class MaterialExitsService {
       );
 
       const exit = await tx.materialExit.create({
-        data: { destination, totalWeight },
+        data: { destination, clientId, totalWeight },
       });
 
       await tx.bar.updateMany({
@@ -192,6 +220,7 @@ export class MaterialExitsService {
 
   private async createFromMixed(
     destination: string,
+    clientId: string | null,
     lotIds: string[],
     barIds: string[],
   ) {
@@ -255,7 +284,7 @@ export class MaterialExitsService {
       const totalWeight = lotsWeight + barsWeight;
 
       const exit = await tx.materialExit.create({
-        data: { destination, totalWeight },
+        data: { destination, clientId, totalWeight },
       });
 
       for (const lot of lots) {
@@ -378,6 +407,7 @@ export class MaterialExitsService {
       where,
       orderBy: { createdAt: 'asc' },
       include: {
+        client: { select: { id: true, name: true } },
         exitDetails: {
           include: {
             lot: {

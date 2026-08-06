@@ -5,7 +5,7 @@ import type {
   PackingReportData,
   PackingSummary,
   ReportType,
-} from '@/components/reportes/packing/mockData';
+} from '@/components/reportes/packing/types';
 
 interface ReportPackingDTO {
   id: string;

@@ -69,12 +69,13 @@ export default function LoginPage() {
 
       {/* ─── CARD DE LOGIN ─── */}
       <div className="relative z-10 flex min-h-screen items-center justify-center p-4 sm:p-6">
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: 'easeOut' }}
-          className="w-full max-w-[400px]"
-        >
+        <div className="flex w-full max-w-[400px] flex-col items-center">
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: 'easeOut' }}
+            className="w-full"
+          >
           <div className="glass-panel p-6 sm:p-8">
             {/* Logo */}
             <div className="flex flex-col items-center gap-3 text-center">
@@ -159,6 +160,12 @@ export default function LoginPage() {
             </p>
           </div>
         </motion.div>
+
+        {/* ─── MARCA DE AGUA ─── */}
+        <p className="pointer-events-none mt-8 w-full select-none whitespace-nowrap text-center font-mono text-sm font-bold uppercase tracking-[0.4em] text-white/85">
+          © Desarrollado por The Corp Tech
+        </p>
+        </div>
       </div>
     </div>
   );

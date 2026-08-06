@@ -1,7 +1,7 @@
 'use client';
 
 import { formatNumber } from '@/lib/format';
-import type { EgresosReportData, EgresoReportType } from './mockData';
+import type { EgresosReportData, EgresoReportType } from './types';
 
 interface EgresosReportPdfTemplateProps {
   data: EgresosReportData;
@@ -186,7 +186,7 @@ export default function EgresosReportPdfTemplate({
                 </thead>
                 <tbody>
                   {egreso.items.map((item, itemIdx) => (
-                    <tr key={item.lingoteId}>
+                    <tr key={`${egreso.id}-${item.lingoteId}-${itemIdx}`}>
                       <td style={{ padding: '2px 4px', fontSize: '7px', borderBottom: '1px solid #f0f0f0', backgroundColor: itemIdx % 2 === 1 ? '#fbfdfc' : 'transparent', wordWrap: 'break-word', overflow: 'hidden' }}>
                         <span style={{ fontFamily: 'monospace', color: '#333' }}>{item.lote}</span>
                       </td>

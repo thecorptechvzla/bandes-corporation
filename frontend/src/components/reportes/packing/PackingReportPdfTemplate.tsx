@@ -1,7 +1,7 @@
 'use client';
 
 import { formatNumber } from '@/lib/format';
-import type { PackingReportData, ReportType } from './mockData';
+import type { PackingReportData, ReportType } from './types';
 
 interface PackingReportPdfTemplateProps {
   data: PackingReportData;
@@ -188,7 +188,7 @@ export default function PackingReportPdfTemplate({
                 </thead>
                 <tbody>
                   {packing.bars.map((bar, barIdx) => (
-                    <tr key={bar.barId}>
+                    <tr key={`${packing.id}-${bar.barId}-${barIdx}`}>
                       <td style={{ padding: '2px 4px', fontSize: '7.5px', borderBottom: '1px solid #f0f0f0', backgroundColor: barIdx % 2 === 1 ? '#fbfdfc' : 'transparent', wordWrap: 'break-word', overflow: 'hidden' }}>
                         <span style={{ fontFamily: 'monospace', color: '#333', fontSize: '7.5px' }}>{bar.lote}</span>
                         <span style={{ display: 'block', fontFamily: 'monospace', color: '#139169', fontSize: '6.5px' }}>{bar.barId}</span>

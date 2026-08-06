@@ -1,7 +1,7 @@
 'use client';
 
 import { formatNumber } from '@/lib/format';
-import type { ProcesoDetailedRecord, ProcesoSummary } from './mockData';
+import type { ProcesoDetailedRecord, ProcesoSummary } from './types';
 
 interface ProcesosReportDetailTableProps {
   records: ProcesoDetailedRecord[];

@@ -155,7 +155,7 @@ export default function RootLayout({
                 }}
                 className="flex items-center gap-[0.69rem] flex-1 min-w-0"
               >
-                <IconComponent className={`w-4 h-4 shrink-0 ${isHistoricoRoute ? 'text-[#D5B042]' : 'text-[var(--hud-text-dim)] group-hover:text-[var(--hud-text-primary)]'}`} />
+                <IconComponent className={`w-4 h-4 shrink-0 ${isHistoricoRoute ? 'text-[#139169]' : 'text-[var(--hud-text-dim)] group-hover:text-[var(--hud-text-primary)]'}`} />
                 <span className="truncate">{item.name}</span>
               </Link>
               <button
@@ -182,7 +182,7 @@ export default function RootLayout({
                       flex items-center gap-2 pl-10 pr-3 py-2 text-sm font-medium
                       border-l-2 transition-all duration-200 active:scale-[0.97]
                       ${subActive
-                        ? 'text-white border-yellow-500 bg-[var(--hud-bg-elevated)]'
+                        ? 'text-white border-[#139169] bg-[var(--hud-bg-elevated)]'
                         : 'text-slate-400 border-transparent hover:text-white hover:bg-[var(--hud-bg-elevated)]'}
                     `}
                   >
@@ -210,7 +210,7 @@ export default function RootLayout({
                 }}
                 className="flex items-center gap-[0.69rem] flex-1 min-w-0"
               >
-                <IconComponent className={`w-4 h-4 shrink-0 ${isReporteRoute ? 'text-[#D5B042]' : 'text-[var(--hud-text-dim)] group-hover:text-[var(--hud-text-primary)]'}`} />
+                <IconComponent className={`w-4 h-4 shrink-0 ${isReporteRoute ? 'text-[#139169]' : 'text-[var(--hud-text-dim)] group-hover:text-[var(--hud-text-primary)]'}`} />
                 <span className="truncate">{item.name}</span>
               </Link>
               <button
@@ -237,7 +237,7 @@ export default function RootLayout({
                       flex items-center gap-2 pl-10 pr-3 py-2 text-sm font-medium
                       border-l-2 transition-all duration-200 active:scale-[0.97]
                       ${subActive
-                        ? 'text-white border-yellow-500 bg-[var(--hud-bg-elevated)]'
+                        ? 'text-white border-[#139169] bg-[var(--hud-bg-elevated)]'
                         : 'text-slate-400 border-transparent hover:text-white hover:bg-[var(--hud-bg-elevated)]'}
                     `}
                   >
@@ -260,7 +260,7 @@ export default function RootLayout({
             active:scale-[0.97] transition-all duration-150
           `}
         >
-          <IconComponent className={`w-4 h-4 shrink-0 ${isActive ? 'text-[#D5B042]' : 'text-[var(--hud-text-dim)] group-hover:text-[var(--hud-text-primary)]'}`} />
+          <IconComponent className={`w-4 h-4 shrink-0 ${isActive ? 'text-[#139169]' : 'text-[var(--hud-text-dim)] group-hover:text-[var(--hud-text-primary)]'}`} />
           <span>{item.name}</span>
         </Link>
       );

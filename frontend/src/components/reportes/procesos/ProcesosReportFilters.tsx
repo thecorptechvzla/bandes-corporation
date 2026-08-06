@@ -1,6 +1,6 @@
 'use client';
 
-import type { ProcesoReportType } from './mockData';
+import type { ProcesoReportType } from './types';
 
 interface ProcesosReportFiltersProps {
   dateFrom: string;

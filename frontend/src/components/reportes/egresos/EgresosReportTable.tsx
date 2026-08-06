@@ -1,7 +1,7 @@
 'use client';
 
 import { formatNumber } from '@/lib/format';
-import type { EgresoRecord, EgresoSummary } from './mockData';
+import type { EgresoRecord, EgresoSummary } from './types';
 
 interface EgresosReportTableProps {
   records: EgresoRecord[];
@@ -70,7 +70,7 @@ export default function EgresosReportTable({ records, summary, dateFrom, dateTo 
               </td>
               <td className="px-4 py-3">
                 <span className="text-[12px] font-semibold" style={{ color: 'var(--report-text-table)' }}>
-                  {row.cliente}
+                  {row.clienteDestino || '—'}
                 </span>
               </td>
               {showFecha && (

@@ -89,7 +89,7 @@ export const Sidebar: React.FC = () => {
                 onClick={() => setIsMobileOpen(false)}
                 className={`flex items-center gap-3 px-2.5 py-2.5 rounded-lg transition-all duration-200 cursor-pointer whitespace-nowrap
                   ${isActive
-                    ? 'bg-[#2D323A] text-[#D5B042] border border-[#D5B042]/10 shadow-[inset_0_1px_6px_rgba(213,176,66,0.03)]'
+                    ? 'bg-[#2D323A] text-[#139169] border border-[#139169]/10 shadow-[inset_0_1px_6px_rgba(213,176,66,0.03)]'
                     : 'text-[#94A3B8] hover:text-[#F1F5F9] hover:bg-[#2D323A]/50'
                   }`}
                 title={item.name}
@@ -99,7 +99,7 @@ export const Sidebar: React.FC = () => {
                   {item.name}
                 </span>
                 {isActive && (
-                  <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-[#D5B042] rounded-r-md opacity-0 lg:group-hover:opacity-100 transition-opacity duration-200" />
+                  <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-[#139169] rounded-r-md opacity-0 lg:group-hover:opacity-100 transition-opacity duration-200" />
                 )}
               </Link>
             );
@@ -150,7 +150,7 @@ export const Sidebar: React.FC = () => {
                 onClick={() => setIsMobileOpen(false)}
                 className={`flex items-center gap-3 px-2.5 py-2.5 rounded-lg transition-all duration-200 cursor-pointer
                   ${isActive
-                    ? 'bg-[#2D323A] text-[#D5B042] border border-[#D5B042]/10'
+                    ? 'bg-[#2D323A] text-[#139169] border border-[#139169]/10'
                     : 'text-[#94A3B8] hover:text-[#F1F5F9] hover:bg-[#2D323A]/50'
                   }`}
               >

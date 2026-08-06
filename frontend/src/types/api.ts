@@ -64,6 +64,8 @@ export interface Bar {
 export interface MaterialExit {
   id: string;
   destination: string;
+  clientId?: string | null;
+  client?: { id: string; name: string } | null;
   totalWeight: number;
   createdAt: string;
   exitDetails: ExitDetail[];
@@ -107,6 +109,7 @@ export interface AvailableLotsResponse {
 
 export interface CreateMaterialExitRequest {
   destination: string;
+  clientId?: string;
   lotIds?: string[];
   barIds?: string[];
 }

@@ -10,7 +10,7 @@ import PackingReportDetailTable from '@/components/reportes/packing/PackingRepor
 import PackingReportPdfTemplate from '@/components/reportes/packing/PackingReportPdfTemplate';
 import { useClients } from '@/hooks/useClients';
 import { fetchPackingReport } from '@/hooks/usePackingReport';
-import type { PackingRecord, PackingDetailedRecord, PackingSummary, ReportType } from '@/components/reportes/packing/mockData';
+import type { PackingRecord, PackingDetailedRecord, PackingSummary, ReportType } from '@/components/reportes/packing/types';
 import { generatePackingReportPDF } from '@/lib/generatePackingReportPDF';
 import { generatePackingReportExcel } from '@/lib/generatePackingReportExcel';
 

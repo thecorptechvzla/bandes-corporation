@@ -1,5 +1,5 @@
 import ExcelJS from 'exceljs';
-import type { ProcesosReportData, ProcesoReportType } from '@/components/reportes/procesos/mockData';
+import type { ProcesosReportData, ProcesoReportType } from '@/components/reportes/procesos/types';
 
 interface GenerateProcesosReportExcelParams {
   data: ProcesosReportData;

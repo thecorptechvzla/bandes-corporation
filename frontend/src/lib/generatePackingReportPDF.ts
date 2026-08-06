@@ -1,6 +1,6 @@
 import { toPng } from 'html-to-image';
 import { jsPDF } from 'jspdf';
-import type { PackingReportData, ReportType } from '@/components/reportes/packing/mockData';
+import type { PackingReportData, ReportType } from '@/components/reportes/packing/types';
 
 interface GeneratePackingReportPDFParams {
   data: PackingReportData;

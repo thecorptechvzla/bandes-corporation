@@ -1,6 +1,6 @@
 'use client';
 
-import type { EgresoSummary } from './mockData';
+import type { EgresoSummary } from './types';
 import { formatNumber } from '@/lib/format';
 
 interface EgresosReportMetricsProps {
@@ -72,10 +72,10 @@ export default function EgresosReportMetrics({ summary }: EgresosReportMetricsPr
           className="text-[11px] font-bold uppercase tracking-wider mb-2"
           style={{ color: 'var(--report-color-primary-light)' }}
         >
-          TOTAL PESO FINO EGRESADO
+          TOTAL PESO BRUTO EGRESADO
         </div>
         <div className="text-[18px] font-bold text-white">
-          {formatNumber(summary.pesoFinoTotal)} g
+          {formatNumber(summary.pesoBrutoTotal)} g
         </div>
         <div
           className="text-[11px] mt-1"

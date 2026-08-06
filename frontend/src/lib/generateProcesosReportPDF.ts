@@ -1,6 +1,6 @@
 import { toPng } from 'html-to-image';
 import { jsPDF } from 'jspdf';
-import type { ProcesosReportData, ProcesoReportType } from '@/components/reportes/procesos/mockData';
+import type { ProcesosReportData, ProcesoReportType } from '@/components/reportes/procesos/types';
 
 interface GenerateProcesosReportPDFParams {
   data: ProcesosReportData;

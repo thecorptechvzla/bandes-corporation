@@ -342,8 +342,9 @@ export default function V2EgresosPage() {
     setMessage('');
 
     try {
-      const payload: { destination: string; lotIds?: string[]; barIds?: string[] } = {
+      const payload: { destination: string; clientId?: string; lotIds?: string[]; barIds?: string[] } = {
         destination: destinationClient.name.toUpperCase(),
+        clientId: destinationClient.id,
       };
       if (selectedLots.length > 0) payload.lotIds = selectedLots.map(l => l.id);
       if (selectedBars.length > 0) payload.barIds = selectedBars.map(b => b.id);

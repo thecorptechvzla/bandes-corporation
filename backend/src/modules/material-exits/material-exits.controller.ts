@@ -24,6 +24,7 @@ export class MaterialExitsController {
     @Body()
     body: {
       destination: string;
+      clientId?: string;
       lotIds?: string[];
       barIds?: string[];
     },

@@ -1,6 +1,6 @@
 'use client';
 
-import type { ReportType } from './mockData';
+import type { ReportType } from './types';
 
 interface PackingReportFiltersProps {
   dateFrom: string;
