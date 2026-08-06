@@ -30,7 +30,7 @@ export default function SaldoReportHeader({
         <div className="flex gap-2">
           <button
             onClick={onExportPDF}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-[11px] font-bold cursor-pointer transition-colors"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-[11px] font-bold cursor-pointer transition-all hover:brightness-110 active:scale-95"
             style={{
               backgroundColor: 'var(--report-btn-pdf-bg)',
               color: 'var(--report-btn-pdf-text)',
@@ -41,7 +41,7 @@ export default function SaldoReportHeader({
           </button>
           <button
             onClick={onExportExcel}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-[11px] font-bold cursor-pointer transition-colors"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-[11px] font-bold cursor-pointer transition-all hover:brightness-110 active:scale-95"
             style={{
               backgroundColor: 'var(--report-btn-excel-bg)',
               color: 'var(--report-btn-excel-text)',
