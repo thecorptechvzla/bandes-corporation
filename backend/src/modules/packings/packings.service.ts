@@ -40,6 +40,80 @@ export class PackingsService {
     };
   }
 
+  async getReportData(
+    from: string,
+    to: string,
+    type: 'resumido' | 'detallado',
+    clientId?: string,
+  ) {
+    const fromDate = new Date(from);
+    const toDate = new Date(to);
+    if (Number.isNaN(fromDate.getTime()) || Number.isNaN(toDate.getTime())) {
+      throw new BadRequestException('Rango de fechas inválido');
+    }
+
+    const where = {
+      createdAt: { gte: fromDate, lte: toDate },
+      ...(clientId ? { clientId } : {}),
+    };
+
+    const includeBars = type === 'detallado';
+
+    if (includeBars) {
+      const packings = await this.prisma.packing.findMany({
+        where,
+        orderBy: { createdAt: 'asc' },
+        include: {
+          client: { select: { id: true, name: true } },
+          bars: {
+            include: { lot: { select: { name: true } } },
+            orderBy: { createdAt: 'asc' as const },
+          },
+        },
+      });
+      return packings.map((p) => this.withPackingAggregates(p, p.bars ?? []));
+    }
+
+    // Modo resumido: no se traen las relaciones de barras; los agregados
+    // por packing se calculan con una sola consulta de groupBy.
+    const packings = await this.prisma.packing.findMany({
+      where,
+      orderBy: { createdAt: 'asc' },
+      include: { client: { select: { id: true, name: true } } },
+    });
+
+    const ids = packings.map((p) => p.id);
+    const grouped = ids.length
+      ? await this.prisma.bar.groupBy({
+          by: ['packingId'],
+          where: { packingId: { in: ids } },
+          _sum: { grossWeight: true, fineWeight: true },
+          _count: { _all: true },
+        })
+      : [];
+
+    const sumsByPacking = new Map(grouped.map((g) => [g.packingId, g]));
+
+    return packings.map((p) => {
+      const g = sumsByPacking.get(p.id);
+      const barras = g?._count._all ?? 0;
+      const pesoBruto = Number(g?._sum.grossWeight ?? 0);
+      const pesoFino = Number(g?._sum.fineWeight ?? 0);
+      const ley = pesoBruto > 0 ? pesoFino / pesoBruto : 0;
+      return { ...p, barras, pesoBruto, pesoFino, ley };
+    });
+  }
+
+  private withPackingAggregates<T extends object>(
+    p: T,
+    bars: Array<{ grossWeight: unknown; fineWeight: unknown }>,
+  ): T & { barras: number; pesoBruto: number; pesoFino: number; ley: number } {
+    const pesoBruto = bars.reduce((s, b) => s + Number(b.grossWeight ?? 0), 0);
+    const pesoFino = bars.reduce((s, b) => s + Number(b.fineWeight ?? 0), 0);
+    const ley = pesoBruto > 0 ? pesoFino / pesoBruto : 0;
+    return { ...p, barras: bars.length, pesoBruto, pesoFino, ley };
+  }
+
   async findAll() {
     const packings = await this.prisma.packing.findMany({
       include: {

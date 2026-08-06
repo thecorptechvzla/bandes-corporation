@@ -158,6 +158,7 @@
 body {
   margin: 0;
   min-height: 100vh;
+  overflow: hidden;
   font-family: var(--hud-font-sans);
   background-color: var(--hud-bg-deepest);
   color: var(--hud-text-primary);
@@ -592,6 +593,369 @@ input::placeholder, textarea::placeholder {
 }
 .balances-row-sticky {
   background: var(--row-bg) !important;
+}
+
+/* ═══════════════════════════════════════════════════════
+   REPORT VARIABLES — Packing & Export Reports
+   ═══════════════════════════════════════════════════════ */
+
+:root {
+  /* — Report Primary Colors — */
+  --report-color-primary: #139169;
+  --report-color-primary-dark: #0e6b4d;
+  --report-color-primary-light: #52cca3;
+  --report-color-primary-bg-gradient: linear-gradient(145deg, #0e4231, #08261c);
+
+  /* — Report Backgrounds (Dark Web View) — */
+  --report-bg-main: #121417;
+  --report-bg-card: #1b1e23;
+  --report-bg-input: #121417;
+  --report-bg-table-row-even: #171a1f;
+
+  /* — Report Borders — */
+  --report-border-color: #2d3139;
+  --report-border-input: #363b44;
+
+  /* — Report Texts — */
+  --report-text-main: #e1e3e6;
+  --report-text-muted: #8b949e;
+  --report-text-table: #d0d7de;
+
+  /* — Export Buttons — */
+  --report-btn-pdf-bg: rgba(235, 87, 87, 0.1);
+  --report-btn-pdf-text: #eb5757;
+  --report-btn-pdf-border: rgba(235, 87, 87, 0.3);
+
+  --report-btn-excel-bg: rgba(19, 145, 105, 0.15);
+  --report-btn-excel-text: #139169;
+  --report-btn-excel-border: rgba(19, 145, 105, 0.4);
+
+  /* — Excel Export Palette — */
+  --excel-green: #139169;
+  --excel-green-light: #EAF4F0;
+  --excel-green-soft: #F4F9F7;
+  --excel-white: #FFFFFF;
+  --excel-text-dark: #333333;
+  --excel-text-muted: #666666;
+}
+
+/* ═══════════════════════════════════════════════════════
+   REPORT DATE INPUTS — Calendar Icon White on Dark
+   ═══════════════════════════════════════════════════════ */
+
+.report-date-input {
+  color-scheme: dark !important;
+}
+
+input[type="date"].report-date-input::-webkit-calendar-picker-indicator,
+input.report-date-input::-webkit-calendar-picker-indicator {
+  filter: invert(1) brightness(2) !important;
+  cursor: pointer;
+  opacity: 0.9;
+}
+
+.report-date-input::-webkit-calendar-picker-indicator:hover {
+  opacity: 1 !important;
+}
+
+/* ═══════════════════════════════════════════════════════
+   PDF EXPORT — Packing Report Print Styles
+   ═══════════════════════════════════════════════════════ */
+
+@page {
+  size: letter portrait;
+  margin: 8mm 10mm;
+}
+
+.pdf-container {
+  width: 680px !important;
+  max-width: 680px !important;
+  background-color: #ffffff;
+  color: #222222;
+  padding: 14px !important;
+  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-size: 9px !important;
+  line-height: 1.2 !important;
+  box-sizing: border-box;
+}
+
+/* ── Break-inside avoid ── */
+.pdf-metric-box,
+.pdf-meta-grid,
+.pdf-title-block,
+.pdf-packing-block,
+.pdf-packing-block table,
+.pdf-packing-block tr,
+.pdf-subtotal-row,
+.pdf-totals-card {
+  page-break-inside: avoid !important;
+  break-inside: avoid !important;
+}
+
+/* ── Header / Brand ── */
+.pdf-brand-logo { font-size: 20px !important; }
+.pdf-brand-subtext { font-size: 8px !important; }
+.pdf-brand-rif { font-size: 8px !important; line-height: 1.2 !important; }
+
+/* ── Title ── */
+.pdf-title-block { padding: 5px 10px !important; margin-bottom: 8px !important; }
+.pdf-main-title { font-size: 12px !important; }
+.pdf-subtitle { font-size: 8px !important; }
+
+/* ── Filter Grid ── */
+.pdf-meta-grid { padding: 6px 8px !important; margin-bottom: 8px !important; }
+.pdf-meta-label { font-size: 8px !important; }
+.pdf-meta-value { font-size: 8px !important; }
+
+/* ── Metric Boxes ── */
+.pdf-metric-box { padding: 5px 6px !important; }
+.pdf-metric-title { font-size: 7px !important; }
+.pdf-metric-value { font-size: 12px !important; margin: 1px 0 !important; }
+.pdf-metric-footer { font-size: 7px !important; }
+
+/* ── Tables ── */
+.pdf-table,
+.pdf-bar-table {
+  width: 100% !important;
+  table-layout: fixed !important;
+  border-collapse: collapse !important;
+  margin-bottom: 8px !important;
+}
+
+.pdf-table th,
+.pdf-table td,
+.pdf-bar-table th,
+.pdf-bar-table td {
+  padding: 4px 5px !important;
+  font-size: 8px !important;
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
+}
+
+/* ── Packing Block ── */
+.pdf-packing-block { margin-bottom: 8px !important; }
+.pdf-banner { padding: 4px 10px !important; }
+.pdf-banner-id { font-size: 9px !important; }
+.pdf-banner-file { font-size: 8px !important; }
+.pdf-banner-client { font-size: 8px !important; }
+.pdf-bar-header { padding: 4px 5px !important; font-size: 7.5px !important; }
+.pdf-bar-cell { padding: 3px 5px !important; font-size: 8px !important; }
+.pdf-bar-id { font-size: 8px !important; }
+.pdf-bar-sub { font-size: 7px !important; }
+.pdf-subtotal-row td { padding: 4px 5px !important; font-size: 8px !important; }
+
+/* ── Totals Card ── */
+.pdf-totals-card { margin-top: 8px !important; }
+.pdf-totals-header { padding: 4px 10px !important; }
+.pdf-totals-header-text { font-size: 8px !important; }
+.pdf-totals-label { font-size: 6.5px !important; }
+.pdf-totals-value { font-size: 12px !important; }
+.pdf-totals-sub { font-size: 6.5px !important; }
+
+/* ═══════════════════════════════════════════════════════
+   PDF EXPORT — Detailed Mode Overrides (Compact)
+   ═══════════════════════════════════════════════════════ */
+
+.pdf-container-detailed,
+#packing-pdf-template.pdf-container-detailed {
+  width: 100% !important;
+  max-width: 750px !important;
+  box-sizing: border-box !important;
+  background-color: #ffffff;
+  color: #222222 !important;
+  padding: 10px !important;
+  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-size: 8px !important;
+  line-height: 1.1 !important;
+  margin: 0 auto !important;
+}
+
+/* ── Detailed: Break-inside avoid ── */
+.pdf-container-detailed .pdf-packing-block,
+.pdf-container-detailed .pdf-subtotal-row,
+.pdf-container-detailed .pdf-totals-card {
+  page-break-inside: avoid !important;
+  break-inside: avoid !important;
+}
+
+/* ── Detailed: Metrics Row ── */
+.pdf-container-detailed .pdf-metrics-row {
+  display: table !important;
+  width: 100% !important;
+  table-layout: fixed !important;
+  margin-bottom: 4px !important;
+  border-collapse: collapse !important;
+}
+
+.pdf-container-detailed .pdf-metric-box {
+  display: table-cell !important;
+  padding: 3px 4px !important;
+  text-align: center !important;
+  vertical-align: middle !important;
+  background-color: #f4f9f7 !important;
+  border: 1px solid #c2e5d9 !important;
+  border-radius: 3px !important;
+}
+
+.pdf-container-detailed .pdf-metric-title {
+  font-size: 7px !important;
+}
+
+.pdf-container-detailed .pdf-metric-value {
+  font-size: 11px !important;
+  margin: 0 !important;
+  line-height: 1.1 !important;
+}
+
+.pdf-container-detailed .pdf-metric-footer {
+  font-size: 6.5px !important;
+}
+
+.pdf-container-detailed .pdf-metrics-spacer {
+  display: table-cell !important;
+  width: 6px !important;
+  padding: 0 !important;
+  border: none !important;
+  background: transparent !important;
+}
+
+/* ── Detailed: Packing Blocks ── */
+.pdf-container-detailed .pdf-packing-block {
+  margin-bottom: 4px !important;
+  border: 1px solid #e0e0e0 !important;
+  border-radius: 3px !important;
+  overflow: hidden !important;
+}
+
+/* ── Detailed: Banner ── */
+.pdf-container-detailed .pdf-banner {
+  padding: 2px 6px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  background: linear-gradient(135deg, rgba(19,145,105,0.12), rgba(19,145,105,0.04)) !important;
+  border-bottom: 2px solid #139169 !important;
+}
+
+.pdf-container-detailed .pdf-banner-id {
+  font-size: 8px !important;
+  font-weight: 700 !important;
+  color: #139169 !important;
+  font-family: monospace !important;
+}
+
+.pdf-container-detailed .pdf-banner-file {
+  font-size: 7px !important;
+  color: #777777 !important;
+}
+
+.pdf-container-detailed .pdf-banner-client {
+  font-size: 7.5px !important;
+  font-weight: 600 !important;
+  color: #333333 !important;
+}
+
+/* ── Detailed: Bar Tables (4 columns, fixed widths) ── */
+.pdf-container-detailed .pdf-bar-table {
+  width: 100% !important;
+  max-width: 100% !important;
+  table-layout: fixed !important;
+  border-collapse: collapse !important;
+  margin-bottom: 0 !important;
+}
+
+.pdf-container-detailed .pdf-bar-table th:nth-child(1),
+.pdf-container-detailed .pdf-bar-table td:nth-child(1) { width: 35% !important; }
+
+.pdf-container-detailed .pdf-bar-table th:nth-child(2),
+.pdf-container-detailed .pdf-bar-table td:nth-child(2) { width: 22% !important; text-align: right !important; }
+
+.pdf-container-detailed .pdf-bar-table th:nth-child(3),
+.pdf-container-detailed .pdf-bar-table td:nth-child(3) { width: 18% !important; text-align: center !important; }
+
+.pdf-container-detailed .pdf-bar-table th:nth-child(4),
+.pdf-container-detailed .pdf-bar-table td:nth-child(4) { width: 25% !important; text-align: right !important; }
+
+.pdf-container-detailed .pdf-bar-header {
+  padding: 2px 4px !important;
+  font-size: 7px !important;
+}
+
+.pdf-container-detailed .pdf-bar-cell {
+  padding: 2px 4px !important;
+  font-size: 7.5px !important;
+}
+
+.pdf-container-detailed .pdf-bar-id {
+  font-size: 7.5px !important;
+  font-family: monospace !important;
+  color: #333 !important;
+}
+
+.pdf-container-detailed .pdf-bar-sub {
+  font-size: 6.5px !important;
+  font-family: monospace !important;
+  color: #139169 !important;
+  display: block !important;
+}
+
+.pdf-container-detailed .pdf-bar-table th,
+.pdf-container-detailed .pdf-bar-table td {
+  padding: 2px 4px !important;
+  font-size: 7.5px !important;
+  word-wrap: break-word !important;
+  overflow: hidden !important;
+  border-bottom: 1px solid #e8e8e8 !important;
+}
+
+/* ── Detailed: Subtotal Row ── */
+.pdf-container-detailed .pdf-subtotal-row td {
+  padding: 2px 4px !important;
+  font-size: 7.5px !important;
+  background-color: #eaf4f0 !important;
+  font-weight: 700 !important;
+  color: #139169 !important;
+  border-top: 2px solid #139169 !important;
+}
+
+/* ── Detailed: Totals Card ── */
+.pdf-container-detailed .pdf-totals-card {
+  margin-top: 4px !important;
+  border: 2px solid #139169 !important;
+  border-radius: 3px !important;
+  overflow: hidden !important;
+}
+
+.pdf-container-detailed .pdf-totals-header {
+  padding: 2px 6px !important;
+  background-color: #139169 !important;
+}
+
+.pdf-container-detailed .pdf-totals-header-text {
+  font-size: 7.5px !important;
+  font-weight: 700 !important;
+  color: #ffffff !important;
+  text-transform: uppercase !important;
+}
+
+.pdf-container-detailed .pdf-totals-label {
+  font-size: 6px !important;
+  font-weight: 700 !important;
+  color: #666666 !important;
+  text-transform: uppercase !important;
+  margin-bottom: 0 !important;
+}
+
+.pdf-container-detailed .pdf-totals-value {
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  color: #139169 !important;
+}
+
+.pdf-container-detailed .pdf-totals-sub {
+  font-size: 6px !important;
+  color: #666666 !important;
+  margin-top: 0 !important;
 }
 
 /* ═══════════════════════════════════════════════════════
