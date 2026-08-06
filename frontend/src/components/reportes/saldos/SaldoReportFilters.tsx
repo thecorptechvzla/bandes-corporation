@@ -87,7 +87,7 @@ export default function SaldoReportFilters({
             color: 'var(--report-text-main)',
           }}
         >
-          <option value="">Todos los Clientes</option>
+          <option value="">Todos los Proveedores</option>
           {clients.map((c) => (
             <option key={c.id} value={c.id}>
               {c.name}

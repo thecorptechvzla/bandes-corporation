@@ -44,7 +44,7 @@ export default function SaldosReportPage() {
 
   const [filteredRecords, setFilteredRecords] = useState<SaldoRecord[]>([]);
   const [filteredDetailed, setFilteredDetailed] = useState<SaldoDetailedRecord[]>([]);
-  const [appliedClienteName, setAppliedClienteName] = useState('Todos los Clientes');
+  const [appliedClienteName, setAppliedClienteName] = useState('Todos los Proveedores');
   const [appliedDateFrom, setAppliedDateFrom] = useState(dateFrom);
   const [appliedDateTo, setAppliedDateTo] = useState(dateTo);
   const [appliedReportType, setAppliedReportType] = useState<SaldoReportType>('resumido');
@@ -58,7 +58,7 @@ export default function SaldosReportPage() {
     minute: '2-digit',
   });
 
-  const clienteName = clients.find((c) => c.id === clienteId)?.name || 'Todos los Clientes';
+  const clienteName = clients.find((c) => c.id === clienteId)?.name || 'Todos los Proveedores';
 
   const handleGenerate = useCallback(() => {
     setIsGenerating(true);
