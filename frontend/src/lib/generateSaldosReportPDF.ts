@@ -73,7 +73,7 @@ function drawTitleBlock(doc: jsPDF, y: number, pw: number, params: GenerateSaldo
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(12);
   doc.setTextColor(...GREEN);
-  doc.text('REPORTE DE BALANCE POR CLIENTE', 16, y + 6);
+  doc.text('REPORTE DE BALANCE POR PROVEEDOR', 16, y + 6);
 
   // Subtitle
   doc.setFont('helvetica', 'normal');
@@ -100,7 +100,7 @@ function drawFilterMetadata(doc: jsPDF, y: number, pw: number, params: GenerateS
   doc.setFontSize(7.5);
   doc.setTextColor(...GREEN);
   doc.text('Rango de Fechas:', 13, y + 5);
-  doc.text('Cliente:', 13, y + 10);
+  doc.text('Proveedor:', 13, y + 10);
   doc.text('Tipo de Reporte:', 13, y + 15);
 
   doc.setFont('helvetica', 'normal');
@@ -192,7 +192,7 @@ function drawSummaryTable(doc: jsPDF, y: number, pw: number, records: SaldoRecor
   ]);
 
   bodyRows.push([
-    `TOTALES (${records.length} Clientes)`,
+    `TOTALES (${records.length} Proveedores)`,
     `${formatNumber(totalIngresado)}`,
     `${formatNumber(totalEgresado)}`,
     `${formatNumber(saldoTotal)}`,

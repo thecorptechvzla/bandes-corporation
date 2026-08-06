@@ -30,7 +30,7 @@ export async function generateSaldosReportExcel(params: GenerateSaldosReportExce
   // Title
   sheet.mergeCells('A1:F1');
   const titleCell = sheet.getCell('A1');
-  titleCell.value = 'REPORTE DE BALANCE POR CLIENTE';
+  titleCell.value = 'REPORTE DE BALANCE POR PROVEEDOR';
   titleCell.font = { bold: true, size: 14, color: { argb: `FF${green}` } };
   titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
   titleCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: `FF${greenLight}` } };
@@ -46,7 +46,7 @@ export async function generateSaldosReportExcel(params: GenerateSaldosReportExce
   // Filter info
   sheet.mergeCells('A3:F3');
   const filterCell = sheet.getCell('A3');
-  filterCell.value = `Cliente: ${clienteName} | Periodo: ${dateFrom} al ${dateTo} | Tipo: ${reportType === 'detallado' ? 'Detallado' : 'Resumen'} | ID: ${reportId} | Generado: ${generatedAt}`;
+  filterCell.value = `Proveedor: ${clienteName} | Periodo: ${dateFrom} al ${dateTo} | Tipo: ${reportType === 'detallado' ? 'Detallado' : 'Resumen'} | ID: ${reportId} | Generado: ${generatedAt}`;
   filterCell.font = { size: 9, color: { argb: 'FF888888' } };
   filterCell.alignment = { horizontal: 'center' };
 
@@ -166,7 +166,7 @@ export async function generateSaldosReportExcel(params: GenerateSaldosReportExce
     const totalRowIdx = 8 + records.length;
     const tr = sheet.getRow(totalRowIdx);
     const totalBarras = records.reduce((a, r) => a + r.barrasEnBoveda, 0);
-    tr.getCell(1).value = `TOTALES (${records.length} Clientes)`;
+    tr.getCell(1).value = `TOTALES (${records.length} PROVEEDORES)`;
     tr.getCell(1).font = { bold: true, size: 10, color: { argb: `FF${green}` } };
     tr.getCell(3).value = totalIngresado;
     tr.getCell(3).font = { bold: true, size: 10, color: { argb: `FF${green}` } };
