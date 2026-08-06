@@ -1,5 +1,5 @@
 import ExcelJS from 'exceljs';
-import type { SaldoRecord, SaldoDetailedRecord, SaldoReportType } from '@/components/reportes/saldos/mockData';
+import type { SaldoRecord, SaldoDetailedRecord, SaldoReportType } from '@/components/reportes/saldos/types';
 import { formatNumber } from '@/lib/format';
 
 interface GenerateSaldosReportExcelParams {

@@ -7,33 +7,49 @@ import SaldoReportHeader from '@/components/reportes/saldos/SaldoReportHeader';
 import SaldoReportMetrics from '@/components/reportes/saldos/SaldoReportMetrics';
 import SaldoReportTable from '@/components/reportes/saldos/SaldoReportTable';
 import SaldoReportDetailTable from '@/components/reportes/saldos/SaldoReportDetailTable';
-import {
-  MOCK_CLIENTES_SALDOS,
-  MOCK_SALDOS_RECORDS,
-  MOCK_SALDOS_DETAILED,
-  type SaldoRecord,
-  type SaldoDetailedRecord,
-  type SaldoReportType,
-} from '@/components/reportes/saldos/mockData';
+import type { SaldoRecord, SaldoDetailedRecord, SaldoReportType } from '@/components/reportes/saldos/types';
 import { generateSaldosReportPDF } from '@/lib/generateSaldosReportPDF';
 import { generateSaldosReportExcel } from '@/lib/generateSaldosReportExcel';
+import { useClients } from '@/hooks/useClients';
+import { useBars } from '@/hooks/useBars';
+import { useMaterialExits } from '@/hooks/useExits';
+import { usePackings } from '@/hooks/usePackings';
+import { computeSaldosReport } from '@/hooks/useSaldosReport';
+
+const toISODate = (d: Date) => {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+};
+
+const firstOfMonth = () => {
+  const d = new Date();
+  return `${toISODate(d).slice(0, 8)}01`;
+};
 
 export default function SaldosReportPage() {
-  const [dateFrom, setDateFrom] = useState('2026-08-01');
-  const [dateTo, setDateTo] = useState('2026-08-05');
+  const [dateFrom, setDateFrom] = useState(firstOfMonth);
+  const [dateTo, setDateTo] = useState(() => toISODate(new Date()));
   const [clienteId, setClienteId] = useState('');
   const [reportType, setReportType] = useState<SaldoReportType>('resumido');
   const [showReport, setShowReport] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
 
-  const [filteredRecords, setFilteredRecords] = useState<SaldoRecord[]>(MOCK_SALDOS_RECORDS);
-  const [filteredDetailed, setFilteredDetailed] = useState<SaldoDetailedRecord[]>(MOCK_SALDOS_DETAILED);
+  const { data: clients = [] } = useClients();
+  const { data: bars = [] } = useBars();
+  const { data: exits = [] } = useMaterialExits();
+  const { data: packings = [] } = usePackings();
+
+  const [filteredRecords, setFilteredRecords] = useState<SaldoRecord[]>([]);
+  const [filteredDetailed, setFilteredDetailed] = useState<SaldoDetailedRecord[]>([]);
   const [appliedClienteName, setAppliedClienteName] = useState('Todos los Clientes');
-  const [appliedDateFrom, setAppliedDateFrom] = useState('2026-08-01');
-  const [appliedDateTo, setAppliedDateTo] = useState('2026-08-05');
+  const [appliedDateFrom, setAppliedDateFrom] = useState(dateFrom);
+  const [appliedDateTo, setAppliedDateTo] = useState(dateTo);
   const [appliedReportType, setAppliedReportType] = useState<SaldoReportType>('resumido');
 
-  const reportId = '#REP-SAL-BANDES-2026-08';
+  const reportId = `#REP-SAL-BANDES-${appliedDateFrom.slice(0, 7)}`;
   const generatedAt = new Date().toLocaleDateString('es-ES', {
     day: '2-digit',
     month: '2-digit',
@@ -42,30 +58,32 @@ export default function SaldosReportPage() {
     minute: '2-digit',
   });
 
-  const clienteName = MOCK_CLIENTES_SALDOS.find((c) => c.id === clienteId)?.name || 'Todos los Clientes';
+  const clienteName = clients.find((c) => c.id === clienteId)?.name || 'Todos los Clientes';
 
   const handleGenerate = useCallback(() => {
-    const selectedCliente = MOCK_CLIENTES_SALDOS.find((c) => c.id === clienteId);
-    const matchName = selectedCliente && selectedCliente.id !== '' ? selectedCliente.name : '';
+    setIsGenerating(true);
+    try {
+      const { records, detailed } = computeSaldosReport({
+        clients,
+        bars,
+        exits,
+        packings,
+        from: dateFrom,
+        to: dateTo,
+        clientId: clienteId || undefined,
+      });
 
-    const records = MOCK_SALDOS_RECORDS.filter((item) => {
-      if (matchName === '') return true;
-      return item.cliente === matchName;
-    });
-
-    const detailed = MOCK_SALDOS_DETAILED.filter((item) => {
-      if (matchName === '') return true;
-      return item.cliente === matchName;
-    });
-
-    setFilteredRecords(records);
-    setFilteredDetailed(detailed);
-    setAppliedClienteName(clienteName);
-    setAppliedDateFrom(dateFrom);
-    setAppliedDateTo(dateTo);
-    setAppliedReportType(reportType);
-    setShowReport(true);
-  }, [clienteId, clienteName, dateFrom, dateTo, reportType]);
+      setFilteredRecords(records);
+      setFilteredDetailed(detailed);
+      setAppliedClienteName(clienteName);
+      setAppliedDateFrom(dateFrom);
+      setAppliedDateTo(dateTo);
+      setAppliedReportType(reportType);
+      setShowReport(true);
+    } finally {
+      setIsGenerating(false);
+    }
+  }, [clients, bars, exits, packings, dateFrom, dateTo, clienteId, clienteName, reportType]);
 
   const handleExportPDF = async () => {
     setIsExporting(true);
@@ -111,6 +129,7 @@ export default function SaldosReportPage() {
       className="space-y-5"
     >
       <SaldoReportFilters
+        clients={clients}
         dateFrom={dateFrom}
         dateTo={dateTo}
         clienteId={clienteId}
@@ -143,15 +162,26 @@ export default function SaldosReportPage() {
             dateTo={appliedDateTo}
           />
 
-          <SaldoReportMetrics records={filteredRecords} />
+          {isGenerating ? (
+            <div
+              className="mt-4 text-[12px] font-semibold"
+              style={{ color: 'var(--report-text-muted)' }}
+            >
+              Generando reporte...
+            </div>
+          ) : (
+            <>
+              <SaldoReportMetrics records={filteredRecords} />
 
-          <div className="mt-6">
-            {appliedReportType === 'resumido' ? (
-              <SaldoReportTable records={filteredRecords} />
-            ) : (
-              <SaldoReportDetailTable records={filteredDetailed} />
-            )}
-          </div>
+              <div className="mt-6">
+                {appliedReportType === 'resumido' ? (
+                  <SaldoReportTable records={filteredRecords} />
+                ) : (
+                  <SaldoReportDetailTable records={filteredDetailed} />
+                )}
+              </div>
+            </>
+          )}
         </motion.div>
       )}
     </motion.div>

@@ -1,8 +1,10 @@
 'use client';
 
-import { MOCK_CLIENTES_SALDOS, type SaldoReportType } from './mockData';
+import type { Client } from '@/types/api';
+import type { SaldoReportType } from './types';
 
 interface SaldoReportFiltersProps {
+  clients: Client[];
   dateFrom: string;
   dateTo: string;
   clienteId: string;
@@ -15,6 +17,7 @@ interface SaldoReportFiltersProps {
 }
 
 export default function SaldoReportFilters({
+  clients,
   dateFrom,
   dateTo,
   clienteId,
@@ -84,7 +87,8 @@ export default function SaldoReportFilters({
             color: 'var(--report-text-main)',
           }}
         >
-          {MOCK_CLIENTES_SALDOS.map((c) => (
+          <option value="">Todos los Clientes</option>
+          {clients.map((c) => (
             <option key={c.id} value={c.id}>
               {c.name}
             </option>

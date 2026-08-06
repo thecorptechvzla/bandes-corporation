@@ -1,7 +1,7 @@
 'use client';
 
 import { formatNumber } from '@/lib/format';
-import type { SaldoRecord } from './mockData';
+import type { SaldoRecord } from './types';
 
 interface SaldoReportTableProps {
   records: SaldoRecord[];
