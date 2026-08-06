@@ -37,7 +37,7 @@ export default function SaldosReportPage() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
 
-  const { data: clients = [] } = useClients();
+  const { data: clients = [] } = useClients({ role: 'PROVEEDOR' });
   const { data: bars = [] } = useBars();
   const { data: exits = [] } = useMaterialExits();
   const { data: packings = [] } = usePackings();

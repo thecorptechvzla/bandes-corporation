@@ -81,7 +81,7 @@ export default function SaldoReportHeader({
           className="text-[16px] font-bold tracking-wide"
           style={{ color: 'var(--report-color-primary)' }}
         >
-          REPORTE DE BALANCE POR CLIENTE
+          REPORTE DE BALANCE POR PROVEEDOR
         </div>
         <div
           className="text-[10px] mt-1"
