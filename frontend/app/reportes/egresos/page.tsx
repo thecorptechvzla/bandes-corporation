@@ -8,6 +8,7 @@ import EgresosReportMetrics from '@/components/reportes/egresos/EgresosReportMet
 import EgresosReportTable from '@/components/reportes/egresos/EgresosReportTable';
 import EgresosReportDetailTable from '@/components/reportes/egresos/EgresosReportDetailTable';
 import EgresosReportPdfTemplate from '@/components/reportes/egresos/EgresosReportPdfTemplate';
+import ReportGuideCard from '@/components/reportes/ReportGuideCard';
 import type { EgresoRecord, EgresoDetailedRecord, EgresoSummary, EgresoReportType } from '@/components/reportes/egresos/types';
 import { fetchEgresosReport } from '@/hooks/useEgresosReport';
 import { useClients } from '@/hooks/useClients';
@@ -196,6 +197,8 @@ export default function EgresosReportPage() {
           </div>
         </motion.div>
       )}
+
+      {!showReport && <ReportGuideCard entity="cliente" />}
 
       {/* PDF Template (oculto) */}
       <div

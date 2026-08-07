@@ -8,6 +8,7 @@ import PackingReportMetrics from '@/components/reportes/packing/PackingReportMet
 import PackingReportTable from '@/components/reportes/packing/PackingReportTable';
 import PackingReportDetailTable from '@/components/reportes/packing/PackingReportDetailTable';
 import PackingReportPdfTemplate from '@/components/reportes/packing/PackingReportPdfTemplate';
+import ReportGuideCard from '@/components/reportes/ReportGuideCard';
 import { useClients } from '@/hooks/useClients';
 import { fetchPackingReport } from '@/hooks/usePackingReport';
 import type { PackingRecord, PackingDetailedRecord, PackingSummary, ReportType } from '@/components/reportes/packing/types';
@@ -181,6 +182,8 @@ export default function PackingReportPage() {
           </div>
         </motion.div>
       )}
+
+      {!showReport && <ReportGuideCard entity="proveedor" />}
 
       {/* PDF Template (oculto, para captura) */}
       <div

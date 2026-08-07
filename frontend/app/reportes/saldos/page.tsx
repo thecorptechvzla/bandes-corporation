@@ -10,6 +10,7 @@ import SaldoReportDetailTable from '@/components/reportes/saldos/SaldoReportDeta
 import type { SaldoRecord, SaldoDetailedRecord, SaldoReportType } from '@/components/reportes/saldos/types';
 import { generateSaldosReportPDF } from '@/lib/generateSaldosReportPDF';
 import { generateSaldosReportExcel } from '@/lib/generateSaldosReportExcel';
+import ReportGuideCard from '@/components/reportes/ReportGuideCard';
 import { useClients } from '@/hooks/useClients';
 import { useBars } from '@/hooks/useBars';
 import { useMaterialExits } from '@/hooks/useExits';
@@ -178,7 +179,9 @@ export default function SaldosReportPage() {
                   <SaldoReportTable records={filteredRecords} />
                 ) : (
                   <SaldoReportDetailTable records={filteredDetailed} />
-                )}
+      )}
+
+      {!showReport && <ReportGuideCard entity="proveedor" />}
               </div>
             </>
           )}

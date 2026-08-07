@@ -8,6 +8,7 @@ import ProcesosReportMetrics from '@/components/reportes/procesos/ProcesosReport
 import ProcesosReportTable from '@/components/reportes/procesos/ProcesosReportTable';
 import ProcesosReportDetailTable from '@/components/reportes/procesos/ProcesosReportDetailTable';
 import ProcesosReportPdfTemplate from '@/components/reportes/procesos/ProcesosReportPdfTemplate';
+import ReportGuideCard from '@/components/reportes/ReportGuideCard';
 import type { ProcesoRecord, ProcesoDetailedRecord, ProcesoSummary, ProcesoReportType } from '@/components/reportes/procesos/types';
 import { fetchProcesosReport } from '@/hooks/useProcesosReport';
 import { useClients } from '@/hooks/useClients';
@@ -177,6 +178,8 @@ export default function ProcesosReportPage() {
           </div>
         </motion.div>
       )}
+
+      {!showReport && <ReportGuideCard entity="proveedor" />}
 
       {/* PDF Template (oculto) */}
       <div
