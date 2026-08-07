@@ -481,7 +481,6 @@ const [selectedLotIds, setSelectedLotIds] = useState<Set<string>>(new Set());
         clientCount={clientCount}
         selectedBars={selectedBars}
         selectedLots={selectedLots}
-        totalWeight={totalWeight}
         onConfirm={handleDispatch}
         onCancel={() => setShowConfirmModal(false)}
       />
