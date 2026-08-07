@@ -92,7 +92,7 @@ export function ClientBalancesBarChart({ clientBalances, isMounted, onBarClick }
           <h3 className="text-xs font-semibold text-slate-100 font-mono tracking-wider uppercase">
             Top Balances
           </h3>
-          <span className="text-[10px] text-slate-500 font-mono ml-2">por cliente</span>
+          <span className="text-[10px] text-slate-500 font-mono ml-2">por proveedor</span>
         </>
       }
     >

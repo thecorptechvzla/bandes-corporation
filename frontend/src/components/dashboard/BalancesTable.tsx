@@ -57,7 +57,7 @@ export function BalancesTable({ clientBalances, totalBalance, onClientClick }: B
               Balances
             </h3>
             <p className="text-[10px] text-slate-500 font-mono mt-0.5">
-              Ciclo completo del oro por cliente.
+              Ciclo completo del oro por Provedor.
             </p>
           </div>
         </>
@@ -84,7 +84,7 @@ export function BalancesTable({ clientBalances, totalBalance, onClientClick }: B
           <table className="w-full border-collapse" style={{ minWidth: 1200 }}>
             <thead>
               <tr className="border-b border-slate-800/60">
-                <th className={TH_STICKY} style={{ background: 'transparent' }}>Cliente</th>
+                <th className={TH_STICKY} style={{ background: 'transparent' }}>Proveedor</th>
                 <th className={TH}>Ingreso Bruto</th>
                 <th className={TH}>Peso Fino</th>
                 <th className={TH}>Ley Au</th>
