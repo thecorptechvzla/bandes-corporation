@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { motion } from 'motion/react';
-import { ClipboardList, Flame, Warehouse, Inbox, TrendingUp, TrendingDown } from 'lucide-react';
+import { ClipboardList, Flame, Warehouse, Inbox, TrendingDown } from 'lucide-react';
 import { AreaChart, Area, ResponsiveContainer } from 'recharts';
 import { formatNumber } from '@/lib/format';
 
@@ -10,6 +10,17 @@ interface ProportionItem {
   label: string;
   value: number;
   color: string;
+}
+
+interface TrendInfo {
+  value: number;
+  isPositive: boolean;
+}
+
+interface SparkSeries {
+  data: number[];
+  color: string;
+  label: string;
 }
 
 interface KpiItem {
@@ -21,8 +32,9 @@ interface KpiItem {
   tag: string;
   postfix: string;
   spark: number[];
-  sparks?: { data: number[]; color: string; label: string }[];
+  sparks?: SparkSeries[];
   proportion?: ProportionItem[];
+  trend?: TrendInfo;
   subValues?: {
     label: string;
     value: number;
@@ -30,13 +42,14 @@ interface KpiItem {
   }[];
 }
 
-function calcTrend(spark: number[]): { delta: number; direction: 'up' | 'down' | 'flat' } | null {
+function calcTrend(spark: number[]): TrendInfo | null {
   if (spark.length < 4) return null;
   const last = spark[spark.length - 1];
   const prevAvg = spark.slice(0, -1).reduce((s, v) => s + v, 0) / (spark.length - 1);
   if (prevAvg === 0) return null;
   const delta = ((last - prevAvg) / prevAvg) * 100;
-  return { delta, direction: delta > 0.1 ? 'up' : delta < -0.1 ? 'down' : 'flat' };
+  if (delta > 0.1 || delta < -0.1) return { value: Math.abs(delta), isPositive: delta > 0 };
+  return null;
 }
 
 const KPI_COLORS = [
@@ -49,12 +62,16 @@ const KPI_COLORS = [
 
 const KPI_ICONS = [ClipboardList, Flame, Warehouse, Inbox, TrendingDown];
 
+const EMPTY_SPARK = [0.1, 0.4, 0.3, 0.7, 1];
+
+function prepareSpark(data: number[]): number[] {
+  if (data.length >= 5) return data;
+  if (data.length > 0) return [data[0] * 0.1, data[0] * 0.4, data[0] * 0.3, data[0] * 0.7, data[0]];
+  return EMPTY_SPARK;
+}
+
 function SparklineArea({ data, color, id }: { data: number[]; color: string; id: string }) {
-  const raw = data.length >= 5
-    ? data
-    : data.length > 0
-      ? [data[0] * 0.1, data[0] * 0.4, data[0] * 0.3, data[0] * 0.7, data[0]]
-      : [0.1, 0.4, 0.3, 0.7, 1];
+  const raw = prepareSpark(data);
   const chartData = raw.map((v, i) => ({ i, v }));
   return (
     <div className="w-full h-14 overflow-hidden relative z-0">
@@ -92,6 +109,67 @@ function SparklineArea({ data, color, id }: { data: number[]; color: string; id:
   );
 }
 
+function MultiSparkline({ series, id }: { series: SparkSeries[]; id: string }) {
+  const primary = series[0];
+  const secondary = series.slice(1);
+  const prepared = series.map(s => prepareSpark(s.data));
+  const maxLen = Math.max(...prepared.map(p => p.length), 0);
+  const chartData = Array.from({ length: maxLen }, (_, i) => {
+    const row: Record<string, number> = { i };
+    prepared.forEach((p, si) => { row[`v${si}`] = p[i] ?? 0; });
+    return row;
+  });
+  return (
+    <div className="w-full h-14 overflow-hidden relative z-0">
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart data={chartData} margin={{ top: 2, right: 0, bottom: 0, left: 0 }}>
+          <defs>
+            <linearGradient id={`spark-${id}`} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={primary.color} stopOpacity={0.35} />
+              <stop offset="50%" stopColor={primary.color} stopOpacity={0.1} />
+              <stop offset="100%" stopColor={primary.color} stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          {secondary.map((s, si) => (
+            <Area
+              key={si}
+              type="monotone"
+              dataKey={`v${si + 1}`}
+              stroke={s.color}
+              strokeWidth={1}
+              strokeOpacity={0.9}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              fill="transparent"
+              dot={false}
+              isAnimationActive={false}
+            />
+          ))}
+          <Area
+            type="monotone"
+            dataKey="v0"
+            stroke={primary.color}
+            strokeWidth={2}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            fill={`url(#spark-${id})`}
+            dot={false}
+            activeDot={{
+              r: 4,
+              stroke: '#fff',
+              strokeWidth: 2,
+              fill: primary.color,
+            }}
+            isAnimationActive={true}
+            animationDuration={800}
+            animationEasing="ease-out"
+          />
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
 function ProportionBar({ items }: { items: ProportionItem[] }) {
   const total = items.reduce((s, i) => s + i.value, 0);
   return (
@@ -110,6 +188,16 @@ function ProportionBar({ items }: { items: ProportionItem[] }) {
   );
 }
 
+function TrendIndicator({ trend }: { trend: TrendInfo }) {
+  return (
+    <span className={`inline-flex items-center gap-1 text-xs font-mono font-bold ${trend.isPositive ? 'text-emerald-400' : 'text-red-400'}`}>
+      <span className="text-[10px] leading-none">{trend.isPositive ? '▲' : '▼'}</span>
+      {trend.isPositive ? '+' : ''}{formatNumber(trend.value, 1)}%
+      <span className="text-[10px] font-mono font-normal text-gray-500/80">vs semana anterior</span>
+    </span>
+  );
+}
+
 interface KpiCardGridProps {
   kpiData: KpiItem[];
   isMounted: boolean;
@@ -123,14 +211,20 @@ export function KpiCardGrid({ kpiData, isMounted, onCardClick }: KpiCardGridProp
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-5">
       {kpiData.map((kpi, idx) => {
         const Icon = icons[idx];
+        const isEmpty = kpi.value === 0;
+        const trend = kpi.trend ?? calcTrend(kpi.spark);
         return (
           <motion.div
             key={kpi.label}
             initial={{ opacity: 0, y: -24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 * idx, duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-            style={{ '--kpi-glow': kpi.accent } as React.CSSProperties}
-            className="relative overflow-hidden cursor-pointer hud-card kpi-card hover:-translate-y-1 active:scale-95 transition-all duration-300 ease-out"
+            style={{
+              '--kpi-glow': kpi.accent,
+              background: '#0D1117',
+              border: '1px solid rgba(255,255,255,0.05)',
+            } as React.CSSProperties}
+            className="relative overflow-hidden cursor-pointer kpi-card rounded-xl hover:-translate-y-1 active:scale-95 transition-all duration-300 ease-out"
             onClick={() => onCardClick(idx)}
           >
             <div className="relative z-10 p-7">
@@ -140,41 +234,20 @@ export function KpiCardGrid({ kpiData, isMounted, onCardClick }: KpiCardGridProp
                     className="w-10 h-10 rounded-xl flex items-center justify-center"
                     style={{ background: `${kpi.accent}12` }}
                   >
-                    <Icon className="w-5 h-5" style={{ color: kpi.accent }} />
+                    <Icon className="w-5 h-5" style={{ color: kpi.accent, opacity: isEmpty ? 0.5 : 1 }} />
                   </div>
-                  <span className="text-[11px] text-slate-400 font-sans">{kpi.label}</span>
+                  <span className="text-xs text-slate-400 font-sans">{kpi.label}</span>
                 </div>
-                <div className="flex items-center gap-2.5">
-                  {(() => {
-                    const trend = calcTrend(kpi.spark);
-                    if (!trend || trend.direction === 'flat') return null;
-                    return (
-                      <span
-                        className={`inline-flex items-center gap-0.5 text-[10px] font-mono font-bold px-2.5 py-1 rounded-lg ${
-                          trend.direction === 'up'
-                            ? 'text-emerald-400 bg-emerald-500/10'
-                            : 'text-red-400 bg-red-500/10'
-                        }`}
-                      >
-                        {trend.direction === 'up'
-                          ? <TrendingUp className="w-2.5 h-2.5" />
-                          : <TrendingDown className="w-2.5 h-2.5" />
-                        }
-                        {Math.abs(trend.delta).toFixed(1)}%
-                      </span>
-                    );
-                  })()}
-                  <span
-                    className="text-[10px] font-mono font-bold tracking-wider px-3 py-1 rounded-lg"
-                    style={{ background: `${kpi.accent}12`, color: kpi.accent, border: `1px solid ${kpi.accent}25` }}
-                  >
-                    {kpi.tag}
-                  </span>
-                </div>
+                <span
+                  className="text-xs font-semibold uppercase tracking-wider"
+                  style={{ color: `${kpi.accent}B3` }}
+                >
+                  {kpi.tag}
+                </span>
               </div>
 
-              <div className="flex items-baseline gap-1.5 mb-2">
-                <span className="text-3xl xl:text-4xl font-mono font-bold text-slate-100 tracking-tight">
+              <div className="flex items-baseline gap-1.5 mb-1.5">
+                <span className={`text-3xl xl:text-4xl font-mono font-bold text-slate-100 tracking-tight ${isEmpty ? 'opacity-50' : ''}`}>
                   {!isMounted
                     ? '0,00'
                     : kpi.postfix === '%'
@@ -186,19 +259,21 @@ export function KpiCardGrid({ kpiData, isMounted, onCardClick }: KpiCardGridProp
                 </span>
               </div>
 
-              {kpi.sparks ? (
-                <div className="mb-3 h-16 flex flex-col justify-end gap-1">
-                  {kpi.sparks.map((sp, i) => (
-                    <div key={i} className="h-6">
-                      {isMounted && (
-                        <SparklineArea
-                          data={sp.data}
-                          color={sp.color}
-                          id={`kpi-${idx}-${i}`}
-                        />
-                      )}
-                    </div>
-                  ))}
+              {trend && !isEmpty && (
+                <div className="mb-3">
+                  <TrendIndicator trend={trend} />
+                </div>
+              )}
+
+              {isEmpty ? (
+                <div className="mb-3 h-14 flex items-center justify-center rounded-lg border border-dashed border-[var(--hud-border)]/40">
+                  <span className="text-[10px] font-mono text-gray-500/60 tracking-wider">
+                    Sin actividad en el rango
+                  </span>
+                </div>
+              ) : kpi.sparks ? (
+                <div className="mb-3">
+                  {isMounted && <MultiSparkline series={kpi.sparks} id={`kpi-${idx}`} />}
                 </div>
               ) : kpi.proportion ? (
                 <div className="mb-3 h-14 flex items-end">
