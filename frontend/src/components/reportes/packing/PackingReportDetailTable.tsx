@@ -13,7 +13,7 @@ export default function PackingReportDetailTable({ records, summary }: PackingRe
     <div className="space-y-4">
       {records.map((packing) => (
         <div
-          key={packing.id}
+          key={packing.uid}
           className="rounded-lg overflow-hidden"
           style={{
             border: '1px solid var(--report-border-color)',
@@ -75,7 +75,7 @@ export default function PackingReportDetailTable({ records, summary }: PackingRe
             <tbody>
               {packing.bars.map((bar, barIdx) => (
                 <tr
-                  key={`${packing.id}-${bar.barId}-${barIdx}`}
+                  key={`${packing.uid}-${bar.barId}-${barIdx}`}
                   style={{
                     backgroundColor: barIdx % 2 === 0 ? 'transparent' : 'var(--report-bg-table-row-even)',
                     borderBottom: '1px solid rgba(255,255,255,0.03)',

@@ -84,7 +84,7 @@ export default function PackingReportTable({ records, summary }: PackingReportTa
         <tbody>
           {records.map((row, idx) => (
             <tr
-              key={row.id}
+              key={row.uid}
               style={{
                 backgroundColor: idx % 2 === 0 ? 'transparent' : 'var(--report-bg-table-row-even)',
                 borderBottom: '1px solid rgba(255,255,255,0.03)',

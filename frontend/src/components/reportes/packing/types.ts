@@ -8,6 +8,7 @@ export interface BarRecord {
 
 export interface PackingRecord {
   id: string;
+  uid: string;
   file: string;
   client: string;
   barras: number;

@@ -125,7 +125,7 @@ export default function PackingReportPdfTemplate({
           </thead>
           <tbody>
             {records.map((row, idx) => (
-              <tr key={row.id}>
+              <tr key={row.uid}>
                 <td style={{ borderBottom: '1px solid #e6e6e6', backgroundColor: idx % 2 === 1 ? '#fbfdfc' : 'transparent' }}>
                   <span style={{ fontWeight: 700, color: '#139169', fontFamily: 'monospace', fontSize: '8px' }}>{row.id}</span>
                   <span style={{ fontSize: '7px', color: '#777777', display: 'block' }}>{row.file}</span>
@@ -158,7 +158,7 @@ export default function PackingReportPdfTemplate({
       ) : (
         <>
           {(data.detailed ?? []).map((packing) => (
-            <div key={packing.id} className="pdf-packing-block" style={{ border: '1px solid #e0e0e0', borderRadius: '4px', overflow: 'hidden' }}>
+            <div key={packing.uid} className="pdf-packing-block" style={{ border: '1px solid #e0e0e0', borderRadius: '4px', overflow: 'hidden' }}>
               {/* Banner de identificación */}
               <div className="pdf-banner" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'linear-gradient(135deg, rgba(19,145,105,0.12), rgba(19,145,105,0.04))', borderBottom: '2px solid #139169' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -188,7 +188,7 @@ export default function PackingReportPdfTemplate({
                 </thead>
                 <tbody>
                   {packing.bars.map((bar, barIdx) => (
-                    <tr key={`${packing.id}-${bar.barId}-${barIdx}`}>
+                    <tr key={`${packing.uid}-${bar.barId}-${barIdx}`}>
                       <td style={{ padding: '2px 4px', fontSize: '7.5px', borderBottom: '1px solid #f0f0f0', backgroundColor: barIdx % 2 === 1 ? '#fbfdfc' : 'transparent', wordWrap: 'break-word', overflow: 'hidden' }}>
                         <span style={{ fontFamily: 'monospace', color: '#333', fontSize: '7.5px' }}>{bar.lote}</span>
                         <span style={{ display: 'block', fontFamily: 'monospace', color: '#139169', fontSize: '6.5px' }}>{bar.barId}</span>

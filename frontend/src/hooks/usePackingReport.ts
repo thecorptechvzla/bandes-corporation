@@ -46,6 +46,7 @@ const padNumber = (n: number) => String(n).padStart(3, '0');
 export function toPackingRecord(p: ReportPackingDTO): PackingRecord {
   return {
     id: p.packingNumber != null ? `PKG-${padNumber(p.packingNumber)}` : p.id.slice(0, 8).toUpperCase(),
+    uid: p.id,
     file: p.fileName,
     client: p.client?.name ?? '',
     barras: p.barras,
