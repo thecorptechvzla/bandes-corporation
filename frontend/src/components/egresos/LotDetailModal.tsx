@@ -14,6 +14,8 @@ interface AvailableLot {
   clientName: string;
   clientRif: string;
   availableWeight: number;
+  recovered?: number;
+  grossWeight?: number;
   barCount: number;
   isMixed?: boolean;
   composition?: { clientId: string; clientName: string; weight: number; percentage: number }[];
@@ -107,8 +109,21 @@ export function LotDetailModal({ lot, bars, onClose }: LotDetailModalProps) {
               </div>
             )}
 
+            <div className="p-4 rounded-xl border border-[var(--pm-accent-gold)]/30 bg-[var(--pm-accent-gold)]/[0.08] flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.35)' }}>
+                  <Package className="w-4 h-4 text-[var(--pm-accent-gold)]" />
+                </div>
+                <div>
+                  <span className="text-[10px] font-mono font-bold text-[var(--pm-accent-gold)] uppercase tracking-wider">Peso Bruto Físico (Resultado)</span>
+                  <p className="text-[11px] font-mono text-[var(--pm-text-dim)] mt-0.5">Peso real recuperado tras la fundición</p>
+                </div>
+              </div>
+              <span className="text-xl font-mono font-bold text-[var(--pm-accent-gold)]">{formatNumber(Number(lot.recovered ?? lot.grossWeight ?? 0), 2)} g</span>
+            </div>
+
             <div className="flex items-center justify-between text-[11px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider">
-              <span>Desglose de Barras Fundidas</span>
+              <span>Material de Entrada (Desglose)</span>
               <span>{lotBars.length} barra{lotBars.length !== 1 ? 's' : ''}</span>
             </div>
             <div className="overflow-x-auto w-full">
@@ -149,8 +164,8 @@ export function LotDetailModal({ lot, bars, onClose }: LotDetailModalProps) {
                   <Package className="w-4 h-4 text-[var(--pm-accent-gold)]" />
                 </div>
                 <div className="min-w-0">
-                  <span className="text-[10px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider">R (Recuperado)</span>
-                  <p className="text-sm font-mono font-bold text-[var(--pm-text-primary)]">{formatNumber(Number(lot.availableWeight || 0), 2)} g</p>
+                  <span className="text-[10px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider">R (Recuperado Físico)</span>
+                  <p className="text-sm font-mono font-bold text-[var(--pm-accent-gold)]">{formatNumber(Number(lot.recovered ?? lot.grossWeight ?? 0), 2)} g</p>
                 </div>
               </div>
               <div className="p-4 rounded-xl border bg-[var(--pm-bg-deepest)]/40 flex items-center gap-3"

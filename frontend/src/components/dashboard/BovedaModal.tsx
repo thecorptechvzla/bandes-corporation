@@ -73,17 +73,19 @@ export function BovedaModal({ isOpen, lots, bars, clients, lotGrossWeight, lotFi
     [lots],
   );
 
-  const totalFundidoBruto = useMemo(
+  const totalFundidoBrutoOriginal = useMemo(
     () => lots.reduce((s, l) => s + (lotGrossWeight?.[l.id] ?? 0), 0),
     [lots, lotGrossWeight],
   );
+
+  const totalFundidoBruto = totalRecovered;
 
   const totalFundidoFino = useMemo(
     () => lots.reduce((s, l) => s + (lotFineWeight?.[l.id] ?? 0), 0),
     [lots, lotFineWeight],
   );
 
-  const totalMerma = Math.max(0, totalFundidoFino - totalRecovered);
+  const totalMerma = Math.max(0, totalFundidoBrutoOriginal - totalRecovered);
 
   const totalFineWeight = useMemo(
     () => bars.reduce((s, b) => s + Number(b.fineWeight ?? 0), 0),
@@ -173,7 +175,7 @@ export function BovedaModal({ isOpen, lots, bars, clients, lotGrossWeight, lotFi
 
                   {grouped.map(({ id, clientName, rif, lots: clientLots }) => {
                     const isExpanded = expandedFundidoId === id;
-                    const clientTotal = clientLots.reduce((s, l) => s + (lotGrossWeight?.[l.id] ?? 0), 0);
+                    const clientTotal = clientLots.reduce((s, l) => s + Number(l.recovered ?? 0), 0);
                     return (
                       <div key={id}>
                         <div
@@ -258,9 +260,9 @@ export function BovedaModal({ isOpen, lots, bars, clients, lotGrossWeight, lotFi
                                               <td className="text-left px-4 py-3 font-mono text-[11px] text-[var(--hud-text-dim)]">
                                                 {lot.operator ?? '—'}
                                               </td>
-                                              <td className="text-right px-4 py-3 font-mono text-[11px] text-[var(--hud-accent-gold)] tabular-nums">
-                                                {formatNumber(lotGrossWeight?.[lot.id] ?? 0, 2)}
-                                              </td>
+<td className="text-right px-4 py-3 font-mono text-[11px] text-[var(--hud-accent-gold)] tabular-nums">
+                                                  {formatNumber(Number(lot.recovered ?? 0), 2)}
+                                                </td>
                                               <td className="text-right px-4 py-3 font-mono text-[11px] text-[var(--hud-text-dim)]">
                                                 {lot.recoveryAt
                                                   ? new Date(lot.recoveryAt).toLocaleDateString('es-AR')

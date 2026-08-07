@@ -88,7 +88,6 @@ export function ActiveProcessesMatrix({ activeProcesses, lotBarsMap, processLots
             <div className="flex items-center gap-3 text-[8px] font-mono text-[var(--pm-text-dim)] opacity-80">
               <span>{lot.name}</span>
               {lot.moldCode && <span>({lot.moldCode})</span>}
-              {lot.castingTemp && <span>Temp: {lot.castingTemp}°C</span>}
             </div>
             <div className="flex items-center gap-2 shrink-0">
               {onCancelProcess && (

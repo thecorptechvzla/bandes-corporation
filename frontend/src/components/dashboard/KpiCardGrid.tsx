@@ -238,12 +238,6 @@ export function KpiCardGrid({ kpiData, isMounted, onCardClick }: KpiCardGridProp
                   </div>
                   <span className="text-xs text-slate-400 font-sans">{kpi.label}</span>
                 </div>
-                <span
-                  className="text-xs font-semibold uppercase tracking-wider"
-                  style={{ color: `${kpi.accent}B3` }}
-                >
-                  {kpi.tag}
-                </span>
               </div>
 
               <div className="flex items-baseline gap-1.5 mb-1.5">

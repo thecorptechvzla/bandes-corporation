@@ -27,6 +27,7 @@ export interface DispatchResult {
   reference: string;
   destination: string;
   totalWeight: number;
+  grossWeight?: number;
   lotCount?: number;
   barCount?: number;
   providerCount: number;
