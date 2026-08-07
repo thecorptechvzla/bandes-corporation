@@ -167,9 +167,9 @@ export function ExitsTable({
                                   Detalle del Despacho
                                 </h4>
                                 <div className="space-y-3">
-                                  {e.exitDetails.map(detail => (
+                                  {e.exitDetails.map((detail, idx) => (
                                     <div
-                                      key={detail.id}
+                                      key={`${e.id}-detail-${idx}`}
                                       className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 rounded-xl border border-[var(--pm-border)]/20 bg-[var(--pm-bg-tertiary)]/25"
                                     >
                                       {/* 1 · Identificación */}
@@ -180,9 +180,9 @@ export function ExitsTable({
                                         </span>
                                         {detail.bars && detail.bars.length > 0 && (
                                           <div className="mt-2 flex flex-wrap gap-1">
-                                            {detail.bars.map(bar => (
+                                            {detail.bars.map((bar, barIdx) => (
                                               <span
-                                                key={bar.id}
+                                                key={`${e.id}-detail-${idx}-bar-${barIdx}`}
                                                 className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono bg-[var(--pm-bg-tertiary)] text-[var(--pm-text-dim)] border border-[var(--pm-border)]/30"
                                               >
                                                 {bar.barNumber}
