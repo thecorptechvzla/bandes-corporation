@@ -128,8 +128,7 @@ export function ExitsTable({
                         <button
                           type="button"
                           onClick={() => onPDFCliente(e)}
-                          className="inline-flex items-center gap-1 px-2 py-1 rounded text-[10px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer border"
-                          style={{ background: 'rgba(212,175,55,0.08)', color: 'var(--pm-accent-gold)', borderColor: 'rgba(212,175,55,0.2)' }}
+                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-[10px] font-mono font-semibold uppercase tracking-wider border border-transparent bg-slate-800/60 text-slate-300 hover:text-white hover:bg-slate-700/50 transition-all active:scale-95 cursor-pointer"
                           title="Descargar Comprobante Cliente"
                         >
                           <User className="w-3 h-3" /> Cliente
@@ -137,8 +136,7 @@ export function ExitsTable({
                         <button
                           type="button"
                           onClick={() => onPDFEmpresa(e)}
-                          className="inline-flex items-center gap-1 px-2 py-1 rounded text-[10px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer border"
-                          style={{ background: 'rgba(212,175,55,0.04)', color: 'var(--pm-accent-gold)', borderColor: 'rgba(212,175,55,0.12)' }}
+                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-[10px] font-mono font-semibold uppercase tracking-wider border border-transparent bg-slate-800/60 text-slate-300 hover:text-white hover:bg-slate-700/50 transition-all active:scale-95 cursor-pointer"
                           title="Descargar Comprobante Empresa"
                         >
                           <Building className="w-3 h-3" /> Empresa
@@ -160,75 +158,84 @@ export function ExitsTable({
                           exit={{ height: 0, opacity: 0 }}
                           transition={{ duration: 0.25, ease: 'easeInOut' }}
                         >
-                          <div className="border-t border-[var(--pm-border)]/40 bg-[var(--pm-bg-secondary)]/50 p-4 space-y-3">
-                            <div className="flex items-center justify-between">
-                              <h4 className="text-[11px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider">
-                                <FileStack className="w-3 h-3 inline mr-1.5" />
-                                Detalle del Despacho
-                              </h4>
-                              <div className="flex items-center gap-2" onClick={ev => ev.stopPropagation()}>
-                                <span className="text-[11px] font-mono text-[var(--pm-text-dim)] mr-1">
-                                  Destino: <span className="text-[var(--pm-text-primary)]">{e.destination}</span>
-                                </span>
-                                <button
-                                  type="button"
-                                  onClick={() => onPDFCliente(e)}
-                                  className="inline-flex items-center gap-1 px-2 py-1 rounded text-[10px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer border"
-                                  style={{ background: 'rgba(212,175,55,0.08)', color: 'var(--pm-accent-gold)', borderColor: 'rgba(212,175,55,0.2)' }}
-                                >
-                                  <Download className="w-3 h-3" /> Cliente
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => onPDFEmpresa(e)}
-                                  className="inline-flex items-center gap-1 px-2 py-1 rounded text-[10px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer border"
-                                  style={{ background: 'rgba(212,175,55,0.04)', color: 'var(--pm-accent-gold)', borderColor: 'rgba(212,175,55,0.12)' }}
-                                >
-                                  <Download className="w-3 h-3" /> Empresa
-                                </button>
-                              </div>
-                            </div>
-                            <div className="overflow-x-auto">
-                              <table className="w-full text-[11px] font-mono">
-                                <thead>
-                                  <tr className="border-b border-[var(--pm-border)]/30 grid grid-cols-[1fr_1fr_110px_130px]">
-                                    <th className="text-left py-2 px-3 text-[var(--pm-text-dim)] font-semibold">Lote/Barra</th>
-                                    <th className="text-left py-2 px-3 text-[var(--pm-text-dim)] font-semibold">Proveedor</th>
-                                    <th className="text-right py-2 px-3 text-[var(--pm-text-dim)] font-semibold">Cant. Barras</th>
-                                    <th className="text-right py-2 px-3 text-[var(--pm-text-dim)] font-semibold">Peso Aportado</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
+                          <div className="border-t border-[var(--pm-border)]/40 bg-slate-900/40 p-4">
+                            <div className="flex gap-4">
+                              <div className="w-1 shrink-0 self-stretch rounded-full bg-[var(--pm-accent-emerald)]/70" />
+                              <div className="flex-1 space-y-3 min-w-0">
+                                <h4 className="text-[11px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider">
+                                  <FileStack className="w-3 h-3 inline mr-1.5" />
+                                  Detalle del Despacho
+                                </h4>
+                                <div className="space-y-3">
                                   {e.exitDetails.map(detail => (
-                                    <tr key={detail.id} className="border-b border-[var(--pm-border)]/20 hover:bg-[var(--pm-bg-tertiary)]/40 transition-colors grid grid-cols-[1fr_1fr_110px_130px]">
-                                      <td className="py-2 px-3 text-[var(--pm-text-primary)] font-semibold">
-                                        <div className="flex flex-col gap-1">
-                                          <span>{detail.lot?.name ?? '—'}</span>
-                                          {detail.bars && detail.bars.length > 0 && (
-                                            <div className="flex flex-wrap gap-1">
-                                              {detail.bars.map(bar => (
-                                                <span key={bar.id} className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] bg-[var(--pm-bg-tertiary)] text-[var(--pm-text-dim)] border border-[var(--pm-border)]/30">
-                                                  {bar.barNumber}
-                                                  <span className="text-[var(--pm-accent-gold)]">({formatWeight(Number(bar.fineWeight), 1)})</span>
-                                                </span>
-                                              ))}
-                                            </div>
-                                          )}
-                                        </div>
-                                      </td>
-                                      <td className="py-2 px-3 text-[var(--pm-text-dim)]">
-                                        {detail.lot?.process?.client?.name ?? '—'}
-                                      </td>
-                                      <td className="py-2 px-3 text-right text-[var(--pm-text-primary)]">
-                                        {detail.bars?.length ?? 0}
-                                      </td>
-                                      <td className="py-2 px-3 text-right text-[var(--pm-accent-gold)] font-semibold">
-                                        {formatWeight(Number(detail.weightAported), 2)}
-                                      </td>
-                                    </tr>
+                                    <div
+                                      key={detail.id}
+                                      className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 rounded-xl border border-[var(--pm-border)]/20 bg-[var(--pm-bg-tertiary)]/25"
+                                    >
+                                      {/* 1 · Identificación */}
+                                      <div className="min-w-0">
+                                        <span className="block text-[10px] font-semibold uppercase tracking-wider text-slate-400">Lote / Barra</span>
+                                        <span className="mt-1 block text-sm font-medium text-white truncate">
+                                          {detail.lot?.name ?? '—'}
+                                        </span>
+                                        {detail.bars && detail.bars.length > 0 && (
+                                          <div className="mt-2 flex flex-wrap gap-1">
+                                            {detail.bars.map(bar => (
+                                              <span
+                                                key={bar.id}
+                                                className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono bg-[var(--pm-bg-tertiary)] text-[var(--pm-text-dim)] border border-[var(--pm-border)]/30"
+                                              >
+                                                {bar.barNumber}
+                                                <span className="text-[var(--pm-accent-gold)]">({formatWeight(Number(bar.fineWeight), 1)})</span>
+                                              </span>
+                                            ))}
+                                          </div>
+                                        )}
+                                        <span className="mt-2 block text-[10px] font-semibold uppercase tracking-wider text-slate-400">Cant. Barras</span>
+                                        <span className="mt-0.5 block text-sm font-medium text-white">{detail.bars?.length ?? 0}</span>
+                                      </div>
+
+                                      {/* 2 · Actores */}
+                                      <div className="min-w-0">
+                                        <span className="block text-[10px] font-semibold uppercase tracking-wider text-slate-400">Proveedor</span>
+                                        <span className="mt-1 block text-sm font-medium text-white truncate">
+                                          {detail.lot?.process?.client?.name ?? '—'}
+                                        </span>
+                                        <span className="mt-3 block text-[10px] font-semibold uppercase tracking-wider text-slate-400">Destino</span>
+                                        <span className="mt-0.5 block text-sm font-medium text-white truncate">{e.destination}</span>
+                                      </div>
+
+                                      {/* 3 · Métricas */}
+                                      <div className="min-w-0">
+                                        <span className="block text-[10px] font-semibold uppercase tracking-wider text-slate-400">Peso Aportado</span>
+                                        <span className="mt-1 block text-lg font-semibold text-[var(--pm-accent-gold)]">
+                                          {formatWeight(Number(detail.weightAported), 2)}
+                                        </span>
+                                      </div>
+
+                                      {/* 4 · Acciones */}
+                                      <div className="flex flex-col items-start md:items-end justify-center gap-2 min-w-0" onClick={ev => ev.stopPropagation()}>
+                                        <button
+                                          type="button"
+                                          onClick={() => onPDFCliente(e)}
+                                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-[10px] font-mono font-semibold uppercase tracking-wider border border-transparent bg-slate-800/60 text-slate-300 hover:text-white hover:bg-slate-700/50 transition-all active:scale-95 cursor-pointer"
+                                          title="Descargar Comprobante Cliente"
+                                        >
+                                          <Download className="w-3 h-3" /> Cliente
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={() => onPDFEmpresa(e)}
+                                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-[10px] font-mono font-semibold uppercase tracking-wider border border-transparent bg-slate-800/60 text-slate-300 hover:text-white hover:bg-slate-700/50 transition-all active:scale-95 cursor-pointer"
+                                          title="Descargar Comprobante Empresa"
+                                        >
+                                          <Download className="w-3 h-3" /> Empresa
+                                        </button>
+                                      </div>
+                                    </div>
                                   ))}
-                                </tbody>
-                              </table>
+                                </div>
+                              </div>
                             </div>
                           </div>
                         </motion.div>
