@@ -89,10 +89,15 @@ export function convertExitToDispatchResult(exit: MaterialExit): DispatchResult 
 
   const type = hasLots && hasBars ? 'mixed' : hasBars ? 'bars' : 'lots';
 
+  const grossTotal = [
+    ...(exit.exitDetails ?? []).flatMap((d) => d.bars ?? []),
+    ...(exit.bars ?? []),
+  ].reduce((sum, b) => sum + Number(b.grossWeight ?? 0), 0);
+
   return {
     reference: `DESP-${exit.id.slice(0, 8).toUpperCase()}`,
     destination: exit.destination,
-    totalWeight: Number(exit.totalWeight),
+    totalWeight: grossTotal > 0 ? grossTotal : Number(exit.totalWeight),
     lotCount: lots.length || undefined,
     barCount: bars.length || undefined,
     providerCount: providerMap.size,
@@ -308,7 +313,7 @@ export async function generateDispatchPDF(
       const itemLabel = isBarMode ? 'barras' : 'lotes';
       doc.text(`Total de ${itemLabel}: ${itemCount}`, m, y); y += 5;
     }
-    doc.text(`Peso Fino Total : ${formatWeight(Number(data.totalWeight))}`, m, y); y += 5;
+    doc.text(`Peso Bruto Total : ${formatWeight(Number(data.totalWeight))}`, m, y); y += 5;
     if (hasMixedLot) {
       doc.setTextColor(168, 85, 247);
       doc.text('Incluye lote(s) MIXTO(s): material consolidado de varios proveedores.', m, y); y += 5;
@@ -341,7 +346,7 @@ export async function generateDispatchPDF(
   doc.setTextColor(100, 100, 100);
   doc.setFontSize(8);
   doc.text('_________________________', m, y); y += 5;
-  doc.text('Peso Fino', m, y);
+  doc.text('PESO BRUTO', m, y);
   doc.text('_________________________', pw - m - 40, y - 5);
   doc.text('R', pw - m - 40, y);
 
