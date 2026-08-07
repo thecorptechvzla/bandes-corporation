@@ -22,7 +22,9 @@ interface ReportDetailEgresoDTO {
   id: string;
   weightAported: number | string;
   lot?: {
+    id: string;
     name: string;
+    recovered?: number | string | null;
     process?: { client?: { id: string; name: string } | null } | null;
   } | null;
   bars?: ReportBarEgresoDTO[];
@@ -93,11 +95,55 @@ export function toEgresoRecord(e: ReportEgresoDTO, index: number): EgresoRecord 
   };
 }
 
+const round = (n: number, dp = 4) => {
+  const f = 10 ** dp;
+  return Math.round(n * f) / f;
+};
+
+function prorateByLot(details: ReportDetailEgresoDTO[]): LingoteEgreso[] {
+  const items: LingoteEgreso[] = [];
+
+  for (const d of details) {
+    const bars = d.bars ?? [];
+    if (bars.length === 0) continue;
+
+    const recovered = d.lot?.recovered;
+    const totalGross = bars.reduce((acc, b) => acc + Number(b.grossWeight ?? 0), 0);
+    const usable = recovered != null && Number(recovered) > 0 && totalGross > 0;
+
+    let allocated = 0;
+    bars.forEach((b, i) => {
+      let pesoBrutoBalanza: number | undefined;
+      if (usable) {
+        const r = Number(recovered);
+        if (i === bars.length - 1) {
+          pesoBrutoBalanza = round(r - allocated);
+        } else {
+          pesoBrutoBalanza = round((r * Number(b.grossWeight ?? 0)) / totalGross);
+          allocated += pesoBrutoBalanza;
+        }
+      }
+
+      items.push({
+        lote: d.lot?.name ?? '—',
+        lingoteId: b.barNumber,
+        pesoBruto: Number(b.grossWeight ?? 0),
+        pesoBrutoBalanza,
+        ley: Number(b.purity ?? 0) / 1000,
+        pesoFino: Number(b.fineWeight ?? 0),
+      });
+    });
+  }
+
+  return items;
+}
+
 export function toEgresoDetailedRecord(e: ReportEgresoDTO, index: number): EgresoDetailedRecord {
   const base = toEgresoRecord(e, index);
 
-  const items: LingoteEgreso[] = collectBars(e).map((b) => ({
-    lote: b.lotName || '—',
+  const fromDetails = prorateByLot(e.exitDetails ?? []);
+  const fromBars = (e.bars ?? []).map<LingoteEgreso>((b) => ({
+    lote: '—',
     lingoteId: b.barNumber,
     pesoBruto: Number(b.grossWeight ?? 0),
     pesoBrutoBalanza: undefined,
@@ -105,7 +151,7 @@ export function toEgresoDetailedRecord(e: ReportEgresoDTO, index: number): Egres
     pesoFino: Number(b.fineWeight ?? 0),
   }));
 
-  return { ...base, items };
+  return { ...base, items: [...fromDetails, ...fromBars] };
 }
 
 export async function fetchEgresosReport({

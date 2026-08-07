@@ -21,6 +21,7 @@ interface LotItem {
   fineWeight?: number;
   purity?: number;
   validatedWeight?: number;
+  recovered?: number;
 }
 
 export interface DispatchResult {
@@ -63,6 +64,7 @@ export function convertExitToDispatchResult(exit: MaterialExit): DispatchResult 
           fineWeight: Number(b.fineWeight || 0),
         })),
       );
+      const recovered = d.lot?.recovered ?? lotGrossWeight;
       if (composition.length > 1) {
         return composition.map(entry => ({
           name: d.lot?.name || '—',
@@ -72,6 +74,7 @@ export function convertExitToDispatchResult(exit: MaterialExit): DispatchResult 
           grossWeight: lotGrossWeight,
           fineWeight: lotFineWeight,
           purity: lotPurity,
+          recovered,
         } as LotItem));
       }
       return [{
@@ -82,6 +85,7 @@ export function convertExitToDispatchResult(exit: MaterialExit): DispatchResult 
         grossWeight: lotGrossWeight,
         fineWeight: lotFineWeight,
         purity: lotPurity,
+        recovered,
       } as LotItem];
     });
     lots.forEach(l => {
@@ -244,13 +248,13 @@ export async function generateDispatchPDF(
         doc.setFillColor(19, 145, 105);
         doc.rect(m, y - 4, cw, 7, 'F');
         doc.setTextColor(255, 255, 255);
-        doc.setFontSize(6);
+        doc.setFontSize(5.5);
         doc.setFont('helvetica', 'bold');
-        const lotColsW = [18, 38, 28, 26, 22, cw - 132];
+        const lotColsW = [14, 34, 28, 38, 16, cw - 130];
         doc.text('TIPO', m + 3, y + 1);
         doc.text('CÓDIGO', m + 3 + lotColsW[0], y + 1);
         doc.text('PESO BRUTO (g)', m + 3 + lotColsW[0] + lotColsW[1], y + 1);
-        doc.text('PESO BRUTO BALANZA (g)', m + 3 + lotColsW[0] + lotColsW[1] + lotColsW[2], y + 1);
+        doc.text('PESO BALANZA (g)', m + 3 + lotColsW[0] + lotColsW[1] + lotColsW[2], y + 1);
         doc.text('LEY (‰)', m + 3 + lotColsW[0] + lotColsW[1] + lotColsW[2] + lotColsW[3], y + 1);
         doc.text('PESO FINO (g)', pw - m - 2, y + 1, { align: 'right' });
         y += 7;
@@ -266,10 +270,10 @@ export async function generateDispatchPDF(
           doc.setTextColor(80, 80, 80);
           doc.text(lot.isMixed ? 'MIXTA' : 'REFUNDIDA', m + 3, y + 1);
           doc.text(`${lot.name}${lot.isMixed ? '  ◈' : ''}`, m + 3 + lotColsW[0], y + 1);
-          doc.text(formatWeight(Number(lot.grossWeight || 0)), m + 3 + lotColsW[0] + lotColsW[1], y + 1);
-          doc.text('—', m + 3 + lotColsW[0] + lotColsW[1] + lotColsW[2], y + 1);
-          doc.text(formatWeight(Number(lot.purity || 0)), m + 3 + lotColsW[0] + lotColsW[1] + lotColsW[2] + lotColsW[3], y + 1);
-          doc.text(formatWeight(Number(lot.fineWeight || 0)), pw - m - 2, y + 1, { align: 'right' });
+          doc.text(formatWeight(Number(lot.grossWeight ?? lot.recovered ?? 0)), m + 3 + lotColsW[0] + lotColsW[1], y + 1);
+          doc.text(formatWeight(Number(lot.recovered ?? lot.grossWeight ?? 0)), m + 3 + lotColsW[0] + lotColsW[1] + lotColsW[2], y + 1);
+          doc.text(String(lot.purity ?? 0), m + 3 + lotColsW[0] + lotColsW[1] + lotColsW[2] + lotColsW[3], y + 1);
+          doc.text(formatWeight(Number(lot.fineWeight ?? 0)), pw - m - 2, y + 1, { align: 'right' });
           y += 7;
         });
       }
