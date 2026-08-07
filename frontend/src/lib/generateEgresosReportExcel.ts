@@ -1,5 +1,6 @@
 import ExcelJS from 'exceljs';
 import type { EgresosReportData, EgresoReportType } from '@/components/reportes/egresos/types';
+import { formatNumber } from '@/lib/format';
 
 interface GenerateEgresosReportExcelParams {
   data: EgresosReportData;
@@ -45,55 +46,84 @@ export async function generateEgresosReportExcel(params: GenerateEgresosReportEx
   // Filter info
   sheet.mergeCells('A3:H3');
   const filterCell = sheet.getCell('A3');
-  filterCell.value = `Cliente: ${clienteName} | Período: ${dateFrom} al ${dateTo} | Tipo: ${reportType === 'detallado' ? 'Detallado' : 'Resumido'} | ID: ${reportId} | Generado: ${generatedAt}`;
+  filterCell.value = `Cliente: ${clienteName} | Período: ${dateFrom} al ${dateTo} | ID: ${reportId} | Generado: ${generatedAt}`;
   filterCell.font = { size: 9, color: { argb: 'FF888888' } };
   filterCell.alignment = { horizontal: 'center' };
 
   // Empty row
   sheet.getRow(4).height = 8;
 
-  // KPIs
-  const kpiRow = 5;
-  const kpiFill: ExcelJS.Fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: `FF${greenLight}` } };
-  const kpiBorder: Partial<ExcelJS.Borders> = {
-    top: { style: 'thin', color: { argb: `FF${green}` } },
-    bottom: { style: 'thin', color: { argb: `FF${green}` } },
-    left: { style: 'thin', color: { argb: `FF${green}` } },
-    right: { style: 'thin', color: { argb: `FF${green}` } },
+  // ── KPI Cards (3-row layout: header / value / subtitle) ──
+  const fillGreen = { type: 'pattern' as const, pattern: 'solid' as const, fgColor: { argb: `FF${green}` } };
+  const fillGreenLight = { type: 'pattern' as const, pattern: 'solid' as const, fgColor: { argb: `FF${greenLight}` } };
+  const borderGreen = {
+    top: { style: 'thin' as const, color: { argb: `FF${green}` } },
+    bottom: { style: 'thin' as const, color: { argb: `FF${green}` } },
+    left: { style: 'thin' as const, color: { argb: `FF${green}` } },
+    right: { style: 'thin' as const, color: { argb: `FF${green}` } },
   };
 
-  sheet.getCell(`A${kpiRow}`).value = 'TOTAL EGRESOS';
-  sheet.getCell(`A${kpiRow}`).font = { bold: true, size: 9, color: { argb: `FF${green}` } };
-  sheet.getCell(`A${kpiRow}`).fill = kpiFill;
-  sheet.getCell(`A${kpiRow}`).border = kpiBorder;
-  sheet.getCell(`B${kpiRow}`).value = summary.totalEgresos;
-  sheet.getCell(`B${kpiRow}`).font = { bold: true, size: 12, color: { argb: `FF${green}` } };
-  sheet.getCell(`B${kpiRow}`).fill = kpiFill;
-  sheet.getCell(`B${kpiRow}`).border = kpiBorder;
+  // ── KPI Header Row ──
+  const kpiHeaderRow = sheet.addRow(['TOTAL EGRESOS', '', 'TOTAL LINGOTES', '', 'PESO BRUTO TOTAL', '', '', '']);
+  const kHn = kpiHeaderRow.number;
+  sheet.mergeCells(`A${kHn}:B${kHn}`);
+  sheet.mergeCells(`C${kHn}:D${kHn}`);
+  sheet.mergeCells(`E${kHn}:H${kHn}`);
+  kpiHeaderRow.height = 20;
+  [1, 3, 5].forEach((col) => {
+    const cell = kpiHeaderRow.getCell(col);
+    cell.fill = fillGreen;
+    cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 10, name: 'Segoe UI' } as ExcelJS.Font;
+    cell.alignment = { horizontal: 'center', vertical: 'middle' };
+    cell.border = borderGreen;
+  });
+  [2, 4, 6, 7, 8].forEach((col) => {
+    const cell = kpiHeaderRow.getCell(col);
+    cell.fill = fillGreen;
+    cell.border = borderGreen;
+  });
 
-  sheet.getCell(`C${kpiRow}`).value = 'TOTAL LINGOTES';
-  sheet.getCell(`C${kpiRow}`).font = { bold: true, size: 9, color: { argb: `FF${green}` } };
-  sheet.getCell(`C${kpiRow}`).fill = kpiFill;
-  sheet.getCell(`C${kpiRow}`).border = kpiBorder;
-  sheet.getCell(`D${kpiRow}`).value = summary.totalLingotes;
-  sheet.getCell(`D${kpiRow}`).font = { bold: true, size: 12, color: { argb: `FF${green}` } };
-  sheet.getCell(`D${kpiRow}`).fill = kpiFill;
-  sheet.getCell(`D${kpiRow}`).border = kpiBorder;
+  // ── KPI Value Row ──
+  const kpiValueRow = sheet.addRow([summary.totalEgresos, '', summary.totalLingotes, '', `${formatNumber(summary.pesoBrutoTotal)} g`, '', '', '']);
+  const kVn = kpiValueRow.number;
+  sheet.mergeCells(`A${kVn}:B${kVn}`);
+  sheet.mergeCells(`C${kVn}:D${kVn}`);
+  sheet.mergeCells(`E${kVn}:H${kVn}`);
+  kpiValueRow.height = 26;
+  [1, 3, 5].forEach((col) => {
+    const cell = kpiValueRow.getCell(col);
+    cell.fill = fillGreenLight;
+    cell.font = { bold: true, size: 13, color: { argb: 'FF333333' }, name: 'Segoe UI' } as ExcelJS.Font;
+    cell.alignment = { horizontal: 'center', vertical: 'middle' };
+    cell.border = borderGreen;
+  });
+  [2, 4, 6, 7, 8].forEach((col) => {
+    const cell = kpiValueRow.getCell(col);
+    cell.fill = fillGreenLight;
+    cell.border = borderGreen;
+  });
 
-  sheet.getCell(`E${kpiRow}`).value = 'PESO BRUTO TOTAL';
-  sheet.getCell(`E${kpiRow}`).font = { bold: true, size: 9, color: { argb: `FF${green}` } };
-  sheet.getCell(`E${kpiRow}`).fill = kpiFill;
-  sheet.getCell(`E${kpiRow}`).border = kpiBorder;
-  sheet.getCell(`F${kpiRow}`).value = summary.pesoBrutoTotal;
-  sheet.getCell(`F${kpiRow}`).font = { bold: true, size: 12, color: { argb: `FF${green}` } };
-  sheet.getCell(`F${kpiRow}`).numFmt = '#,##0.00';
-  sheet.getCell(`F${kpiRow}`).fill = kpiFill;
-  sheet.getCell(`F${kpiRow}`).border = kpiBorder;
+  // ── KPI Subtitle Row ──
+  const kpiSubRow = sheet.addRow(['Egresos registrados', '', 'Piezas extraídas', '', 'Acumulado del período', '', '', '']);
+  const kSn = kpiSubRow.number;
+  sheet.mergeCells(`A${kSn}:B${kSn}`);
+  sheet.mergeCells(`C${kSn}:D${kSn}`);
+  sheet.mergeCells(`E${kSn}:H${kSn}`);
+  [1, 3, 5].forEach((col) => {
+    const cell = kpiSubRow.getCell(col);
+    cell.fill = fillGreenLight;
+    cell.font = { size: 9, color: { argb: 'FF666666' }, name: 'Segoe UI' } as ExcelJS.Font;
+    cell.alignment = { horizontal: 'center', vertical: 'middle' };
+    cell.border = borderGreen;
+  });
+  [2, 4, 6, 7, 8].forEach((col) => {
+    const cell = kpiSubRow.getCell(col);
+    cell.fill = fillGreenLight;
+    cell.border = borderGreen;
+  });
 
-  sheet.getRow(kpiRow).height = 22;
-
-  // Empty row
-  sheet.getRow(6).height = 8;
+  // ── Spacer ──
+  sheet.getRow(kpiSubRow.number + 1).height = 8;
 
   if (reportType === 'resumido') {
     const showFecha = dateFrom !== dateTo;
@@ -108,7 +138,7 @@ export async function generateEgresosReportExcel(params: GenerateEgresosReportEx
       'Peso Bruto (gr)',
       'Ley Prom.',
     ];
-    const headerRow = sheet.getRow(7);
+    const headerRow = sheet.getRow(9);
     headers.forEach((h, i) => {
       const cell = headerRow.getCell(i + 1);
       cell.value = h;
@@ -126,7 +156,7 @@ export async function generateEgresosReportExcel(params: GenerateEgresosReportEx
 
     // Data rows
     records.forEach((row, idx) => {
-      const r = sheet.getRow(8 + idx);
+      const r = sheet.getRow(10 + idx);
       let col = 1;
       r.getCell(col).value = row.id;
       r.getCell(col).font = { bold: true, size: 10, color: { argb: `FF${green}` } };
@@ -166,7 +196,7 @@ export async function generateEgresosReportExcel(params: GenerateEgresosReportEx
     });
 
     // Totals row
-    const totalRowIdx = 8 + records.length;
+    const totalRowIdx = 10 + records.length;
     const tr = sheet.getRow(totalRowIdx);
     const totalCols = 3 + (showFecha ? 1 : 0) + 3;
     let tc = 1;
@@ -195,7 +225,7 @@ export async function generateEgresosReportExcel(params: GenerateEgresosReportEx
     }
   } else {
     // Detailed mode
-    let currentRow = 7;
+    let currentRow = 9;
 
     detailed.forEach((egreso) => {
       // Egreso banner

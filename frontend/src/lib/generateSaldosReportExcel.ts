@@ -46,61 +46,89 @@ export async function generateSaldosReportExcel(params: GenerateSaldosReportExce
   // Filter info
   sheet.mergeCells('A3:F3');
   const filterCell = sheet.getCell('A3');
-  filterCell.value = `Proveedor: ${clienteName} | Periodo: ${dateFrom} al ${dateTo} | Tipo: ${reportType === 'detallado' ? 'Detallado' : 'Resumen'} | ID: ${reportId} | Generado: ${generatedAt}`;
+  filterCell.value = `Proveedor: ${clienteName} | Periodo: ${dateFrom} al ${dateTo} | ID: ${reportId} | Generado: ${generatedAt}`;
   filterCell.font = { size: 9, color: { argb: 'FF888888' } };
   filterCell.alignment = { horizontal: 'center' };
 
   // Empty row
   sheet.getRow(4).height = 8;
 
-  // KPIs
+  // KPI calculations
   const totalIngresado = records.reduce((a, r) => a + r.totalRecibido, 0);
   const totalEgresado = records.reduce((a, r) => a + r.totalEgresado, 0);
   const saldoActual = records.reduce((a, r) => a + r.saldoActual, 0);
 
-  const kpiRow = 5;
-  const kpiFill: ExcelJS.Fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: `FF${greenLight}` } };
-  const kpiBorder: Partial<ExcelJS.Borders> = {
-    top: { style: 'thin', color: { argb: `FF${green}` } },
-    bottom: { style: 'thin', color: { argb: `FF${green}` } },
-    left: { style: 'thin', color: { argb: `FF${green}` } },
-    right: { style: 'thin', color: { argb: `FF${green}` } },
+  // ── KPI Cards (3-row layout: header / value / subtitle) ──
+  const fillGreen = { type: 'pattern' as const, pattern: 'solid' as const, fgColor: { argb: `FF${green}` } };
+  const fillGreenLight = { type: 'pattern' as const, pattern: 'solid' as const, fgColor: { argb: `FF${greenLight}` } };
+  const borderGreen = {
+    top: { style: 'thin' as const, color: { argb: `FF${green}` } },
+    bottom: { style: 'thin' as const, color: { argb: `FF${green}` } },
+    left: { style: 'thin' as const, color: { argb: `FF${green}` } },
+    right: { style: 'thin' as const, color: { argb: `FF${green}` } },
   };
 
-  // KPI 1: Total Peso Bruto Ingresado — merge A:B
-  sheet.getCell(`A${kpiRow}`).value = `TOTAL PESO BRUTO INGRESADO    ${formatNumber(totalIngresado)} g`;
-  sheet.getCell(`A${kpiRow}`).font = { bold: true, size: 10, color: { argb: `FF${green}` } };
-  sheet.getCell(`A${kpiRow}`).fill = kpiFill;
-  sheet.getCell(`A${kpiRow}`).border = kpiBorder;
-  sheet.getCell(`A${kpiRow}`).alignment = { horizontal: 'left', vertical: 'middle' };
-  sheet.getCell(`B${kpiRow}`).fill = kpiFill;
-  sheet.getCell(`B${kpiRow}`).border = kpiBorder;
-  sheet.mergeCells(`A${kpiRow}:B${kpiRow}`);
+  // ── KPI Header Row ──
+  const kpiHeaderRow = sheet.addRow(['TOTAL PESO BRUTO INGRESADO', '', 'TOTAL PESO BRUTO EGRESADO', '', 'BALANCE PESO BRUTO ACTUAL', '']);
+  const kHn = kpiHeaderRow.number;
+  sheet.mergeCells(`A${kHn}:B${kHn}`);
+  sheet.mergeCells(`C${kHn}:D${kHn}`);
+  sheet.mergeCells(`E${kHn}:F${kHn}`);
+  kpiHeaderRow.height = 20;
+  [1, 3, 5].forEach((col) => {
+    const cell = kpiHeaderRow.getCell(col);
+    cell.fill = fillGreen;
+    cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 10, name: 'Segoe UI' } as ExcelJS.Font;
+    cell.alignment = { horizontal: 'center', vertical: 'middle' };
+    cell.border = borderGreen;
+  });
+  [2, 4, 6].forEach((col) => {
+    const cell = kpiHeaderRow.getCell(col);
+    cell.fill = fillGreen;
+    cell.border = borderGreen;
+  });
 
-  // KPI 2: Total Peso Bruto Egresado — merge C:D
-  sheet.getCell(`C${kpiRow}`).value = `TOTAL PESO BRUTO EGRESADO    ${formatNumber(totalEgresado)} g`;
-  sheet.getCell(`C${kpiRow}`).font = { bold: true, size: 10, color: { argb: `FF${green}` } };
-  sheet.getCell(`C${kpiRow}`).fill = kpiFill;
-  sheet.getCell(`C${kpiRow}`).border = kpiBorder;
-  sheet.getCell(`C${kpiRow}`).alignment = { horizontal: 'left', vertical: 'middle' };
-  sheet.getCell(`D${kpiRow}`).fill = kpiFill;
-  sheet.getCell(`D${kpiRow}`).border = kpiBorder;
-  sheet.mergeCells(`C${kpiRow}:D${kpiRow}`);
+  // ── KPI Value Row ──
+  const kpiValueRow = sheet.addRow([`${formatNumber(totalIngresado)} g`, '', `${formatNumber(totalEgresado)} g`, '', `${formatNumber(saldoActual)} g`, '']);
+  const kVn = kpiValueRow.number;
+  sheet.mergeCells(`A${kVn}:B${kVn}`);
+  sheet.mergeCells(`C${kVn}:D${kVn}`);
+  sheet.mergeCells(`E${kVn}:F${kVn}`);
+  kpiValueRow.height = 26;
+  [1, 3, 5].forEach((col) => {
+    const cell = kpiValueRow.getCell(col);
+    cell.fill = fillGreenLight;
+    cell.font = { bold: true, size: 13, color: { argb: 'FF333333' }, name: 'Segoe UI' } as ExcelJS.Font;
+    cell.alignment = { horizontal: 'center', vertical: 'middle' };
+    cell.border = borderGreen;
+  });
+  [2, 4, 6].forEach((col) => {
+    const cell = kpiValueRow.getCell(col);
+    cell.fill = fillGreenLight;
+    cell.border = borderGreen;
+  });
 
-  // KPI 3: Saldo Peso Bruto Actual — merge E:F
-  sheet.getCell(`E${kpiRow}`).value = `BALANCE PESO BRUTO ACTUAL    ${formatNumber(saldoActual)} g`;
-  sheet.getCell(`E${kpiRow}`).font = { bold: true, size: 10, color: { argb: `FF${green}` } };
-  sheet.getCell(`E${kpiRow}`).fill = kpiFill;
-  sheet.getCell(`E${kpiRow}`).border = kpiBorder;
-  sheet.getCell(`E${kpiRow}`).alignment = { horizontal: 'left', vertical: 'middle' };
-  sheet.getCell(`F${kpiRow}`).fill = kpiFill;
-  sheet.getCell(`F${kpiRow}`).border = kpiBorder;
-  sheet.mergeCells(`E${kpiRow}:F${kpiRow}`);
+  // ── KPI Subtitle Row ──
+  const kpiSubRow = sheet.addRow(['Material recibido', '', 'Material extraído', '', 'Saldo en bóveda', '']);
+  const kSn = kpiSubRow.number;
+  sheet.mergeCells(`A${kSn}:B${kSn}`);
+  sheet.mergeCells(`C${kSn}:D${kSn}`);
+  sheet.mergeCells(`E${kSn}:F${kSn}`);
+  [1, 3, 5].forEach((col) => {
+    const cell = kpiSubRow.getCell(col);
+    cell.fill = fillGreenLight;
+    cell.font = { size: 9, color: { argb: 'FF666666' }, name: 'Segoe UI' } as ExcelJS.Font;
+    cell.alignment = { horizontal: 'center', vertical: 'middle' };
+    cell.border = borderGreen;
+  });
+  [2, 4, 6].forEach((col) => {
+    const cell = kpiSubRow.getCell(col);
+    cell.fill = fillGreenLight;
+    cell.border = borderGreen;
+  });
 
-  sheet.getRow(kpiRow).height = 22;
-
-  // Empty row
-  sheet.getRow(6).height = 8;
+  // ── Spacer ──
+  sheet.getRow(kpiSubRow.number + 1).height = 8;
 
   if (reportType === 'resumido') {
     // Summary table headers — Cliente spans A:B, rest shift right
@@ -112,7 +140,7 @@ export async function generateSaldosReportExcel(params: GenerateSaldosReportExce
       'Balance Peso Bruto Restante (g)',
       'Barras en Boveda',
     ];
-    const headerRow = sheet.getRow(7);
+    const headerRow = sheet.getRow(9);
     headers.forEach((h, i) => {
       const cell = headerRow.getCell(i + 1);
       cell.value = h;
@@ -127,12 +155,12 @@ export async function generateSaldosReportExcel(params: GenerateSaldosReportExce
       };
     });
     // Merge A7:B7 for "Cliente / Proveedor"
-    sheet.mergeCells('A7:B7');
+    sheet.mergeCells('A9:B9');
     headerRow.height = 20;
 
     // Data rows
     records.forEach((row, idx) => {
-      const r = sheet.getRow(8 + idx);
+      const r = sheet.getRow(10 + idx);
       r.getCell(1).value = row.cliente;
       r.getCell(1).font = { size: 10, bold: true };
       // B is merged with A, no value needed
@@ -153,7 +181,7 @@ export async function generateSaldosReportExcel(params: GenerateSaldosReportExce
       r.getCell(6).alignment = { horizontal: 'center' };
 
       // Merge A:B for client name
-      sheet.mergeCells(`A${8 + idx}:B${8 + idx}`);
+      sheet.mergeCells(`A${10 + idx}:B${10 + idx}`);
 
       if (idx % 2 === 1) {
         for (let c = 1; c <= 6; c++) {
@@ -163,7 +191,7 @@ export async function generateSaldosReportExcel(params: GenerateSaldosReportExce
     });
 
     // Totals row
-    const totalRowIdx = 8 + records.length;
+    const totalRowIdx = 10 + records.length;
     const tr = sheet.getRow(totalRowIdx);
     const totalBarras = records.reduce((a, r) => a + r.barrasEnBoveda, 0);
     tr.getCell(1).value = `TOTALES (${records.length} PROVEEDORES)`;
@@ -196,7 +224,7 @@ export async function generateSaldosReportExcel(params: GenerateSaldosReportExce
     }
   } else {
     // Detailed mode
-    let currentRow = 7;
+    let currentRow = 9;
 
     detailedRecords.forEach((cliente) => {
       // Client banner — merge A:H for 8 columns
@@ -206,7 +234,7 @@ export async function generateSaldosReportExcel(params: GenerateSaldosReportExce
       bannerCell.font = { bold: true, size: 10, color: { argb: `FF${green}` } };
       bannerCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: `FF${greenLight}` } };
       bannerCell.alignment = { vertical: 'middle', wrapText: true };
-      sheet.getRow(currentRow).height = 32;
+      sheet.getRow(currentRow).height = 44;
       currentRow++;
 
       // Bar headers — 8 columns

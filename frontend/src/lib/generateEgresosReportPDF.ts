@@ -1,6 +1,7 @@
-import { toPng } from 'html-to-image';
 import { jsPDF } from 'jspdf';
-import type { EgresosReportData, EgresoReportType } from '@/components/reportes/egresos/types';
+import autoTable from 'jspdf-autotable';
+import type { EgresosReportData, EgresoReportType, EgresoDetailedRecord } from '@/components/reportes/egresos/types';
+import { formatNumber } from '@/lib/format';
 
 interface GenerateEgresosReportPDFParams {
   data: EgresosReportData;
@@ -12,106 +13,426 @@ interface GenerateEgresosReportPDFParams {
   reportType: EgresoReportType;
 }
 
-const PIXEL_RATIO = 2;
+const GREEN: [number, number, number] = [19, 145, 105];
+const GREEN_LIGHT: [number, number, number] = [234, 244, 240];
+const GREEN_BORDER: [number, number, number] = [194, 229, 217];
+const GRAY: [number, number, number] = [102, 102, 102];
+const GRAY_DARK: [number, number, number] = [68, 68, 68];
+const WHITE: [number, number, number] = [255, 255, 255];
+const ROW_ALT: [number, number, number] = [251, 253, 252];
+const TITLE_BG: [number, number, number] = [248, 250, 249];
+const BORDER_LIGHT: [number, number, number] = [224, 224, 224];
 
-function drawFooter(pdf: jsPDF, pageNum: number, totalPages: number, pw: number, ph: number) {
-  const yLine = ph - 14;
-  const yText = ph - 9;
+function drawMembrete(doc: jsPDF, pw: number) {
+  let y = 12;
 
-  pdf.setDrawColor(200, 200, 200);
-  pdf.setLineWidth(0.2);
-  pdf.line(10, yLine, pw - 10, yLine);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(16);
+  doc.setTextColor(...GREEN);
+  doc.text('BANDES', 10, y + 2);
 
-  pdf.setFont('helvetica', 'normal');
-  pdf.setFontSize(7);
-  pdf.setTextColor(136, 136, 136);
-  pdf.text('Documento generado automáticamente por el Sistema de Custodia y Control - BANDES.', 10, yText);
-  pdf.text(`Página ${pageNum} de ${totalPages}`, pw - 10, yText, { align: 'right' });
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8);
+  doc.setTextColor(...GRAY);
+  doc.text('Banco de Desarrollo Economico y Social de Venezuela', 10, y + 8);
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8);
+  doc.setTextColor(...GRAY_DARK);
+  doc.text('R.I.F.: G-20001643-0', pw - 10, y, { align: 'right' });
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7.5);
+  doc.setTextColor(...GRAY);
+  doc.text('Gerencia General de Operaciones', pw - 10, y + 5, { align: 'right' });
+  doc.text('Caracas, Venezuela', pw - 10, y + 10, { align: 'right' });
+
+  y += 15;
+  doc.setDrawColor(...GREEN);
+  doc.setLineWidth(0.5);
+  doc.line(10, y, pw - 10, y);
+
+  return y + 4;
 }
 
-export async function generateEgresosReportPDF(params: GenerateEgresosReportPDFParams) {
-  const element = document.getElementById('egresos-pdf-template');
-  if (!element) return;
+function drawTitleBlock(doc: jsPDF, y: number, pw: number, reportType: EgresoReportType) {
+  const blockH = 14;
 
-  const { reportType } = params;
-  const isLandscape = reportType === 'detallado';
+  doc.setFillColor(...TITLE_BG);
+  doc.roundedRect(10, y, pw - 20, blockH, 0, 0, 'F');
 
-  const CAPTURE_WIDTH = 750;
-  const originalWidth = element.style.width;
-  const originalMinWidth = element.style.minWidth;
-  const originalMaxWidth = element.style.maxWidth;
-  element.style.width = CAPTURE_WIDTH + 'px';
-  element.style.minWidth = CAPTURE_WIDTH + 'px';
-  element.style.maxWidth = CAPTURE_WIDTH + 'px';
+  doc.setFillColor(...GREEN);
+  doc.rect(10, y, 2, blockH, 'F');
 
-  const cssW = CAPTURE_WIDTH;
-  const cssH = element.scrollHeight;
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(12);
+  doc.setTextColor(...GREEN);
+  doc.text('REPORTE DESGLOSADO DE EGRESOS DE MATERIAL', 16, y + 6);
 
-  const imgData = await toPng(element, {
-    backgroundColor: '#ffffff',
-    pixelRatio: PIXEL_RATIO,
-    width: cssW,
-    height: cssH,
-    style: {
-      transform: 'scale(1)',
-      transformOrigin: 'top left',
-      width: cssW + 'px',
-      height: cssH + 'px',
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7.5);
+  doc.setTextColor(...GRAY);
+  const subtitle = reportType === 'detallado'
+    ? 'Desglose por lingote individual de cada egreso'
+    : 'Resumen consolidado de salidas de material';
+  doc.text(subtitle, 16, y + 11.5);
+
+  return y + blockH + 4;
+}
+
+function drawFilterMetadata(doc: jsPDF, y: number, pw: number, params: GenerateEgresosReportPDFParams) {
+  const boxH = 14;
+
+  doc.setDrawColor(...BORDER_LIGHT);
+  doc.setLineWidth(0.3);
+  doc.roundedRect(10, y, pw - 20, boxH, 1, 1, 'S');
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(7.5);
+  doc.setTextColor(...GREEN);
+  doc.text('Rango de Fechas:', 13, y + 5);
+  doc.text('Cliente:', 13, y + 10);
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7.5);
+  doc.setTextColor(...GRAY_DARK);
+  doc.text(`${params.dateFrom} al ${params.dateTo}`, 42, y + 5);
+  doc.text(params.clienteName, 42, y + 10);
+
+  doc.setDrawColor(...BORDER_LIGHT);
+  doc.setLineWidth(0.2);
+  doc.line(pw / 2, y + 2, pw / 2, y + boxH - 2);
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(7.5);
+  doc.setTextColor(...GREEN);
+  doc.text('ID Documento:', pw / 2 + 4, y + 5);
+  doc.text('Fecha de Generacion:', pw / 2 + 4, y + 10);
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7.5);
+  doc.setTextColor(...GRAY_DARK);
+  doc.text(params.reportId, pw / 2 + 36, y + 5);
+  doc.text(params.generatedAt, pw / 2 + 36, y + 10);
+
+  return y + boxH + 4;
+}
+
+function drawKPICards(doc: jsPDF, y: number, pw: number, summary: EgresosReportData['summary']) {
+  const gap = 4;
+  const cardW = (pw - 20 - gap * 2) / 3;
+  const cardH = 22;
+
+  const cards = [
+    { label: 'TOTAL EGRESOS', value: String(summary.totalEgresos), sub: 'Salidas en el periodo' },
+    { label: 'TOTAL LINGOTES', value: String(summary.totalLingotes), sub: 'Egresados' },
+    { label: 'PESO BRUTO TOTAL', value: `${formatNumber(summary.pesoBrutoTotal)} g`, sub: `Fino: ${formatNumber(summary.pesoFinoTotal)} g` },
+  ];
+
+  cards.forEach((card, i) => {
+    const x = 10 + i * (cardW + gap);
+
+    doc.setFillColor(244, 249, 247);
+    doc.setDrawColor(...GREEN_BORDER);
+    doc.setLineWidth(0.3);
+    doc.roundedRect(x, y, cardW, cardH, 1.5, 1.5, 'FD');
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(7);
+    doc.setTextColor(...GREEN);
+    doc.text(card.label, x + cardW / 2, y + 5.5, { align: 'center' });
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(12);
+    doc.setTextColor(17, 17, 17);
+    doc.text(card.value, x + cardW / 2, y + 12, { align: 'center' });
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(6.5);
+    doc.setTextColor(...GRAY);
+    doc.text(card.sub, x + cardW / 2, y + 18, { align: 'center' });
+  });
+
+  return y + cardH + 4;
+}
+
+function drawSummaryTable(doc: jsPDF, y: number, pw: number, data: EgresosReportData) {
+  const { records, summary } = data;
+
+  const bodyRows = records.map((r) => [
+    `${r.id}\n${r.guia}`,
+    r.cliente || '\u2014',
+    r.fecha,
+    String(r.lingotes),
+    `${formatNumber(r.pesoBruto)}`,
+    `${formatNumber(r.leyProm, 4)}`,
+  ]);
+
+  bodyRows.push([
+    `TOTALES (${summary.totalEgresos} Egresos)`,
+    '',
+    '',
+    String(summary.totalLingotes),
+    `${formatNumber(summary.pesoBrutoTotal)} g`,
+    '',
+  ]);
+
+  autoTable(doc, {
+    startY: y,
+    head: [['N\u00b0 Egreso / Gu\u00eda', 'Cliente', 'Fecha', 'Lingotes', 'Peso Bruto (g)', 'Ley Prom.']],
+    body: bodyRows,
+    theme: 'grid',
+    headStyles: {
+      fillColor: GREEN,
+      textColor: WHITE,
+      fontStyle: 'bold',
+      fontSize: 7,
+      halign: 'center',
+      valign: 'middle',
+      cellPadding: 3,
+      lineColor: GREEN,
+      lineWidth: 0.3,
+    },
+    bodyStyles: {
+      fontSize: 7,
+      textColor: [51, 51, 51],
+      cellPadding: 2.5,
+      lineColor: [230, 230, 230],
+      lineWidth: 0.2,
+    },
+    columnStyles: {
+      0: { cellWidth: 32, halign: 'left' },
+      1: { cellWidth: 42, halign: 'left' },
+      2: { cellWidth: 22, halign: 'center' },
+      3: { cellWidth: 18, halign: 'center' },
+      4: { halign: 'right' },
+      5: { cellWidth: 20, halign: 'center' },
+    },
+    alternateRowStyles: {
+      fillColor: ROW_ALT,
+    },
+    margin: { left: 10, right: 10 },
+    didParseCell: (data) => {
+      const totalRowIndex = records.length;
+      if (data.section === 'body' && data.row.index === totalRowIndex) {
+        data.cell.styles.fontStyle = 'bold';
+        data.cell.styles.textColor = GREEN;
+        data.cell.styles.fillColor = GREEN_LIGHT;
+        data.cell.styles.lineColor = GREEN;
+        data.cell.styles.lineWidth = 0.3;
+      }
     },
   });
 
-  element.style.width = originalWidth;
-  element.style.minWidth = originalMinWidth;
-  element.style.maxWidth = originalMaxWidth;
+  return (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 4;
+}
 
-  const orientation = isLandscape ? 'l' : 'p';
-  const pw = isLandscape ? 279.4 : 215.9;
-  const ph = isLandscape ? 215.9 : 279.4;
-  const mx = 10;
-  const my = 8;
-  const cw = pw - mx * 2;
-  const footerReserve = 16;
-  const maxImgH = ph - my * 2 - footerReserve;
+function drawDetailedSection(doc: jsPDF, startY: number, pw: number, detailed: EgresoDetailedRecord[]) {
+  let y = startY;
 
-  const pdf = new jsPDF(orientation, 'mm', 'letter');
-
-  const imgW = cw;
-  const imgH = (cssH / cssW) * imgW;
-
-  const img = new Image();
-  img.src = imgData;
-  await new Promise<void>((resolve) => { img.onload = () => resolve(); });
-
-  if (imgH <= maxImgH) {
-    pdf.addImage(imgData, 'PNG', mx, my, imgW, imgH);
-    drawFooter(pdf, 1, 1, pw, ph);
-  } else {
-    const totalPages = Math.ceil(imgH / maxImgH);
-
-    for (let p = 0; p < totalPages; p++) {
-      if (p > 0) pdf.addPage();
-
-      const cssSliceY = (p * maxImgH / imgH) * cssH;
-      const cssSliceH = Math.min((maxImgH / imgH) * cssH, cssH - cssSliceY);
-      const pdfSliceH = (cssSliceH / cssH) * imgH;
-
-      const sliceCanvas = document.createElement('canvas');
-      sliceCanvas.width = cssW;
-      sliceCanvas.height = Math.ceil(cssSliceH);
-      const ctx = sliceCanvas.getContext('2d');
-      if (!ctx) continue;
-
-      ctx.drawImage(
-        img,
-        0, cssSliceY, cssW, cssSliceH,
-        0, 0, cssW, cssSliceH,
-      );
-
-      const sliceData = sliceCanvas.toDataURL('image/png');
-      pdf.addImage(sliceData, 'PNG', mx, my, imgW, pdfSliceH);
-      drawFooter(pdf, p + 1, totalPages, pw, ph);
+  detailed.forEach((egreso) => {
+    const pageHeight = doc.internal.pageSize.getHeight();
+    if (y + 55 > pageHeight - 20) {
+      doc.addPage();
+      y = 15;
     }
+
+    const bannerH = 14;
+    doc.setFillColor(...GREEN_LIGHT);
+    doc.roundedRect(10, y, pw - 20, bannerH, 1, 1, 'F');
+    doc.setDrawColor(...GREEN);
+    doc.setLineWidth(0.4);
+    doc.line(10, y + bannerH, pw - 10, y + bannerH);
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.setTextColor(...GREEN);
+    doc.text(egreso.id, 14, y + 5.5);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7);
+    doc.setTextColor(170, 170, 170);
+    doc.text('|', 14 + doc.getTextWidth(egreso.id) + 3, y + 5.5);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7);
+    doc.setTextColor(...GRAY_DARK);
+    doc.text(egreso.cliente || '\u2014', 14 + doc.getTextWidth(egreso.id) + 8, y + 5.5);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(6.5);
+    doc.setTextColor(...GRAY);
+    doc.text(`${egreso.fecha} | ${egreso.destino}`, pw - 14, y + 5.5, { align: 'right' });
+    y += bannerH + 2;
+
+    const bodyRows = egreso.items.map((item) => [
+      item.lote || '\u2014',
+      item.lingoteId,
+      `${formatNumber(item.pesoBruto)}`,
+      `${formatNumber(item.ley, 4)}`,
+      `${formatNumber(item.pesoFino)}`,
+    ]);
+
+    const totPesoBruto = egreso.items.reduce((a, b) => a + b.pesoBruto, 0);
+    const totPesoFino = egreso.items.reduce((a, b) => a + b.pesoFino, 0);
+    bodyRows.push([
+      `Subtotal \u2014 ${egreso.lingotes} Lingotes`,
+      '',
+      `${formatNumber(totPesoBruto)} g`,
+      '',
+      `${formatNumber(totPesoFino)} g`,
+    ]);
+
+    autoTable(doc, {
+      startY: y,
+      head: [['Lote / Barra', 'Lingote / Serie', 'Peso Bruto (g)', 'Ley', 'Peso Fino (g)']],
+      body: bodyRows,
+      theme: 'grid',
+      headStyles: {
+        fillColor: GREEN,
+        textColor: WHITE,
+        fontStyle: 'bold',
+        fontSize: 6.5,
+        halign: 'center',
+        cellPadding: 2.5,
+        lineColor: GREEN,
+        lineWidth: 0.3,
+      },
+      bodyStyles: {
+        fontSize: 6.5,
+        textColor: [51, 51, 51],
+        cellPadding: 2,
+        lineColor: [240, 240, 240],
+        lineWidth: 0.2,
+      },
+      columnStyles: {
+        0: { cellWidth: 36, halign: 'left' },
+        1: { cellWidth: 30, halign: 'left' },
+        2: { halign: 'right' },
+        3: { cellWidth: 22, halign: 'center' },
+        4: { halign: 'right' },
+      },
+      alternateRowStyles: {
+        fillColor: ROW_ALT,
+      },
+      margin: { left: 10, right: 10 },
+      didParseCell: (data) => {
+        if (data.section === 'body' && data.row.index === egreso.items.length) {
+          data.cell.styles.fontStyle = 'bold';
+          data.cell.styles.textColor = GREEN;
+          data.cell.styles.fillColor = GREEN_LIGHT;
+          data.cell.styles.lineColor = GREEN;
+          data.cell.styles.lineWidth = 0.3;
+        }
+      },
+    });
+
+    y = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 6;
+  });
+
+  return y;
+}
+
+function drawTotalesGenerales(doc: jsPDF, y: number, pw: number, summary: EgresosReportData['summary']) {
+  const pageHeight = doc.internal.pageSize.getHeight();
+  if (y + 30 > pageHeight - 20) {
+    doc.addPage();
+    y = 15;
   }
 
-  pdf.save(`Reporte_Egresos_BANDES_${params.reportId.replace('#', '')}.pdf`);
+  const boxH = 22;
+
+  doc.setFillColor(...GREEN);
+  doc.roundedRect(10, y, pw - 20, 8, 1, 1, 'F');
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(7.5);
+  doc.setTextColor(...WHITE);
+  doc.text(`TOTALES GENERALES \u2014 ${summary.totalEgresos} Egresos`, 14, y + 5.5);
+  y += 8;
+
+  doc.setDrawColor(...GREEN_BORDER);
+  doc.setLineWidth(0.3);
+  doc.roundedRect(10, y, pw - 20, boxH, 1, 1, 'S');
+
+  const colW = (pw - 20) / 3;
+  const cols = [
+    { label: 'Total Lingotes', value: String(summary.totalLingotes) },
+    { label: 'Peso Bruto Total', value: `${formatNumber(summary.pesoBrutoTotal)} g` },
+    { label: 'Peso Fino Total', value: `${formatNumber(summary.pesoFinoTotal)} g` },
+  ];
+
+  cols.forEach((col, i) => {
+    const x = 10 + i * colW;
+
+    if (i > 0) {
+      doc.setDrawColor(...GREEN_BORDER);
+      doc.setLineWidth(0.2);
+      doc.line(x, y + 3, x, y + boxH - 3);
+    }
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(6);
+    doc.setTextColor(...GRAY);
+    doc.text(col.label.toUpperCase(), x + colW / 2, y + 7, { align: 'center' });
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.setTextColor(...GREEN);
+    doc.text(col.value, x + colW / 2, y + 17, { align: 'center' });
+  });
+
+  return y + boxH + 4;
+}
+
+function drawFooter(doc: jsPDF, pageNum: number, totalPages: number, pw: number, ph: number) {
+  const yLine = ph - 14;
+  const yText = ph - 9;
+
+  doc.setDrawColor(200, 200, 200);
+  doc.setLineWidth(0.2);
+  doc.line(10, yLine, pw - 10, yLine);
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7);
+  doc.setTextColor(136, 136, 136);
+  doc.text('Documento generado automaticamente por el Sistema de Custodia y Control - BANDES.', 10, yText);
+  doc.text(`Pagina ${pageNum} de ${totalPages}`, pw - 10, yText, { align: 'right' });
+}
+
+function addFooters(doc: jsPDF, pw: number, ph: number) {
+  const totalPages = doc.getNumberOfPages();
+  for (let i = 1; i <= totalPages; i++) {
+    doc.setPage(i);
+    drawFooter(doc, i, totalPages, pw, ph);
+  }
+}
+
+export function generateEgresosReportPDF(params: GenerateEgresosReportPDFParams) {
+  const { reportType, data } = params;
+  const { summary } = data;
+
+  const isLandscape = reportType === 'detallado';
+  const pw = isLandscape ? 279.4 : 215.9;
+  const ph = isLandscape ? 215.9 : 279.4;
+
+  const doc = new jsPDF({
+    orientation: isLandscape ? 'landscape' : 'portrait',
+    unit: 'mm',
+    format: 'letter',
+  });
+
+  let currentY = drawMembrete(doc, pw);
+  currentY = drawTitleBlock(doc, currentY, pw, reportType);
+  currentY = drawFilterMetadata(doc, currentY, pw, params);
+  currentY = drawKPICards(doc, currentY, pw, summary);
+
+  if (reportType === 'resumido') {
+    currentY = drawSummaryTable(doc, currentY, pw, data);
+  } else {
+    currentY = drawDetailedSection(doc, currentY, pw, data.detailed ?? []);
+    currentY = drawTotalesGenerales(doc, currentY, pw, summary);
+  }
+
+  addFooters(doc, pw, ph);
+
+  doc.save(`Reporte_Egresos_BANDES_${params.reportId.replace('#', '')}.pdf`);
 }

@@ -1,5 +1,6 @@
 import ExcelJS from 'exceljs';
 import type { ProcesosReportData, ProcesoReportType } from '@/components/reportes/procesos/types';
+import { formatNumber } from '@/lib/format';
 
 interface GenerateProcesosReportExcelParams {
   data: ProcesosReportData;
@@ -46,43 +47,89 @@ export async function generateProcesosReportExcel(params: GenerateProcesosReport
   // Filter info
   sheet.mergeCells('A3:G3');
   const filterCell = sheet.getCell('A3');
-  filterCell.value = `Proveedor: ${proveedorName} | Período: ${dateFrom} al ${dateTo} | Tipo: ${reportType === 'detallado' ? 'Detallado' : 'Resumido'} | ID: ${reportId} | Generado: ${generatedAt}`;
+  filterCell.value = `Proveedor: ${proveedorName} | Período: ${dateFrom} al ${dateTo} | ID: ${reportId} | Generado: ${generatedAt}`;
   filterCell.font = { size: 9, color: { argb: 'FF888888' } };
   filterCell.alignment = { horizontal: 'center' };
 
   // Empty row
   sheet.getRow(4).height = 8;
 
-  // KPIs
-  const kpiRow = 5;
-  sheet.getCell(`A${kpiRow}`).value = 'TOTAL PROCESOS';
-  sheet.getCell(`A${kpiRow}`).font = { bold: true, size: 9, color: { argb: `FF${green}` } };
-  sheet.getCell(`B${kpiRow}`).value = summary.totalProcesos;
-  sheet.getCell(`B${kpiRow}`).font = { bold: true, size: 12, color: { argb: `FF${green}` } };
+  // ── KPI Cards (3-row layout: header / value / subtitle) ──
+  const fillGreen = { type: 'pattern' as const, pattern: 'solid' as const, fgColor: { argb: `FF${green}` } };
+  const fillGreenLight = { type: 'pattern' as const, pattern: 'solid' as const, fgColor: { argb: `FF${greenLight}` } };
+  const borderGreen = {
+    top: { style: 'thin' as const, color: { argb: `FF${green}` } },
+    bottom: { style: 'thin' as const, color: { argb: `FF${green}` } },
+    left: { style: 'thin' as const, color: { argb: `FF${green}` } },
+    right: { style: 'thin' as const, color: { argb: `FF${green}` } },
+  };
 
-  sheet.getCell(`C${kpiRow}`).value = 'TOTAL BARRAS';
-  sheet.getCell(`C${kpiRow}`).font = { bold: true, size: 9, color: { argb: `FF${green}` } };
-  sheet.getCell(`D${kpiRow}`).value = summary.totalBarras;
-  sheet.getCell(`D${kpiRow}`).font = { bold: true, size: 12, color: { argb: `FF${green}` } };
+  // ── KPI Header Row ──
+  const kpiHeaderRow = sheet.addRow(['TOTAL PROCESOS', '', 'TOTAL BARRAS', '', 'PESO RESULTANTE', '', '']);
+  const kHn = kpiHeaderRow.number;
+  sheet.mergeCells(`A${kHn}:B${kHn}`);
+  sheet.mergeCells(`C${kHn}:D${kHn}`);
+  sheet.mergeCells(`E${kHn}:G${kHn}`);
+  kpiHeaderRow.height = 20;
+  [1, 3, 5].forEach((col) => {
+    const cell = kpiHeaderRow.getCell(col);
+    cell.fill = fillGreen;
+    cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 10, name: 'Segoe UI' } as ExcelJS.Font;
+    cell.alignment = { horizontal: 'center', vertical: 'middle' };
+    cell.border = borderGreen;
+  });
+  [2, 4, 6, 7].forEach((col) => {
+    const cell = kpiHeaderRow.getCell(col);
+    cell.fill = fillGreen;
+    cell.border = borderGreen;
+  });
 
-  sheet.getCell(`E${kpiRow}`).value = 'PESO RESULTANTE';
-  sheet.getCell(`E${kpiRow}`).font = { bold: true, size: 9, color: { argb: `FF${green}` } };
-  sheet.getCell(`F${kpiRow}`).value = summary.pesoResultanteTotal;
-  sheet.getCell(`F${kpiRow}`).font = { bold: true, size: 12, color: { argb: `FF${green}` } };
-  sheet.getCell(`F${kpiRow}`).numFmt = '#,##0.00';
+  // ── KPI Value Row ──
+  const kpiValueRow = sheet.addRow([summary.totalProcesos, '', summary.totalBarras, '', `${formatNumber(summary.pesoResultanteTotal)} g`, '', '']);
+  const kVn = kpiValueRow.number;
+  sheet.mergeCells(`A${kVn}:B${kVn}`);
+  sheet.mergeCells(`C${kVn}:D${kVn}`);
+  sheet.mergeCells(`E${kVn}:G${kVn}`);
+  kpiValueRow.height = 26;
+  [1, 3, 5].forEach((col) => {
+    const cell = kpiValueRow.getCell(col);
+    cell.fill = fillGreenLight;
+    cell.font = { bold: true, size: 13, color: { argb: 'FF333333' }, name: 'Segoe UI' } as ExcelJS.Font;
+    cell.alignment = { horizontal: 'center', vertical: 'middle' };
+    cell.border = borderGreen;
+  });
+  [2, 4, 6, 7].forEach((col) => {
+    const cell = kpiValueRow.getCell(col);
+    cell.fill = fillGreenLight;
+    cell.border = borderGreen;
+  });
 
-  sheet.getCell(`G${kpiRow}`).value = `Rend: ${summary.rendimientoProm}%`;
-  sheet.getCell(`G${kpiRow}`).font = { bold: true, size: 9, color: { argb: `FF${green}` } };
+  // ── KPI Subtitle Row ──
+  const kpiSubRow = sheet.addRow(['Procesados', '', 'Unidades procesadas', '', `Rendimiento: ${Number(summary.rendimientoProm).toFixed(4)}%`, '', '']);
+  const kSn = kpiSubRow.number;
+  sheet.mergeCells(`A${kSn}:B${kSn}`);
+  sheet.mergeCells(`C${kSn}:D${kSn}`);
+  sheet.mergeCells(`E${kSn}:G${kSn}`);
+  [1, 3, 5].forEach((col) => {
+    const cell = kpiSubRow.getCell(col);
+    cell.fill = fillGreenLight;
+    cell.font = { size: 9, color: { argb: 'FF666666' }, name: 'Segoe UI' } as ExcelJS.Font;
+    cell.alignment = { horizontal: 'center', vertical: 'middle' };
+    cell.border = borderGreen;
+  });
+  [2, 4, 6, 7].forEach((col) => {
+    const cell = kpiSubRow.getCell(col);
+    cell.fill = fillGreenLight;
+    cell.border = borderGreen;
+  });
 
-  sheet.getRow(kpiRow).height = 22;
-
-  // Empty row
-  sheet.getRow(6).height = 8;
+  // ── Spacer ──
+  sheet.getRow(kpiSubRow.number + 1).height = 8;
 
   if (reportType === 'resumido') {
-    // Summary table headers — 7 columns (sin Resultado, con ¿Mixto?)
-    const headers = ['N° Proceso', 'Tipo', 'Proveedor(es)', '¿Mixto?', 'Barras', 'Peso Bruto (gr)', 'Peso Bruto de Salida (gr)', 'Estatus'];
-    const headerRow = sheet.getRow(7);
+    // Summary table headers — 7 columns (sin Resultado, con Mixto)
+    const headers = ['N° Proceso', 'Tipo', 'Proveedor(es)', 'Mixto', 'Barras', 'Peso Bruto (g)', 'Peso Bruto de Salida (g)', 'Estatus'];
+    const headerRow = sheet.getRow(9);
     headers.forEach((h, i) => {
       const cell = headerRow.getCell(i + 1);
       cell.value = h;
@@ -100,7 +147,7 @@ export async function generateProcesosReportExcel(params: GenerateProcesosReport
 
     // Data rows
     records.forEach((row, idx) => {
-      const r = sheet.getRow(8 + idx);
+      const r = sheet.getRow(10 + idx);
       r.getCell(1).value = row.id;
       r.getCell(1).font = { bold: true, size: 10, color: { argb: `FF${green}` } };
       r.getCell(2).value = row.tipo;
@@ -126,15 +173,15 @@ export async function generateProcesosReportExcel(params: GenerateProcesosReport
       r.getCell(8).font = { bold: true, size: 10, color: { argb: row.estatus === 'Completado' ? `FF${green}` : 'FF0EA5E9' } };
       r.getCell(8).alignment = { horizontal: 'center' };
 
-      if (idx % 2 === 1) {
-        for (let c = 1; c <= 8; c++) {
-          r.getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFBFDFC' } };
-        }
+      const rowFill = idx % 2 === 1 ? 'FFFBFDFC' : 'FFFFFFFF';
+      for (let c = 1; c <= 8; c++) {
+        r.getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: rowFill } };
+        r.getCell(c).border = borderGreen;
       }
     });
 
     // Totals row
-    const totalRowIdx = 8 + records.length;
+    const totalRowIdx = 10 + records.length;
     const tr = sheet.getRow(totalRowIdx);
     tr.getCell(1).value = `TOTALES (${summary.totalProcesos} Procesos)`;
     tr.getCell(1).font = { bold: true, size: 10, color: { argb: `FF${green}` } };
@@ -149,7 +196,7 @@ export async function generateProcesosReportExcel(params: GenerateProcesosReport
     tr.getCell(7).font = { bold: true, size: 10, color: { argb: `FF${green}` } };
     tr.getCell(7).numFmt = '#,##0.00';
     tr.getCell(7).alignment = { horizontal: 'right' };
-    tr.getCell(8).value = `Rendimiento: ${summary.rendimientoProm}%`;
+    tr.getCell(8).value = `Rendimiento: ${Number(summary.rendimientoProm).toFixed(4)}%`;
     tr.getCell(8).font = { bold: true, size: 10, color: { argb: `FF${green}` } };
 
     for (let c = 1; c <= 8; c++) {
@@ -157,11 +204,13 @@ export async function generateProcesosReportExcel(params: GenerateProcesosReport
       tr.getCell(c).border = {
         top: { style: 'medium', color: { argb: `FF${green}` } },
         bottom: { style: 'medium', color: { argb: `FF${green}` } },
+        left: { style: 'thin', color: { argb: `FF${green}` } },
+        right: { style: 'thin', color: { argb: `FF${green}` } },
       };
     }
   } else {
     // Detailed mode
-    let currentRow = 7;
+    let currentRow = 9;
 
     detailed.forEach((proceso) => {
       // Process banner
@@ -229,7 +278,12 @@ export async function generateProcesosReportExcel(params: GenerateProcesosReport
       stRow.getCell(6).alignment = { horizontal: 'right' };
       for (let c = 1; c <= 6; c++) {
         stRow.getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: `FF${greenLight}` } };
-        stRow.getCell(c).border = { top: { style: 'medium', color: { argb: `FF${green}` } } };
+        stRow.getCell(c).border = {
+          top: { style: 'medium', color: { argb: `FF${green}` } },
+          bottom: { style: 'thin', color: { argb: `FF${green}` } },
+          left: { style: 'thin', color: { argb: `FF${green}` } },
+          right: { style: 'thin', color: { argb: `FF${green}` } },
+        };
       }
       currentRow += 2;
     });
@@ -257,8 +311,20 @@ export async function generateProcesosReportExcel(params: GenerateProcesosReport
 
     sheet.getCell(`E${currentRow}`).value = 'Rendimiento Prom.';
     sheet.getCell(`E${currentRow}`).font = { bold: true, size: 9, color: { argb: `FF${green}` } };
-    sheet.getCell(`F${currentRow}`).value = `${summary.rendimientoProm}%`;
+    sheet.getCell(`F${currentRow}`).value = Number(summary.rendimientoProm).toFixed(4);
     sheet.getCell(`F${currentRow}`).font = { bold: true, size: 12, color: { argb: `FF${green}` } };
+    sheet.getCell(`F${currentRow}`).numFmt = '0.0000';
+
+    for (let c = 1; c <= 7; c++) {
+      const cell = sheet.getCell(currentRow, c);
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: `FF${greenLight}` } };
+      cell.border = {
+        top: { style: 'thin', color: { argb: `FF${greenBorder}` } },
+        bottom: { style: 'thin', color: { argb: `FF${greenBorder}` } },
+        left: { style: 'thin', color: { argb: `FF${greenBorder}` } },
+        right: { style: 'thin', color: { argb: `FF${greenBorder}` } },
+      };
+    }
   }
 
   // Column widths

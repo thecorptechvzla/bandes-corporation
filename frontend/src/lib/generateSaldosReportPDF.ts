@@ -88,7 +88,7 @@ function drawTitleBlock(doc: jsPDF, y: number, pw: number, params: GenerateSaldo
 }
 
 function drawFilterMetadata(doc: jsPDF, y: number, pw: number, params: GenerateSaldosReportPDFParams) {
-  const boxH = 18;
+  const boxH = 14;
 
   // Box border
   doc.setDrawColor(...BORDER_LIGHT);
@@ -101,14 +101,12 @@ function drawFilterMetadata(doc: jsPDF, y: number, pw: number, params: GenerateS
   doc.setTextColor(...GREEN);
   doc.text('Rango de Fechas:', 13, y + 5);
   doc.text('Proveedor:', 13, y + 10);
-  doc.text('Tipo de Reporte:', 13, y + 15);
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(7.5);
   doc.setTextColor(...GRAY_DARK);
   doc.text(`${params.dateFrom} al ${params.dateTo}`, 42, y + 5);
   doc.text(params.clienteName, 42, y + 10);
-  doc.text(params.reportType === 'detallado' ? 'Detallado' : 'Resumen', 42, y + 15);
 
   // Divider
   doc.setDrawColor(...BORDER_LIGHT);

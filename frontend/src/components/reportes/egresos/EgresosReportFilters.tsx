@@ -37,15 +37,9 @@ export default function EgresosReportFilters({
         border: '1px solid var(--report-border-color)',
       }}
     >
-      <div className="flex items-center justify-center flex-wrap" style={{ gap: '15px' }}>
-        <span
-          className="text-[11px] font-bold uppercase tracking-wider"
-          style={{ color: 'var(--report-text-muted)' }}
-        >
-          FILTROS:
-        </span>
-
-        <div className="flex items-center" style={{ gap: '10px' }}>
+      <div className="flex items-end justify-center flex-wrap" style={{ gap: '15px' }}>
+        <div className="flex flex-col" style={{ gap: '4px' }}>
+          <label className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--report-text-muted)' }}>Fecha de Inicio</label>
           <input
             type="date"
             value={dateFrom}
@@ -58,12 +52,12 @@ export default function EgresosReportFilters({
               colorScheme: 'dark',
             }}
           />
-          <span
-            className="font-bold"
-            style={{ color: 'var(--report-text-muted)' }}
-          >
-            →
-          </span>
+        </div>
+
+        <span className="font-bold self-end mb-2" style={{ color: 'var(--report-text-muted)' }}>→</span>
+
+        <div className="flex flex-col" style={{ gap: '4px' }}>
+          <label className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--report-text-muted)' }}>Fecha Fin</label>
           <input
             type="date"
             value={dateTo}
@@ -78,37 +72,41 @@ export default function EgresosReportFilters({
           />
         </div>
 
-        <select
-          value={clienteId}
-          onChange={(e) => onClienteChange(e.target.value)}
-          className="px-3 py-2 rounded-md text-[12px] outline-none min-w-[220px]"
-          style={{
-            backgroundColor: 'var(--report-bg-input)',
-            border: '1px solid var(--report-border-input)',
-            color: 'var(--report-text-main)',
-          }}
-        >
-          <option value="">Todos los Clientes</option>
-          {clients.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
-          ))}
-        </select>
+        <div className="flex flex-col" style={{ gap: '4px' }}>
+          <label className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--report-text-muted)' }}>Seleccione un cliente</label>
+          <select
+            value={clienteId}
+            onChange={(e) => onClienteChange(e.target.value)}
+            className="px-3 py-2 rounded-md text-[12px] outline-none min-w-[220px]"
+            style={{
+              backgroundColor: 'var(--report-bg-input)',
+              border: '1px solid var(--report-border-input)',
+              color: 'var(--report-text-main)',
+            }}
+          >
+            <option value="">Todos los Clientes</option>
+            {clients.map((c) => (
+              <option key={c.id} value={c.id}>{c.name}</option>
+            ))}
+          </select>
+        </div>
 
-        <select
-          value={reportType}
-          onChange={(e) => onReportTypeChange(e.target.value as EgresoReportType)}
-          className="px-3 py-2 rounded-md text-[12px] outline-none min-w-[140px]"
-          style={{
-            backgroundColor: 'var(--report-bg-input)',
-            border: '1px solid var(--report-border-input)',
-            color: 'var(--report-text-main)',
-          }}
-        >
-          <option value="resumido">Resumen</option>
-          <option value="detallado">Detallado</option>
-        </select>
+        <div className="flex flex-col" style={{ gap: '4px' }}>
+          <label className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--report-text-muted)' }}>Tipo de Reporte</label>
+          <select
+            value={reportType}
+            onChange={(e) => onReportTypeChange(e.target.value as EgresoReportType)}
+            className="px-3 py-2 rounded-md text-[12px] outline-none min-w-[140px]"
+            style={{
+              backgroundColor: 'var(--report-bg-input)',
+              border: '1px solid var(--report-border-input)',
+              color: 'var(--report-text-main)',
+            }}
+          >
+            <option value="resumido">Resumen</option>
+            <option value="detallado">Detallado</option>
+          </select>
+        </div>
 
         <button
           onClick={onGenerate}

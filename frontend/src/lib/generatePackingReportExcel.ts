@@ -69,71 +69,33 @@ export async function generatePackingReportExcel(params: GeneratePackingReportEx
   // ── ROW 1: Title ──
   const titleRow = ws.addRow([`REPORTE ${reportType === 'detallado' ? 'DETALLADO' : 'DESGLOSADO'} DE PACKINGS RECIBIDOS`]);
   titleRow.getCell(1).font = { bold: true, size: 14, color: { argb: C.green }, name: 'Segoe UI' } as ExcelJS.Font;
-  titleRow.getCell(1).alignment = { vertical: 'middle' };
+  titleRow.getCell(1).alignment = { horizontal: 'center', vertical: 'middle' };
   ws.mergeCells('A1:F1');
   titleRow.height = 28;
+  [1, 2, 3, 4, 5, 6].forEach((col) => {
+    titleRow.getCell(col).fill = fill(C.greenLight);
+  });
 
   // ── ROW 2: Subtitle ──
   const subRow = ws.addRow([reportType === 'detallado' ? 'Desglose por barra individual de cada packing recibido' : 'Resumen consolidado de recepciones de material valioso']);
   subRow.getCell(1).font = { size: 10, color: { argb: C.textMuted }, name: 'Segoe UI' } as ExcelJS.Font;
   ws.mergeCells('A2:F2');
 
-  // ── ROW 3: Spacer ──
+  // ── ROW 3: Metadata (single centered line) ──
+  const metaRow = ws.addRow([`Cliente: ${clientName} | Periodo: ${dateFrom} al ${dateTo} | ID: ${reportId} | Generado: ${generatedAt}`]);
+  ws.mergeCells(`A3:F3`);
+  metaRow.getCell(1).font = { size: 9, color: { argb: C.textMuted }, name: 'Segoe UI' } as ExcelJS.Font;
+  metaRow.getCell(1).alignment = { horizontal: 'center', vertical: 'middle' };
+
+  // ── ROW 4: Spacer ──
   ws.addRow([]);
 
-  // ── ROW 4-5: Metadata (merged blocks) ──
-  const metaRow1 = ws.addRow([
-    `Rango de Fechas: ${dateFrom} al ${dateTo}`,
-    '', '',
-    `ID Documento: ${reportId}`,
-    '', '',
-  ]);
-  ws.mergeCells('A4:C4');
-  ws.mergeCells('D4:F4');
-  metaRow1.getCell(1).font = { bold: true, size: 10, color: { argb: C.textDark }, name: 'Segoe UI' } as ExcelJS.Font;
-  metaRow1.getCell(4).font = { bold: true, size: 10, color: { argb: C.textDark }, name: 'Segoe UI' } as ExcelJS.Font;
-  [1, 2, 3, 4, 5, 6].forEach((col) => {
-    const cell = metaRow1.getCell(col);
-    cell.fill = fill(C.greenSoft);
-    cell.border = thinBorder(C.green);
-  });
-
-  const metaRow2 = ws.addRow([
-    `Cliente / Entidad: ${clientName}`,
-    '', '',
-    `Tipo de Reporte: ${reportType === 'detallado' ? 'Detallado' : 'Resumido'}`,
-    '', '',
-  ]);
-  ws.mergeCells('A5:C5');
-  ws.mergeCells('D5:F5');
-  metaRow2.getCell(1).font = { bold: true, size: 10, color: { argb: C.textDark }, name: 'Segoe UI' } as ExcelJS.Font;
-  metaRow2.getCell(4).font = { bold: true, size: 10, color: { argb: C.textDark }, name: 'Segoe UI' } as ExcelJS.Font;
-  [1, 2, 3, 4, 5, 6].forEach((col) => {
-    const cell = metaRow2.getCell(col);
-    cell.fill = fill(C.greenSoft);
-    cell.border = thinBorder(C.green);
-  });
-
-  const metaRow3 = ws.addRow([
-    `Fecha de Generación: ${generatedAt}`,
-    '', '', '', '', '',
-  ]);
-  ws.mergeCells('A6:F6');
-  metaRow3.getCell(1).font = { bold: true, size: 10, color: { argb: C.textDark }, name: 'Segoe UI' } as ExcelJS.Font;
-  [1, 2, 3, 4, 5, 6].forEach((col) => {
-    const cell = metaRow3.getCell(col);
-    cell.fill = fill(C.greenSoft);
-    cell.border = thinBorder(C.green);
-  });
-
-  // ── ROW 7: Spacer ──
-  ws.addRow([]);
-
-  // ── ROW 8-10: KPI Cards (merged in pairs) ──
+  // ── KPI Cards (merged in pairs) ──
   const kpiTitleRow = ws.addRow(['TOTAL PACKINGS', '', 'TOTAL BARRAS', '', 'TOTAL PESO FINO', '']);
-  ws.mergeCells('A8:B8');
-  ws.mergeCells('C8:D8');
-  ws.mergeCells('E8:F8');
+  const kn = kpiTitleRow.number;
+  ws.mergeCells(`A${kn}:B${kn}`);
+  ws.mergeCells(`C${kn}:D${kn}`);
+  ws.mergeCells(`E${kn}:F${kn}`);
   kpiTitleRow.height = 20;
   [1, 3, 5].forEach((col) => {
     const cell = kpiTitleRow.getCell(col);
@@ -149,9 +111,10 @@ export async function generatePackingReportExcel(params: GeneratePackingReportEx
   });
 
   const kpiValueRow = ws.addRow([summary.totalPackings, '', summary.totalBarras, '', `${formatNumber(summary.pesoFinoTotal)} g`, '']);
-  ws.mergeCells('A9:B9');
-  ws.mergeCells('C9:D9');
-  ws.mergeCells('E9:F9');
+  const vn = kpiValueRow.number;
+  ws.mergeCells(`A${vn}:B${vn}`);
+  ws.mergeCells(`C${vn}:D${vn}`);
+  ws.mergeCells(`E${vn}:F${vn}`);
   kpiValueRow.height = 26;
   [1, 3, 5].forEach((col) => {
     const cell = kpiValueRow.getCell(col);
@@ -167,9 +130,10 @@ export async function generatePackingReportExcel(params: GeneratePackingReportEx
   });
 
   const kpiSubRow = ws.addRow(['Procesados', '', 'Unidades recibidas', '', `Ley Promedio: ${formatNumber(summary.leyProm, 4)}`, '']);
-  ws.mergeCells('A10:B10');
-  ws.mergeCells('C10:D10');
-  ws.mergeCells('E10:F10');
+  const sn = kpiSubRow.number;
+  ws.mergeCells(`A${sn}:B${sn}`);
+  ws.mergeCells(`C${sn}:D${sn}`);
+  ws.mergeCells(`E${sn}:F${sn}`);
   [1, 3, 5].forEach((col) => {
     const cell = kpiSubRow.getCell(col);
     cell.fill = fill(C.greenLight);

@@ -112,7 +112,7 @@ export default function ProcesosReportPdfTemplate({
               {[
                 { label: 'N° Proceso / Tipo', width: '18%' },
                 { label: 'Proveedor(es)', width: '22%' },
-                { label: '¿Mixto?', width: '8%' },
+                { label: 'Mixto', width: '8%' },
                 { label: 'Barras', width: '7%' },
                 { label: 'Peso Bruto (g)', width: '13%' },
                 { label: 'Peso Bruto de Salida (g)', width: '13%' },

@@ -22,7 +22,7 @@ export default function ProcesosReportTable({ records, summary }: ProcesosReport
             {[
               { label: 'N° Proceso / Tipo', align: 'left' },
               { label: 'Proveedor(es)', align: 'left' },
-              { label: '¿Mixto?', align: 'center' },
+              { label: 'Mixto', align: 'center' },
               { label: 'Cant. Barras', align: 'center' },
               { label: 'Peso Bruto (gr)', align: 'right' },
               { label: 'Peso Bruto de Salida (gr)', align: 'right' },
