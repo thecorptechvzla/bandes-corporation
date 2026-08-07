@@ -172,20 +172,15 @@ export async function generateDispatchPDF(
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(80, 80, 80);
   doc.text(`Nombre/Razón Social: ${data.destination}`, m, y); y += 5;
+  doc.text(`Fecha: ${new Date(data.createdAt).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`, m, y);
+  y += 10
   if (destinationClient?.rif) { doc.text(`RIF: ${destinationClient.rif}`, m, y); y += 5; }
   if (destinationClient?.contactInfo) { doc.text(`Contacto: ${destinationClient.contactInfo}`, m, y); y += 5; }
   y += 2;
-  if (isEmpresa) { doc.text(`Proveedores: ${data.providerCount}`, m, y); y += 6; }
-
-  if (isMixed) {
-    doc.text(`Lotes: ${data.lotCount ?? 0} | Barras: ${data.barCount ?? 0}`, m, y); y += 6;
-  } else {
-    const itemLabel = isBarMode ? 'Barras' : 'Lotes';
-    doc.text(`${itemLabel}: ${itemCount}`, m, y); y += 6;
+  if (isEmpresa) {
+    doc.text(`Peso Fino: ${formatWeight(Number(data.totalWeight))}`, m, y); y += 6;
+    doc.text(`Ley: ${formatWeight(Number(data.totalWeight))}`, m, y); y += 6;
   }
-  doc.text(`Peso Total: ${formatWeight(Number(data.totalWeight))}`, m, y); y += 6;
-  doc.text(`Fecha: ${new Date(data.createdAt).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`, m, y);
-  y += 10;
 
   doc.setDrawColor(200, 200, 200);
   doc.setLineWidth(0.2);
@@ -315,10 +310,10 @@ export async function generateDispatchPDF(
     }
     doc.text(`Peso Bruto Total : ${formatWeight(Number(data.totalWeight))}`, m, y); y += 5;
     if (hasMixedLot) {
-      doc.setTextColor(168, 85, 247);
-      doc.text('Incluye lote(s) MIXTO(s): material consolidado de varios proveedores.', m, y); y += 5;
-      doc.setTextColor(80, 80, 80);
-    }
+/*       doc.setTextColor(168, 85, 247);
+ */      doc.text('Incluye lote(s) MIXTO(s): material consolidado de varios proveedores.', m, y); y += 5;
+/*       doc.setTextColor(80, 80, 80);
+ */    }
   }
 
   y += 4;

@@ -181,12 +181,13 @@ export default function SaldosReportPage() {
                   <SaldoReportDetailTable records={filteredDetailed} />
       )}
 
-      {!showReport && <ReportGuideCard entity="proveedor" />}
               </div>
             </>
           )}
         </motion.div>
       )}
+
+      {!showReport && <ReportGuideCard entity="proveedor" />}
     </motion.div>
   );
 }
