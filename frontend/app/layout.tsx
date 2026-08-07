@@ -203,17 +203,16 @@ export default function RootLayout({
               nav-item group ${isReporteRoute ? 'active' : ''}
               active:scale-[0.97] transition-all duration-150
             `}>
-              <Link
-                href={href}
+              <div
                 onClick={() => {
                   setReportesManualOpen(prev => !prev);
                   onItemClick?.();
                 }}
-                className="flex items-center gap-[0.69rem] flex-1 min-w-0"
+                className="flex items-center gap-[0.69rem] flex-1 min-w-0 cursor-pointer"
               >
                 <IconComponent className={`w-4 h-4 shrink-0 ${isReporteRoute ? 'text-[#139169]' : 'text-[var(--hud-text-dim)] group-hover:text-[var(--hud-text-primary)]'}`} />
                 <span className="truncate">{item.name}</span>
-              </Link>
+              </div>
               <button
                 type="button"
                 aria-label={reportesOpen ? 'Colapsar submenú de Reportes' : 'Expandir submenú de Reportes'}
