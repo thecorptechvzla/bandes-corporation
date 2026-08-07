@@ -283,8 +283,8 @@ export function BarDetailModal({
 
           {/* Fine Weight */}
           <div className="p-3 rounded-xl border border-[var(--pm-accent-gold)]/20 bg-[var(--pm-accent-gold)]/5">
-            <span className="text-[9px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider block text-center">PESO FINO</span>
-            <span className="text-sm font-mono font-bold text-[var(--pm-accent-gold)] block text-center">{formatNumber(fa, 4)} g</span>
+            <span className="text-[9px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider block text-center">PESO BRUTO</span>
+            <span className="text-sm font-mono font-medium text-[var(--pm-accent-gold)] block text-center">{formatNumber(displayGross, 2)} g</span>
           </div>
 
           {/* Device Capture Buttons — industrial size */}
