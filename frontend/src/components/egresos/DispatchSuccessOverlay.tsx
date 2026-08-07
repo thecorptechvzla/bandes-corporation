@@ -10,6 +10,7 @@ interface DispatchResult {
   reference: string;
   destination: string;
   totalWeight: number;
+  grossWeight?: number;
   lotCount?: number;
   barCount?: number;
   providerCount: number;
@@ -59,8 +60,8 @@ export function DispatchSuccessOverlay({ isOpen, result, message, onPDFCliente, 
             <span className="text-[var(--pm-text-primary)] font-bold">{itemCount}</span>
           </div>
           <div className="border-t border-[var(--pm-border)] pt-2 flex justify-between">
-            <span className="text-[var(--pm-text-dim)]">PESO FINO:</span>
-            <span className="text-sm font-bold text-[var(--pm-accent-gold)]">{fmtWeight(result.totalWeight)}</span>
+            <span className="text-[var(--pm-text-dim)]">PESO BRUTO:</span>
+            <span className="text-sm font-bold text-[var(--pm-accent-gold)]">{fmtWeight(result.grossWeight ?? result.totalWeight)}</span>
           </div>
         </div>
 

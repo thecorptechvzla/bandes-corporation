@@ -55,9 +55,9 @@ export function RecoveryModal({ lot, lotBarsMap, processLotsMap, onClose, upload
   const recWeightNum = parseFloat(recoveredWeight) || 0;
   const recoveredLeyAuNum = parseFloat(recoveredLeyAu) || 0;
   const calculatedFineWeight = (recWeightNum * recoveredLeyAuNum) / 1000;
-  const discrepancy = lotFA > 0 ? ((recWeightNum - lotFA) / lotFA) * 100 : 0;
-  const mermaGramos = lotFA - recWeightNum;
-  const mermaPct = lotFA > 0 ? (mermaGramos / lotFA) * 100 : 0;
+  const diferenciaFino = lotFA - calculatedFineWeight;
+  const mermaBruto = lotGross - recWeightNum;
+  const discrepancy = lotFA > 0 ? (diferenciaFino / lotFA) * 100 : 0;
 
   const blockNonNumeric = (e: React.KeyboardEvent) => {
     const allowed = ['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'ArrowLeft', 'ArrowRight', 'Home', 'End'];
@@ -319,28 +319,42 @@ export function RecoveryModal({ lot, lotBarsMap, processLotsMap, onClose, upload
                   {discrepancy >= 0 ? '+' : ''}{discrepancy.toFixed(2)}%
                 </span>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 font-mono">
-                <div className="space-y-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 font-mono">
+                <div className="space-y-2">
+                  <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                    <Microscope className="w-3 h-3" /> Fino
+                  </span>
                   <div className="flex justify-between items-baseline">
-                    <span className="text-[11px] uppercase tracking-wider text-slate-500">Peso Fino</span>
-                    <span className="text-base text-slate-200">{formatNumber(lotFA, 2)} g</span>
+                    <span className="text-[11px] uppercase tracking-wider text-slate-500">FA Cargado</span>
+                    <span className="text-base font-bold text-[var(--pm-accent-gold)]">{formatNumber(lotFA, 2)} g</span>
                   </div>
                   <div className="flex justify-between items-baseline">
-                    <span className="text-[11px] uppercase tracking-wider text-slate-500">Peso Bruto</span>
-                    <span className="text-lg font-bold text-[var(--pm-accent-gold)]">{formatNumber(recWeightNum, 2)} g</span>
+                    <span className="text-[11px] uppercase tracking-wider text-slate-500">Fino Calculado</span>
+                    <span className="text-base font-bold text-slate-200">{formatNumber(calculatedFineWeight, 2)} g</span>
+                  </div>
+                  <div className="flex justify-between items-baseline border-t border-[var(--pm-border)]/40 pt-2">
+                    <span className="text-[11px] uppercase tracking-wider text-slate-500">Diferencia de Fino</span>
+                    <span className={`text-base font-bold ${diferenciaFino >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                      {diferenciaFino >= 0 ? '+' : ''}{formatNumber(diferenciaFino, 2)} g
+                    </span>
                   </div>
                 </div>
                 <div className="space-y-3">
+                  <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                    <Zap className="w-3 h-3" /> Bruto
+                  </span>
                   <div className="flex justify-between items-baseline">
-                    <span className="text-[11px] uppercase tracking-wider text-slate-500">Diferencia</span>
-                    <span className={`text-lg font-bold ${mermaGramos >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                      {mermaGramos >= 0 ? '+' : ''}{formatNumber(mermaGramos, 2)} g
-                    </span>
+                    <span className="text-[11px] uppercase tracking-wider text-slate-500">Peso Bruto Original</span>
+                    <span className="text-base font-bold text-[var(--pm-accent-gold)]">{formatNumber(lotGross, 2)} g</span>
                   </div>
                   <div className="flex justify-between items-baseline">
-                    <span className="text-[11px] uppercase tracking-wider text-slate-500">Merma</span>
-                    <span className={`text-base font-bold ${Math.abs(mermaPct) <= 5 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                      {mermaPct.toFixed(2)}%
+                    <span className="text-[11px] uppercase tracking-wider text-slate-500">Peso Bruto Nuevo</span>
+                    <span className="text-base font-bold text-slate-200">{formatNumber(recWeightNum, 2)} g</span>
+                  </div>
+                  <div className="flex justify-between items-baseline border-t border-[var(--pm-border)]/40 pt-2">
+                    <span className="text-[11px] uppercase tracking-wider text-slate-500">Merma de Bruto</span>
+                    <span className={`text-base font-bold ${mermaBruto >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                      {mermaBruto >= 0 ? '+' : ''}{formatNumber(mermaBruto, 2)} g
                     </span>
                   </div>
                 </div>

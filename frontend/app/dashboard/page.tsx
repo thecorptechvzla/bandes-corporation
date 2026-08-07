@@ -273,8 +273,8 @@ export default function V2DashboardPage() {
   );
 
   const fundidoGross = useMemo(
-    () => bovedaLots.reduce((s, l) => s + (lotGrossWeight[l.id] ?? 0), 0),
-    [bovedaLots, lotGrossWeight],
+    () => bovedaLots.reduce((s, l) => s + Number(l.recovered ?? 0), 0),
+    [bovedaLots],
   );
 
   const bovedaGross = fundidoGross + sinFundirGross;

@@ -68,6 +68,7 @@ export function ExitsTable({
             <tr className="border-b border-[var(--pm-border)]/40 bg-[var(--pm-bg-tertiary)]/30">
               <th className="text-left px-4 py-3 text-[11px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider">Despacho</th>
               <th className="text-left px-4 py-3 text-[11px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider">Proveedores</th>
+              <th className="text-left px-4 py-3 text-[11px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider">Destino</th>
               <th className="text-left px-4 py-3 text-[11px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider">Lotes</th>
               <th className="text-left px-4 py-3 text-[11px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider">Peso Bruto</th>
               <th className="text-left px-4 py-3 text-[11px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider">Fecha</th>
@@ -102,6 +103,13 @@ export function ExitsTable({
                         <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-mono bg-[var(--pm-bg-tertiary)] text-[var(--pm-text-primary)] border border-[var(--pm-border)]/30">
                           {providerNames[0]}
                         </span>
+                      ) : (
+                        <span className="text-sm font-mono font-semibold text-[var(--pm-text-dim)]">-</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3.5">
+                      {e.destination ? (
+                        <span className="text-sm font-mono font-semibold text-slate-200">{e.destination}</span>
                       ) : (
                         <span className="text-sm font-mono font-semibold text-[var(--pm-text-dim)]">-</span>
                       )}
@@ -151,7 +159,7 @@ export function ExitsTable({
                   </tr>
                   {isExpanded && (
                     <tr key={`${e.id}-detail`}>
-                      <td colSpan={7} className="px-0 py-0">
+                      <td colSpan={8} className="px-0 py-0">
                         <motion.div
                           initial={{ height: 0, opacity: 0 }}
                           animate={{ height: 'auto', opacity: 1 }}
@@ -201,8 +209,6 @@ export function ExitsTable({
                                         <span className="mt-1 block text-sm font-medium text-white truncate">
                                           {detail.lot?.process?.client?.name ?? '—'}
                                         </span>
-                                        <span className="mt-3 block text-[10px] font-semibold uppercase tracking-wider text-slate-400">Destino</span>
-                                        <span className="mt-0.5 block text-sm font-medium text-white truncate">{e.destination}</span>
                                       </div>
 
                                       {/* 3 · Métricas */}

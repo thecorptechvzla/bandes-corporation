@@ -30,6 +30,7 @@ interface AvailableLot {
   clientRif: string;
   availableWeight: number;
   grossWeight: number;
+  recovered: number;
   barCount: number;
   isMixed: boolean;
   composition: { clientId: string; clientName: string; weight: number; percentage: number }[];
@@ -66,6 +67,7 @@ const [selectedLotIds, setSelectedLotIds] = useState<Set<string>>(new Set());
             b => b.lotId === l.id && (b.status === 'IN_STOCK' || b.status === 'COMPLETADO'),
           );
           if (eligibleBars.length === 0) return null;
+          const recovered = Number(l.recovered);
           const composition = computeComposition(
             eligibleBars.map(b => ({
               clientId: b.clientId,
@@ -83,9 +85,8 @@ const [selectedLotIds, setSelectedLotIds] = useState<Set<string>>(new Set());
             availableWeight: Number(
               eligibleBars.reduce((s, b) => s + Number(b.fineWeight), 0),
             ),
-            grossWeight: Number(
-              eligibleBars.reduce((s, b) => s + Number(b.grossWeight), 0),
-            ),
+            grossWeight: recovered,
+            recovered,
             barCount: eligibleBars.length,
             isMixed: isMixedLot(eligibleBars),
             composition,
@@ -122,9 +123,9 @@ const [selectedLotIds, setSelectedLotIds] = useState<Set<string>>(new Set());
       clientId: l.clientId,
       clientName: l.clientName,
       clientRif: l.clientRif,
-      pesoBruto: l.grossWeight > 0 ? l.grossWeight : null,
-      leyAu: l.grossWeight > 0 && l.availableWeight > 0
-        ? (l.availableWeight / l.grossWeight) * 1000
+      pesoBruto: l.recovered > 0 ? l.recovered : null,
+      leyAu: l.recovered > 0 && l.availableWeight > 0
+        ? (l.availableWeight / l.recovered) * 1000
         : null,
       pesoFino: l.availableWeight,
       barCount: l.barCount,
@@ -250,9 +251,9 @@ const [selectedLotIds, setSelectedLotIds] = useState<Set<string>>(new Set());
       groups[l.clientId].push({
         type: 'lot', id: l.id, code: l.name, provider: l.clientName,
         clientId: l.clientId, clientName: l.clientName, clientRif: l.clientRif,
-        pesoBruto: l.grossWeight > 0 ? l.grossWeight : null,
-        leyAu: l.grossWeight > 0 && l.availableWeight > 0
-          ? (l.availableWeight / l.grossWeight) * 1000
+        pesoBruto: l.recovered > 0 ? l.recovered : null,
+        leyAu: l.recovered > 0 && l.availableWeight > 0
+          ? (l.availableWeight / l.recovered) * 1000
           : null,
         pesoFino: l.availableWeight, barCount: l.barCount,
         isMixed: l.isMixed, composition: l.composition,
@@ -381,6 +382,7 @@ const [selectedLotIds, setSelectedLotIds] = useState<Set<string>>(new Set());
         reference: `DESP-${Date.now().toString(36).toUpperCase()}`,
         destination: result.destination,
         totalWeight: Number(result.totalWeight),
+        grossWeight: Number((lotTotalGross + barTotalGross).toFixed(2)),
         lotCount: selectedLots.length || undefined,
         barCount: selectedBars.length || undefined,
         providerCount: allProviders.size,
