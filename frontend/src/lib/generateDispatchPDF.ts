@@ -9,6 +9,7 @@ interface BarItem {
   purity: number;
   fineWeight: number;
   provider: string;
+  validatedWeight?: number;
 }
 
 interface LotItem {
@@ -16,6 +17,10 @@ interface LotItem {
   weight: number;
   provider: string;
   isMixed?: boolean;
+  grossWeight?: number;
+  fineWeight?: number;
+  purity?: number;
+  validatedWeight?: number;
 }
 
 export interface DispatchResult {
@@ -45,8 +50,13 @@ export function convertExitToDispatchResult(exit: MaterialExit): DispatchResult 
 
   if (hasLots) {
     lots = (exit.exitDetails || []).flatMap<LotItem>(d => {
+      const lotBars = d.bars || [];
+      const lotGrossWeight = lotBars.reduce((sum, b) => sum + Number(b.grossWeight || 0), 0);
+      const lotFineWeight = lotBars.reduce((sum, b) => sum + Number(b.fineWeight || 0), 0);
+      const lotPurity = lotGrossWeight > 0 ? (lotFineWeight / lotGrossWeight) * 1000 : 0;
+
       const composition = computeComposition(
-        (d.bars || []).map(b => ({
+        lotBars.map(b => ({
           clientId: b.clientId || '',
           clientName: b.client?.name || 'DESCONOCIDO',
           fineWeight: Number(b.fineWeight || 0),
@@ -58,6 +68,9 @@ export function convertExitToDispatchResult(exit: MaterialExit): DispatchResult 
           weight: entry.weight,
           provider: entry.clientName,
           isMixed: true,
+          grossWeight: lotGrossWeight,
+          fineWeight: lotFineWeight,
+          purity: lotPurity,
         } as LotItem));
       }
       return [{
@@ -65,6 +78,9 @@ export function convertExitToDispatchResult(exit: MaterialExit): DispatchResult 
         weight: Number(d.weightAported),
         provider: d.lot?.process?.client?.name || 'DESCONOCIDO',
         isMixed: false,
+        grossWeight: lotGrossWeight,
+        fineWeight: lotFineWeight,
+        purity: lotPurity,
       } as LotItem];
     });
     lots.forEach(l => {
@@ -152,6 +168,7 @@ export async function generateDispatchPDF(
   doc.setFontSize(7);
   doc.setFont('helvetica', 'normal');
   doc.text(`Ref: ${data.reference}`, pw - m, 20, { align: 'right' });
+  doc.text(`Fecha: ${new Date(data.createdAt).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`, pw - m, 30, { align: 'right' });
 
   if (isEmpresa) {
     doc.setFontSize(48);
@@ -168,19 +185,21 @@ export async function generateDispatchPDF(
   doc.setFontSize(10);
   doc.setFont('helvetica', 'bold');
   doc.text('DATOS DEL DESTINATARIO', m + 2, y + 1); y += 6;
+
+  const colLeft = m;
+  const colRight = pw - m - 45;
+  let yLeft = y;
+  let yRight = y;
+
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(80, 80, 80);
-  doc.text(`Nombre/Razón Social: ${data.destination}`, m, y); y += 5;
-  doc.text(`Fecha: ${new Date(data.createdAt).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`, m, y);
-  y += 10
-  if (destinationClient?.rif) { doc.text(`RIF: ${destinationClient.rif}`, m, y); y += 5; }
-  if (destinationClient?.contactInfo) { doc.text(`Contacto: ${destinationClient.contactInfo}`, m, y); y += 5; }
-  y += 2;
-  if (isEmpresa) {
-    doc.text(`Peso Fino: ${formatWeight(Number(data.totalWeight))}`, m, y); y += 6;
-    doc.text(`Ley: ${formatWeight(Number(data.totalWeight))}`, m, y); y += 6;
-  }
+
+  doc.text(`Nombre/Razón Social: ${data.destination}`, colLeft, yLeft); yLeft += 5;
+  if (destinationClient?.rif) { doc.text(`RIF: ${destinationClient.rif}`, colLeft, yLeft); yLeft += 5; }
+  if (destinationClient?.contactInfo) { doc.text(`Contacto: ${destinationClient.contactInfo}`, colLeft, yLeft); yLeft += 5; }
+
+  y = Math.max(yLeft, yRight) + 2;
 
   doc.setDrawColor(200, 200, 200);
   doc.setLineWidth(0.2);
@@ -200,10 +219,8 @@ export async function generateDispatchPDF(
     doc.text('DETALLE POR PROVEEDOR', m + 2, y + 1); y += 6;
 
     if (hasMixedLot) {
-      doc.setTextColor(168, 85, 247);
       doc.setFontSize(7);
       doc.text('Nota: los lotes marcados con ◈ son MIXTOS y consolidan material de múltiples proveedores.', m, y); y += 6;
-      doc.setTextColor(40, 40, 40);
       doc.setFontSize(10);
       doc.setFont('helvetica', 'bold');
     }
@@ -228,8 +245,12 @@ export async function generateDispatchPDF(
         doc.setTextColor(255, 255, 255);
         doc.setFontSize(6);
         doc.setFont('helvetica', 'bold');
+        const lotColsW = [18, 38, 28, 26, 22, cw - 132];
         doc.text('TIPO', m + 3, y + 1);
-        doc.text('CÓDIGO', m + 20, y + 1);
+        doc.text('CÓDIGO', m + 3 + lotColsW[0], y + 1);
+        doc.text('PESO BRUTO (g)', m + 3 + lotColsW[0] + lotColsW[1], y + 1);
+        doc.text('PESO BRUTO BALANZA (g)', m + 3 + lotColsW[0] + lotColsW[1] + lotColsW[2], y + 1);
+        doc.text('LEY (‰)', m + 3 + lotColsW[0] + lotColsW[1] + lotColsW[2] + lotColsW[3], y + 1);
         doc.text('PESO FINO (g)', pw - m - 2, y + 1, { align: 'right' });
         y += 7;
 
@@ -239,17 +260,15 @@ export async function generateDispatchPDF(
             doc.setFillColor(248, 248, 248);
             doc.rect(m, y - 4, cw, 7, 'F');
           }
-          if (lot.isMixed) {
-            doc.setTextColor(168, 85, 247);
-          } else {
-            doc.setTextColor(245, 158, 11);
-          }
           doc.setFontSize(7);
           doc.setFont('helvetica', 'normal');
-          doc.text(lot.isMixed ? 'MIXTA' : 'REFUNDIDA', m + 3, y + 1);
           doc.setTextColor(80, 80, 80);
-          doc.text(`${lot.name}${lot.isMixed ? '  ◈' : ''}`, m + 20, y + 1);
-          doc.text(formatWeight(Number(lot.weight)), pw - m - 2, y + 1, { align: 'right' });
+          doc.text(lot.isMixed ? 'MIXTA' : 'REFUNDIDA', m + 3, y + 1);
+          doc.text(`${lot.name}${lot.isMixed ? '  ◈' : ''}`, m + 3 + lotColsW[0], y + 1);
+          doc.text(formatWeight(Number(lot.grossWeight || 0)), m + 3 + lotColsW[0] + lotColsW[1], y + 1);
+          doc.text('—', m + 3 + lotColsW[0] + lotColsW[1] + lotColsW[2], y + 1);
+          doc.text(formatWeight(Number(lot.purity || 0)), m + 3 + lotColsW[0] + lotColsW[1] + lotColsW[2] + lotColsW[3], y + 1);
+          doc.text(formatWeight(Number(lot.fineWeight || 0)), pw - m - 2, y + 1, { align: 'right' });
           y += 7;
         });
       }
@@ -261,12 +280,13 @@ export async function generateDispatchPDF(
         doc.setTextColor(255, 255, 255);
         doc.setFontSize(6);
         doc.setFont('helvetica', 'bold');
-        const barColsW = [20, 30, 40, 30, cw - 120];
+        const barColsW = [18, 28, 28, 28, 22, cw - 124];
         doc.text('TIPO', m + 3, y + 1);
         doc.text('CÓDIGO', m + 3 + barColsW[0], y + 1);
         doc.text('PESO BRUTO (g)', m + 3 + barColsW[0] + barColsW[1], y + 1);
-        doc.text('LEY AU (‰)', m + 3 + barColsW[0] + barColsW[1] + barColsW[2], y + 1);
-        doc.text('PESO FINO (g)', m + 3 + barColsW[0] + barColsW[1] + barColsW[2] + barColsW[3], y + 1);
+        doc.text('PESO BALANZA (g)', m + 3 + barColsW[0] + barColsW[1] + barColsW[2], y + 1);
+        doc.text('LEY AU (‰)', m + 3 + barColsW[0] + barColsW[1] + barColsW[2] + barColsW[3], y + 1);
+        doc.text('PESO FINO (g)', pw - m - 2, y + 1, { align: 'right' });
         y += 7;
 
         providerBars.forEach((bar, idx) => {
@@ -283,8 +303,9 @@ export async function generateDispatchPDF(
           doc.setTextColor(80, 80, 80);
           doc.text(bar.barNumber, m + 3 + barColsW[0], y + 1);
           doc.text(formatWeight(bar.grossWeight), m + 3 + barColsW[0] + barColsW[1], y + 1);
-          doc.text(String(bar.purity), m + 3 + barColsW[0] + barColsW[1] + barColsW[2], y + 1);
-          doc.text(formatWeight(bar.fineWeight), m + 3 + barColsW[0] + barColsW[1] + barColsW[2] + barColsW[3], y + 1);
+          doc.text('—', m + 3 + barColsW[0] + barColsW[1] + barColsW[2], y + 1);
+          doc.text(String(bar.purity), m + 3 + barColsW[0] + barColsW[1] + barColsW[2] + barColsW[3], y + 1);
+          doc.text(formatWeight(bar.fineWeight), pw - m - 2, y + 1, { align: 'right' });
           y += 7;
         });
       }

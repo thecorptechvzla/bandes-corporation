@@ -100,6 +100,7 @@ export function toEgresoDetailedRecord(e: ReportEgresoDTO, index: number): Egres
     lote: b.lotName || '—',
     lingoteId: b.barNumber,
     pesoBruto: Number(b.grossWeight ?? 0),
+    pesoBrutoBalanza: undefined,
     ley: Number(b.purity ?? 0) / 1000,
     pesoFino: Number(b.fineWeight ?? 0),
   }));

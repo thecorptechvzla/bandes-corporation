@@ -2,6 +2,7 @@ export interface LingoteEgreso {
   lote: string;
   lingoteId: string;
   pesoBruto: number;
+  pesoBrutoBalanza?: number;
   ley: number;
   pesoFino: number;
 }

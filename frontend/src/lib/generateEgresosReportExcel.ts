@@ -239,14 +239,14 @@ export async function generateEgresosReportExcel(params: GenerateEgresosReportEx
       currentRow++;
 
       // Lingote headers
-      const lingoteHeaders = ['Lote / Barra', 'Lingote / Serie', 'Peso Bruto', 'Ley', 'Peso Fino'];
+      const lingoteHeaders = ['Lote / Barra', 'Lingote / Serie', 'Peso Bruto', 'Peso Balanza', 'Ley', 'Peso Fino'];
       const lhr = sheet.getRow(currentRow);
       lingoteHeaders.forEach((h, i) => {
         const cell = lhr.getCell(i + 1);
         cell.value = h;
         cell.font = { bold: true, size: 9, color: { argb: 'FFFFFFFF' } };
         cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: `FF${green}` } };
-        cell.alignment = { horizontal: i < 2 ? 'left' : i === 2 || i === 4 ? 'right' : 'center' };
+        cell.alignment = { horizontal: i < 2 ? 'left' : i === 2 || i === 3 || i === 5 ? 'right' : 'center' };
       });
       currentRow++;
 
@@ -261,17 +261,21 @@ export async function generateEgresosReportExcel(params: GenerateEgresosReportEx
         lr.getCell(3).font = { size: 9 };
         lr.getCell(3).numFmt = '#,##0.00';
         lr.getCell(3).alignment = { horizontal: 'right' };
-        lr.getCell(4).value = item.ley;
+        lr.getCell(4).value = item.pesoBrutoBalanza ?? '—';
         lr.getCell(4).font = { size: 9 };
-        lr.getCell(4).numFmt = '0.0000';
-        lr.getCell(4).alignment = { horizontal: 'center' };
-        lr.getCell(5).value = item.pesoFino;
+        lr.getCell(4).numFmt = '#,##0.00';
+        lr.getCell(4).alignment = { horizontal: 'right' };
+        lr.getCell(5).value = item.ley;
         lr.getCell(5).font = { size: 9 };
-        lr.getCell(5).numFmt = '#,##0.00';
-        lr.getCell(5).alignment = { horizontal: 'right' };
+        lr.getCell(5).numFmt = '0.0000';
+        lr.getCell(5).alignment = { horizontal: 'center' };
+        lr.getCell(6).value = item.pesoFino;
+        lr.getCell(6).font = { size: 9 };
+        lr.getCell(6).numFmt = '#,##0.00';
+        lr.getCell(6).alignment = { horizontal: 'right' };
 
         if (itemIdx % 2 === 1) {
-          for (let c = 1; c <= 5; c++) {
+          for (let c = 1; c <= 6; c++) {
             lr.getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFBFDFC' } };
           }
         }
@@ -286,11 +290,11 @@ export async function generateEgresosReportExcel(params: GenerateEgresosReportEx
       stRow.getCell(3).font = { bold: true, size: 9, color: { argb: `FF${green}` } };
       stRow.getCell(3).numFmt = '#,##0.00';
       stRow.getCell(3).alignment = { horizontal: 'right' };
-      stRow.getCell(5).value = egreso.pesoFino;
-      stRow.getCell(5).font = { bold: true, size: 9, color: { argb: `FF${green}` } };
-      stRow.getCell(5).numFmt = '#,##0.00';
-      stRow.getCell(5).alignment = { horizontal: 'right' };
-      for (let c = 1; c <= 5; c++) {
+      stRow.getCell(6).value = egreso.pesoFino;
+      stRow.getCell(6).font = { bold: true, size: 9, color: { argb: `FF${green}` } };
+      stRow.getCell(6).numFmt = '#,##0.00';
+      stRow.getCell(6).alignment = { horizontal: 'right' };
+      for (let c = 1; c <= 6; c++) {
         stRow.getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: `FF${greenLight}` } };
         stRow.getCell(c).border = { top: { style: 'medium', color: { argb: `FF${green}` } } };
       }

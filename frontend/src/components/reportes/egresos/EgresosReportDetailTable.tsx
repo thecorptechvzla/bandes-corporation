@@ -81,6 +81,7 @@ export default function EgresosReportDetailTable({ records, summary, onReprint }
                   { label: 'N° Lote / ID Barra', align: 'left' },
                   { label: 'N° Lingote / Serie', align: 'left' },
                   { label: 'Peso Bruto (gr)', align: 'right' },
+                  { label: 'Peso Balanza (gr)', align: 'right' },
                   { label: 'Ley', align: 'center' },
                   { label: 'Peso Fino (gr)', align: 'right' },
                 ].map((h) => (
@@ -130,6 +131,12 @@ export default function EgresosReportDetailTable({ records, summary, onReprint }
                     {formatNumber(item.pesoBruto)}
                   </td>
                   <td
+                    className="px-4 py-3 text-right text-[12px] font-medium"
+                    style={{ color: 'var(--report-text-main)' }}
+                  >
+                    {item.pesoBrutoBalanza != null ? formatNumber(item.pesoBrutoBalanza) : '—'}
+                  </td>
+                  <td
                     className="px-4 py-3 text-center text-[12px] font-medium"
                     style={{ color: 'var(--report-text-table)' }}
                   >
@@ -164,6 +171,7 @@ export default function EgresosReportDetailTable({ records, summary, onReprint }
                 >
                   {formatNumber(egreso.pesoBruto)} gr
                 </td>
+                <td className="px-4 py-3" />
                 <td className="px-4 py-3" />
                 <td
                   className="px-4 py-3 text-right text-[12px] font-bold"

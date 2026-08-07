@@ -268,6 +268,7 @@ function drawDetailedSection(doc: jsPDF, startY: number, pw: number, detailed: E
       item.lote || '\u2014',
       item.lingoteId,
       `${formatNumber(item.pesoBruto)}`,
+      item.pesoBrutoBalanza != null ? `${formatNumber(item.pesoBrutoBalanza)}` : '\u2014',
       `${formatNumber(item.ley, 4)}`,
       `${formatNumber(item.pesoFino)}`,
     ]);
@@ -279,12 +280,13 @@ function drawDetailedSection(doc: jsPDF, startY: number, pw: number, detailed: E
       '',
       `${formatNumber(totPesoBruto)} g`,
       '',
+      '',
       `${formatNumber(totPesoFino)} g`,
     ]);
 
     autoTable(doc, {
       startY: y,
-      head: [['Lote / Barra', 'Lingote / Serie', 'Peso Bruto (g)', 'Ley', 'Peso Fino (g)']],
+      head: [['Lote / Barra', 'Lingote / Serie', 'Peso Bruto (g)', 'Peso Balanza (g)', 'Ley', 'Peso Fino (g)']],
       body: bodyRows,
       theme: 'grid',
       headStyles: {
@@ -308,8 +310,9 @@ function drawDetailedSection(doc: jsPDF, startY: number, pw: number, detailed: E
         0: { cellWidth: 36, halign: 'left' },
         1: { cellWidth: 30, halign: 'left' },
         2: { halign: 'right' },
-        3: { cellWidth: 22, halign: 'center' },
-        4: { halign: 'right' },
+        3: { halign: 'right' },
+        4: { cellWidth: 22, halign: 'center' },
+        5: { halign: 'right' },
       },
       alternateRowStyles: {
         fillColor: ROW_ALT,
