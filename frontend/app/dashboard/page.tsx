@@ -85,6 +85,7 @@ export default function V2DashboardPage() {
   const [isProcesoModalOpen, setIsProcesoModalOpen] = useState(false);
   const [isBovedaModalOpen, setIsBovedaModalOpen] = useState(false);
   const [isPorRefundirModalOpen, setIsPorRefundirModalOpen] = useState(false);
+  const [isEgresadoModalOpen, setIsEgresadoModalOpen] = useState(false);
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
   const [isClientBarModalOpen, setIsClientBarModalOpen] = useState(false);
   const [evidenceBarId, setEvidenceBarId] = useState<string | null>(null);
@@ -175,6 +176,11 @@ export default function V2DashboardPage() {
     () => filteredBars
       .filter(b => b.status === 'EXITED')
       .reduce((s, b) => s + Number(b.grossWeight), 0),
+    [filteredBars],
+  );
+
+  const egresadoBars = useMemo(
+    () => filteredBars.filter(b => b.status === 'EXITED'),
     [filteredBars],
   );
 
@@ -411,6 +417,7 @@ export default function V2DashboardPage() {
               else if (idx === 1) setIsProcesoModalOpen(true);
               else if (idx === 2) setIsBovedaModalOpen(true);
               else if (idx === 3) setIsPorRefundirModalOpen(true);
+              else if (idx === 4) setIsEgresadoModalOpen(true);
             }}
           />
         </div>
@@ -535,6 +542,17 @@ export default function V2DashboardPage() {
         bars={inStockBars}
         clients={clients}
         onClose={() => setIsPorRefundirModalOpen(false)}
+        onBarClick={(id) => setEvidenceBarId(id)}
+      />
+
+      {/* Barras Egresadas modal */}
+      <SupplierDirectoryModal
+        isOpen={isEgresadoModalOpen}
+        title="Barras Egresadas"
+        showSearch
+        bars={egresadoBars}
+        clients={clients}
+        onClose={() => setIsEgresadoModalOpen(false)}
         onBarClick={(id) => setEvidenceBarId(id)}
       />
 
