@@ -44,9 +44,10 @@ const KPI_COLORS = [
   { accent: '#F59E0B', label: 'PROCESO' },        // Amber - Oro en Proceso
   { accent: '#10B981', label: 'R' },              // Emerald - Oro en Bóveda
   { accent: '#06B6D4', label: 'PR' },             // Sky - Por Refundir
+  { accent: '#10B981', label: 'EGRESADO' },       // Emerald - Oro Egresado
 ];
 
-const KPI_ICONS = [ClipboardList, Flame, Warehouse, Inbox];
+const KPI_ICONS = [ClipboardList, Flame, Warehouse, Inbox, TrendingDown];
 
 function SparklineArea({ data, color, id }: { data: number[]; color: string; id: string }) {
   const raw = data.length >= 5
@@ -119,7 +120,7 @@ export function KpiCardGrid({ kpiData, isMounted, onCardClick }: KpiCardGridProp
   const icons = KPI_ICONS;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
+    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-5">
       {kpiData.map((kpi, idx) => {
         const Icon = icons[idx];
         return (

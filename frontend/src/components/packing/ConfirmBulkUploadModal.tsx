@@ -24,14 +24,14 @@ export function ConfirmBulkUploadModal({ data, fileName, onClose, onConfirm }: C
       <div className="p-6 space-y-5">
         <div className="text-center">
           <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-3"
-            style={{ background: 'rgba(245,158,11,0.1)', border: '2px solid rgba(245,158,11,0.25)' }}>
-            <Upload className="w-7 h-7 text-[var(--pm-accent-amber)]" strokeWidth={2.5} />
+            style={{ background: 'rgba(16,185,129,0.1)', border: '2px solid rgba(16,185,129,0.25)' }}>
+            <Upload className="w-7 h-7 text-[var(--pm-accent-emerald)]" strokeWidth={2.5} />
           </div>
           <h2 className="text-sm font-mono font-bold text-[var(--pm-text-primary)] uppercase tracking-wider">Confirmar Carga Masiva</h2>
         </div>
 
         <div className="p-4 rounded-xl border border-[var(--pm-border)]/40 bg-[var(--pm-bg-deepest)]/30 text-center">
-          <FileSpreadsheet className="w-5 h-5 text-[var(--pm-accent-amber)] mx-auto mb-1" />
+          <FileSpreadsheet className="w-5 h-5 text-[var(--pm-accent-emerald)] mx-auto mb-1" />
           <p className="text-[11px] font-mono text-[var(--pm-text-dim)] truncate">{fileName}</p>
         </div>
 
@@ -49,7 +49,7 @@ export function ConfirmBulkUploadModal({ data, fileName, onClose, onConfirm }: C
           </button>
           <button type="button" onClick={onConfirm}
             className="flex-[2] py-2.5 rounded-lg text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2"
-            style={{ background: 'linear-gradient(135deg, rgba(245,158,11,0.2), rgba(245,158,11,0.1))', color: 'var(--pm-accent-amber)', border: '1px solid rgba(245,158,11,0.3)' }}>
+            style={{ background: 'linear-gradient(135deg, rgba(16,185,129,0.2), rgba(16,185,129,0.1))', color: 'var(--pm-accent-emerald)', border: '1px solid rgba(16,185,129,0.3)' }}>
             <Check className="w-4 h-4" /> CONFIRMAR
           </button>
         </div>

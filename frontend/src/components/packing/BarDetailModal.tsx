@@ -340,14 +340,14 @@ export function BarDetailModal({
                 <button type="button" onClick={handleSaveChanges} disabled={isSaving}
                   className="flex-1 py-3 rounded-lg text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   style={{
-                    background: 'linear-gradient(135deg, rgba(212,175,55,0.2), rgba(212,175,55,0.1))',
-                    color: 'var(--pm-accent-gold)',
-                    border: '1px solid rgba(212,175,55,0.3)',
-                    boxShadow: '0 0 16px rgba(212,175,55,0.15)',
+                    background: 'linear-gradient(135deg, rgba(16,185,129,0.2), rgba(16,185,129,0.1))',
+                    color: 'var(--pm-accent-emerald)',
+                    border: '1px solid rgba(16,185,129,0.3)',
+                    boxShadow: '0 0 16px rgba(16,185,129,0.15)',
                   }}>
                   {isSaving ? (
                     <>
-                      <span className="w-3.5 h-3.5 border-2 border-[var(--pm-accent-gold)]/30 border-t-[var(--pm-accent-gold)] rounded-full animate-spin" />
+                      <span className="w-3.5 h-3.5 border-2 border-[var(--pm-accent-emerald)]/30 border-t-[var(--pm-accent-emerald)] rounded-full animate-spin" />
                       GUARDANDO...
                     </>
                   ) : (
@@ -367,9 +367,9 @@ export function BarDetailModal({
                 <button type="button" onClick={handleEditClick}
                   className="py-3 px-5 rounded-lg text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2"
                   style={{
-                    background: 'linear-gradient(135deg, rgba(212,175,55,0.15), rgba(212,175,55,0.05))',
-                    color: 'var(--pm-accent-gold)',
-                    border: '1px solid rgba(212,175,55,0.25)',
+                    background: 'linear-gradient(135deg, rgba(16,185,129,0.15), rgba(16,185,129,0.05))',
+                    color: 'var(--pm-accent-emerald)',
+                    border: '1px solid rgba(16,185,129,0.25)',
                   }}>
                   <Pencil className="w-3.5 h-3.5" />
                   EDITAR

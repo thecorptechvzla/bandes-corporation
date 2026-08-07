@@ -1,0 +1,156 @@
+'use client';
+
+import React, { useState, useMemo, useCallback } from 'react';
+import { useMaterialExits } from '@/hooks/useExits';
+import { convertExitToDispatchResult, generateDispatchPDF } from '@/lib/generateDispatchPDF';
+import { ExitsTable } from '@/components/historicos/ExitsTable';
+import { HistoryFilters } from '@/components/historicos/HistoryFilters';
+import type { MaterialExit } from '@/types/api';
+
+type ViewLote = {
+  name?: string;
+  process?: { client?: { name?: string } };
+};
+
+type ViewDetalle = {
+  id: string;
+  lot?: ViewLote | null;
+  bars?: { id: string; barNumber: string; fineWeight?: number; grossWeight?: number }[];
+  weightAported: string | number;
+};
+
+type ViewExit = {
+  id: string;
+  destination: string;
+  grossWeight: number;
+  createdAt: string;
+  exitDetails: ViewDetalle[];
+};
+
+export function ExitsHistoryView() {
+  const { data: exits = [], isLoading } = useMaterialExits();
+
+  const [searchQuery, setSearchQuery] = useState('');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
+  const [selectedProvider, setSelectedProvider] = useState('');
+  const [expandedExitId, setExpandedExitId] = useState<string | null>(null);
+
+  const exitProviders = useMemo(() => {
+    const set = new Set<string>();
+    exits.forEach(e => {
+      (e.exitDetails || []).forEach(d => {
+        const name = d.lot?.process?.client?.name;
+        if (name) set.add(name);
+      });
+    });
+    return [...set].sort();
+  }, [exits]);
+
+  const rows: ViewExit[] = useMemo(() => {
+    return exits.map(ex => ({
+      id: ex.id,
+      destination: ex.destination || '',
+      grossWeight:
+        (ex.bars || []).reduce((s, b) => s + Number(b.grossWeight || 0), 0) +
+        (ex.exitDetails || []).reduce(
+          (sum, d) =>
+            sum +
+            (d.bars || []).reduce((s, b) => s + Number(b.grossWeight || 0), 0),
+          0,
+        ),
+      createdAt: ex.createdAt,
+      exitDetails: (ex.exitDetails || []).map<ViewDetalle>(d => ({
+        id: d.id,
+        lot: d.lot
+          ? {
+              name: d.lot.name,
+              process: d.lot.process
+                ? { client: d.lot.process.client ? { name: d.lot.process.client.name } : undefined }
+                : undefined,
+            }
+          : null,
+        bars: (d.bars || []).map(b => ({
+          id: b.id,
+          barNumber: b.barNumber,
+          fineWeight: b.fineWeight,
+          grossWeight: b.grossWeight,
+        })),
+        weightAported: d.weightAported,
+      })),
+    }));
+  }, [exits]);
+
+  const filteredExits = useMemo(() => {
+    return rows.filter(e => {
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        const destMatch = e.destination?.toLowerCase().includes(q) ?? false;
+        const providerMatch = e.exitDetails.some(
+          d => d.lot?.process?.client?.name?.toLowerCase().includes(q),
+        );
+        const codeMatch = e.id.toLowerCase().includes(q);
+        if (!destMatch && !providerMatch && !codeMatch) return false;
+      }
+      if (dateFrom && new Date(e.createdAt) < new Date(dateFrom)) return false;
+      if (dateTo) {
+        const end = new Date(dateTo);
+        end.setHours(23, 59, 59, 999);
+        if (new Date(e.createdAt) > end) return false;
+      }
+      if (selectedProvider) {
+        const hasProvider = e.exitDetails.some(
+          d => d.lot?.process?.client?.name === selectedProvider,
+        );
+        if (!hasProvider) return false;
+      }
+      return true;
+    });
+  }, [rows, searchQuery, dateFrom, dateTo, selectedProvider]);
+
+  const hasAnyFilter = !!(searchQuery || dateFrom || dateTo || selectedProvider);
+
+  const clearFilters = () => {
+    setSearchQuery('');
+    setDateFrom('');
+    setDateTo('');
+    setSelectedProvider('');
+    setExpandedExitId(null);
+  };
+
+  const handlePDF = useCallback((exit: { id: string }, copy: 'CLIENTE' | 'EMPRESA') => {
+    const source = exits.find(e => e.id === exit.id) as MaterialExit | undefined;
+    if (!source) return;
+    const result = convertExitToDispatchResult(source);
+    generateDispatchPDF(result, undefined, copy);
+  }, [exits]);
+
+  return (
+    <div className="space-y-4">
+      <HistoryFilters
+        activeTab="exits"
+        searchQuery={searchQuery}
+        dateFrom={dateFrom}
+        dateTo={dateTo}
+        selectedProvider={selectedProvider}
+        providers={exitProviders}
+        hasAnyFilter={hasAnyFilter}
+        onSearchChange={setSearchQuery}
+        onDateFromChange={setDateFrom}
+        onDateToChange={setDateTo}
+        onProviderChange={setSelectedProvider}
+        onClear={clearFilters}
+      />
+      <ExitsTable
+        exits={filteredExits}
+        isLoading={isLoading}
+        hasAnyFilter={hasAnyFilter}
+        expandedExitId={expandedExitId}
+        onExpand={setExpandedExitId}
+        onClearFilters={clearFilters}
+        onPDFCliente={e => handlePDF(e, 'CLIENTE')}
+        onPDFEmpresa={e => handlePDF(e, 'EMPRESA')}
+      />
+    </div>
+  );
+}

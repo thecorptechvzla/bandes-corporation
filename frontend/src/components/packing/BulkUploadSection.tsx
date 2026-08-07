@@ -34,7 +34,7 @@ export function BulkUploadSection({
       <button type="button" onClick={onToggleOpen}
         className="w-full flex items-center justify-between px-5 py-4 active:scale-[0.99] transition-all cursor-pointer">
         <div className="flex items-center gap-2">
-          <FileSpreadsheet className="w-4 h-4 text-[var(--pm-accent-amber)]" />
+          <FileSpreadsheet className="w-4 h-4 text-[var(--pm-accent-emerald)]" />
           <span className="text-xs font-mono font-bold text-[var(--pm-text-primary)] uppercase tracking-wider">Carga Masiva</span>
         </div>
         {isOpen ? <ChevronUp className="w-4 h-4 text-[var(--pm-text-dim)]" /> : <ChevronDown className="w-4 h-4 text-[var(--pm-text-dim)]" />}
@@ -64,7 +64,7 @@ export function BulkUploadSection({
                   <Download className="w-3 h-3" /> Plantilla</button>
                 <button type="button" onClick={onUpload} disabled={!bulkFile || isPending}
                   className="flex-1 py-2 rounded-lg text-[11px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer disabled:opacity-40 flex items-center justify-center gap-1.5"
-                  style={{ background: bulkFile ? 'rgba(212,175,55,0.12)' : 'transparent', color: 'var(--pm-accent-amber)', border: '1px solid rgba(212,175,55,0.2)' }}>
+                  style={{ background: bulkFile ? 'rgba(16,185,129,0.12)' : 'transparent', color: 'var(--pm-accent-emerald)', border: '1px solid rgba(16,185,129,0.2)' }}>
                   {isPending ? 'Subiendo...' : <><Upload className="w-3 h-3" /> Subir</>}
                 </button>
               </div>

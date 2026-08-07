@@ -10,14 +10,14 @@ import { EmptyState } from '@/components/ui/EmptyState';
 interface ExitDetail {
   id: string;
   lot?: { name?: string; process?: { client?: { name?: string } } } | null;
-  bars?: { id: string; barNumber: string; fineWeight?: number }[];
+  bars?: { id: string; barNumber: string; fineWeight?: number; grossWeight?: number }[];
   weightAported: string | number;
 }
 
 interface ExitItem {
   id: string;
   destination?: string;
-  totalWeight: string | number;
+  grossWeight: number;
   createdAt: string;
   exitDetails: ExitDetail[];
 }
@@ -69,7 +69,7 @@ export function ExitsTable({
               <th className="text-left px-4 py-3 text-[11px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider">Despacho</th>
               <th className="text-left px-4 py-3 text-[11px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider">Proveedores</th>
               <th className="text-left px-4 py-3 text-[11px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider">Lotes</th>
-              <th className="text-left px-4 py-3 text-[11px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider">Peso Total</th>
+              <th className="text-left px-4 py-3 text-[11px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider">Peso Bruto</th>
               <th className="text-left px-4 py-3 text-[11px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider">Fecha</th>
               <th className="text-center px-4 py-3 text-[11px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider">Comprobantes</th>
               <th className="px-4 py-3 w-10" />
@@ -92,19 +92,19 @@ export function ExitsTable({
                     <td className="px-4 py-3.5">
                       <div className="flex items-center gap-2">
                         <Truck className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
-                        <span className="font-mono text-xs font-bold text-[var(--pm-text-primary)]">
+                        <span className="font-mono text-xs font-bold text-cyan-400">
                           {e.id.slice(0, 8).toUpperCase()}
                         </span>
                       </div>
                     </td>
                     <td className="px-4 py-3.5">
-                      <div className="flex flex-wrap gap-1">
-                        {providerNames.map(name => (
-                          <span key={name} className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-mono bg-[var(--pm-bg-tertiary)] text-[var(--pm-text-primary)] border border-[var(--pm-border)]/30">
-                            {name}
-                          </span>
-                        ))}
-                      </div>
+                      {providerNames.length === 1 ? (
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-mono bg-[var(--pm-bg-tertiary)] text-[var(--pm-text-primary)] border border-[var(--pm-border)]/30">
+                          {providerNames[0]}
+                        </span>
+                      ) : (
+                        <span className="text-sm font-mono font-semibold text-[var(--pm-text-dim)]">-</span>
+                      )}
                     </td>
                     <td className="px-4 py-3.5">
                       <span className="text-sm font-mono font-semibold text-[var(--pm-text-primary)]">
@@ -113,7 +113,7 @@ export function ExitsTable({
                     </td>
                     <td className="px-4 py-3.5">
                       <span className="text-sm font-mono font-semibold text-[var(--pm-accent-gold)]">
-                        {formatWeight(Number(e.totalWeight), 2)}
+                        {formatWeight(Number(e.grossWeight), 2)}
                       </span>
                     </td>
                     <td className="px-4 py-3.5">

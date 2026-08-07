@@ -427,9 +427,9 @@ export default function PackingPage() {
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
         <h1 className="text-2xl md:text-3xl font-sans font-medium text-[var(--pm-text-primary)] tracking-tight flex items-center gap-2">
-          <FolderUp className="w-8 h-8 text-[var(--pm-accent-gold)] drop-shadow-[0_0_8px_rgba(212,175,55,0.3)]" />
+          <FolderUp className="w-8 h-8 text-[var(--pm-accent-emerald)] drop-shadow-[0_0_8px_rgba(16,185,129,0.3)]" />
           Packing
-          <span className="text-[var(--pm-accent-gold)] font-semibold ml-1">— {activeTab === 'registro' ? 'Registro' : 'Validación'}</span>
+          <span className="text-[var(--pm-accent-emerald)] font-semibold ml-1">— {activeTab === 'registro' ? 'Registro' : 'Validación'}</span>
         </h1>
       </motion.div>
 

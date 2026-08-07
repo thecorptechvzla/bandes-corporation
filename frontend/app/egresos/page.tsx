@@ -19,6 +19,7 @@ import { ConfirmDispatchModal } from '@/components/egresos/ConfirmDispatchModal'
 import { DispatchSuccessOverlay } from '@/components/egresos/DispatchSuccessOverlay';
 import { UnifiedItemPanel, type UnifiedItem } from '@/components/egresos/UnifiedItemPanel';
 import { CheckoutSummaryPanel } from '@/components/egresos/CheckoutSummaryPanel';
+import { ExitsHistoryView } from '@/components/egresos/ExitsHistoryView';
 
 interface AvailableLot {
   id: string;
@@ -42,7 +43,7 @@ export default function V2EgresosPage() {
   const { data: processes = [] } = useProcesses();
   const createExit = useCreateMaterialExit();
 
-  const [selectedLotIds, setSelectedLotIds] = useState<Set<string>>(new Set());
+const [selectedLotIds, setSelectedLotIds] = useState<Set<string>>(new Set());
   const [selectedBarIds, setSelectedBarIds] = useState<Set<string>>(new Set());
   const [openGroups, setOpenGroups] = useState<Set<string>>(new Set());
   const [destinationClient, setDestinationClient] = useState<{ id: string; name: string; rif: string; contactInfo?: string } | null>(null);
@@ -425,8 +426,8 @@ export default function V2EgresosPage() {
         className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-xl font-semibold text-[var(--pm-text-primary)] font-sans flex items-center gap-2.5">
-            <ArrowLeftRight className="w-6 h-6 text-[var(--pm-accent-gold)]" />
-            Salida de <span className="text-[var(--pm-accent-gold)]">Material</span>
+            <ArrowLeftRight className="w-6 h-6 text-[var(--pm-accent-emerald)]" />
+            Salida de <span className="text-[var(--pm-accent-emerald)]">Material</span>
           </h1>
           <p className="text-xs text-[var(--pm-text-dim)] mt-0.5">Despacho global multi-proveedor con destinatario final.</p>
         </div>
@@ -527,6 +528,14 @@ export default function V2EgresosPage() {
       <p className="text-[10px] text-[var(--pm-text-dim)] font-mono text-center opacity-70">
         Bandes v2 Premium · {allAvailableLots.length} lotes + {availableBars.length} barras disponibles · {totalSelectedCount} seleccionados
       </p>
+
+      {/* Historial de operaciones */}
+      <div className="mt-8 border-t border-[var(--pm-border)] pt-6">
+        <h3 className="text-sm font-semibold text-[var(--pm-text-secondary)] uppercase tracking-wider mb-4">
+          Historial de Operaciones
+        </h3>
+        <ExitsHistoryView />
+      </div>
     </motion.div>
   );
 }

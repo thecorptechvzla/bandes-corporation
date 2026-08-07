@@ -56,7 +56,7 @@ export function CheckoutSummaryPanel({
       className="xl:col-span-2 glass-panel rounded-2xl border border-[var(--pm-border)]/40">
       <div className="px-5 py-3.5 border-b border-[var(--pm-border)]/20">
         <div className="flex items-center gap-2">
-          <ShoppingCart className="w-4 h-4 text-[var(--pm-accent-gold)]" />
+          <ShoppingCart className="w-4 h-4 text-[var(--pm-accent-emerald)]" />
           <span className="text-xs font-mono font-bold text-[var(--pm-text-primary)] uppercase tracking-wider">Caja de Salida Global</span>
         </div>
       </div>
@@ -103,7 +103,7 @@ export function CheckoutSummaryPanel({
                   <div key={cId} className="p-3 rounded-lg border border-[var(--pm-border)] bg-[var(--pm-bg-deepest)]/40">
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2 min-w-0">
-                        <Building2 className="w-3.5 h-3.5 shrink-0 text-[var(--pm-accent-gold)]" />
+                        <Building2 className="w-3.5 h-3.5 shrink-0 text-[var(--pm-accent-emerald)]" />
                         <span className="text-[11px] font-sans font-semibold text-[var(--pm-text-primary)] truncate">{clientName}</span>
                       </div>
                       <span className="text-[11px] font-mono font-bold text-[var(--pm-accent-gold)]">{fmtWeightDisplay(clientTotal)}</span>
@@ -152,10 +152,10 @@ export function CheckoutSummaryPanel({
               className="w-full py-3 rounded-lg text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer disabled:opacity-40 flex items-center justify-center gap-2"
               style={{
                 background: itemCount > 0 && destinationClient
-                  ? 'linear-gradient(135deg, rgba(212,175,55,0.2), rgba(212,175,55,0.1))'
+                  ? 'linear-gradient(135deg, rgba(16,185,129,0.2), rgba(16,185,129,0.1))'
                   : 'transparent',
-                color: itemCount > 0 && destinationClient ? 'var(--pm-accent-gold)' : 'var(--pm-text-dim)',
-                border: `1px solid ${itemCount > 0 && destinationClient ? 'rgba(212,175,55,0.3)' : 'var(--pm-border)'}`,
+                color: itemCount > 0 && destinationClient ? 'var(--pm-accent-emerald)' : 'var(--pm-text-dim)',
+                border: `1px solid ${itemCount > 0 && destinationClient ? 'rgba(16,185,129,0.3)' : 'var(--pm-border)'}`,
               }}>
               <Send className="w-4 h-4" />
               Ejecutar Salida · {formatNumber(grossTotal, 2)} g

@@ -55,11 +55,11 @@ export function ConfirmDispatchModal({
       subtitle="Resumen de Salida Multi-Proveedor"
       header={
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.2)' }}>
-            <Send className="w-4 h-4 text-[var(--pm-accent-gold)]" />
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)' }}>
+            <Send className="w-4 h-4 text-[var(--pm-accent-emerald)]" />
           </div>
           <div>
-            <span className="text-[10px] font-mono font-bold text-[var(--pm-accent-gold)] uppercase tracking-wider">Confirmar Despacho Global</span>
+            <span className="text-[10px] font-mono font-bold text-[var(--pm-accent-emerald)] uppercase tracking-wider">Confirmar Despacho Global</span>
             <h3 className="text-sm font-sans font-semibold text-[var(--pm-text-primary)] mt-0.5">Resumen de Salida Multi-Proveedor</h3>
           </div>
         </div>
@@ -70,7 +70,7 @@ export function ConfirmDispatchModal({
             className="flex-1 py-2.5 rounded-lg border border-[var(--pm-border)] text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] hover:bg-[var(--pm-bg-tertiary)] text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer">Cancelar</button>
           <button type="button" onClick={onConfirm}
             className="flex-1 py-2.5 rounded-lg text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2"
-            style={{ background: 'linear-gradient(135deg, rgba(212,175,55,0.2), rgba(212,175,55,0.1))', color: 'var(--pm-accent-gold)', border: '1px solid rgba(212,175,55,0.3)' }}>
+            style={{ background: 'linear-gradient(135deg, rgba(16,185,129,0.2), rgba(16,185,129,0.1))', color: 'var(--pm-accent-emerald)', border: '1px solid rgba(16,185,129,0.3)' }}>
             <Send className="w-4 h-4" /> Confirmar Despacho</button>
         </div>
       }

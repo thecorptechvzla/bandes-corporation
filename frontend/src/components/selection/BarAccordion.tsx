@@ -92,7 +92,7 @@ export function BarAccordion({
             key={clientId}
             className={`rounded-xl border overflow-hidden ${
               isMixedGroup
-                ? 'border-purple-500/30 bg-purple-950/10'
+                ? 'border-teal-500/30 bg-teal-950/10'
                 : 'border-[var(--pm-border)]/30'
             }`}
           >
@@ -102,8 +102,8 @@ export function BarAccordion({
               onClick={() => onToggleSupplier(clientId)}
               className={`w-full flex items-center justify-between px-4 py-3 border-b active:scale-[0.995] transition-all cursor-pointer ${
                 isMixedGroup
-                  ? 'bg-purple-950/30 border-purple-900/50 hover:bg-purple-950/50'
-                  : 'bg-blue-950/30 border-blue-900/50 hover:bg-blue-950/50'
+                  ? 'bg-teal-950/30 border-teal-900/50 hover:bg-teal-950/50'
+                  : 'bg-emerald-950/30 border-emerald-900/50 hover:bg-emerald-950/50'
               }`}
             >
               <div className="flex items-center gap-3 min-w-0">
@@ -122,18 +122,18 @@ export function BarAccordion({
                 <div className="text-left min-w-0">
                   <div className="flex items-center gap-2">
                     {isMixedGroup
-                      ? <GitMerge className="w-3.5 h-3.5 text-purple-400 shrink-0" />
-                      : <Building2 className="w-3.5 h-3.5 text-blue-300 shrink-0" />
+                      ? <GitMerge className="w-3.5 h-3.5 text-teal-400 shrink-0" />
+                      : <Building2 className="w-3.5 h-3.5 text-emerald-300 shrink-0" />
                     }
-                    <span className={`text-xs font-sans font-semibold truncate ${isMixedGroup ? 'text-purple-200' : 'text-white'}`}>
+                    <span className={`text-xs font-sans font-semibold truncate ${isMixedGroup ? 'text-teal-200' : 'text-white'}`}>
                       {isMixedGroup ? '📦 BARRAS MIXTAS' : items[0].clientName}
                     </span>
                     {isMixedGroup ? (
-                      <span className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-purple-500/20 text-purple-200">
+                      <span className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-teal-500/20 text-teal-200">
                         MIXTO ({items.length})
                       </span>
                     ) : (
-                      <span className="text-[10px] font-mono text-blue-200/60">
+                      <span className="text-[10px] font-mono text-emerald-200/60">
                         {items[0].clientRif}
                       </span>
                     )}
@@ -142,15 +142,15 @@ export function BarAccordion({
               </div>
 
               <div className="flex items-center gap-3 shrink-0">
-                <span className={`text-[11px] font-mono ${isMixedGroup ? 'text-purple-200/80' : 'text-blue-200/80'}`}>
+                <span className={`text-[11px] font-mono ${isMixedGroup ? 'text-teal-200/80' : 'text-emerald-200/80'}`}>
                   {isMixedGroup
                     ? `${totalBars} BARRAS`
                     : `${barCount > 0 ? `${barCount} barra(s)` : ''}${barCount > 0 && lotCount > 0 ? ' · ' : ''}${lotCount > 0 ? `${lotCount} lote(s)` : ''}`}
                 </span>
                 {/* Chevron */}
                 {isOpen
-                  ? <ChevronUp className={`w-4 h-4 ${isMixedGroup ? 'text-purple-300' : 'text-blue-300'}`} />
-                  : <ChevronDown className={`w-4 h-4 ${isMixedGroup ? 'text-purple-300' : 'text-blue-300'}`} />
+                  ? <ChevronUp className={`w-4 h-4 ${isMixedGroup ? 'text-teal-300' : 'text-emerald-300'}`} />
+                  : <ChevronDown className={`w-4 h-4 ${isMixedGroup ? 'text-teal-300' : 'text-emerald-300'}`} />
                 }
               </div>
             </button>
@@ -213,9 +213,9 @@ export function BarAccordion({
                                   </span>
                                   {item.type === 'lot' && item.isMixed && item.composition && item.composition.length > 1 && (
                                     <span className="flex items-center gap-1 text-[8px] font-mono">
-                                      <GitMerge className="w-2.5 h-2.5 text-purple-400 shrink-0" />
-                                      <span className="font-bold text-purple-400">MIXTO</span>
-                                      <span className="text-purple-300/80">{formatComposition(item.composition)}</span>
+                                      <GitMerge className="w-2.5 h-2.5 text-teal-400 shrink-0" />
+                                      <span className="font-bold text-teal-400">MIXTO</span>
+                                      <span className="text-teal-300/80">{formatComposition(item.composition)}</span>
                                     </span>
                                   )}
                                 </div>

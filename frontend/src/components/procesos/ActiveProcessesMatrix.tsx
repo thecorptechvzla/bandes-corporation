@@ -67,11 +67,11 @@ export function ActiveProcessesMatrix({ activeProcesses, lotBarsMap, processLots
       >
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-mono font-bold text-[var(--pm-accent-gold)]">
+            <span className="text-sm font-mono font-bold text-[var(--pm-accent-emerald)]">
               {proc.name}
             </span>
             {mixed && (
-              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider bg-[var(--pm-accent-gold)]/15 border border-[var(--pm-accent-gold)]/30 text-[var(--pm-accent-gold)]">
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider bg-[var(--pm-accent-emerald)]/15 border border-[var(--pm-accent-emerald)]/30 text-[var(--pm-accent-emerald)]">
                 MIXTO
               </span>
             )}
@@ -99,7 +99,7 @@ export function ActiveProcessesMatrix({ activeProcesses, lotBarsMap, processLots
               )}
               <button type="button" onClick={e => { e.stopPropagation(); onOpenRecovery(lot); }}
                 className="px-3 py-1.5 rounded text-[9px] font-mono font-bold uppercase tracking-wider transition-all active:scale-90 cursor-pointer"
-                style={{ background: 'rgba(245,158,11,0.1)', color: 'var(--pm-accent-amber)', border: '1px solid rgba(245,158,11,0.2)' }}
+                style={{ background: 'rgba(16,185,129,0.1)', color: 'var(--pm-accent-emerald)', border: '1px solid rgba(16,185,129,0.2)' }}
               >⚡ Calibrar Colada</button>
             </div>
           </div>
@@ -165,7 +165,7 @@ export function ActiveProcessesMatrix({ activeProcesses, lotBarsMap, processLots
     >
       <div className="px-5 py-3.5 border-b border-[var(--pm-border)] flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Layers className="w-4 h-4 text-[var(--pm-accent-amber)]" />
+          <Layers className="w-4 h-4 text-[var(--pm-accent-emerald)]" />
           <span className="text-xs font-mono font-bold text-[var(--pm-text-primary)] uppercase tracking-wider">Núcleos Activos</span>
         </div>
         <span className="text-[11px] font-mono text-[var(--pm-text-dim)]">
@@ -186,7 +186,7 @@ export function ActiveProcessesMatrix({ activeProcesses, lotBarsMap, processLots
         {renderSection(
           'mixtos',
           'Procesos Mixtos',
-          <GitMerge className="w-3.5 h-3.5 text-[var(--pm-accent-gold)]" />,
+          <GitMerge className="w-3.5 h-3.5 text-[var(--pm-accent-emerald)]" />,
           mixtos,
           'Sin procesos mixtos activos.',
           'mt-2 glass-panel rounded-2xl border border-cyan-500/20 p-5 shadow-[0_4px_16px_rgba(34,211,238,0.06)]',

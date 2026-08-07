@@ -37,10 +37,10 @@ export function BarRegistrationForm({
       className="glass-panel rounded-2xl border border-[var(--pm-border)]/40 overflow-hidden">
       <div className="px-5 pt-5 pb-2 border-b border-[var(--pm-border)]/20">
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.2)' }}>
-            <Plus className="w-3.5 h-3.5 text-[var(--pm-accent-gold)]" />
+          <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)' }}>
+            <Plus className="w-3.5 h-3.5 text-[var(--pm-accent-emerald)]" />
           </div>
-          <span className="text-xs font-mono font-bold text-[var(--pm-accent-gold)] uppercase tracking-wider">Registro Individual</span>
+          <span className="text-xs font-mono font-bold text-[var(--pm-accent-emerald)] uppercase tracking-wider">Registro Individual</span>
         </div>
       </div>
       <form onSubmit={onSubmit} className="p-5 space-y-4">
@@ -83,10 +83,10 @@ export function BarRegistrationForm({
         </div>
         {(parseFloat(grossWeight) > 0 && parseFloat(purity) > 0) && (
           <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
-            className="p-4 rounded-xl border" style={{ background: 'rgba(212,175,55,0.06)', borderColor: 'rgba(212,175,55,0.2)' }}>
+            className="p-4 rounded-xl border" style={{ background: 'rgba(16,185,129,0.06)', borderColor: 'rgba(16,185,129,0.2)' }}>
             <div className="flex items-center gap-1.5 mb-2">
-              <Zap className="w-3.5 h-3.5 text-[var(--pm-accent-gold)]" />
-              <span className="text-[10px] font-mono font-bold text-[var(--pm-accent-gold)] uppercase tracking-wider">Cálculo en Tiempo Real</span>
+              <Zap className="w-3.5 h-3.5 text-[var(--pm-accent-emerald)]" />
+              <span className="text-[10px] font-mono font-bold text-[var(--pm-accent-emerald)] uppercase tracking-wider">Cálculo en Tiempo Real</span>
             </div>
             <div className="text-center">
               <span className="text-[10px] font-mono text-[var(--pm-text-dim)] block">Peso Fino</span>
@@ -104,9 +104,9 @@ export function BarRegistrationForm({
             className="flex-1 py-2.5 rounded-lg border border-[var(--pm-border)] text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] hover:bg-[var(--pm-bg-tertiary)] text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer">Limpiar</button>
           <button type="submit" disabled={isPending}
             className="flex-[2] py-2.5 rounded-lg text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
-            style={{ background: 'linear-gradient(135deg, rgba(212,175,55,0.2), rgba(212,175,55,0.1))', color: 'var(--pm-accent-gold)', border: '1px solid rgba(212,175,55,0.3)' }}>
+            style={{ background: 'linear-gradient(135deg, rgba(16,185,129,0.2), rgba(16,185,129,0.1))', color: 'var(--pm-accent-emerald)', border: '1px solid rgba(16,185,129,0.3)' }}>
             {isPending ? (
-              <><LoadingSpinner size="sm" className="text-[var(--pm-accent-gold)]" /> Registrando...</>
+              <><LoadingSpinner size="sm" className="text-[var(--pm-accent-emerald)]" /> Registrando...</>
             ) : (<><Plus className="w-3.5 h-3.5" /> Registrar Barra</>)}
           </button>
         </div>

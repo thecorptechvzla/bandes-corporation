@@ -54,19 +54,22 @@ export default function V2ProcesosPage() {
     [processes],
   );
 
-  const completedProcesses = useMemo(
-    () => processes.filter(p => p.status === 'CLOSED'),
+  const historyProcesses = useMemo(
+    () => [...processes].sort((a, b) => {
+      const order: Record<Process['status'], number> = { OPEN: 0, CLOSED: 1, CANCELLED: 2 };
+      return order[a.status] - order[b.status] || new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    }),
     [processes],
   );
 
-  const groupedCompleted = useMemo(() => {
+  const groupedHistory = useMemo(() => {
     const groups: Record<string, Process[]> = {};
-    completedProcesses.forEach(p => {
+    historyProcesses.forEach(p => {
       if (!groups[p.clientId]) groups[p.clientId] = [];
       groups[p.clientId].push(p);
     });
     return groups;
-  }, [completedProcesses]);
+  }, [historyProcesses]);
 
   const lotBarsMap = useMemo(() => {
     const map: Record<string, Bar[]> = {};
@@ -233,14 +236,14 @@ export default function V2ProcesosPage() {
       >
         <div>
           <h1 className="text-xl font-semibold text-[var(--pm-text-primary)] font-sans flex items-center gap-2.5">
-            <Flame className="w-6 h-6 text-[var(--pm-accent-amber)]" />
-            Monitoreo de <span className="text-[var(--pm-accent-amber)]">Procesos</span>
+            <Flame className="w-6 h-6 text-[var(--pm-accent-emerald)]" />
+            Monitoreo de <span className="text-[var(--pm-accent-emerald)]">Procesos</span>
           </h1>
           <p className="text-xs text-[var(--pm-text-dim)] mt-0.5">Fundición, colada y recuperación de oro.</p>
         </div>
         <div className="flex items-center gap-3 text-[11px] font-mono text-[var(--pm-text-dim)]">
           <span className="flex items-center gap-1">
-            <Layers className="w-3 h-3 text-[var(--pm-accent-amber)]" />
+            <Layers className="w-3 h-3 text-[var(--pm-accent-emerald)]" />
             {activeProcesses.length} activos
           </span>
           <span className="hidden sm:inline">
@@ -285,8 +288,8 @@ export default function V2ProcesosPage() {
 
       {/* Completed Processes */}
       <CompletedProcessesSection
-        completedProcesses={completedProcesses}
-        groupedCompleted={groupedCompleted}
+        processes={historyProcesses}
+        groupedProcesses={groupedHistory}
         processLotsMap={processLotsMap}
         clients={clients}
         isExpanded={showCompleted}

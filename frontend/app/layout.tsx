@@ -283,7 +283,7 @@ export default function RootLayout({
         <body className={bodyClass}>
           <div className="flex min-h-screen items-center justify-center bg-[var(--hud-bg-deepest)]">
             <div className="flex items-center gap-3">
-              <Loader2 className="h-5 w-5 animate-spin text-[var(--hud-accent-gold)]" />
+              <Loader2 className="h-5 w-5 animate-spin text-[var(--hud-accent-emerald)]" />
               <span className="text-xs font-mono uppercase tracking-[0.2em] text-[var(--hud-text-dim)]">
                 Cargando…
               </span>
@@ -387,7 +387,7 @@ export default function RootLayout({
                     >
                       <Menu className="w-5 h-5" />
                     </button>
-                    <span className="text-xs font-mono font-bold text-[var(--hud-accent-gold)] uppercase tracking-[0.18em]">
+                    <span className="text-xs font-mono font-bold text-[var(--hud-accent-emerald)] uppercase tracking-[0.18em]">
                       {routeLabels[activeTab] || activeTab}
                     </span>
                   </div>
@@ -397,7 +397,7 @@ export default function RootLayout({
                       <span className="text-[11px] font-mono text-[var(--hud-text-dim)]">{sysTime}</span>
                     </div>
                     <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-[var(--hud-bg-deepest)] rounded-xl border border-[var(--hud-border)]">
-                      <Calendar className="w-3 h-3 text-[var(--hud-accent-gold)]" />
+                      <Calendar className="w-3 h-3 text-[var(--hud-accent-emerald)]" />
                       <span className="text-[11px] font-mono text-[var(--hud-text-dim)]">
                         {new Date().toLocaleDateString('es-ES', {
                           year: 'numeric', month: '2-digit', day: '2-digit',

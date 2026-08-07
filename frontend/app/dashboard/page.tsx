@@ -8,7 +8,7 @@ import { useMaterialExits } from '@/hooks/useExits';
 import { useProcesses } from '@/hooks/useProcesses';
 import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
 import {
-  Flame, Warehouse, Inbox, TrendingDown, Scale,
+  Flame, Warehouse, Inbox, TrendingDown, Scale, ArrowUpRight,
 } from 'lucide-react';
 import { AreaChart, Area, ResponsiveContainer } from 'recharts';
 import { formatNumber } from '@/lib/format';
@@ -170,6 +170,24 @@ export default function V2DashboardPage() {
   const sparkOut = useMemo(() => flowData.map(d => d.out).slice(-14), [flowData]);
   const sparkNet = useMemo(() => flowData.map(d => d.in - d.out).slice(-14), [flowData]);
   const sparkPorRefundir = useMemo(() => flowData.map(d => d.in).slice(-14), [flowData]);
+
+  const egresadoGross = useMemo(
+    () => filteredBars
+      .filter(b => b.status === 'EXITED')
+      .reduce((s, b) => s + Number(b.grossWeight), 0),
+    [filteredBars],
+  );
+
+  const sparkEgresado = useMemo(() => {
+    const days: Record<string, number> = {};
+    filteredBars
+      .filter(b => b.status === 'EXITED')
+      .forEach(b => {
+        const d = new Date(b.createdAt).toISOString().split('T')[0];
+        days[d] = (days[d] || 0) + Number(b.grossWeight);
+      });
+    return Object.values(days).slice(-14);
+  }, [filteredBars]);
 
   const sparkFundido = useMemo(() => {
     const days: Record<string, number> = {};
@@ -349,6 +367,16 @@ export default function V2DashboardPage() {
       tag: KPI_COLORS[3].label,
       postfix: '',
       spark: sparkPorRefundir,
+    },
+    {
+      label: 'Oro Egresado',
+      value: egresadoGross,
+      subicon: ArrowUpRight,
+      sublabel: `Barras despachadas: ${formatNumber(egresadoGross, 2)} g`,
+      accent: KPI_COLORS[4].accent,
+      tag: 'DESPACHADO',
+      postfix: '',
+      spark: sparkEgresado,
     },
   ];
 

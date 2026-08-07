@@ -1,23 +1,16 @@
 'use client';
 
 import React, { useState, useMemo, useCallback } from 'react';
-import { motion } from 'motion/react';
-import { useMaterialExits } from '@/hooks/useExits';
 import { useBars } from '@/hooks/useBars';
 import { useClients } from '@/hooks/useClients';
 import { useProcesses } from '@/hooks/useProcesses';
 import { useLots } from '@/hooks/useLots';
-import { generateDispatchPDF, convertExitToDispatchResult } from '@/lib/generateDispatchPDF';
 import { generateReportPDF } from '@/lib/generateReportPDF';
 import { formatNumber, formatWeight } from '@/lib/format';
-import { History, Truck, ArrowDownToLine, ArrowUpFromLine, Scale, Download, RefreshCw } from 'lucide-react';
-import { ExitsTable } from '@/components/historicos/ExitsTable';
-import { HistoryFilters } from '@/components/historicos/HistoryFilters';
+import { History, ArrowDownToLine, ArrowUpFromLine, Scale, Download, RefreshCw } from 'lucide-react';
 import { BalanceTable } from '@/components/reportes/BalanceTable';
 import { FilterBar } from '@/components/reportes/FilterBar';
-import type { MaterialExit } from '@/types/api';
 
-type TabId = 'balance' | 'exits';
 type StatusFilter = 'ALL' | 'IN_STOCK' | 'COMPLETADO' | 'EXITED';
 
 interface ClientRow {
@@ -33,14 +26,9 @@ interface ClientRow {
 }
 
 export default function V2HistoricosPage() {
-  const [activeTab, setActiveTab] = useState<TabId>('balance');
-  const [searchQuery, setSearchQuery] = useState('');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
-  const [selectedProvider, setSelectedProvider] = useState('');
-  const [expandedExitId, setExpandedExitId] = useState<string | null>(null);
 
-  const { data: exits = [], isLoading: loadingExits } = useMaterialExits();
   const { data: allBars = [] } = useBars();
   const { data: clients = [] } = useClients();
   const { data: processes = [] } = useProcesses();
@@ -51,64 +39,13 @@ export default function V2HistoricosPage() {
   const [clientSearch, setClientSearch] = useState('');
   const [exporting, setExporting] = useState(false);
 
-  const switchTab = (tab: TabId) => {
-    setActiveTab(tab);
-    setExpandedExitId(null);
-    setSearchQuery('');
-    setDateFrom('');
-    setDateTo('');
-    setSelectedProvider('');
-    setFilterClientId('');
-    setStatusFilter('ALL');
-    setClientSearch('');
-  };
-
   const clearFilters = () => {
-    setSearchQuery('');
     setDateFrom('');
     setDateTo('');
-    setSelectedProvider('');
     setFilterClientId('');
     setStatusFilter('ALL');
     setClientSearch('');
   };
-
-  const exitProviders = useMemo(() => {
-    const set = new Set<string>();
-    exits.forEach(e => {
-      e.exitDetails.forEach(d => {
-        const name = d.lot?.process?.client?.name;
-        if (name) set.add(name);
-      });
-    });
-    return [...set].sort();
-  }, [exits]);
-
-  const filteredExits = useMemo(() => {
-    return exits.filter(e => {
-      if (searchQuery) {
-        const q = searchQuery.toLowerCase();
-        const destMatch = e.destination?.toLowerCase().includes(q);
-        const providerMatch = e.exitDetails.some(
-          d => d.lot?.process?.client?.name?.toLowerCase().includes(q),
-        );
-        if (!destMatch && !providerMatch) return false;
-      }
-      if (dateFrom && new Date(e.createdAt) < new Date(dateFrom)) return false;
-      if (dateTo) {
-        const end = new Date(dateTo);
-        end.setHours(23, 59, 59, 999);
-        if (new Date(e.createdAt) > end) return false;
-      }
-      if (selectedProvider) {
-        const hasProvider = e.exitDetails.some(
-          d => d.lot?.process?.client?.name === selectedProvider,
-        );
-        if (!hasProvider) return false;
-      }
-      return true;
-    });
-  }, [exits, searchQuery, dateFrom, dateTo, selectedProvider]);
 
   const balance = useMemo(() => {
     let ingresoBruto = 0;
@@ -148,16 +85,6 @@ export default function V2HistoricosPage() {
       },
     };
   }, [allBars]);
-
-  const handlePDFCliente = useCallback((exit: MaterialExit) => {
-    const result = convertExitToDispatchResult(exit);
-    generateDispatchPDF(result, undefined, 'CLIENTE');
-  }, []);
-
-  const handlePDFEmpresa = useCallback((exit: MaterialExit) => {
-    const result = convertExitToDispatchResult(exit);
-    generateDispatchPDF(result, undefined, 'EMPRESA');
-  }, []);
 
   const filteredBars = useMemo(() => {
     return allBars.filter(b => {
@@ -228,7 +155,7 @@ export default function V2HistoricosPage() {
     mixto: clientRows.reduce((s, r) => s + r.mixto, 0),
   }), [clientRows]);
 
-  const hasAnyFilter = !!(searchQuery || dateFrom || dateTo || selectedProvider || filterClientId || statusFilter !== 'ALL');
+  const hasAnyFilter = !!(dateFrom || dateTo || filterClientId || statusFilter !== 'ALL');
 
   const handleExportPDF = useCallback(async () => {
     setExporting(true);
@@ -259,8 +186,8 @@ export default function V2HistoricosPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-amber-600/30 to-amber-900/30 border border-amber-500/20 flex items-center justify-center">
-            <History className="w-5 h-5 text-[var(--pm-accent-gold)]" />
+          <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-emerald-600/30 to-emerald-900/30 border border-emerald-500/20 flex items-center justify-center">
+            <History className="w-5 h-5 text-[var(--pm-accent-emerald)]" />
           </div>
           <div>
             <h1 className="text-lg font-bold text-[var(--pm-text-primary)] tracking-tight">Históricos</h1>
@@ -319,8 +246,8 @@ export default function V2HistoricosPage() {
 
         <div className="glass-panel rounded-xl border border-[var(--pm-border)]/40 p-4 space-y-3">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-[var(--pm-accent-gold)]/10 border border-[var(--pm-accent-gold)]/20 flex items-center justify-center">
-              <Scale className="w-3.5 h-3.5 text-[var(--pm-accent-gold)]" />
+            <div className="w-7 h-7 rounded-lg bg-[var(--pm-accent-emerald)]/10 border border-[var(--pm-accent-emerald)]/20 flex items-center justify-center">
+              <Scale className="w-3.5 h-3.5 text-[var(--pm-accent-emerald)]" />
             </div>
             <span className="text-[11px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider">Balance</span>
           </div>
@@ -343,99 +270,29 @@ export default function V2HistoricosPage() {
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-1 glass-panel rounded-xl border border-[var(--pm-border)]/40 p-1 w-fit">
-        <button
-          onClick={() => switchTab('balance')}
-          className={`relative flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold font-mono tracking-wider transition-all duration-200 cursor-pointer
-            ${activeTab === 'balance'
-              ? 'text-[var(--pm-accent-gold)]'
-              : 'text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)]'
-            }`}
-        >
-          {activeTab === 'balance' && (
-            <motion.div
-              layoutId="tab-bg"
-              className="absolute inset-0 bg-[var(--pm-bg-tertiary)] rounded-lg border border-[var(--pm-border)]"
-              transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-            />
+      <FilterBar
+        dateFrom={dateFrom} dateTo={dateTo}
+        filterClientId={filterClientId} statusFilter={statusFilter}
+        clientSearch={clientSearch} clientOptions={clientOptions}
+        clients={clients} hasActiveFilters={hasAnyFilter}
+        onDateFromChange={setDateFrom} onDateToChange={setDateTo}
+        onFilterClientIdChange={setFilterClientId} onStatusFilterChange={setStatusFilter}
+        onClientSearchChange={setClientSearch} onClearFilters={clearFilters}
+      />
+      <div className="relative">
+        <BalanceTable clientRows={clientRows} totals={totals} hasActiveFilters={hasAnyFilter} />
+        <button onClick={handleExportPDF} disabled={exporting}
+          className="absolute top-5 right-5 flex items-center gap-2 px-4 py-2 bg-[var(--pm-accent-emerald)]/10 hover:bg-[var(--pm-accent-emerald)]/20
+            border border-[var(--pm-accent-emerald)]/30 text-[var(--pm-accent-emerald)] text-[11px] font-mono font-bold
+            uppercase tracking-wider rounded-lg transition-all active:scale-95 disabled:opacity-50 cursor-pointer z-10">
+          {exporting ? (
+            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+          ) : (
+            <Download className="w-3.5 h-3.5" />
           )}
-          <span className="relative z-10 flex items-center gap-2">
-            <Scale className="w-4 h-4" />
-            Balance por Cliente
-          </span>
-        </button>
-        <button
-          onClick={() => switchTab('exits')}
-          className={`relative flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold font-mono tracking-wider transition-all duration-200 cursor-pointer
-            ${activeTab === 'exits'
-              ? 'text-[var(--pm-accent-gold)]'
-              : 'text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)]'
-            }`}
-        >
-          {activeTab === 'exits' && (
-            <motion.div
-              layoutId="tab-bg"
-              className="absolute inset-0 bg-[var(--pm-bg-tertiary)] rounded-lg border border-[var(--pm-border)]"
-              transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-            />
-          )}
-          <span className="relative z-10 flex items-center gap-2">
-            <Truck className="w-4 h-4" />
-            Historial de Egresos
-          </span>
+          {exporting ? 'Generando...' : 'Descargar Reporte PDF'}
         </button>
       </div>
-
-      {/* Balance Tab */}
-      {activeTab === 'balance' && (
-        <>
-          <FilterBar
-            dateFrom={dateFrom} dateTo={dateTo}
-            filterClientId={filterClientId} statusFilter={statusFilter}
-            clientSearch={clientSearch} clientOptions={clientOptions}
-            clients={clients} hasActiveFilters={hasAnyFilter}
-            onDateFromChange={setDateFrom} onDateToChange={setDateTo}
-            onFilterClientIdChange={setFilterClientId} onStatusFilterChange={setStatusFilter}
-            onClientSearchChange={setClientSearch} onClearFilters={clearFilters}
-          />
-          <div className="relative">
-            <BalanceTable clientRows={clientRows} totals={totals} hasActiveFilters={hasAnyFilter} />
-            <button onClick={handleExportPDF} disabled={exporting}
-              className="absolute top-5 right-5 flex items-center gap-2 px-4 py-2 bg-[var(--pm-accent-gold)]/10 hover:bg-[var(--pm-accent-gold)]/20
-                border border-[var(--pm-accent-gold)]/30 text-[var(--pm-accent-gold)] text-[11px] font-mono font-bold
-                uppercase tracking-wider rounded-lg transition-all active:scale-95 disabled:opacity-50 cursor-pointer z-10">
-              {exporting ? (
-                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-              ) : (
-                <Download className="w-3.5 h-3.5" />
-              )}
-              {exporting ? 'Generando...' : 'Descargar Reporte PDF'}
-            </button>
-          </div>
-        </>
-      )}
-
-      {/* Exits Tab */}
-      {activeTab === 'exits' && (
-        <>
-          <HistoryFilters
-            activeTab="exits" searchQuery={searchQuery} dateFrom={dateFrom}
-            dateTo={dateTo} selectedProvider={selectedProvider}
-            providers={exitProviders}
-            hasAnyFilter={hasAnyFilter} onSearchChange={setSearchQuery}
-            onDateFromChange={setDateFrom} onDateToChange={setDateTo}
-            onProviderChange={setSelectedProvider} onClear={clearFilters}
-          />
-          <ExitsTable
-            exits={filteredExits} isLoading={loadingExits}
-            hasAnyFilter={hasAnyFilter} expandedExitId={expandedExitId}
-            onExpand={setExpandedExitId} onClearFilters={clearFilters}
-            onPDFCliente={handlePDFCliente}
-            onPDFEmpresa={handlePDFEmpresa}
-          />
-        </>
-      )}
     </div>
   );
 }

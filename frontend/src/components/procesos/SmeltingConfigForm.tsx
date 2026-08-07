@@ -108,10 +108,10 @@ export function SmeltingConfigForm({
     >
       <div className="px-5 pt-5 pb-2 border-b border-[var(--pm-border)]">
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.2)' }}>
-            <Play className="w-3.5 h-3.5 text-[var(--pm-accent-amber)]" />
+          <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)' }}>
+            <Play className="w-3.5 h-3.5 text-[var(--pm-accent-emerald)]" />
           </div>
-          <span className="text-xs font-mono font-bold text-[var(--pm-accent-amber)] uppercase tracking-wider">
+          <span className="text-xs font-mono font-bold text-[var(--pm-accent-emerald)] uppercase tracking-wider">
             Mesa de Selección — Cola de Fundición
           </span>
         </div>
@@ -190,8 +190,8 @@ export function SmeltingConfigForm({
             className="rounded-xl border border-[var(--pm-accent-amber)]/20 bg-[var(--pm-accent-amber)]/5 p-4"
           >
             <div className="flex items-center gap-2 mb-2">
-              <Weight className="w-3.5 h-3.5 text-[var(--pm-accent-amber)]" />
-              <span className="text-[11px] font-mono font-bold text-[var(--pm-accent-amber)] uppercase tracking-wider">Consolidado</span>
+              <Weight className="w-3.5 h-3.5 text-[var(--pm-accent-emerald)]" />
+              <span className="text-[11px] font-mono font-bold text-[var(--pm-accent-emerald)] uppercase tracking-wider">Consolidado</span>
             </div>
             <div className="grid grid-cols-3 gap-3 text-center">
               <div>
@@ -248,14 +248,14 @@ export function SmeltingConfigForm({
                   boxShadow: '0 0 20px rgba(139,92,246,0.12)',
                 }
               : {
-                  background: 'linear-gradient(135deg, rgba(245,158,11,0.2), rgba(245,158,11,0.08))',
-                  color: 'var(--pm-accent-amber)', border: '1px solid rgba(245,158,11,0.3)',
-                  boxShadow: '0 0 20px rgba(245,158,11,0.1)',
+                  background: 'linear-gradient(135deg, rgba(16,185,129,0.2), rgba(16,185,129,0.08))',
+                  color: 'var(--pm-accent-emerald)', border: '1px solid rgba(16,185,129,0.3)',
+                  boxShadow: '0 0 20px rgba(16,185,129,0.1)',
                 }
           }
         >
           {creating ? (
-            <><LoadingSpinner size="sm" className="text-[var(--pm-accent-amber)]" /> Iniciando Fundición...</>
+            <><LoadingSpinner size="sm" className="text-[var(--pm-accent-emerald)]" /> Iniciando Fundición...</>
           ) : isMixedSelection ? (
             <><GitMerge className="w-4 h-4" /> ⚡ Iniciar Fundición Mixta ({allSelectedCount} barra{allSelectedCount !== 1 ? 's' : ''})</>
           ) : (

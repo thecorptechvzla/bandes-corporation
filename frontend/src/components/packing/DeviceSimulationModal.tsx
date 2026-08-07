@@ -167,9 +167,9 @@ export function DeviceSimulationModal({
           </button>
           <button type="button" onClick={onSyncValidate} disabled={isPending}
             className="flex-[2] py-2.5 rounded-lg text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
-            style={{ background: 'linear-gradient(135deg, rgba(212,175,55,0.2), rgba(212,175,55,0.1))', color: 'var(--pm-accent-gold)', border: '1px solid rgba(212,175,55,0.3)' }}>
+            style={{ background: 'linear-gradient(135deg, rgba(16,185,129,0.2), rgba(16,185,129,0.1))', color: 'var(--pm-accent-emerald)', border: '1px solid rgba(16,185,129,0.3)' }}>
             {isPending ? (
-              <><LoadingSpinner size="sm" className="text-[var(--pm-accent-gold)]" /> SINCRONIZANDO...</>
+              <><LoadingSpinner size="sm" className="text-[var(--pm-accent-emerald)]" /> SINCRONIZANDO...</>
             ) : (
               <><Zap className="w-3.5 h-3.5" /> SINCRONIZAR Y VALIDAR</>
             )}

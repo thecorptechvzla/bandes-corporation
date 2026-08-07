@@ -113,8 +113,8 @@ export default function V2ClientesPage() {
         className="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
       >
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.2)' }}>
-            <Shield className="w-4 h-4 text-[var(--pm-accent-gold)]" />
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)' }}>
+            <Shield className="w-4 h-4 text-[var(--pm-accent-emerald)]" />
           </div>
           <div>
             <h1 className="text-lg font-semibold text-[var(--pm-text-primary)] font-sans tracking-tight">
@@ -127,11 +127,11 @@ export default function V2ClientesPage() {
         </div>
         <button
           onClick={openCreateModal}
-          className="premium-card px-4 py-2.5 rounded-xl font-mono text-[11px] uppercase tracking-wider font-bold flex items-center gap-2 active:scale-95 transition-all duration-150 cursor-pointer hover:border-[var(--pm-accent-gold)]/40"
-          style={{ borderColor: 'rgba(212,175,55,0.25)' }}
+          className="premium-card px-4 py-2.5 rounded-xl font-mono text-[11px] uppercase tracking-wider font-bold flex items-center gap-2 active:scale-95 transition-all duration-150 cursor-pointer hover:border-[var(--pm-accent-emerald)]/40"
+          style={{ borderColor: 'rgba(16,185,129,0.25)' }}
         >
-          <Plus className="w-3.5 h-3.5 text-[var(--pm-accent-gold)]" />
-          <span style={{ color: 'var(--pm-accent-gold)' }}>Nuevo Registro</span>
+          <Plus className="w-3.5 h-3.5 text-[var(--pm-accent-emerald)]" />
+          <span style={{ color: 'var(--pm-accent-emerald)' }}>Nuevo Registro</span>
         </button>
       </motion.div>
 

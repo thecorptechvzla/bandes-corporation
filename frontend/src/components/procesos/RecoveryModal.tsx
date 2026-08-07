@@ -156,15 +156,15 @@ export function RecoveryModal({ lot, lotBarsMap, processLotsMap, onClose, upload
       >
         <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-[var(--pm-border)]">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.2)' }}>
-              <Microscope className="w-4 h-4 text-[var(--pm-accent-amber)]" />
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)' }}>
+              <Microscope className="w-4 h-4 text-[var(--pm-accent-emerald)]" />
             </div>
             <div>
-              <span className="text-[10px] font-mono font-bold text-[var(--pm-accent-amber)] uppercase tracking-wider">Calibrar Colada</span>
+              <span className="text-[10px] font-mono font-bold text-[var(--pm-accent-emerald)] uppercase tracking-wider">Calibrar Colada</span>
               <h3 className="text-sm font-sans font-semibold text-[var(--pm-text-primary)] mt-0.5 flex items-center gap-2">
                 {lot.name}
                 {isMixedProcess && (
-                  <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider bg-[var(--pm-accent-gold)]/15 border border-[var(--pm-accent-gold)]/30 text-[var(--pm-accent-gold)]">
+                  <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider bg-[var(--pm-accent-emerald)]/15 border border-[var(--pm-accent-emerald)]/30 text-[var(--pm-accent-emerald)]">
                     MIXTO
                   </span>
                 )}
