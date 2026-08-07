@@ -22,8 +22,8 @@ import { BalancesTable } from '@/components/dashboard/BalancesTable';
 import { TreemapPanel } from '@/components/dashboard/TreemapPanel';
 import { FlowAreaChart } from '@/components/dashboard/FlowAreaChart';
 import { ClientBalancesBarChart } from '@/components/dashboard/ClientBalancesBarChart';
-import { DashboardCardGlass } from '@/components/dashboard/DashboardCardGlass';
 import { InventoryDonutChart } from '@/components/dashboard/InventoryDonutChart';
+import { INGRESOS_RAMP, EGRESOS_RAMP, sequentialFill } from '@/lib/treemapColors';
 
 function SparklineArea({ data, color, id }: { data: number[]; color: string; id: string }) {
   const chartData = data.map((v, i) => ({ i, v }));
@@ -50,8 +50,6 @@ function SparklineArea({ data, color, id }: { data: number[]; color: string; id:
     </div>
   );
 }
-
-const GREEN_PALETTE = ['#10b981', '#059669', '#047857', '#065f46'];
 
 export default function V2DashboardPage() {
   const [filterStartDate, setFilterStartDate] = useState('');
@@ -288,13 +286,14 @@ export default function V2DashboardPage() {
       map[name] = (map[name] || 0) + Number(b.grossWeight);
     });
     const total = Object.values(map).reduce((s, v) => s + v, 0);
+    const maxValue = Math.max(...Object.values(map), 0);
     return Object.entries(map)
       .map(([name, value]) => ({ name, value }))
       .sort((a, b) => b.value - a.value)
-      .map(({ name, value }, idx) => ({
+      .map(({ name, value }) => ({
         name, value,
         pct: total > 0 ? (value / total) * 100 : 0,
-        fill: GREEN_PALETTE[idx % GREEN_PALETTE.length],
+        fill: sequentialFill(value, maxValue, INGRESOS_RAMP),
         depth: 1,
       }));
   }, [filteredBars]);
@@ -314,13 +313,14 @@ export default function V2DashboardPage() {
       });
     });
     const total = Object.values(map).reduce((s, v) => s + v, 0);
+    const maxValue = Math.max(...Object.values(map), 0);
     return Object.entries(map)
       .map(([name, value]) => ({ name, value }))
       .sort((a, b) => b.value - a.value)
-      .map(({ name, value }, idx) => ({
+      .map(({ name, value }) => ({
         name, value,
         pct: total > 0 ? (value / total) * 100 : 0,
-        fill: GREEN_PALETTE[idx % GREEN_PALETTE.length],
+        fill: sequentialFill(value, maxValue, EGRESOS_RAMP),
         depth: 1,
       }));
   }, [filteredExits]);
@@ -422,11 +422,9 @@ export default function V2DashboardPage() {
           />
         </div>
 
-        {/* ── Fila 2: Flujo de Material (Glass) + Donut Bóveda ── */}
+        {/* ── Fila 2: Flujo de Material + Donut Bóveda ── */}
         <div className="col-span-12 lg:col-span-8">
-          <DashboardCardGlass>
-            <FlowAreaChart data={metrics?.dailyFlow ?? []} isMounted={isMounted} hideHeader bare />
-          </DashboardCardGlass>
+          <FlowAreaChart data={metrics?.dailyFlow ?? []} isMounted={isMounted} />
         </div>
         <div className="col-span-12 lg:col-span-4">
           <InventoryDonutChart
@@ -442,8 +440,8 @@ export default function V2DashboardPage() {
             title="INGRESOS POR PROVEEDOR"
             subtitle="Proporción de masa bruta recibida"
             data={ingresosTreemap}
-            accent="var(--hud-accent-gold)"
-            glowColor="#EAB308"
+            accent="#10B981"
+            glowColor="#10B981"
             scaleLabel="PROVEEDOR"
             isTableMode={showTableIngresos}
             isMounted={isMounted}
@@ -458,8 +456,8 @@ export default function V2DashboardPage() {
             title="EGRESOS POR CLIENTE"
             subtitle="Proporción de masa despachada"
             data={egresosTreemap}
-            accent="var(--hud-accent-sky)"
-            glowColor="#D97706"
+            accent="#0D9488"
+            glowColor="#0D9488"
             scaleLabel="CLIENTE"
             isTableMode={showTableEgresos}
             isMounted={isMounted}

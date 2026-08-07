@@ -1,13 +1,13 @@
 'use client';
 
 import React, { useState } from 'react';
-import { motion } from 'motion/react';
 import { TrendingUp } from 'lucide-react';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Legend,
 } from 'recharts';
 import { formatNumber } from '@/lib/format';
+import { PanelCard } from '@/components/dashboard/PanelCard';
 
 interface FlowData {
   date: string;
@@ -18,9 +18,9 @@ interface FlowData {
 interface FlowAreaChartProps {
   data: FlowData[];
   isMounted: boolean;
-  hideHeader?: boolean;
-  bare?: boolean;
 }
+
+const FLOW_ACCENT = '#38BDF8';
 
 function formatTickDate(dateStr: string) {
   const d = new Date(dateStr);
@@ -57,22 +57,22 @@ function FlowTooltip({ active, payload, label }: any) {
   );
 }
 
-export function FlowAreaChart({ data, isMounted, hideHeader, bare }: FlowAreaChartProps) {
+export function FlowAreaChart({ data, isMounted }: FlowAreaChartProps) {
   const [mode, setMode] = useState<'AMBAS' | 'INGRESOS' | 'EGRESOS'>('AMBAS');
   const hasData = data.some(d => d.ingresos > 0 || d.egresos > 0);
 
   const modes = ['AMBAS', 'INGRESOS', 'EGRESOS'] as const;
 
   const modeButtons = (
-    <div className="flex items-center gap-0.5 rounded-lg bg-[var(--hud-bg-deepest)]/60 border border-[var(--hud-border)] p-0.5">
+    <div className="flex items-center gap-1">
       {modes.map(m => (
         <button
           key={m}
           onClick={() => setMode(m)}
-          className={`px-2.5 py-1 rounded-md text-[10px] font-mono font-bold tracking-wider uppercase transition-all active:scale-95 ${
+          className={`px-2.5 py-1 text-[10px] font-mono font-bold tracking-wider uppercase transition-all active:scale-95 cursor-pointer ${
             mode === m
-              ? 'text-[var(--hud-accent-gold)] bg-[var(--hud-accent-gold)]/15 border border-[var(--hud-accent-gold)]/30'
-              : 'text-[var(--hud-text-dim)] border border-transparent hover:text-[var(--hud-text-primary)]'
+              ? 'text-sky-400'
+              : 'text-[var(--hud-text-dim)] hover:text-[var(--hud-text-primary)]'
           }`}
         >
           {m}
@@ -82,59 +82,32 @@ export function FlowAreaChart({ data, isMounted, hideHeader, bare }: FlowAreaCha
   );
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.15, duration: 0.45 }}
-      className={bare ? 'h-full overflow-hidden' : 'hud-card overflow-hidden h-full'}
+    <PanelCard
+      accent={FLOW_ACCENT}
+      title={
+        <>
+          <TrendingUp className="w-3.5 h-3.5 text-sky-400" />
+          <h3 className="text-xs font-semibold text-slate-100 font-mono tracking-wider uppercase">
+            Flujo de Material
+          </h3>
+          <span className="text-[10px] text-slate-500 font-mono hidden sm:inline">30 días</span>
+        </>
+      }
+      headerRight={modeButtons}
     >
-      {hideHeader ? (
-        <div className="flex items-center justify-end px-5 pt-3 pb-2">{modeButtons}</div>
-      ) : (
-        <div className="flex items-center justify-between gap-2 px-5 pt-4 pb-2 border-b border-[var(--hud-border)]">
-          <div className="flex items-center gap-2">
-            <TrendingUp className="w-3.5 h-3.5 text-[var(--hud-accent-sky)]" />
-            <h3 className="text-[11px] font-bold text-[var(--hud-text-primary)] font-mono tracking-wider uppercase">
-              Flujo de Material (30 días)
-            </h3>
-          </div>
-          {modeButtons}
-        </div>
-      )}
-
       {!hasData || !isMounted ? (
         <div className="flex items-center justify-center py-20">
           <span className="text-xs font-mono text-[var(--hud-text-muted)]">Sin datos de flujo</span>
         </div>
       ) : (
-        <div className={hideHeader ? 'px-3 pt-2 pb-2' : 'px-3 pt-4 pb-2'}>
-          <ResponsiveContainer width="100%" height={260}>
+        <div className="flex-1 px-3 pt-3 pb-2 min-h-0">
+          <ResponsiveContainer width="100%" height="100%" minHeight={240}>
             <AreaChart data={data} margin={{ top: 10, right: 24, bottom: 0, left: -8 }}>
               <defs>
                 <linearGradient id="grad-sky" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="var(--hud-accent-sky)" stopOpacity={0.4} />
-                  <stop offset="30%" stopColor="var(--hud-accent-sky)" stopOpacity={0.15} />
+                  <stop offset="0%" stopColor="var(--hud-accent-sky)" stopOpacity={0.3} />
                   <stop offset="100%" stopColor="var(--hud-accent-sky)" stopOpacity={0} />
                 </linearGradient>
-                <linearGradient id="grad-gold" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="var(--hud-accent-gold)" stopOpacity={0.4} />
-                  <stop offset="30%" stopColor="var(--hud-accent-gold)" stopOpacity={0.15} />
-                  <stop offset="100%" stopColor="var(--hud-accent-gold)" stopOpacity={0} />
-                </linearGradient>
-                <filter id="glow-sky" x="-50%" y="-50%" width="200%" height="200%">
-                  <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-                  <feMerge>
-                    <feMergeNode in="coloredBlur"/>
-                    <feMergeNode in="SourceGraphic"/>
-                  </feMerge>
-                </filter>
-                <filter id="glow-gold" x="-50%" y="-50%" width="200%" height="200%">
-                  <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-                  <feMerge>
-                    <feMergeNode in="coloredBlur"/>
-                    <feMergeNode in="SourceGraphic"/>
-                  </feMerge>
-                </filter>
               </defs>
               <CartesianGrid
                 strokeDasharray="4 8"
@@ -173,7 +146,6 @@ export function FlowAreaChart({ data, isMounted, hideHeader, bare }: FlowAreaCha
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 fill="url(#grad-sky)"
-                filter="url(#glow-sky)"
                 hide={mode === 'EGRESOS'}
                 dot={false}
                 activeDot={{
@@ -191,15 +163,14 @@ export function FlowAreaChart({ data, isMounted, hideHeader, bare }: FlowAreaCha
                 dataKey="egresos"
                 name="Egresos"
                 stroke="var(--hud-accent-gold)"
-                strokeWidth={2.5}
+                strokeWidth={1.25}
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                fill="url(#grad-gold)"
-                filter="url(#glow-gold)"
+                fill="transparent"
                 hide={mode === 'INGRESOS'}
                 dot={false}
                 activeDot={{
-                  r: 5,
+                  r: 4,
                   stroke: '#fff',
                   strokeWidth: 2,
                   fill: 'var(--hud-accent-gold)',
@@ -212,6 +183,6 @@ export function FlowAreaChart({ data, isMounted, hideHeader, bare }: FlowAreaCha
           </ResponsiveContainer>
         </div>
       )}
-    </motion.div>
+    </PanelCard>
   );
 }

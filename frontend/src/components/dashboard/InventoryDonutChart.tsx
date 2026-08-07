@@ -1,16 +1,18 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { motion } from 'motion/react';
 import { Warehouse } from 'lucide-react';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 import { formatNumber } from '@/lib/format';
+import { PanelCard } from '@/components/dashboard/PanelCard';
 
 interface InventoryDonutChartProps {
   fundido: number;
   sinFundir: number;
   isMounted: boolean;
 }
+
+const DONUT_ACCENT = '#10B981';
 
 function DonutTooltip({ active, payload }: any) {
   if (!active || !payload?.length) return null;
@@ -63,23 +65,21 @@ export function InventoryDonutChart({ fundido, sinFundir, isMounted }: Inventory
 
   const chartData = [
     { name: 'Fundido', value: fundido, color: '#10B981' },
-    { name: 'Sin Fundir', value: sinFundir, color: '#06B6D4' },
+    { name: 'Sin Fundir', value: sinFundir, color: '#0D9488' },
   ];
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.2, duration: 0.45 }}
-      className="hud-card overflow-hidden h-full"
+    <PanelCard
+      accent={DONUT_ACCENT}
+      title={
+        <>
+          <Warehouse className="w-3.5 h-3.5 text-[var(--hud-accent-emerald)]" />
+          <h3 className="text-xs font-semibold text-slate-100 font-mono tracking-wider uppercase">
+            Estado Bóveda
+          </h3>
+        </>
+      }
     >
-      <div className="flex items-center gap-2 px-5 pt-4 pb-2 border-b border-[var(--hud-border)]">
-        <Warehouse className="w-3.5 h-3.5 text-[var(--hud-accent-emerald)]" />
-        <h3 className="text-[11px] font-bold text-[var(--hud-text-primary)] font-mono tracking-wider uppercase">
-          Estado Bóveda
-        </h3>
-      </div>
-
       {!hasData || !isMounted ? (
         <div className="flex items-center justify-center py-20">
           <span className="text-xs font-mono text-[var(--hud-text-muted)]">Sin datos en bóveda</span>
@@ -98,7 +98,7 @@ export function InventoryDonutChart({ fundido, sinFundir, isMounted }: Inventory
                   innerRadius={innerRadius}
                   outerRadius={outerRadius}
                   strokeWidth={2}
-                  stroke="var(--hud-bg-deepest)"
+                  stroke="#0D1117"
                   isAnimationActive={isMounted}
                   animationDuration={1000}
                   animationEasing="ease-out"
@@ -123,16 +123,14 @@ export function InventoryDonutChart({ fundido, sinFundir, isMounted }: Inventory
             </div>
           </div>
 
-          {/* Legend — pills */}
-          <div className="flex items-center justify-center gap-3 mt-3">
+          {/* Legend — plain rows */}
+          <div className="flex items-center justify-center gap-5 mt-3">
             {chartData.map(item => (
-              <div
-                key={item.name}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-lg"
-                style={{ background: 'var(--hud-bg-deepest)', border: '1px solid var(--hud-border)' }}
-              >
-                <span className="w-2.5 h-2.5 rounded-full" style={{ background: item.color }} />
-                <span className="text-[10px] font-mono text-[var(--hud-text-dim)]">{item.name}</span>
+              <div key={item.name} className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full" style={{ background: item.color }} />
+                <span className="text-[10px] font-mono text-[var(--hud-text-dim)] uppercase tracking-wider">
+                  {item.name}
+                </span>
                 <span className="text-[11px] font-mono font-bold" style={{ color: item.color }}>
                   {formatNumber(item.value, 2)} g
                 </span>
@@ -141,6 +139,6 @@ export function InventoryDonutChart({ fundido, sinFundir, isMounted }: Inventory
           </div>
         </div>
       )}
-    </motion.div>
+    </PanelCard>
   );
 }

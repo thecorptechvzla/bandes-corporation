@@ -1,10 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
-import { motion } from 'motion/react';
 import { LayoutGrid, Table2 } from 'lucide-react';
 import { Treemap, ResponsiveContainer, Tooltip } from 'recharts';
 import { formatNumber } from '@/lib/format';
+import { PanelCard } from '@/components/dashboard/PanelCard';
 
 interface TreemapTooltipProps {
   active?: boolean;
@@ -68,9 +68,8 @@ interface CustomBlockProps {
 function CustomTreemapBlock(props: CustomBlockProps) {
   const {
     x = 0, y = 0, width = 0, height = 0,
-    name = '', value = 0, pct = 0, fill = '#0D1520',
-    accent = '#00E5FF', glowColor = '#00E5FF',
-    index = 0, treemapId = 'default', depth = 1,
+    name = '', value = 0, pct = 0, fill = '#0D9488',
+    accent = '#0D9488', index = 0, treemapId = 'default', depth = 1,
   } = props;
   const [hovered, setHovered] = useState(false);
 
@@ -79,6 +78,7 @@ function CustomTreemapBlock(props: CustomBlockProps) {
 
   const uid = `${treemapId}-block-${index}`;
   const weightLabel = `${formatNumber(value, 2)} g`;
+  const glow = accent || fill;
 
   const gap = 6;
   const ix = x + gap / 2;
@@ -99,47 +99,29 @@ function CustomTreemapBlock(props: CustomBlockProps) {
       style={{ cursor: 'pointer' }}
     >
       <defs>
-        {/* LED cell gradient — diagonal with depth */}
-        <linearGradient id={`led-${uid}`} x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor={fill} stopOpacity={0.85} />
-          <stop offset="100%" stopColor={fill} stopOpacity={0.55} />
-        </linearGradient>
-        {/* LED top highlight — retroillumination effect */}
-        <linearGradient id={`led-top-${uid}`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="rgba(255,255,255,0.18)" />
-          <stop offset="40%" stopColor="rgba(255,255,255,0)" />
-        </linearGradient>
-        {/* LED shine — subtle diagonal sheen */}
-        <linearGradient id={`led-shine-${uid}`} x1="0" y1="1" x2="0.5" y2="0">
-          <stop offset="0%" stopColor="rgba(255,255,255,0)" />
-          <stop offset="60%" stopColor="rgba(255,255,255,0)" />
-          <stop offset="100%" stopColor="rgba(255,255,255,0.06)" />
+        {/* Top glow — translucent, fades to 0 downward */}
+        <linearGradient id={`tm-glow-${uid}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={glow} stopOpacity={0.4} />
+          <stop offset="100%" stopColor={glow} stopOpacity={0} />
         </linearGradient>
       </defs>
 
-      {/* Base LED cell */}
+      {/* Dark flat base */}
       <rect x={ix} y={iy} width={iw} height={ih}
-        fill={`url(#led-${uid})`} rx={12} />
+        fill="#0D1117" rx={12} />
 
-      {/* Retroillumination (top glow) */}
+      {/* Top glow overlay */}
       <rect x={ix} y={iy} width={iw} height={ih}
-        fill={`url(#led-top-${uid})`} rx={12} />
+        fill={`url(#tm-glow-${uid})`} rx={12} />
 
-      {/* Diagonal sheen */}
-      <rect x={ix} y={iy} width={iw} height={ih}
-        fill={`url(#led-shine-${uid})`} rx={12} />
+      {/* Mini top accent line — computed per value */}
+      <rect x={ix} y={iy} width={iw} height={3}
+        fill={glow} opacity={0.9} rx={1.5} />
 
-      {/* Border — LED frame */}
-      <rect x={ix} y={iy} width={iw} height={ih} fill="none" stroke={fill}
-        strokeOpacity={hovered ? 0.9 : 0.5} strokeWidth={1.5} rx={12} />
-
-      {/* Inner light border */}
-      <rect x={ix + 1} y={iy + 1} width={iw - 2} height={ih - 2}
-        fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={0.75} rx={11} />
-
+      {/* Hover overlay */}
       {hovered && (
         <rect x={ix} y={iy} width={iw} height={ih}
-          fill="rgba(255,255,255,0.06)" rx={12} />
+          fill="rgba(255,255,255,0.05)" rx={12} />
       )}
 
       {showName && (
@@ -232,7 +214,7 @@ export function TreemapPanel({
           aspectRatio={4 / 3}
           stroke="transparent"
           isAnimationActive={true}
-          content={<CustomTreemapBlock accent={accent} glowColor={glowColor} treemapId={treemapId} />}
+          content={<CustomTreemapBlock accent={glowColor} glowColor={glowColor} treemapId={treemapId} />}
         >
           <Tooltip content={<TreemapTooltip accent={accent} scaleLabel={scaleLabel} />} />
         </Treemap>
@@ -272,40 +254,31 @@ export function TreemapPanel({
     </div>
   );
 
-  const toggleBg = isTableMode ? `${accent}12` : 'transparent';
-  const toggleColor = accent;
-  const toggleBorder = `${accent}20`;
-
   return (
-    <motion.div
-      initial={{ opacity: 0, x: 0 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ delay: 0.2, duration: 0.45 }}
-      className="hud-card overflow-hidden flex flex-col flex-1"
-    >
-      <div className="flex items-center justify-between px-5 pt-4 pb-2 border-b border-[var(--hud-border)]">
-        <div>
-          <h3 className="text-[11px] font-semibold text-[var(--hud-text-primary)] font-mono tracking-wider">
-            {title}
-          </h3>
-          <p className="text-[10px] text-[var(--hud-text-dim)] font-mono mt-0.5">
-            {subtitle}
-          </p>
-        </div>
+    <PanelCard
+      accent={accent}
+      className="flex-1"
+      title={
+        <>
+          <div>
+            <h3 className="text-xs font-semibold text-slate-100 font-mono tracking-wider uppercase">
+              {title}
+            </h3>
+            <p className="text-[10px] text-slate-500 font-mono mt-0.5">{subtitle}</p>
+          </div>
+        </>
+      }
+      headerRight={
         <button
           onClick={onToggleView}
-          className="flex items-center gap-1.5 text-[10px] font-mono font-bold tracking-wider uppercase px-3 py-1.5 rounded-lg transition-all duration-150 active:scale-95"
-          style={{
-            background: toggleBg,
-            color: toggleColor,
-            border: `1px solid ${toggleBorder}`,
-          }}
+          className="flex items-center gap-1.5 text-[10px] font-mono font-semibold tracking-wider uppercase transition-colors hover:opacity-80 cursor-pointer"
+          style={{ color: accent }}
         >
           {isTableMode ? <LayoutGrid className="w-3 h-3" /> : <Table2 className="w-3 h-3" />}
-          {isTableMode ? 'VER GRÁFICA' : 'VER DETALLE'}
+          {isTableMode ? 'GRÁFICA' : 'DETALLE'}
         </button>
-      </div>
-
+      }
+    >
       {data.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16">
           <EmptyIcon className="w-12 h-12 text-gray-500/30 mb-3" />
@@ -320,6 +293,6 @@ export function TreemapPanel({
           <span className="text-xs font-mono text-[var(--hud-text-dim)]">Cargando gráfica...</span>
         </div>
       )}
-    </motion.div>
+    </PanelCard>
   );
 }
