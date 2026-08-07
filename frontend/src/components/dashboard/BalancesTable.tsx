@@ -1,10 +1,10 @@
 'use client';
 
 import React, { useCallback, useMemo } from 'react';
-import { motion } from 'motion/react';
 import { Coins } from 'lucide-react';
 import { formatNumber } from '@/lib/format';
 import type { ClientBalance } from '@/types/api';
+import { PanelCard } from '@/components/dashboard/PanelCard';
 
 interface BalancesTableProps {
   clientBalances: ClientBalance[];
@@ -14,8 +14,8 @@ interface BalancesTableProps {
 
 const fmtG = (val: number) => `${formatNumber(val, 2)} g`;
 
-const TH = 'text-right text-[11px] font-sans font-bold tracking-wider uppercase text-[var(--hud-text-muted)] px-4 py-3';
-const TH_STICKY = 'sticky left-0 z-10 text-left text-[11px] font-sans font-bold tracking-wider uppercase text-[var(--hud-text-muted)] px-5 py-3';
+const TH = 'text-right text-xs font-semibold tracking-wider uppercase text-slate-500 px-4 py-3 font-sans';
+const TH_STICKY = 'sticky left-0 z-10 text-left text-xs font-semibold tracking-wider uppercase text-slate-500 px-5 py-3 font-sans';
 
 export function BalancesTable({ clientBalances, totalBalance, onClientClick }: BalancesTableProps) {
   const sorted = useMemo(
@@ -47,46 +47,44 @@ export function BalancesTable({ clientBalances, totalBalance, onClientClick }: B
   }, [onClientClick]);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 32 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.35, duration: 0.45 }}
-      className="hud-card overflow-hidden"
-    >
-      <div className="flex items-center justify-between px-6 pt-5 pb-3 border-b border-[var(--hud-border)]">
-        <div>
-          <h3 className="text-sm font-semibold text-[var(--hud-text-primary)] font-sans">
-            Balances
-          </h3>
-          <p className="text-[11px] text-[var(--hud-text-dim)] font-sans mt-0.5">
-            Ciclo completo del oro por cliente.
-          </p>
-        </div>
+    <PanelCard
+      accent="#10B981"
+      delay={0.35}
+      title={
+        <>
+          <div>
+            <h3 className="text-xs font-semibold text-slate-100 font-mono tracking-wider uppercase">
+              Balances
+            </h3>
+            <p className="text-[10px] text-slate-500 font-mono mt-0.5">
+              Ciclo completo del oro por cliente.
+            </p>
+          </div>
+        </>
+      }
+      headerRight={
         <div className="text-right">
-          <span className="text-[11px] text-[var(--hud-text-muted)] font-mono block uppercase tracking-wider">BALANCE TOTAL</span>
+          <span className="text-[10px] text-slate-500 font-mono block uppercase tracking-wider">BALANCE TOTAL</span>
           <span
-            className={`text-sm font-mono font-bold ${totalBalance >= 0 ? 'text-[var(--hud-accent-emerald)]' : 'text-[var(--hud-accent-red)]'}`}
+            className={`text-sm font-mono font-bold ${totalBalance >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}
           >
             {fmtG(Math.abs(totalBalance))}
             {totalBalance < 0 ? ' (negativo)' : ''}
           </span>
         </div>
-      </div>
-
+      }
+    >
       {clientBalances.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16">
-          <Coins className="w-12 h-12 text-[var(--hud-text-muted)]/30 mb-3" />
-          <span className="text-sm font-mono text-[var(--hud-text-muted)]">No hay datos de clientes</span>
+          <Coins className="w-12 h-12 text-slate-600/30 mb-3" />
+          <span className="text-sm font-mono text-slate-500">No hay datos de clientes</span>
         </div>
       ) : (
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto flex-1 min-h-0">
           <table className="w-full border-collapse" style={{ minWidth: 1200 }}>
             <thead>
-              <tr
-                className="border-b border-[var(--hud-border)]"
-                style={{ background: 'var(--hud-bg-deepest)' }}
-              >
-                <th className={TH_STICKY} style={{ background: 'var(--hud-bg-deepest)' }}>Cliente</th>
+              <tr className="border-b border-slate-800/60">
+                <th className={TH_STICKY} style={{ background: 'transparent' }}>Cliente</th>
                 <th className={TH}>Ingreso Bruto</th>
                 <th className={TH}>Peso Fino</th>
                 <th className={TH}>Ley Au</th>
@@ -100,67 +98,67 @@ export function BalancesTable({ clientBalances, totalBalance, onClientClick }: B
                 <tr
                   key={c.id}
                   data-client-id={c.id}
-                  className="balances-row border-b border-white/[0.02] cursor-pointer"
+                  className="balances-row border-b border-slate-800/20 hover:bg-white/5 cursor-pointer transition-colors"
                 >
-                  <td className="sticky left-0 z-10 text-left text-xs font-sans font-semibold text-[var(--hud-text-primary)] px-5 py-3 truncate max-w-[180px] balances-row-sticky">
+                  <td className="sticky left-0 z-10 text-left text-xs font-sans font-semibold text-slate-100 px-5 py-3 truncate max-w-[180px] balances-row-sticky">
                     {c.name}
                   </td>
-                  <td className="text-right text-xs font-mono text-[var(--hud-accent-gold)] px-4 py-3">
+                  <td className="text-right text-xs font-mono text-amber-400 px-4 py-3">
                     {fmtG(c.ingresoBruto)}
                   </td>
-                  <td className="text-right text-xs font-mono text-[var(--hud-text-primary)] px-4 py-3">
+                  <td className="text-right text-xs font-mono text-slate-200 px-4 py-3">
                     {fmtG(c.fa)}
                   </td>
                   <td className="text-right text-xs font-mono text-slate-400 px-4 py-3">
                     {formatNumber(c.leyAu, 1)}%
                   </td>
-                  <td className="text-right text-xs font-mono text-[var(--hud-accent-red)] px-4 py-3">
+                  <td className="text-right text-xs font-mono text-rose-400 px-4 py-3">
                     {fmtG(c.egresos)}
                   </td>
-                  <td className={`text-right text-xs font-mono font-bold px-4 py-3 ${c.balance >= 0 ? 'text-[var(--hud-accent-emerald)]' : 'text-[var(--hud-accent-red)]'}`}>
+                  <td className={`text-right text-xs font-mono font-bold px-4 py-3 ${c.balance >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
                     {fmtG(Math.abs(c.balance))}
                     {c.balance < 0 ? ' −' : ''}
                   </td>
-                  <td className="text-right text-xs font-mono text-[var(--hud-accent-amber)] px-4 py-3">
+                  <td className="text-right text-xs font-mono text-amber-500 px-4 py-3">
                     {fmtG(c.mermaG)}
-                    <span className="text-[var(--hud-text-muted)] ml-1">({formatNumber(c.mermaPct, 1)}%)</span>
+                    <span className="text-slate-500 ml-1">({formatNumber(c.mermaPct, 1)}%)</span>
                   </td>
                 </tr>
               ))}
             </tbody>
             <tfoot>
-              <tr className="border-t border-[var(--hud-border)] bg-[var(--hud-bg-base)] sticky bottom-0">
+              <tr className="border-t border-slate-800/60 bg-[#15171F] sticky bottom-0">
                 <td
-                  className="sticky left-0 z-10 text-left text-xs font-sans font-bold uppercase tracking-wider text-[var(--hud-text-primary)] px-5 py-3"
-                  style={{ background: 'var(--hud-bg-base)' }}
+                  className="sticky left-0 z-10 text-left text-xs font-sans font-bold uppercase tracking-wider text-slate-100 px-5 py-3"
+                  style={{ background: '#15171F' }}
                 >
                   TOTALES
                 </td>
-                <td className="text-right text-xs font-mono font-bold text-[var(--hud-accent-gold)] px-4 py-3">
+                <td className="text-right text-xs font-mono font-bold text-amber-400 px-4 py-3">
                   {fmtG(totals.ingresoBruto)}
                 </td>
-                <td className="text-right text-xs font-mono font-bold text-[var(--hud-accent-gold)] px-4 py-3">
+                <td className="text-right text-xs font-mono font-bold text-amber-400 px-4 py-3">
                   {fmtG(totals.fa)}
                 </td>
-                <td className="text-right text-xs font-mono font-bold text-[var(--hud-accent-gold)] px-4 py-3">
+                <td className="text-right text-xs font-mono font-bold text-amber-400 px-4 py-3">
                   {leyTotal !== null ? `${formatNumber(leyTotal, 2)}%` : '—'}
                 </td>
-                <td className="text-right text-xs font-mono font-bold text-[var(--hud-accent-gold)] px-4 py-3">
+                <td className="text-right text-xs font-mono font-bold text-amber-400 px-4 py-3">
                   {fmtG(totals.egresos)}
                 </td>
                 <td className={`text-right text-xs font-mono font-bold px-4 py-3 ${totals.balance >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
                   {fmtG(Math.abs(totals.balance))}
                   {totals.balance < 0 ? ' −' : ''}
                 </td>
-                <td className="text-right text-xs font-mono font-bold text-[var(--hud-accent-gold)] px-4 py-3">
+                <td className="text-right text-xs font-mono font-bold text-amber-400 px-4 py-3">
                   {fmtG(totals.mermaG)}
-                  <span className="text-[var(--hud-text-muted)] ml-1">(—)</span>
+                  <span className="text-slate-500 ml-1">(—)</span>
                 </td>
               </tr>
             </tfoot>
           </table>
         </div>
       )}
-    </motion.div>
+    </PanelCard>
   );
 }
