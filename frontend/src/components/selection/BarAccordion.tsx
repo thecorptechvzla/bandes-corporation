@@ -63,7 +63,14 @@ export function BarAccordion({
   onOpenDetail,
   mixedGroupKey,
 }: BarAccordionProps) {
-  const entries = useMemo(() => Object.entries(groups), [groups]);
+  const entries = useMemo(() => {
+    return Object.entries(groups).sort(([aKey, aItems], [bKey, bItems]) => {
+      const isMixedA = mixedGroupKey !== undefined && aKey === mixedGroupKey;
+      const isMixedB = mixedGroupKey !== undefined && bKey === mixedGroupKey;
+      if (isMixedA !== isMixedB) return isMixedA ? -1 : 1;
+      return (aItems[0]?.clientName ?? '').localeCompare(bItems[0]?.clientName ?? '');
+    });
+  }, [groups, mixedGroupKey]);
 
   if (entries.length === 0) {
     return (

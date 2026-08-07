@@ -34,7 +34,7 @@ export function RecoveryModal({ lot, lotBarsMap, processLotsMap, onClose, upload
   const lotGross = lotBars.reduce((s, b) => s + Number(b.grossWeight), 0);
   const lotFA = lotBars.reduce((s, b) => s + Number(b.fineWeight), 0);
 
-  const [recoveredWeight, setRecoveredWeight] = useState(() => lotFA.toFixed(4));
+  const [recoveredWeight, setRecoveredWeight] = useState('');
   const [recoveredLeyAu, setRecoveredLeyAu] = useState('');
   const [recoveryError, setRecoveryError] = useState('');
   const [recoverySuccess, setRecoverySuccess] = useState(false);

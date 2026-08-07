@@ -46,7 +46,7 @@ const menuItems = [
   { id: 'procesos', name: 'Procesos', icon: Flame },
   { id: 'egresos', name: 'Egresos', icon: ArrowLeftRight },
   { id: 'reportes', name: 'Reportes', icon: FileText },
-  { id: 'historicos', name: 'Históricos', icon: History },
+  // { id: 'historicos', name: 'Históricos', icon: History },
 ];
 
 const routeLabels: Record<string, string> = {

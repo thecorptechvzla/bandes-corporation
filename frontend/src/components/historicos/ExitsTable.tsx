@@ -191,19 +191,30 @@ export function ExitsTable({
                             <div className="overflow-x-auto">
                               <table className="w-full text-[11px] font-mono">
                                 <thead>
-                                  <tr className="border-b border-[var(--pm-border)]/30">
-                                    <th className="text-left py-2 px-3 text-[var(--pm-text-dim)] font-semibold">Lote</th>
+                                  <tr className="border-b border-[var(--pm-border)]/30 grid grid-cols-[1fr_1fr_110px_130px]">
+                                    <th className="text-left py-2 px-3 text-[var(--pm-text-dim)] font-semibold">Lote/Barra</th>
                                     <th className="text-left py-2 px-3 text-[var(--pm-text-dim)] font-semibold">Proveedor</th>
-                                    <th className="text-right py-2 px-3 text-[var(--pm-text-dim)] font-semibold">Barras</th>
+                                    <th className="text-right py-2 px-3 text-[var(--pm-text-dim)] font-semibold">Cant. Barras</th>
                                     <th className="text-right py-2 px-3 text-[var(--pm-text-dim)] font-semibold">Peso Aportado</th>
-                                    <th className="text-left py-2 px-3 text-[var(--pm-text-dim)] font-semibold">Barras</th>
                                   </tr>
                                 </thead>
                                 <tbody>
                                   {e.exitDetails.map(detail => (
-                                    <tr key={detail.id} className="border-b border-[var(--pm-border)]/20 hover:bg-[var(--pm-bg-tertiary)]/40 transition-colors">
+                                    <tr key={detail.id} className="border-b border-[var(--pm-border)]/20 hover:bg-[var(--pm-bg-tertiary)]/40 transition-colors grid grid-cols-[1fr_1fr_110px_130px]">
                                       <td className="py-2 px-3 text-[var(--pm-text-primary)] font-semibold">
-                                        {detail.lot?.name ?? '—'}
+                                        <div className="flex flex-col gap-1">
+                                          <span>{detail.lot?.name ?? '—'}</span>
+                                          {detail.bars && detail.bars.length > 0 && (
+                                            <div className="flex flex-wrap gap-1">
+                                              {detail.bars.map(bar => (
+                                                <span key={bar.id} className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] bg-[var(--pm-bg-tertiary)] text-[var(--pm-text-dim)] border border-[var(--pm-border)]/30">
+                                                  {bar.barNumber}
+                                                  <span className="text-[var(--pm-accent-gold)]">({formatWeight(Number(bar.fineWeight), 1)})</span>
+                                                </span>
+                                              ))}
+                                            </div>
+                                          )}
+                                        </div>
                                       </td>
                                       <td className="py-2 px-3 text-[var(--pm-text-dim)]">
                                         {detail.lot?.process?.client?.name ?? '—'}
@@ -213,16 +224,6 @@ export function ExitsTable({
                                       </td>
                                       <td className="py-2 px-3 text-right text-[var(--pm-accent-gold)] font-semibold">
                                         {formatWeight(Number(detail.weightAported), 2)}
-                                      </td>
-                                      <td className="py-2 px-3">
-                                        <div className="flex flex-wrap gap-1">
-                                          {detail.bars?.map(bar => (
-                                            <span key={bar.id} className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] bg-[var(--pm-bg-tertiary)] text-[var(--pm-text-dim)] border border-[var(--pm-border)]/30">
-                                              {bar.barNumber}
-                                              <span className="text-[var(--pm-accent-gold)]">({formatWeight(Number(bar.fineWeight), 1)})</span>
-                                            </span>
-                                          ))}
-                                        </div>
                                       </td>
                                     </tr>
                                   ))}
