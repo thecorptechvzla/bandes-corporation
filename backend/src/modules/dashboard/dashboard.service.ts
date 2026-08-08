@@ -53,12 +53,13 @@ export class DashboardService {
           _count: true,
         }),
 
-        // 3. Recovered desde procesos CLOSED
+        // 3. Recovered desde procesos CLOSED (excluye lotes ya despachados)
         this.prisma.lot.aggregate({
           where: {
             ...lotClientFilter,
             process: { status: 'CLOSED' },
             recovered: { not: null },
+            exitDetails: { none: {} },
           },
           _sum: { recovered: true },
         }),
@@ -69,12 +70,12 @@ export class DashboardService {
           _sum: { fineWeight: true },
         }),
 
-        // 5. FA que entró a fundir (COMPLETADO + EXITED)
+        // 5. FA que entró a fundir (en bóveda, no despachado)
         this.prisma.bar.aggregate({
           where: {
             ...barBaseWhere,
             ...clientFilter,
-            status: { in: ['COMPLETADO', 'EXITED'] },
+            status: 'COMPLETADO',
           },
           _sum: { fineWeight: true },
         }),

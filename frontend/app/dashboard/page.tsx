@@ -130,19 +130,29 @@ export default function V2DashboardPage() {
     [filteredBars],
   );
 
+  const dispatchedLotIds = useMemo(
+    () =>
+      new Set(
+        exits.flatMap((e) =>
+          (e.exitDetails ?? []).map((d) => d.lotId).filter(Boolean),
+        ),
+      ),
+    [exits],
+  );
+
   const bovedaLots = useMemo(() => {
     return processes
       .filter((p) => p.status === 'CLOSED')
       .flatMap((p) =>
         (p.lots ?? [])
-          .filter((l) => l.recovered != null)
+          .filter((l) => l.recovered != null && !dispatchedLotIds.has(l.id))
           .map((l) => ({ ...l, process: p, client: p.client })),
       )
       .filter((l) => {
         if (filterClientId) return l.client?.id === filterClientId;
         return true;
       });
-  }, [processes, filterClientId]);
+  }, [processes, filterClientId, dispatchedLotIds]);
 
   const flowData = useMemo(() => {
     const days: Record<string, { in: number; out: number }> = {};
@@ -222,12 +232,14 @@ export default function V2DashboardPage() {
       const ingresoBruto = clientBars.reduce((s, b) => s + Number(b.grossWeight), 0);
       const fa = clientBars.reduce((s, b) => s + Number(b.fineWeight), 0);
       const clientProcesses = processes.filter(p => p.clientId === client.id);
-      const r = clientProcesses.reduce((s, p) =>
-        s + (p.lots?.reduce((sl, l) => sl + Number(l.recovered ?? 0), 0) ?? 0), 0);
+      const lotRecovered = (lots: { id: string; recovered?: number | null }[]) =>
+        lots
+          .filter((l) => !dispatchedLotIds.has(l.id))
+          .reduce((sl, l) => sl + Number(l.recovered ?? 0), 0);
+      const r = clientProcesses.reduce((s, p) => s + lotRecovered(p.lots ?? []), 0);
       const rCerrado = clientProcesses
         .filter(p => p.status === 'CLOSED')
-        .reduce((s, p) =>
-          s + (p.lots?.reduce((sl, l) => sl + Number(l.recovered ?? 0), 0) ?? 0), 0);
+        .reduce((s, p) => s + lotRecovered(p.lots ?? []), 0);
       const egresos = filteredExits.reduce((sum, e) =>
         sum
         + (e.bars ?? []).filter(b => b.clientId === client.id)
@@ -240,7 +252,7 @@ export default function V2DashboardPage() {
       const leyAu = ingresoBruto > 0 ? (fa / ingresoBruto) * 100 : 0;
       const sinFundir = Math.max(0, fa - r);
       const faProcesado = clientBars
-        .filter(b => b.status === 'COMPLETADO' || b.status === 'EXITED')
+        .filter(b => b.status === 'COMPLETADO')
         .reduce((s, b) => s + Number(b.fineWeight), 0);
       const mermaG = Math.max(0, faProcesado - rCerrado);
       const mermaPct = faProcesado > 0 ? (mermaG / faProcesado) * 100 : 0;
@@ -248,7 +260,7 @@ export default function V2DashboardPage() {
     })
       .filter(c => c.ingresoBruto > 0 || c.fa > 0 || c.egresos > 0)
       .sort((a, b) => b.ingresoBruto - a.ingresoBruto);
-  }, [clients, filteredBars, processes, filteredExits]);
+  }, [clients, filteredBars, processes, filteredExits, dispatchedLotIds]);
 
   const totalBalance = useMemo(
     () => clientBalances.reduce((s, c) => s + c.ingresoBruto, 0),
