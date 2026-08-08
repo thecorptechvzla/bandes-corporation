@@ -272,6 +272,8 @@ function drawDetailedSection(doc: jsPDF, startY: number, pw: number, detailed: E
         y = 15;
       }
 
+      const lotStartY = y;
+
       // Lot header
       doc.setFillColor(245, 248, 247);
       doc.rect(10, y, pw - 20, 7, 'F');
@@ -349,6 +351,12 @@ function drawDetailedSection(doc: jsPDF, startY: number, pw: number, detailed: E
 
         y = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 3;
       }
+
+      // Draw border around the lot block
+      const lotEndY = y;
+      doc.setDrawColor(...GREEN_BORDER);
+      doc.setLineWidth(0.3);
+      doc.roundedRect(9.5, lotStartY - 0.5, pw - 19, lotEndY - lotStartY + 1, 1.5, 1.5, 'S');
 
       // Add spacing between lots
       if (loteIdx < egreso.lotes.length - 1) {

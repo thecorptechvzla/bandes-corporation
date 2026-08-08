@@ -190,6 +190,24 @@ export function toEgresoDetailedRecord(e: ReportEgresoDTO, index: number): Egres
     };
   });
 
+  if (e.bars && e.bars.length > 0) {
+    const barrasSueltas: BarraLote[] = e.bars.map((b) => ({
+      barCode: b.barNumber,
+      pesoBruto: Number(b.grossWeight ?? 0),
+      ley: Number(b.purity ?? 0) / 1000,
+      pesoBalanza: undefined,
+      proveedor: b.client?.name ?? '—',
+    }));
+    const totalGross = barrasSueltas.reduce((acc, b) => acc + b.pesoBruto, 0);
+    const totalPesoFino = barrasSueltas.reduce((acc, b) => acc + b.pesoBruto * b.ley, 0);
+    lotes.push({
+      loteName: '—',
+      recovered: undefined,
+      ley: totalGross > 0 ? totalPesoFino / totalGross : 0,
+      barras: barrasSueltas,
+    });
+  }
+
   return { ...base, items: [...fromDetails, ...fromBars], lotes };
 }
 

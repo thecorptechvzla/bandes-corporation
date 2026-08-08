@@ -77,8 +77,10 @@ export default function EgresosReportDetailTable({ records, summary, onReprint }
           {egreso.lotes.map((lote, loteIdx) => (
             <div
               key={`${egreso.id}-lote-${loteIdx}`}
+              className="rounded-lg overflow-hidden"
               style={{
-                borderBottom: loteIdx < egreso.lotes.length - 1 ? '1px solid var(--report-border-color)' : 'none',
+                border: '1px solid var(--report-border-color)',
+                marginBottom: '8px',
               }}
             >
               {/* Cabecera del lote */}

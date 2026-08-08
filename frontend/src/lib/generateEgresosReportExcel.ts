@@ -240,6 +240,8 @@ export async function generateEgresosReportExcel(params: GenerateEgresosReportEx
 
       // Each lot with its bars
       egreso.lotes.forEach((lote) => {
+        const lotStartRow = currentRow;
+
         // Lot header
         sheet.mergeCells(`A${currentRow}:H${currentRow}`);
         const lotHeaderCell = sheet.getCell(`A${currentRow}`);
@@ -291,6 +293,21 @@ export async function generateEgresosReportExcel(params: GenerateEgresosReportEx
           }
           currentRow++;
         });
+
+        // Apply border around the lot block
+        const lotEndRow = currentRow - 1;
+        const borderGreen = {
+          top: { style: 'thin' as const, color: { argb: `FF${green}` } },
+          bottom: { style: 'thin' as const, color: { argb: `FF${green}` } },
+          left: { style: 'thin' as const, color: { argb: `FF${green}` } },
+          right: { style: 'thin' as const, color: { argb: `FF${green}` } },
+        };
+        for (let r = lotStartRow; r <= lotEndRow; r++) {
+          for (let c = 1; c <= 5; c++) {
+            const cell = sheet.getRow(r).getCell(c);
+            cell.border = borderGreen;
+          }
+        }
       });
 
       // Subtotal
