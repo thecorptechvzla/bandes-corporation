@@ -103,8 +103,8 @@ export function EvidenceModal({ barId, bars, packingBars, spValues, barPhotoUrls
         </div>
 
         <div className="p-3 rounded-xl border border-[var(--pm-accent-gold)]/20 bg-[var(--pm-accent-gold)]/5">
-          <span className="text-[9px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider block text-center">PESO FINO</span>
-          <span className="text-sm font-mono font-medium text-[var(--pm-accent-gold)] block text-center">{formatNumber(fa, 2)} g</span>
+          <span className="text-[9px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider block text-center">PESO BRUTO</span>
+          <span className="text-sm font-mono font-medium text-[var(--pm-accent-gold)] block text-center">{formatNumber(validatedGross, 2)} g</span>
         </div>
 
         <button type="button" onClick={onClose}
