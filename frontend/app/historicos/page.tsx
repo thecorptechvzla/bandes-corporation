@@ -216,7 +216,7 @@ export default function V2HistoricosPage() {
             </div>
             <div className="flex justify-between text-[11px] font-mono">
               <span className="text-[var(--pm-text-dim)]">LEY AU</span>
-              <span className="text-[var(--pm-text-primary)] font-semibold">{formatNumber(balance.ingresado.ley, 1)} ‰</span>
+              <span className="text-[var(--pm-text-primary)] font-semibold">{formatNumber(balance.ingresado.ley, 2)} ‰</span>
             </div>
           </div>
         </div>
@@ -239,7 +239,7 @@ export default function V2HistoricosPage() {
             </div>
             <div className="flex justify-between text-[11px] font-mono">
               <span className="text-[var(--pm-text-dim)]">LEY AU</span>
-              <span className="text-[var(--pm-text-primary)] font-semibold">{formatNumber(balance.egresado.ley, 1)} ‰</span>
+              <span className="text-[var(--pm-text-primary)] font-semibold">{formatNumber(balance.egresado.ley, 2)} ‰</span>
             </div>
           </div>
         </div>

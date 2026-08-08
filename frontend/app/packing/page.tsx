@@ -292,15 +292,42 @@ export default function PackingPage() {
       { header: 'CÓDIGO', key: 'code', width: 22 },
       { header: 'PESO BRUTO (g)', key: 'grossWeight', width: 18 },
       { header: 'LEY AU (‰)', key: 'purity', width: 15 },
+      { header: 'PESO FINO (g)', key: 'fineWeight', width: 16 },
     ];
     const hr = ws.getRow(1);
     hr.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 };
     hr.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1C1C1C' } };
-    hr.alignment = { horizontal: 'center' };
+    hr.alignment = { horizontal: 'center', vertical: 'middle' };
+    hr.eachCell((cell) => {
+      cell.border = {
+        top: { style: 'thin', color: { argb: 'FF2D3139' } },
+        left: { style: 'thin', color: { argb: 'FF2D3139' } },
+        bottom: { style: 'thin', color: { argb: 'FF2D3139' } },
+        right: { style: 'thin', color: { argb: 'FF2D3139' } },
+      };
+    });
     ws.addRow(['', '', '', '']);
     const nr = ws.getRow(2);
-    nr.getCell(1).value = '* CÓDIGO, PESO BRUTO y PUREZA son obligatorios';
-    nr.getCell(1).font = { italic: true, color: { argb: 'FF8C8C8C' }, size: 9 };
+    nr.getCell(2).value = '* CÓDIGO, PESO BRUTO y LEY AU son obligatorios. PESO FINO se calcula automáticamente.';
+    nr.getCell(2).font = { italic: true, color: { argb: 'FF8C8C8C' }, size: 9, bold: false };
+    const totalFormulaRows = 500;
+    for (let r = 3; r <= totalFormulaRows + 2; r++) {
+      ws.getCell(r, 4).value = { formula: `B${r}*C${r}/1000`, result: 0 };
+      ws.getCell(r, 1).dataValidation = {
+        type: 'custom',
+        allowBlank: true,
+        formulae: [`=COUNTIF($A$3:$A$${totalFormulaRows + 2},$A${r})=1`],
+        showErrorMessage: true,
+        error: 'Código duplicado en la plantilla',
+        errorStyle: 'warning',
+      };
+    }
+    ws.getColumn(4).eachCell((cell, rowNumber) => {
+      if (rowNumber > 2) {
+        cell.font = { italic: true, color: { argb: 'FF8C8C8C' } };
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF2F3F7' } };
+      }
+    });
     const buf = await wb.xlsx.writeBuffer();
     const blob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
     const url = URL.createObjectURL(blob);

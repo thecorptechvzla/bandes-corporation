@@ -110,7 +110,7 @@ export function BalancesTable({ clientBalances, totalBalance, onClientClick }: B
                     {fmtG(c.fa)}
                   </td>
                   <td className="text-right text-xs font-mono text-slate-400 px-4 py-3">
-                    {formatNumber(c.leyAu, 1)}%
+                    {formatNumber(c.leyAu, 2)}%
                   </td>
                   <td className="text-right text-xs font-mono text-rose-400 px-4 py-3">
                     {fmtG(c.egresos)}

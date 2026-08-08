@@ -145,17 +145,17 @@ export function ValidationDetailPanel({
                           <span className="font-mono font-medium text-slate-200">{formatNumber(isValidated ? Number(edit?.grossWeight ?? origGross) : origGross, 2)}</span>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-right font-mono font-medium text-slate-200">{formatNumber(origPurity, 1)}</td>
+                      <td className="px-4 py-3 text-right font-mono font-medium text-slate-200">{formatNumber(origPurity, 2)}</td>
                       <td className="px-4 py-3 text-right">
                         {isPorValidar ? (
                           <div className="flex items-center justify-end gap-1.5">
                             <Lock className="w-3 h-3 text-[var(--pm-text-dim)]/30" />
                             <span className="text-[var(--pm-text-dim)] bg-[var(--pm-bg-deepest)]/50 border border-[var(--pm-border)]/40 rounded px-2 py-1 text-[11px] font-mono">
-                              {edit?.purity ? formatNumber(Number(edit.purity), 1) : '—'}
+                              {edit?.purity ? formatNumber(Number(edit.purity), 2) : '—'}
                             </span>
                           </div>
                         ) : (
-                          <span className="font-mono font-medium text-slate-200">{formatNumber(isValidated ? Number(edit?.purity ?? origPurity) : origPurity, 1)}</span>
+                          <span className="font-mono font-medium text-slate-200">{formatNumber(isValidated ? Number(edit?.purity ?? origPurity) : origPurity, 2)}</span>
                         )}
                       </td>
                       <td className="px-4 py-3 text-center">

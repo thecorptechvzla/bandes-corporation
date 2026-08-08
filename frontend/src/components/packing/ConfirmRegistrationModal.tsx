@@ -45,7 +45,7 @@ export function ConfirmRegistrationModal({ data, onClose, onConfirm }: ConfirmRe
           </div>
           <div className="flex justify-between text-[11px] font-mono">
             <span className="text-[var(--pm-text-dim)]">Ley Au</span>
-            <span className="font-bold text-[var(--pm-text-primary)]">{formatNumber(data.purity, 1)} ‰</span>
+            <span className="font-bold text-[var(--pm-text-primary)]">{formatNumber(data.purity, 2)} ‰</span>
           </div>
         </div>
 

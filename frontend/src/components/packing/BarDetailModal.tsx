@@ -236,7 +236,7 @@ export function BarDetailModal({
                 </div>
                 <div>
                   <span className="text-[10px] font-mono text-[var(--pm-text-dim)] block">Ley Au</span>
-                  <span className="text-sm font-mono font-medium text-slate-200">{formatNumber(spPurity, 1)} ‰</span>
+                  <span className="text-sm font-mono font-medium text-slate-200">{formatNumber(spPurity, 2)} ‰</span>
                 </div>
               </div>
             </div>
@@ -274,7 +274,7 @@ export function BarDetailModal({
                       className="w-full bg-[var(--pm-bg-deepest)] border-2 border-[var(--pm-accent-gold)]/30 rounded-lg px-2 py-1 text-sm font-mono font-bold text-[var(--pm-accent-gold)] text-center focus:outline-none focus:border-[var(--pm-accent-gold)] transition-all"
                     />
                   ) : (
-                    <span className="text-sm font-mono font-medium text-[var(--pm-accent-cyan)]">{formatNumber(displayPurity, 1)} ‰</span>
+                    <span className="text-sm font-mono font-medium text-[var(--pm-accent-cyan)]">{formatNumber(displayPurity, 2)} ‰</span>
                   )}
                 </div>
               </div>
