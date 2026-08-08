@@ -306,24 +306,24 @@ export default function PackingPage() {
         right: { style: 'thin', color: { argb: 'FF2D3139' } },
       };
     });
-    ws.addRow(['', '', '', '']);
+    ws.getColumn(5).width = 42;
     const nr = ws.getRow(2);
-    nr.getCell(2).value = '* CÓDIGO, PESO BRUTO y LEY AU son obligatorios. PESO FINO se calcula automáticamente.';
-    nr.getCell(2).font = { italic: true, color: { argb: 'FF8C8C8C' }, size: 9, bold: false };
+    nr.getCell(5).value = '* CÓDIGO, PESO BRUTO y LEY AU son obligatorios. PESO FINO se calcula automáticamente.';
+    nr.getCell(5).font = { italic: true, color: { argb: 'FF8C8C8C' }, size: 9, bold: false };
     const totalFormulaRows = 500;
-    for (let r = 3; r <= totalFormulaRows + 2; r++) {
+    for (let r = 2; r <= totalFormulaRows + 1; r++) {
       ws.getCell(r, 4).value = { formula: `B${r}*C${r}/1000`, result: 0 };
       ws.getCell(r, 1).dataValidation = {
         type: 'custom',
         allowBlank: true,
-        formulae: [`=COUNTIF($A$3:$A$${totalFormulaRows + 2},$A${r})=1`],
+        formulae: [`=COUNTIF($A$2:$A$${totalFormulaRows + 1},$A${r})=1`],
         showErrorMessage: true,
         error: 'Código duplicado en la plantilla',
         errorStyle: 'warning',
       };
     }
     ws.getColumn(4).eachCell((cell, rowNumber) => {
-      if (rowNumber > 2) {
+      if (rowNumber >= 2) {
         cell.font = { italic: true, color: { argb: 'FF8C8C8C' } };
         cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF2F3F7' } };
       }
