@@ -250,7 +250,7 @@ export async function generateDispatchPDF(
         doc.setTextColor(255, 255, 255);
         doc.setFontSize(5.5);
         doc.setFont('helvetica', 'bold');
-        const lotColsW = [14, 34, 28, 38, 16, cw - 130];
+        const lotColsW = [15, 65, 30, 35, 20, 25];
         doc.text('TIPO', m + 3, y + 1);
         doc.text('CÓDIGO', m + 3 + lotColsW[0], y + 1);
         doc.text('PESO BRUTO (g)', m + 3 + lotColsW[0] + lotColsW[1], y + 1);
