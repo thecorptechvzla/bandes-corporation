@@ -33,10 +33,28 @@ export function computeSaldosReport({
   const toT = new Date(`${to}T23:59:59.999`).getTime();
 
   const exitDateByBar = new Map<string, string>();
+  const exitDateByBarNumber = new Map<string, string>();
+  const exitDateByLot = new Map<string, string>();
   exits.forEach((exit) => {
-    exit.exitDetails?.forEach((det) => det.bars?.forEach((b) => exitDateByBar.set(b.id, exit.createdAt)));
-    exit.bars?.forEach((b) => exitDateByBar.set(b.id, exit.createdAt));
+    exit.exitDetails?.forEach((det) => {
+      if (det.lotId) {
+        exitDateByLot.set(det.lotId, exit.createdAt);
+      }
+      det.bars?.forEach((b) => {
+        if (b.id) exitDateByBar.set(b.id, exit.createdAt);
+        if (b.barNumber) exitDateByBarNumber.set(b.barNumber, exit.createdAt);
+      });
+    });
+    exit.bars?.forEach((b) => {
+      if (b.id) exitDateByBar.set(b.id, exit.createdAt);
+      if (b.barNumber) exitDateByBarNumber.set(b.barNumber, exit.createdAt);
+    });
   });
+
+  const resolveExitDate = (b: Bar): string | null =>
+    exitDateByBar.get(b.id)
+    ?? exitDateByBarNumber.get(b.barNumber)
+    ?? (b.lotId ? exitDateByLot.get(b.lotId) ?? null : null);
 
   const packingLabel = new Map<string, string>();
   packings.forEach((p) => {
@@ -61,7 +79,7 @@ export function computeSaldosReport({
     const receivedGross = received.reduce((s, b) => s + Number(b.grossWeight ?? 0), 0);
 
     const egresado = clientBars.filter((b) => {
-      const exitDate = exitDateByBar.get(b.id);
+      const exitDate = resolveExitDate(b);
       if (!exitDate || b.status !== 'EXITED') return false;
       const t = new Date(exitDate).getTime();
       return t >= fromT && t <= toT;
@@ -87,7 +105,7 @@ export function computeSaldosReport({
     records.push(record);
 
     const barras: BarraEnBoveda[] = received.map((b) => {
-      const exitDate = exitDateByBar.get(b.id);
+      const exitDate = resolveExitDate(b);
       return {
         loteId: b.barNumber,
         packingOrigen: b.packingId ? (packingLabel.get(b.packingId) ?? '') : '',
