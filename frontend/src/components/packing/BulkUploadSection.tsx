@@ -45,6 +45,7 @@ export function BulkUploadSection({
             <div className="px-5 pb-5 space-y-4 border-t border-[var(--pm-border)]/20 pt-4">
               <select value={bulkClientId} onChange={e => onBulkClientIdChange(e.target.value)}
                 className="w-full bg-[var(--pm-bg-deepest)] border border-[var(--pm-border)] rounded-lg px-3 py-2 text-xs font-sans text-[var(--pm-text-primary)] focus:outline-none focus:border-[var(--pm-accent-gold)] transition-colors cursor-pointer">
+                <option value="" disabled>Seleccionar proveedor...</option>
                 {clients.map(c => (<option key={c.id} value={c.id}>{c.name}</option>))}
               </select>
               <div ref={dropRef} onDragOver={e => { e.preventDefault(); setDragOver(true); }} onDragLeave={() => setDragOver(false)}
@@ -62,7 +63,7 @@ export function BulkUploadSection({
                 <button type="button" onClick={onDownloadTemplate}
                   className="flex-1 py-2 rounded-lg border border-[var(--pm-border)] text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] hover:bg-[var(--pm-bg-tertiary)] text-[11px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1.5">
                   <Download className="w-3 h-3" /> Plantilla</button>
-                <button type="button" onClick={onUpload} disabled={!bulkFile || isPending}
+                <button type="button" onClick={onUpload} disabled={!bulkClientId || !bulkFile || isPending}
                   className="flex-1 py-2 rounded-lg text-[11px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer disabled:opacity-40 flex items-center justify-center gap-1.5"
                   style={{ background: bulkFile ? 'rgba(16,185,129,0.12)' : 'transparent', color: 'var(--pm-accent-emerald)', border: '1px solid rgba(16,185,129,0.2)' }}>
                   {isPending ? 'Subiendo...' : <><Upload className="w-3 h-3" /> Subir</>}

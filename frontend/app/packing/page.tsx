@@ -97,7 +97,6 @@ export default function PackingPage() {
 
   useEffect(() => {
     if (clients.length > 0) {
-      if (!bulkClientId) setBulkClientId(clients[0].id);
       const acc: Record<string, boolean> = {};
       clients.forEach(c => { acc[c.id] = false; });
       setOpenAccordions(prev => {
@@ -238,7 +237,8 @@ export default function PackingPage() {
   };
 
   const handleBulkUpload = async () => {
-    if (!bulkClientId || !bulkFile) return;
+    if (!bulkClientId) { setBulkError('Seleccione un proveedor.'); return; }
+    if (!bulkFile) { setBulkError('Adjunte un archivo .xlsx.'); return; }
     setBulkError(''); setBulkResult(null);
     if (bulkFile.size > 10 * 1024 * 1024) { setBulkError('Archivo excede 10 MB.'); return; }
     try {
