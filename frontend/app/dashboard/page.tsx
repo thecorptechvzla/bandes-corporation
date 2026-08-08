@@ -18,6 +18,7 @@ import { SupplierDirectoryModal } from '@/components/dashboard/SupplierDirectory
 import { ProcesoModal } from '@/components/dashboard/ProcesoModal';
 import { BovedaModal } from '@/components/dashboard/BovedaModal';
 import { KpiCardGrid, KPI_COLORS } from '@/components/dashboard/KpiCardGrid';
+import { ExitedBarsModal } from '@/components/dashboard/ExitedBarsModal';
 import { BalancesTable } from '@/components/dashboard/BalancesTable';
 import { TreemapPanel } from '@/components/dashboard/TreemapPanel';
 import { FlowAreaChart } from '@/components/dashboard/FlowAreaChart';
@@ -184,11 +185,6 @@ export default function V2DashboardPage() {
     () => filteredBars
       .filter(b => b.status === 'EXITED')
       .reduce((s, b) => s + Number(b.grossWeight), 0),
-    [filteredBars],
-  );
-
-  const egresadoBars = useMemo(
-    () => filteredBars.filter(b => b.status === 'EXITED'),
     [filteredBars],
   );
 
@@ -556,12 +552,12 @@ export default function V2DashboardPage() {
       />
 
       {/* Barras Egresadas modal */}
-      <SupplierDirectoryModal
+      <ExitedBarsModal
         isOpen={isEgresadoModalOpen}
         title="Barras Egresadas"
         showSearch
-        bars={egresadoBars}
-        clients={clients}
+        exits={filteredExits}
+        bars={bars}
         onClose={() => setIsEgresadoModalOpen(false)}
         onBarClick={(id) => setEvidenceBarId(id)}
       />
