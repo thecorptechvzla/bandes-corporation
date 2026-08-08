@@ -354,15 +354,22 @@ const [selectedLotIds, setSelectedLotIds] = useState<Set<string>>(new Set());
       const result = await createExit.mutateAsync(payload);
 
       const lotEntries = selectedLots.flatMap(l => {
+        const physical = {
+          grossWeight: l.grossWeight,
+          recovered: l.recovered ?? l.grossWeight,
+          fineWeight: l.availableWeight,
+          purity: l.grossWeight > 0 ? (l.availableWeight / l.grossWeight) * 1000 : 0,
+        };
         if (l.isMixed && l.composition.length > 1) {
           return l.composition.map(entry => ({
             name: l.name,
             weight: entry.weight,
             provider: entry.clientName,
             isMixed: true,
+            ...physical,
           }));
         }
-        return [{ name: l.name, weight: l.availableWeight, provider: l.clientName, isMixed: false }];
+        return [{ name: l.name, weight: l.availableWeight, provider: l.clientName, isMixed: false, ...physical }];
       });
 
       const allProviders = new Map<string, { count: number; weight: number }>();

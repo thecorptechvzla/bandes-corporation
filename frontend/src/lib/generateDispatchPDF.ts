@@ -250,7 +250,7 @@ export async function generateDispatchPDF(
         doc.setTextColor(255, 255, 255);
         doc.setFontSize(5.5);
         doc.setFont('helvetica', 'bold');
-        const lotColsW = [15, 65, 30, 35, 20, 25];
+        const lotColsW = [20, 60, 30, 35, 20, 25];
         doc.text('TIPO', m + 3, y + 1);
         doc.text('CÓDIGO', m + 3 + lotColsW[0], y + 1);
         doc.text('PESO BRUTO (g)', m + 3 + lotColsW[0] + lotColsW[1], y + 1);
@@ -272,7 +272,7 @@ export async function generateDispatchPDF(
           doc.text(`${lot.name}${lot.isMixed ? '  ◈' : ''}`, m + 3 + lotColsW[0], y + 1);
           doc.text(formatWeight(Number(lot.grossWeight ?? lot.recovered ?? 0)), m + 3 + lotColsW[0] + lotColsW[1], y + 1);
           doc.text(formatWeight(Number(lot.recovered ?? lot.grossWeight ?? 0)), m + 3 + lotColsW[0] + lotColsW[1] + lotColsW[2], y + 1);
-          doc.text(String(lot.purity ?? 0), m + 3 + lotColsW[0] + lotColsW[1] + lotColsW[2] + lotColsW[3], y + 1);
+          doc.text((Number(lot.purity) || 0).toFixed(2).replace('.', ','), m + 3 + lotColsW[0] + lotColsW[1] + lotColsW[2] + lotColsW[3], y + 1);
           doc.text(formatWeight(Number(lot.fineWeight ?? 0)), pw - m - 2, y + 1, { align: 'right' });
           y += 7;
         });
@@ -309,7 +309,7 @@ export async function generateDispatchPDF(
           doc.text(bar.barNumber, m + 3 + barColsW[0], y + 1);
           doc.text(formatWeight(bar.grossWeight), m + 3 + barColsW[0] + barColsW[1], y + 1);
           doc.text('—', m + 3 + barColsW[0] + barColsW[1] + barColsW[2], y + 1);
-          doc.text(String(bar.purity), m + 3 + barColsW[0] + barColsW[1] + barColsW[2] + barColsW[3], y + 1);
+          doc.text((Number(bar.purity) || 0).toFixed(2).replace('.', ','), m + 3 + barColsW[0] + barColsW[1] + barColsW[2] + barColsW[3], y + 1);
           doc.text(formatWeight(bar.fineWeight), pw - m - 2, y + 1, { align: 'right' });
           y += 7;
         });
