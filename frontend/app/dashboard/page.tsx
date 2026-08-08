@@ -265,15 +265,17 @@ export default function V2DashboardPage() {
 
   const lotGrossWeight = useMemo(() => {
     const map: Record<string, number> = {};
-    for (const b of bars) if (b.lotId && b.status !== 'EXITED') map[b.lotId] = (map[b.lotId] || 0) + Number(b.grossWeight);
+    for (const l of bovedaLots) map[l.id] = Number(l.recovered ?? 0);
+    for (const b of bars) if (b.lotId && b.status !== 'EXITED' && !(b.lotId in map)) map[b.lotId] = (map[b.lotId] || 0) + Number(b.grossWeight);
     return map;
-  }, [bars]);
+  }, [bovedaLots, bars]);
 
   const lotFineWeight = useMemo(() => {
     const map: Record<string, number> = {};
-    for (const b of bars) if (b.lotId && b.status !== 'EXITED') map[b.lotId] = (map[b.lotId] || 0) + Number(b.fineWeight);
+    for (const l of bovedaLots) map[l.id] = l.fineWeight != null ? Number(l.fineWeight) : 0;
+    for (const b of bars) if (b.lotId && b.status !== 'EXITED' && !(b.lotId in map)) map[b.lotId] = (map[b.lotId] || 0) + Number(b.fineWeight);
     return map;
-  }, [bars]);
+  }, [bovedaLots, bars]);
 
   const sinFundirGross = useMemo(
     () => inStockBars.reduce((s, b) => s + Number(b.grossWeight), 0),

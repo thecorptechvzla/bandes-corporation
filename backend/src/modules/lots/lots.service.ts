@@ -51,6 +51,8 @@ export class LotsService {
       recovered?: number | null;
       recoveryAt?: string | null;
       photoUrl?: string | null;
+      purity?: number | null;
+      fineWeight?: number | null;
     },
   ) {
     const lot = await this.findOne(id);

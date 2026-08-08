@@ -70,6 +70,8 @@ model Lot {
   castingTemp Float?
   moldCode    String?
   recovered   Decimal?  @db.Decimal(15, 4)
+  purity      Decimal?  @db.Decimal(7, 4)
+  fineWeight  Decimal?  @db.Decimal(15, 4)
   recoveryAt  DateTime?
   photoUrl    String?   @map("photo_url")
   createdAt   DateTime  @default(now())

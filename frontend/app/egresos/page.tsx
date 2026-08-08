@@ -76,6 +76,8 @@ const [selectedLotIds, setSelectedLotIds] = useState<Set<string>>(new Set());
               fineWeight: Number(b.fineWeight),
             })),
           );
+          const fineFromBars = eligibleBars.reduce((s, b) => s + Number(b.fineWeight), 0);
+          const grossFromBars = eligibleBars.reduce((s, b) => s + Number(b.grossWeight), 0);
           return {
             id: l.id,
             name: l.name,
@@ -84,10 +86,10 @@ const [selectedLotIds, setSelectedLotIds] = useState<Set<string>>(new Set());
             clientName: client?.name || 'DESCONOCIDO',
             clientRif: client?.rif || '—',
             availableWeight: Number(
-              eligibleBars.reduce((s, b) => s + Number(b.fineWeight), 0),
+              l.fineWeight != null ? l.fineWeight : fineFromBars,
             ),
             grossWeight: Number(
-              eligibleBars.reduce((s, b) => s + Number(b.grossWeight), 0),
+              l.recovered != null ? l.recovered : grossFromBars,
             ),
             recovered,
             photoUrl: l.photoUrl || null,

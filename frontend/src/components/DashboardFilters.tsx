@@ -35,7 +35,6 @@ function todayRange() {
   const d = new Date();
   const s = new Date(d.getFullYear(), d.getMonth(), d.getDate());
   const e = new Date(s);
-  e.setDate(e.getDate() + 1);
   return { start: toDateInput(s), end: toDateInput(e) };
 }
 
@@ -54,7 +53,10 @@ function thisMonthRange() {
 }
 
 function toDateInput(d: Date) {
-  return d.toISOString().split('T')[0];
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
 }
 
 function toISO(d: string) {

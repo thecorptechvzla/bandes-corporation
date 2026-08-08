@@ -30,6 +30,8 @@ export interface Lot {
   castingTemp?: number;
   moldCode?: string;
   recovered?: number | null;
+  purity?: number | null;
+  fineWeight?: number | null;
   recoveryAt?: string | null;
   photoUrl?: string | null;
   leyAg?: number | null;
@@ -94,6 +96,8 @@ export interface AvailableLot {
   id: string;
   name: string;
   availableWeight: number;
+  grossWeight?: number;
+  purity?: number | null;
   barCount: number;
   isMixed?: boolean;
   composition?: { clientId: string; clientName: string; weight: number; percentage: number }[];
@@ -158,6 +162,8 @@ export interface UpdateLotRequest {
   castingTemp?: number;
   moldCode?: string;
   recovered?: number | null;
+  purity?: number | null;
+  fineWeight?: number | null;
   recoveryAt?: string | null;
   photoUrl?: string | null;
   leyAg?: number | null;

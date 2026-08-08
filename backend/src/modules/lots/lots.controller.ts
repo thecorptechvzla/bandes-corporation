@@ -46,6 +46,8 @@ export class LotsController {
       recovered?: number | null;
       recoveryAt?: string | null;
       photoUrl?: string | null;
+      purity?: number | null;
+      fineWeight?: number | null;
     },
   ) {
     return this.service.update(id, body);

@@ -13,6 +13,7 @@ import { generateSaldosReportExcel } from '@/lib/generateSaldosReportExcel';
 import ReportGuideCard from '@/components/reportes/ReportGuideCard';
 import { useClients } from '@/hooks/useClients';
 import { useBars } from '@/hooks/useBars';
+import { useLots } from '@/hooks/useLots';
 import { useMaterialExits } from '@/hooks/useExits';
 import { usePackings } from '@/hooks/usePackings';
 import { computeSaldosReport } from '@/hooks/useSaldosReport';
@@ -40,6 +41,7 @@ export default function SaldosReportPage() {
 
   const { data: clients = [] } = useClients({ role: 'PROVEEDOR' });
   const { data: bars = [] } = useBars();
+  const { data: lots = [] } = useLots();
   const { data: exits = [] } = useMaterialExits();
   const { data: packings = [] } = usePackings();
 
@@ -67,6 +69,7 @@ export default function SaldosReportPage() {
       const { records, detailed } = computeSaldosReport({
         clients,
         bars,
+        lots,
         exits,
         packings,
         from: dateFrom,
@@ -84,7 +87,7 @@ export default function SaldosReportPage() {
     } finally {
       setIsGenerating(false);
     }
-  }, [clients, bars, exits, packings, dateFrom, dateTo, clienteId, clienteName, reportType]);
+  }, [clients, bars, lots, exits, packings, dateFrom, dateTo, clienteId, clienteName, reportType]);
 
   const handleExportPDF = async () => {
     setIsExporting(true);

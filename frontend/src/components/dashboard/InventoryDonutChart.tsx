@@ -19,12 +19,13 @@ function DonutTooltip({ active, payload }: any) {
   const entry = payload[0];
   return (
     <div
-      className="rounded-xl px-4 py-3 text-[11px] font-mono space-y-1.5 min-w-[160px]"
+      className="px-4 py-3 rounded-xl text-[11px] font-mono space-y-1.5 min-w-[160px] shadow-xl"
       style={{
-        background: 'var(--hud-bg-elevated)',
+        background: '#0B0F19',
         border: '1px solid var(--hud-border)',
-        boxShadow: '0 12px 40px rgba(0,0,0,0.5)',
-        backdropFilter: 'blur(12px)',
+        boxShadow: '0 12px 40px rgba(0,0,0,0.6)',
+        zIndex: 70,
+        position: 'relative',
       }}
     >
       <div className="flex items-center gap-1.5">
@@ -107,7 +108,7 @@ export function InventoryDonutChart({ fundido, sinFundir, isMounted }: Inventory
                     <Cell key={idx} fill={entry.color} />
                   ))}
                 </Pie>
-                <Tooltip content={<DonutTooltip />} wrapperStyle={{ outline: 'none' }} />
+                <Tooltip content={<DonutTooltip />} cursor={false} wrapperStyle={{ outline: 'none', zIndex: 70 }} />
               </PieChart>
             </ResponsiveContainer>
 

@@ -107,6 +107,11 @@ export function RecoveryModal({ lot, lotBarsMap, processLotsMap, onClose, upload
       setRecoveryError('Ingrese un peso bruto válido.');
       return;
     }
+    const lau = parseFloat(recoveredLeyAu);
+    if (isNaN(lau) || lau <= 0) {
+      setRecoveryError('Ingrese una Ley Au válida (‰).');
+      return;
+    }
     if (!photoUploadedUrl) {
       setRecoveryError('Se requiere foto de evidencia para cerrar la colada.');
       return;
@@ -117,6 +122,8 @@ export function RecoveryModal({ lot, lotBarsMap, processLotsMap, onClose, upload
         id: lot.id,
         data: {
           recovered: rw,
+          purity: lau,
+          fineWeight: Math.round(((rw * lau) / 1000) * 100) / 100,
           recoveryAt: new Date().toISOString(),
           photoUrl: photoUploadedUrl,
         },
@@ -373,21 +380,17 @@ export function RecoveryModal({ lot, lotBarsMap, processLotsMap, onClose, upload
               className="flex-1 py-2.5 rounded-lg border border-[var(--pm-border)] text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] hover:bg-[var(--pm-bg-tertiary)] text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer disabled:opacity-40"
             >Cancelar</button>
             <button type="button" onClick={() => {
-              const rw = parseFloat(recoveredWeight);
-              const isValidWeights = !isNaN(rw) && rw > 0;
-              const hasPhoto = !!photoUploadedUrl;
-              console.log('Button disabled because:', { photo: !hasPhoto, weights: !isValidWeights });
               handleConfirmRecovery();
-            }} disabled={confirming || !photoUploadedUrl || !(parseFloat(recoveredWeight) > 0)}
+            }} disabled={confirming || !photoUploadedUrl || !(parseFloat(recoveredWeight) > 0) || !(parseFloat(recoveredLeyAu) > 0)}
               className="flex-1 py-2.5 rounded-lg text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer disabled:opacity-40 flex items-center justify-center gap-2"
               style={{
-                background: !photoUploadedUrl || !(parseFloat(recoveredWeight) > 0)
+                background: !photoUploadedUrl || !(parseFloat(recoveredWeight) > 0) || !(parseFloat(recoveredLeyAu) > 0)
                   ? 'rgba(100,100,100,0.15)'
                   : Math.abs(discrepancy) > 5 ? 'rgba(239,68,68,0.15)' : 'rgba(16,185,129,0.15)',
-                color: !photoUploadedUrl || !(parseFloat(recoveredWeight) > 0)
+                color: !photoUploadedUrl || !(parseFloat(recoveredWeight) > 0) || !(parseFloat(recoveredLeyAu) > 0)
                   ? 'var(--pm-text-dim)'
                   : Math.abs(discrepancy) > 5 ? 'var(--pm-accent-red)' : 'var(--pm-accent-emerald)',
-                border: `1px solid ${!photoUploadedUrl || !(parseFloat(recoveredWeight) > 0)
+                border: `1px solid ${!photoUploadedUrl || !(parseFloat(recoveredWeight) > 0) || !(parseFloat(recoveredLeyAu) > 0)
                   ? 'rgba(100,100,100,0.3)'
                   : Math.abs(discrepancy) > 5 ? 'rgba(239,68,68,0.3)' : 'rgba(16,185,129,0.3)'}`,
               }}

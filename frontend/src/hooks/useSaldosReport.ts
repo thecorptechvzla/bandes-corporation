@@ -1,9 +1,10 @@
-import type { Bar, Client, MaterialExit, Packing } from '@/types/api';
+import type { Bar, Client, Lot, MaterialExit, Packing } from '@/types/api';
 import type { BarraEnBoveda, SaldoDetailedRecord, SaldoRecord } from '@/components/reportes/saldos/types';
 
 interface ComputeSaldosParams {
   clients: Client[];
   bars: Bar[];
+  lots: Lot[];
   exits: MaterialExit[];
   packings: Packing[];
   from: string;
@@ -23,6 +24,7 @@ function padNumber(n: number): string {
 export function computeSaldosReport({
   clients,
   bars,
+  lots,
   exits,
   packings,
   from,
@@ -64,6 +66,9 @@ export function computeSaldosReport({
     );
   });
 
+  const lotById = new Map<string, Lot>();
+  lots.forEach((l) => lotById.set(l.id, l));
+
   const targetClients = clientId ? clients.filter((c) => c.id === clientId) : clients;
 
   const records: SaldoRecord[] = [];
@@ -104,9 +109,38 @@ export function computeSaldosReport({
 
     records.push(record);
 
-    const barras: BarraEnBoveda[] = received.map((b) => {
+    const enteredLots = new Set<string>();
+    const barras: BarraEnBoveda[] = [];
+
+    received.forEach((b) => {
+      const lot = b.lotId ? lotById.get(b.lotId) : undefined;
+
+      // Material refundido: el lote calibrado es LA unidad física de inventario.
+      if (lot && lot.fineWeight != null) {
+        if (enteredLots.has(lot.id)) return;
+        enteredLots.add(lot.id);
+
+        const lotBars = received.filter((x) => x.lotId === lot.id);
+        const firstBar = lotBars[0];
+        const grosInput = lotBars.reduce((s, x) => s + Number(x.grossWeight ?? 0), 0);
+        const exitDate = exitDateByLot.get(lot.id) ?? null;
+
+        barras.push({
+          loteId: lot.name,
+          packingOrigen: firstBar?.packingId ? (packingLabel.get(firstBar.packingId) ?? '') : '',
+          fechaRecepcion: firstBar?.createdAt.slice(0, 10) ?? '',
+          pesoBrutoRecibido: grosInput,
+          ley: Number(lot.purity ?? 0) / 1000,
+          pesoFinoDisponible: Number(lot.fineWeight ?? 0),
+          pesoBrutoEnBoveda: Number(lot.recovered ?? grosInput),
+          fechaEgreso: exitDate ? exitDate.slice(0, 10) : null,
+          fueEgresado: !!exitDate,
+        });
+        return;
+      }
+
       const exitDate = resolveExitDate(b);
-      return {
+      barras.push({
         loteId: b.barNumber,
         packingOrigen: b.packingId ? (packingLabel.get(b.packingId) ?? '') : '',
         fechaRecepcion: b.createdAt.slice(0, 10),
@@ -116,7 +150,7 @@ export function computeSaldosReport({
         pesoBrutoEnBoveda: Number(b.grossWeight ?? 0),
         fechaEgreso: exitDate ? exitDate.slice(0, 10) : null,
         fueEgresado: b.status === 'EXITED' && !!exitDate,
-      };
+      });
     });
 
     detailed.push({ ...record, barras });

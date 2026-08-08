@@ -273,7 +273,9 @@ export class ProcessesService {
             bars: {
               where: { status: { in: ['IN_STOCK', 'COMPLETADO'] } },
               select: {
+                grossWeight: true,
                 fineWeight: true,
+                purity: true,
                 leyAg: true,
                 fineWeightAg: true,
                 clientId: true,
@@ -295,12 +297,19 @@ export class ProcessesService {
         .filter((l) => l.bars.length > 0)
         .map((l) => {
           const meta = this.buildLotComposition(l.bars);
+          const fineFromBars = l.bars.reduce((sum, b) => sum + Number(b.fineWeight), 0);
+          const grossFromBars = l.bars.reduce((sum, b) => sum + Number(b.grossWeight), 0);
+          const calibrated = l.fineWeight != null;
           return {
             id: l.id,
             name: l.name,
             availableWeight: Number(
-              l.bars.reduce((sum, b) => sum + Number(b.fineWeight), 0),
+              l.fineWeight != null ? l.fineWeight : fineFromBars,
             ),
+            grossWeight: Number(
+              l.recovered != null ? l.recovered : grossFromBars,
+            ),
+            purity: l.purity != null ? Number(l.purity) : null,
             barCount: l.bars.length,
             isMixed: meta.isMixed,
             composition: meta.composition,
@@ -319,7 +328,9 @@ export class ProcessesService {
             bars: {
               where: { status: { in: ['IN_STOCK', 'COMPLETADO'] } },
               select: {
+                grossWeight: true,
                 fineWeight: true,
+                purity: true,
                 leyAg: true,
                 fineWeightAg: true,
                 clientId: true,
@@ -343,12 +354,19 @@ export class ProcessesService {
           .filter((l) => l.bars.length > 0)
           .map((l) => {
             const meta = this.buildLotComposition(l.bars);
+            const fineFromBars = l.bars.reduce((sum, b) => sum + Number(b.fineWeight), 0);
+            const grossFromBars = l.bars.reduce((sum, b) => sum + Number(b.grossWeight), 0);
+            const calibrated = l.fineWeight != null;
             return {
               id: l.id,
               name: l.name,
               availableWeight: Number(
-                l.bars.reduce((sum, b) => sum + Number(b.fineWeight), 0),
+                l.fineWeight != null ? l.fineWeight : fineFromBars,
               ),
+              grossWeight: Number(
+                l.recovered != null ? l.recovered : grossFromBars,
+              ),
+              purity: l.purity != null ? Number(l.purity) : null,
               barCount: l.bars.length,
               isMixed: meta.isMixed,
               composition: meta.composition,
