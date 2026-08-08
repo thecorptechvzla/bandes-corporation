@@ -31,6 +31,7 @@ interface ModalShellProps {
   hideCloseButton?: boolean;
   noPadding?: boolean;
   bodyClassName?: string;
+  zIndex?: string;
 }
 
 const sizeClasses = {
@@ -56,6 +57,7 @@ export function ModalShell({
   hideCloseButton = false,
   noPadding = false,
   bodyClassName = '',
+  zIndex = 'z-50',
 }: ModalShellProps) {
   useBodyScrollLock(isOpen);
 
@@ -118,7 +120,7 @@ export function ModalShell({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className={`fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 ${className}`}
+          className={`fixed inset-0 bg-black/80 backdrop-blur-sm ${zIndex} flex items-center justify-center p-4 ${className}`}
           onClick={closeOnBackdrop ? onClose : undefined}
         >
           <motion.div

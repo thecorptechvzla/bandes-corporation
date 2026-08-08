@@ -26,9 +26,10 @@ interface LotDetailModalProps {
   lot: AvailableLot;
   bars: Bar[];
   onClose: () => void;
+  zIndex?: string;
 }
 
-export function LotDetailModal({ lot, bars, onClose }: LotDetailModalProps) {
+export function LotDetailModal({ lot, bars, onClose, zIndex = 'z-[130]' }: LotDetailModalProps) {
   const lotBars = useMemo(() => bars.filter(b => b.lotId === lot.id), [bars, lot.id]);
   const totalGross = useMemo(() => lotBars.reduce((s, b) => s + Number(b.grossWeight || 0), 0), [lotBars]);
   const totalFine = useMemo(() => lotBars.reduce((s, b) => s + Number(b.fineWeight || 0), 0), [lotBars]);
@@ -46,7 +47,7 @@ export function LotDetailModal({ lot, bars, onClose }: LotDetailModalProps) {
     : `/api/blob/view?url=${encodeURIComponent(lotPhotoUrl || '')}`;
 
   return (
-    <ModalShell isOpen onClose={onClose} size="lg" noPadding>
+    <ModalShell isOpen onClose={onClose} size="lg" noPadding zIndex={zIndex}>
       <div className="px-6 pt-5 sm:pt-6 pb-4 border-b border-[var(--pm-border)]/20">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">

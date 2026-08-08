@@ -481,6 +481,7 @@ export function ExitedBarsModal({
           lot={selectedLotForModal}
           bars={bars}
           onClose={() => setSelectedLotForModal(null)}
+          zIndex="z-[130]"
         />
       )}
     </>
