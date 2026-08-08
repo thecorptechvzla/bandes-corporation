@@ -13,6 +13,18 @@ export function formatWeight(value: number, decimals?: number): string {
   return `${formatNumber(value, dec)} g`;
 }
 
+export function truncateLey(value: number): number {
+  return Math.trunc(value * 100 + 1e-9) / 100;
+}
+
+export function formatLey(value: number): string {
+  return truncateLey(value).toLocaleString(LOCALE, {
+    useGrouping: true,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
+
 export function cleanWeight(val: string): number {
   if (!val) return 0;
   const normalized = val.replace(/\./g, '').replace(',', '.');

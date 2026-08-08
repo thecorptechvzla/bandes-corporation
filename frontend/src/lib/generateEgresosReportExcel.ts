@@ -1,6 +1,6 @@
 import ExcelJS from 'exceljs';
 import type { EgresosReportData, EgresoReportType } from '@/components/reportes/egresos/types';
-import { formatNumber } from '@/lib/format';
+import { formatLey, formatNumber, truncateLey } from '@/lib/format';
 
 interface GenerateEgresosReportExcelParams {
   data: EgresosReportData;
@@ -182,9 +182,9 @@ export async function generateEgresosReportExcel(params: GenerateEgresosReportEx
       r.getCell(col).numFmt = '#,##0.00';
       r.getCell(col).alignment = { horizontal: 'right' };
       col++;
-      r.getCell(col).value = row.leyProm;
+      r.getCell(col).value = truncateLey(row.leyProm);
       r.getCell(col).font = { size: 10 };
-      r.getCell(col).numFmt = '0.0000';
+      r.getCell(col).numFmt = '0.00';
       r.getCell(col).alignment = { horizontal: 'center' };
 
       const totalCols = 3 + (showFecha ? 1 : 0) + 3;
@@ -246,7 +246,7 @@ export async function generateEgresosReportExcel(params: GenerateEgresosReportEx
         sheet.mergeCells(`A${currentRow}:H${currentRow}`);
         const lotHeaderCell = sheet.getCell(`A${currentRow}`);
         const recoveredText = lote.recovered != null ? ` | Peso Bruto Recuperado: ${formatNumber(lote.recovered)} gr` : '';
-        const leyText = lote.ley != null ? ` | Ley: ${formatNumber(lote.ley, 2)}` : '';
+        const leyText = lote.ley != null ? ` | Ley: ${formatLey(lote.ley)}` : '';
         lotHeaderCell.value = `${lote.loteName}${recoveredText}${leyText} | ${lote.barras.length} ${lote.barras.length === 1 ? 'barra' : 'barras'}`;
         lotHeaderCell.font = { bold: true, size: 9, color: { argb: 'FF333333' } };
         lotHeaderCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF5F8F7' } };
@@ -275,9 +275,9 @@ export async function generateEgresosReportExcel(params: GenerateEgresosReportEx
           br.getCell(2).font = { size: 9 };
           br.getCell(2).numFmt = '#,##0.00';
           br.getCell(2).alignment = { horizontal: 'right' };
-          br.getCell(3).value = barra.ley;
+          br.getCell(3).value = truncateLey(barra.ley);
           br.getCell(3).font = { size: 9 };
-          br.getCell(3).numFmt = '0.0000';
+          br.getCell(3).numFmt = '0.00';
           br.getCell(3).alignment = { horizontal: 'center' };
           br.getCell(4).value = barra.pesoBalanza ?? '—';
           br.getCell(4).font = { size: 9 };

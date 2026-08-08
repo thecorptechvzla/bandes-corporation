@@ -1,6 +1,6 @@
 import ExcelJS from 'exceljs';
 import type { SaldoRecord, SaldoDetailedRecord, SaldoReportType } from '@/components/reportes/saldos/types';
-import { formatNumber } from '@/lib/format';
+import { formatNumber, truncateLey } from '@/lib/format';
 
 interface GenerateSaldosReportExcelParams {
   records: SaldoRecord[];
@@ -263,9 +263,9 @@ export async function generateSaldosReportExcel(params: GenerateSaldosReportExce
         lr.getCell(4).font = { size: 9 };
         lr.getCell(4).numFmt = '#,##0.00';
         lr.getCell(4).alignment = { horizontal: 'right' };
-        lr.getCell(5).value = barra.ley;
+        lr.getCell(5).value = truncateLey(barra.ley);
         lr.getCell(5).font = { size: 9 };
-        lr.getCell(5).numFmt = '0.0000';
+        lr.getCell(5).numFmt = '0.00';
         lr.getCell(5).alignment = { horizontal: 'center' };
         lr.getCell(6).value = barra.pesoFinoDisponible;
         lr.getCell(6).font = { size: 9 };

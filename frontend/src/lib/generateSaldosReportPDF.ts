@@ -1,7 +1,7 @@
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import type { SaldoRecord, SaldoDetailedRecord, SaldoReportType } from '@/components/reportes/saldos/types';
-import { formatNumber } from '@/lib/format';
+import { formatLey, formatNumber } from '@/lib/format';
 
 interface GenerateSaldosReportPDFParams {
   records: SaldoRecord[];
@@ -287,7 +287,7 @@ function drawDetailedSection(doc: jsPDF, startY: number, pw: number, records: Sa
       b.packingOrigen,
       b.fechaRecepcion,
       `${formatNumber(b.pesoBrutoRecibido)}`,
-      `${formatNumber(b.ley, 2)}`,
+      `${formatLey(b.ley)}`,
       `${formatNumber(b.pesoFinoDisponible)}`,
       `${formatNumber(b.pesoBrutoEnBoveda)}`,
       b.fueEgresado ? (b.fechaEgreso ?? '') : 'EN BOVEDA',

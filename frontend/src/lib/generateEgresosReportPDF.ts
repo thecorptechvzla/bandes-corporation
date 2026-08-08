@@ -1,7 +1,7 @@
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import type { EgresosReportData, EgresoReportType, EgresoDetailedRecord } from '@/components/reportes/egresos/types';
-import { formatNumber } from '@/lib/format';
+import { formatLey, formatNumber } from '@/lib/format';
 
 interface GenerateEgresosReportPDFParams {
   data: EgresosReportData;
@@ -164,7 +164,7 @@ function drawSummaryTable(doc: jsPDF, y: number, pw: number, data: EgresosReport
     r.fecha,
     String(r.lingotes),
     `${formatNumber(r.pesoBruto)}`,
-    `${formatNumber(r.leyProm, 2)}`,
+    `${formatLey(r.leyProm)}`,
   ]);
 
   bodyRows.push([
@@ -293,7 +293,7 @@ function drawDetailedSection(doc: jsPDF, startY: number, pw: number, detailed: E
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(6);
         doc.setTextColor(...GRAY);
-        const leyText = `Ley: ${formatNumber(lote.ley, 2)}`;
+        const leyText = `Ley: ${formatLey(lote.ley)}`;
         const recoveredWidth = lote.recovered != null ? doc.getTextWidth(`Peso Bruto Recuperado: ${formatNumber(lote.recovered)} gr`) : 0;
         doc.text(leyText, pw - 16 - recoveredWidth, y + 5, { align: 'right' });
       }
@@ -309,7 +309,7 @@ function drawDetailedSection(doc: jsPDF, startY: number, pw: number, detailed: E
         const barBodyRows = lote.barras.map((barra) => [
           barra.barCode,
           `${formatNumber(barra.pesoBruto)}`,
-          `${formatNumber(barra.ley, 2)}`,
+          `${formatLey(barra.ley)}`,
           barra.pesoBalanza != null ? `${formatNumber(barra.pesoBalanza)}` : '\u2014',
           barra.proveedor,
         ]);

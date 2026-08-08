@@ -1,6 +1,6 @@
 'use client';
 
-import { formatNumber } from '@/lib/format';
+import { formatLey, formatNumber } from '@/lib/format';
 import type { SaldoDetailedRecord } from './types';
 
 interface SaldoReportDetailTableProps {
@@ -114,7 +114,7 @@ export default function SaldoReportDetailTable({ records }: SaldoReportDetailTab
                       className="px-3 py-3 text-center text-[11px] font-medium"
                       style={{ color: 'var(--report-text-table)' }}
                     >
-                      {formatNumber(barra.ley, 2)}
+                      {formatLey(barra.ley)}
                     </td>
                     <td
                       className="px-3 py-3 text-right text-[11px] font-medium"

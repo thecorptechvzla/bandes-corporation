@@ -1,6 +1,6 @@
 'use client';
 
-import { formatNumber } from '@/lib/format';
+import { formatLey, formatNumber } from '@/lib/format';
 import type { PackingReportData, ReportType } from './types';
 
 interface PackingReportPdfTemplateProps {
@@ -100,7 +100,7 @@ export default function PackingReportPdfTemplate({
         <div style={{ display: 'table-cell', width: '31%', backgroundColor: '#f4f9f7', border: '1px solid #c2e5d9', borderRadius: '4px', padding: '4px', textAlign: 'center', boxSizing: 'border-box' }}>
           <div className="pdf-metric-title" style={{ fontWeight: 700, color: '#139169', textTransform: 'uppercase' }}>Total Peso Bruto</div>
           <div className="pdf-metric-value" style={{ fontWeight: 700, color: '#111111', fontSize: '11px', margin: '1px 0' }}>{formatNumber(summary.pesoBrutoTotal)} g</div>
-          <div className="pdf-metric-footer" style={{ color: '#666666', fontSize: '7px' }}>Ley Prom: {formatNumber(summary.leyProm, 2)}</div>
+          <div className="pdf-metric-footer" style={{ color: '#666666', fontSize: '7px' }}>Ley Prom: {formatLey(summary.leyProm)}</div>
         </div>
       </div>
 
@@ -135,7 +135,7 @@ export default function PackingReportPdfTemplate({
                 </td>
                 <td style={{ borderBottom: '1px solid #e6e6e6', textAlign: 'center', backgroundColor: idx % 2 === 1 ? '#fbfdfc' : 'transparent' }}>{row.barras}</td>
                 <td style={{ borderBottom: '1px solid #e6e6e6', textAlign: 'right', backgroundColor: idx % 2 === 1 ? '#fbfdfc' : 'transparent' }}>{formatNumber(row.pesoBruto)}</td>
-                <td style={{ borderBottom: '1px solid #e6e6e6', textAlign: 'right', backgroundColor: idx % 2 === 1 ? '#fbfdfc' : 'transparent' }}>{formatNumber(row.ley, 2)}</td>
+                <td style={{ borderBottom: '1px solid #e6e6e6', textAlign: 'right', backgroundColor: idx % 2 === 1 ? '#fbfdfc' : 'transparent' }}>{formatLey(row.ley)}</td>
                 <td style={{ borderBottom: '1px solid #e6e6e6', textAlign: 'right', fontWeight: 700, backgroundColor: idx % 2 === 1 ? '#fbfdfc' : 'transparent' }}>{formatNumber(row.pesoFino)}</td>
               </tr>
             ))}
@@ -145,7 +145,7 @@ export default function PackingReportPdfTemplate({
                 { text: '—', align: 'left' as const },
                 { text: String(summary.totalBarras), align: 'center' as const },
                 { text: `${formatNumber(summary.pesoBrutoTotal)} g`, align: 'right' as const },
-                { text: formatNumber(summary.leyProm, 2), align: 'right' as const },
+                { text: formatLey(summary.leyProm), align: 'right' as const },
                 { text: `${formatNumber(summary.pesoFinoTotal)} g`, align: 'right' as const },
               ].map((cell, i) => (
                 <td key={i} style={{ backgroundColor: '#eaf4f0', fontWeight: 700, color: '#139169', borderTop: '2px solid #139169', borderBottom: '2px solid #139169', textAlign: cell.align }}>
@@ -197,7 +197,7 @@ export default function PackingReportPdfTemplate({
                         {formatNumber(bar.pesoBruto)}
                       </td>
                       <td style={{ padding: '2px 4px', fontSize: '7.5px', borderBottom: '1px solid #f0f0f0', textAlign: 'center', backgroundColor: barIdx % 2 === 1 ? '#fbfdfc' : 'transparent', wordWrap: 'break-word', overflow: 'hidden' }}>
-                        {formatNumber(bar.ley, 2)}
+                        {formatLey(bar.ley)}
                       </td>
                       <td style={{ padding: '2px 4px', fontSize: '7.5px', borderBottom: '1px solid #f0f0f0', textAlign: 'right', fontWeight: 700, backgroundColor: barIdx % 2 === 1 ? '#fbfdfc' : 'transparent', wordWrap: 'break-word', overflow: 'hidden' }}>
                         {formatNumber(bar.pesoFino)}
@@ -208,7 +208,7 @@ export default function PackingReportPdfTemplate({
                   <tr className="pdf-subtotal-row">
                     <td style={{ padding: '2px 4px', fontSize: '7.5px', backgroundColor: '#eaf4f0', fontWeight: 700, color: '#139169', borderTop: '2px solid #139169' }}>Subtotal — {packing.barras} Barras</td>
                     <td style={{ padding: '2px 4px', fontSize: '7.5px', backgroundColor: '#eaf4f0', borderTop: '2px solid #139169', textAlign: 'right', fontWeight: 700, color: '#139169' }}>{formatNumber(packing.pesoBruto)} g</td>
-                    <td style={{ padding: '2px 4px', fontSize: '7.5px', backgroundColor: '#eaf4f0', borderTop: '2px solid #139169', textAlign: 'center', fontWeight: 700, color: '#139169' }}>{formatNumber(packing.ley, 2)}</td>
+                    <td style={{ padding: '2px 4px', fontSize: '7.5px', backgroundColor: '#eaf4f0', borderTop: '2px solid #139169', textAlign: 'center', fontWeight: 700, color: '#139169' }}>{formatLey(packing.ley)}</td>
                     <td style={{ padding: '2px 4px', fontSize: '7.5px', backgroundColor: '#eaf4f0', borderTop: '2px solid #139169', textAlign: 'right', fontWeight: 700, color: '#139169' }}>{formatNumber(packing.pesoFino)} g</td>
                   </tr>
                 </tbody>
@@ -233,7 +233,7 @@ export default function PackingReportPdfTemplate({
               <div style={{ display: 'table-cell', width: '33.34%', padding: '6px', textAlign: 'center' }}>
                 <div className="pdf-totals-label" style={{ fontWeight: 700, color: '#666666', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '1px' }}>Peso Fino Total</div>
                 <div className="pdf-totals-value" style={{ fontWeight: 700, color: '#139169' }}>{formatNumber(summary.pesoFinoTotal)} g</div>
-                <div className="pdf-totals-sub" style={{ color: '#666666', marginTop: '1px' }}>Ley Prom: {formatNumber(summary.leyProm, 2)}</div>
+                <div className="pdf-totals-sub" style={{ color: '#666666', marginTop: '1px' }}>Ley Prom: {formatLey(summary.leyProm)}</div>
               </div>
             </div>
           </div>

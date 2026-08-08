@@ -1,6 +1,6 @@
 'use client';
 
-import { formatNumber } from '@/lib/format';
+import { formatLey, formatNumber } from '@/lib/format';
 import { User, Building } from 'lucide-react';
 import type { CopyType } from '@/lib/generateDispatchPDF';
 import type { EgresoRecord, EgresoSummary } from './types';
@@ -101,7 +101,7 @@ export default function EgresosReportTable({ records, summary, dateFrom, dateTo,
                 className="px-4 py-3 text-center text-[12px] font-medium"
                 style={{ color: 'var(--report-text-table)' }}
               >
-                {formatNumber(row.leyProm, 2)}
+                {formatLey(row.leyProm)}
               </td>
               <td className="px-4 py-3 text-center">
                 <div className="flex items-center justify-center gap-1.5">

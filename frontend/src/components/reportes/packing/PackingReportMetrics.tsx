@@ -1,6 +1,6 @@
 'use client';
 
-import { formatNumber } from '@/lib/format';
+import { formatLey, formatNumber } from '@/lib/format';
 import type { PackingSummary } from './types';
 
 interface PackingReportMetricsProps {
@@ -81,7 +81,7 @@ export default function PackingReportMetrics({ summary }: PackingReportMetricsPr
           className="text-[11px] mt-1"
           style={{ color: '#85e8c5' }}
         >
-          Ley Promedio General: {formatNumber(summary.leyProm, 2)}
+          Ley Promedio General: {formatLey(summary.leyProm)}
         </div>
       </div>
     </div>

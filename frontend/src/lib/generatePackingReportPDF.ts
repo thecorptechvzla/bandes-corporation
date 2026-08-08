@@ -1,7 +1,7 @@
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import type { PackingReportData, ReportType, PackingDetailedRecord } from '@/components/reportes/packing/types';
-import { formatNumber } from '@/lib/format';
+import { formatLey, formatNumber } from '@/lib/format';
 
 interface GeneratePackingReportPDFParams {
   data: PackingReportData;
@@ -128,7 +128,7 @@ function drawKPICards(doc: jsPDF, y: number, pw: number, summary: PackingReportD
   const cards = [
     { label: 'TOTAL PACKINGS', value: String(summary.totalPackings), sub: 'Procesados' },
     { label: 'TOTAL BARRAS', value: String(summary.totalBarras), sub: 'Unidades recibidas' },
-    { label: 'TOTAL PESO BRUTO', value: `${formatNumber(summary.pesoBrutoTotal)} g`, sub: `Ley Prom: ${formatNumber(summary.leyProm, 2)}` },
+    { label: 'TOTAL PESO BRUTO', value: `${formatNumber(summary.pesoBrutoTotal)} g`, sub: `Ley Prom: ${formatLey(summary.leyProm)}` },
   ];
 
   cards.forEach((card, i) => {
@@ -166,7 +166,7 @@ function drawSummaryTable(doc: jsPDF, y: number, pw: number, data: PackingReport
     r.client,
     String(r.barras),
     `${formatNumber(r.pesoBruto)}`,
-    `${formatNumber(r.ley, 2)}`,
+    `${formatLey(r.ley)}`,
     `${formatNumber(r.pesoFino)}`,
   ]);
 
@@ -175,7 +175,7 @@ function drawSummaryTable(doc: jsPDF, y: number, pw: number, data: PackingReport
     '\u2014',
     `${summary.totalBarras} Barras`,
     `${formatNumber(summary.pesoBrutoTotal)} g`,
-    `${formatNumber(summary.leyProm, 2)} (Prom)`,
+    `${formatLey(summary.leyProm)} (Prom)`,
     `${formatNumber(summary.pesoFinoTotal)} g`,
   ]);
 
@@ -270,7 +270,7 @@ function drawDetailedSection(doc: jsPDF, startY: number, pw: number, detailed: P
     const bodyRows = packing.bars.map((bar) => [
       `${bar.lote}\n${bar.barId}`,
       `${formatNumber(bar.pesoBruto)}`,
-      `${formatNumber(bar.ley, 2)}`,
+      `${formatLey(bar.ley)}`,
       `${formatNumber(bar.pesoFino)}`,
     ]);
 
@@ -280,7 +280,7 @@ function drawDetailedSection(doc: jsPDF, startY: number, pw: number, detailed: P
     bodyRows.push([
       `Subtotal \u2014 ${packing.barras} Barras`,
       `${formatNumber(totPesoBruto)} g`,
-      `${formatNumber(avgLey, 2)}`,
+      `${formatLey(avgLey)}`,
       `${formatNumber(totPesoFino)} g`,
     ]);
 

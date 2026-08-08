@@ -1,6 +1,6 @@
 import ExcelJS from 'exceljs';
 import type { PackingReportData, ReportType } from '@/components/reportes/packing/types';
-import { formatNumber } from '@/lib/format';
+import { formatLey, formatNumber, truncateLey } from '@/lib/format';
 
 interface GeneratePackingReportExcelParams {
   data: PackingReportData;
@@ -129,7 +129,7 @@ export async function generatePackingReportExcel(params: GeneratePackingReportEx
     cell.border = thinBorder(C.green);
   });
 
-  const kpiSubRow = ws.addRow(['Procesados', '', 'Unidades recibidas', '', `Ley Promedio: ${formatNumber(summary.leyProm, 2)}`, '']);
+  const kpiSubRow = ws.addRow(['Procesados', '', 'Unidades recibidas', '', `Ley Promedio: ${formatLey(summary.leyProm)}`, '']);
   const sn = kpiSubRow.number;
   ws.mergeCells(`A${sn}:B${sn}`);
   ws.mergeCells(`C${sn}:D${sn}`);
@@ -165,7 +165,7 @@ export async function generatePackingReportExcel(params: GeneratePackingReportEx
     records.forEach((row, idx) => {
       const isEven = idx % 2 === 0;
       const rowFill = isEven ? C.white : C.greenSoft;
-      const dataRow = ws.addRow([`${row.id} — ${row.file}`, row.client, row.barras, row.pesoBruto, row.ley, row.pesoFino]);
+      const dataRow = ws.addRow([`${row.id} — ${row.file}`, row.client, row.barras, row.pesoBruto, truncateLey(row.ley), row.pesoFino]);
       dataRow.eachCell((cell) => {
         cell.fill = fill(rowFill);
         cell.font = { size: 10, color: { argb: C.textDark }, name: 'Segoe UI' } as ExcelJS.Font;
@@ -176,7 +176,7 @@ export async function generatePackingReportExcel(params: GeneratePackingReportEx
       dataRow.getCell(3).alignment = { horizontal: 'center', vertical: 'middle' };
       dataRow.getCell(4).numFmt = '#,##0.00';
       dataRow.getCell(4).alignment = { horizontal: 'right', vertical: 'middle' };
-      dataRow.getCell(5).numFmt = '0.0000';
+      dataRow.getCell(5).numFmt = '0.00';
       dataRow.getCell(5).alignment = { horizontal: 'center', vertical: 'middle' };
       dataRow.getCell(6).numFmt = '#,##0.00';
       dataRow.getCell(6).alignment = { horizontal: 'right', vertical: 'middle' };
@@ -194,7 +194,7 @@ export async function generatePackingReportExcel(params: GeneratePackingReportEx
       cell.border = { top: { style: 'double', color: { argb: C.green } }, left: { style: 'double', color: { argb: C.green } }, right: { style: 'double', color: { argb: C.green } }, bottom: { style: 'thin', color: { argb: C.green } } };
     });
 
-    const totalsValueRow = ws.addRow(['', '', summary.totalBarras, summary.pesoBrutoTotal, summary.leyProm, summary.pesoFinoTotal]);
+    const totalsValueRow = ws.addRow(['', '', summary.totalBarras, summary.pesoBrutoTotal, truncateLey(summary.leyProm), summary.pesoFinoTotal]);
     totalsValueRow.height = 22;
     [1, 2, 3, 4, 5, 6].forEach((col) => {
       const cell = totalsValueRow.getCell(col);
@@ -207,7 +207,7 @@ export async function generatePackingReportExcel(params: GeneratePackingReportEx
     totalsValueRow.getCell(3).alignment = { horizontal: 'center', vertical: 'middle' };
     totalsValueRow.getCell(4).numFmt = '#,##0.00';
     totalsValueRow.getCell(4).alignment = { horizontal: 'right', vertical: 'middle' };
-    totalsValueRow.getCell(5).numFmt = '0.0000';
+    totalsValueRow.getCell(5).numFmt = '0.00';
     totalsValueRow.getCell(5).alignment = { horizontal: 'center', vertical: 'middle' };
     totalsValueRow.getCell(6).numFmt = '#,##0.00';
     totalsValueRow.getCell(6).alignment = { horizontal: 'right', vertical: 'middle' };
@@ -244,7 +244,7 @@ export async function generatePackingReportExcel(params: GeneratePackingReportEx
       // ── Bar rows ──
       packing.bars.forEach((bar, barIdx) => {
         const rowFill = barIdx % 2 === 0 ? C.white : C.greenSoft;
-        const barRow = ws.addRow([`${bar.lote} — ${bar.barId}`, bar.pesoBruto, bar.ley, bar.pesoFino]);
+        const barRow = ws.addRow([`${bar.lote} — ${bar.barId}`, bar.pesoBruto, truncateLey(bar.ley), bar.pesoFino]);
         barRow.eachCell((cell) => {
           cell.fill = fill(rowFill);
           cell.font = { size: 10, color: { argb: C.textDark }, name: 'Segoe UI' } as ExcelJS.Font;
@@ -253,14 +253,14 @@ export async function generatePackingReportExcel(params: GeneratePackingReportEx
         barRow.getCell(1).font = { size: 10, color: { argb: C.textDark }, name: 'Segoe UI', family: 2 } as ExcelJS.Font;
         barRow.getCell(2).numFmt = '#,##0.00';
         barRow.getCell(2).alignment = { horizontal: 'right', vertical: 'middle' };
-        barRow.getCell(3).numFmt = '0.0000';
+        barRow.getCell(3).numFmt = '0.00';
         barRow.getCell(3).alignment = { horizontal: 'center', vertical: 'middle' };
         barRow.getCell(4).numFmt = '#,##0.00';
         barRow.getCell(4).alignment = { horizontal: 'right', vertical: 'middle' };
       });
 
       // ── Subtotal row ──
-      const subRow = ws.addRow([`Subtotal — ${packing.barras} Barras`, packing.pesoBruto, packing.ley, packing.pesoFino]);
+      const subRow = ws.addRow([`Subtotal — ${packing.barras} Barras`, packing.pesoBruto, truncateLey(packing.ley), packing.pesoFino]);
       subRow.height = 22;
       subRow.eachCell((cell) => {
         cell.fill = fill(C.greenLight);
@@ -270,7 +270,7 @@ export async function generatePackingReportExcel(params: GeneratePackingReportEx
       subRow.getCell(1).alignment = { vertical: 'middle' };
       subRow.getCell(2).numFmt = '#,##0.00';
       subRow.getCell(2).alignment = { horizontal: 'right', vertical: 'middle' };
-      subRow.getCell(3).numFmt = '0.0000';
+      subRow.getCell(3).numFmt = '0.00';
       subRow.getCell(3).alignment = { horizontal: 'center', vertical: 'middle' };
       subRow.getCell(4).numFmt = '#,##0.00';
       subRow.getCell(4).alignment = { horizontal: 'right', vertical: 'middle' };
@@ -295,7 +295,7 @@ export async function generatePackingReportExcel(params: GeneratePackingReportEx
       cell.border = { top: { style: 'double', color: { argb: C.green } }, left: { style: 'double', color: { argb: C.green } }, right: { style: 'double', color: { argb: C.green } }, bottom: { style: 'thin', color: { argb: C.green } } };
     });
 
-    const totalsValueRow = ws.addRow(['', summary.pesoBrutoTotal, summary.leyProm, summary.pesoFinoTotal]);
+    const totalsValueRow = ws.addRow(['', summary.pesoBrutoTotal, truncateLey(summary.leyProm), summary.pesoFinoTotal]);
     totalsValueRow.height = 22;
     [1, 2, 3, 4].forEach((col) => {
       const cell = totalsValueRow.getCell(col);
@@ -306,7 +306,7 @@ export async function generatePackingReportExcel(params: GeneratePackingReportEx
     totalsValueRow.getCell(1).alignment = { vertical: 'middle' };
     totalsValueRow.getCell(2).numFmt = '#,##0.00';
     totalsValueRow.getCell(2).alignment = { horizontal: 'right', vertical: 'middle' };
-    totalsValueRow.getCell(3).numFmt = '0.0000';
+    totalsValueRow.getCell(3).numFmt = '0.00';
     totalsValueRow.getCell(3).alignment = { horizontal: 'center', vertical: 'middle' };
     totalsValueRow.getCell(4).numFmt = '#,##0.00';
     totalsValueRow.getCell(4).alignment = { horizontal: 'right', vertical: 'middle' };

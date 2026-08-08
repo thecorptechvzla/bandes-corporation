@@ -1,6 +1,6 @@
 'use client';
 
-import { formatNumber } from '@/lib/format';
+import { formatLey, formatNumber } from '@/lib/format';
 import type { PackingDetailedRecord, PackingSummary } from './types';
 
 interface PackingReportDetailTableProps {
@@ -105,7 +105,7 @@ export default function PackingReportDetailTable({ records, summary }: PackingRe
                     className="px-4 py-3 text-center text-[12px] font-medium"
                     style={{ color: 'var(--report-text-table)' }}
                   >
-                    {formatNumber(bar.ley, 2)}
+                    {formatLey(bar.ley)}
                   </td>
                   <td
                     className="px-4 py-3 text-right text-[12px] font-medium"
@@ -138,7 +138,7 @@ export default function PackingReportDetailTable({ records, summary }: PackingRe
                   className="px-4 py-3 text-center text-[12px] font-bold"
                   style={{ color: 'var(--report-color-primary)' }}
                 >
-                  {formatNumber(packing.ley, 2)}
+                  {formatLey(packing.ley)}
                 </td>
                 <td
                   className="px-4 py-3 text-right text-[12px] font-bold"
@@ -231,7 +231,7 @@ export default function PackingReportDetailTable({ records, summary }: PackingRe
               className="text-[10px] mt-0.5"
               style={{ color: 'var(--report-text-muted)' }}
             >
-              Ley Prom: {formatNumber(summary.leyProm, 2)}
+              Ley Prom: {formatLey(summary.leyProm)}
             </div>
           </div>
         </div>

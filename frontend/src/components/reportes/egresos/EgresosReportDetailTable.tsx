@@ -1,6 +1,6 @@
 'use client';
 
-import { formatNumber } from '@/lib/format';
+import { formatLey, formatNumber } from '@/lib/format';
 import { User, Building } from 'lucide-react';
 import type { CopyType } from '@/lib/generateDispatchPDF';
 import type { EgresoDetailedRecord, EgresoSummary } from './types';
@@ -110,7 +110,7 @@ export default function EgresosReportDetailTable({ records, summary, onReprint }
                       className="text-[10px]"
                       style={{ color: 'var(--report-text-muted)' }}
                     >
-                      Ley: {formatNumber(lote.ley, 2)}
+                      Ley: {formatLey(lote.ley)}
                     </span>
                   )}
                 </div>
@@ -175,7 +175,7 @@ export default function EgresosReportDetailTable({ records, summary, onReprint }
                           className="px-4 py-2 text-center text-[11px] font-medium"
                           style={{ color: 'var(--report-text-table)' }}
                         >
-                          {formatNumber(barra.ley, 2)}
+                          {formatLey(barra.ley)}
                         </td>
                         <td
                           className="px-4 py-2 text-right text-[11px] font-medium"

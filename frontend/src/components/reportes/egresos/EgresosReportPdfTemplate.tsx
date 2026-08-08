@@ -1,6 +1,6 @@
 'use client';
 
-import { formatNumber } from '@/lib/format';
+import { formatLey, formatNumber } from '@/lib/format';
 import type { EgresosReportData, EgresoReportType } from './types';
 
 interface EgresosReportPdfTemplateProps {
@@ -140,7 +140,7 @@ export default function EgresosReportPdfTemplate({
                 )}
                 <td style={{ padding: '2px 4px', fontSize: '7.5px', borderBottom: '1px solid #e6e6e6', textAlign: 'center', backgroundColor: idx % 2 === 1 ? '#fbfdfc' : 'transparent' }}>{row.lingotes}</td>
                 <td style={{ padding: '2px 4px', fontSize: '7.5px', borderBottom: '1px solid #e6e6e6', textAlign: 'right', backgroundColor: idx % 2 === 1 ? '#fbfdfc' : 'transparent' }}>{formatNumber(row.pesoBruto)}</td>
-                <td style={{ padding: '2px 4px', fontSize: '7.5px', borderBottom: '1px solid #e6e6e6', textAlign: 'center', backgroundColor: idx % 2 === 1 ? '#fbfdfc' : 'transparent' }}>{formatNumber(row.leyProm, 2)}</td>
+                <td style={{ padding: '2px 4px', fontSize: '7.5px', borderBottom: '1px solid #e6e6e6', textAlign: 'center', backgroundColor: idx % 2 === 1 ? '#fbfdfc' : 'transparent' }}>{formatLey(row.leyProm)}</td>
               </tr>
             ))}
             <tr>
@@ -185,7 +185,7 @@ export default function EgresosReportPdfTemplate({
                         <span style={{ fontSize: '6px', color: '#777777' }}>Peso Bruto Recuperado: {formatNumber(lote.recovered)} gr</span>
                       )}
                       {lote.ley != null && (
-                        <span style={{ fontSize: '6px', color: '#777777' }}>Ley: {formatNumber(lote.ley, 2)}</span>
+                        <span style={{ fontSize: '6px', color: '#777777' }}>Ley: {formatLey(lote.ley)}</span>
                       )}
                     </div>
                     <span style={{ fontSize: '6px', fontWeight: 600, color: '#777777' }}>
@@ -212,7 +212,7 @@ export default function EgresosReportPdfTemplate({
                               <span style={{ fontFamily: 'monospace', color: '#139169', fontWeight: 700 }}>{barra.barCode}</span>
                             </td>
                             <td style={{ padding: '1px 4px', fontSize: '6.5px', borderBottom: '1px solid #f0f0f0', textAlign: 'right', backgroundColor: barraIdx % 2 === 1 ? '#fbfdfc' : 'transparent' }}>{formatNumber(barra.pesoBruto)}</td>
-                            <td style={{ padding: '1px 4px', fontSize: '6.5px', borderBottom: '1px solid #f0f0f0', textAlign: 'center', backgroundColor: barraIdx % 2 === 1 ? '#fbfdfc' : 'transparent' }}>{formatNumber(barra.ley, 2)}</td>
+                            <td style={{ padding: '1px 4px', fontSize: '6.5px', borderBottom: '1px solid #f0f0f0', textAlign: 'center', backgroundColor: barraIdx % 2 === 1 ? '#fbfdfc' : 'transparent' }}>{formatLey(barra.ley)}</td>
                             <td style={{ padding: '1px 4px', fontSize: '6.5px', borderBottom: '1px solid #f0f0f0', textAlign: 'right', backgroundColor: barraIdx % 2 === 1 ? '#fbfdfc' : 'transparent' }}>
                               {barra.pesoBalanza != null ? formatNumber(barra.pesoBalanza) : '—'}
                             </td>
