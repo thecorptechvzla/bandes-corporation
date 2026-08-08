@@ -85,7 +85,9 @@ const [selectedLotIds, setSelectedLotIds] = useState<Set<string>>(new Set());
             availableWeight: Number(
               eligibleBars.reduce((s, b) => s + Number(b.fineWeight), 0),
             ),
-            grossWeight: recovered,
+            grossWeight: Number(
+              eligibleBars.reduce((s, b) => s + Number(b.grossWeight), 0),
+            ),
             recovered,
             barCount: eligibleBars.length,
             isMixed: isMixedLot(eligibleBars),
