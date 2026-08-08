@@ -213,9 +213,9 @@ export class PackingsService {
           continue;
         }
 
-        const fineWeight = data.grossWeight * (data.purity / 1000);
+        const fineWeight = Math.round(data.grossWeight * (data.purity / 1000) * 100) / 100;
         const fineWeightAg = data.leyAg != null
-          ? data.grossWeight * (data.leyAg / 1000)
+          ? Math.round(data.grossWeight * (data.leyAg / 1000) * 100) / 100
           : null;
 
         await tx.bar.update({

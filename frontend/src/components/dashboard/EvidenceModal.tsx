@@ -107,7 +107,7 @@ export function EvidenceModal({ barId, bars, onClose }: EvidenceModalProps) {
             </div>
             <div className="p-3 rounded-xl border border-[var(--hud-accent-gold)]/20 bg-[var(--hud-accent-gold)]/5">
               <span className="text-[9px] font-mono text-[var(--hud-text-dim)] uppercase tracking-wider block text-center">Peso Fino</span>
-              <span className="text-sm font-mono font-bold text-[var(--hud-accent-gold)] block text-center mt-1">{formatNumber(Number(bar.fineWeight), 4)} g</span>
+              <span className="text-sm font-mono font-bold text-[var(--hud-accent-gold)] block text-center mt-1">{formatNumber(Number(bar.fineWeight), 2)} g</span>
             </div>
           </div>
 

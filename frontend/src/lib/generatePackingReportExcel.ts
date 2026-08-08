@@ -129,7 +129,7 @@ export async function generatePackingReportExcel(params: GeneratePackingReportEx
     cell.border = thinBorder(C.green);
   });
 
-  const kpiSubRow = ws.addRow(['Procesados', '', 'Unidades recibidas', '', `Ley Promedio: ${formatNumber(summary.leyProm, 4)}`, '']);
+  const kpiSubRow = ws.addRow(['Procesados', '', 'Unidades recibidas', '', `Ley Promedio: ${formatNumber(summary.leyProm, 2)}`, '']);
   const sn = kpiSubRow.number;
   ws.mergeCells(`A${sn}:B${sn}`);
   ws.mergeCells(`C${sn}:D${sn}`);

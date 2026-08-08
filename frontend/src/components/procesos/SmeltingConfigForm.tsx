@@ -204,7 +204,7 @@ export function SmeltingConfigForm({
               </div>
               <div>
                 <span className="text-[10px] font-mono text-[var(--pm-text-dim)] block">Peso Fino</span>
-                <span className="text-sm font-mono font-bold text-[var(--pm-accent-gold)]">{formatNumber(allFa, 4)} g</span>
+                <span className="text-sm font-mono font-bold text-[var(--pm-accent-gold)]">{formatNumber(allFa, 2)} g</span>
               </div>
             </div>
             {selectedClientCount > 1 && (

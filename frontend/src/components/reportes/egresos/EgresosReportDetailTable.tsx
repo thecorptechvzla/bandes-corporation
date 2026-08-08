@@ -140,7 +140,7 @@ export default function EgresosReportDetailTable({ records, summary, onReprint }
                     className="px-4 py-3 text-center text-[12px] font-medium"
                     style={{ color: 'var(--report-text-table)' }}
                   >
-                    {formatNumber(item.ley, 4)}
+                    {formatNumber(item.ley, 2)}
                   </td>
                   <td
                     className="px-4 py-3 text-right text-[12px] font-medium"

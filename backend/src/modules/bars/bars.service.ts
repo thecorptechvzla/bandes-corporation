@@ -55,9 +55,9 @@ export class BarsService {
     leyAg?: number;
     packingId?: string;
   }) {
-    const fineWeight = data.grossWeight * (data.purity / 1000);
+    const fineWeight = Math.round(data.grossWeight * (data.purity / 1000) * 100) / 100;
     const fineWeightAg = data.leyAg
-      ? data.grossWeight * (data.leyAg / 1000)
+      ? Math.round(data.grossWeight * (data.leyAg / 1000) * 100) / 100
       : null;
 
     return this.prisma.bar.create({
@@ -182,7 +182,7 @@ export class BarsService {
         continue;
       }
 
-      const fineWeight = grossWeight * (purity / 1000);
+      const fineWeight = Math.round(grossWeight * (purity / 1000) * 100) / 100;
 
       let leyAg: number | null = null;
       let fineWeightAg: number | null = null;
@@ -196,7 +196,7 @@ export class BarsService {
             });
             continue;
           }
-          fineWeightAg = grossWeight * (leyAg / 1000);
+          fineWeightAg = Math.round(grossWeight * (leyAg / 1000) * 100) / 100;
         }
       }
 

@@ -134,7 +134,7 @@ export function CheckoutSummaryPanel({
                                 </span>
                               )}
                             </div>
-                            <span className="text-[var(--pm-text-primary)] shrink-0">{formatNumber(item.pesoFino, 4)} g</span>
+                            <span className="text-[var(--pm-text-primary)] shrink-0">{formatNumber(item.pesoFino, 2)} g</span>
                           </div>
                         );
                       })}

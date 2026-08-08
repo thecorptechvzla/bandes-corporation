@@ -123,7 +123,7 @@ export default function PackingReportTable({ records, summary }: PackingReportTa
                 className="px-4 py-3 text-right text-[12px] font-medium"
                 style={{ color: 'var(--report-text-table)' }}
               >
-                {formatNumber(row.ley, 4)}
+                {formatNumber(row.ley, 2)}
               </td>
               <td
                 className="px-4 py-3 text-right text-[12px] font-medium"
@@ -162,7 +162,7 @@ export default function PackingReportTable({ records, summary }: PackingReportTa
               className="px-4 py-3 text-right text-[12px] font-bold"
               style={{ color: 'var(--report-color-primary)' }}
             >
-              {formatNumber(summary.leyProm, 4)} (Prom)
+              {formatNumber(summary.leyProm, 2)} (Prom)
             </td>
             <td
               className="px-4 py-3 text-right text-[12px] font-bold"

@@ -140,7 +140,7 @@ export default function EgresosReportPdfTemplate({
                 )}
                 <td style={{ padding: '2px 4px', fontSize: '7.5px', borderBottom: '1px solid #e6e6e6', textAlign: 'center', backgroundColor: idx % 2 === 1 ? '#fbfdfc' : 'transparent' }}>{row.lingotes}</td>
                 <td style={{ padding: '2px 4px', fontSize: '7.5px', borderBottom: '1px solid #e6e6e6', textAlign: 'right', backgroundColor: idx % 2 === 1 ? '#fbfdfc' : 'transparent' }}>{formatNumber(row.pesoBruto)}</td>
-                <td style={{ padding: '2px 4px', fontSize: '7.5px', borderBottom: '1px solid #e6e6e6', textAlign: 'center', backgroundColor: idx % 2 === 1 ? '#fbfdfc' : 'transparent' }}>{formatNumber(row.leyProm, 4)}</td>
+                <td style={{ padding: '2px 4px', fontSize: '7.5px', borderBottom: '1px solid #e6e6e6', textAlign: 'center', backgroundColor: idx % 2 === 1 ? '#fbfdfc' : 'transparent' }}>{formatNumber(row.leyProm, 2)}</td>
               </tr>
             ))}
             <tr>
@@ -194,7 +194,7 @@ export default function EgresosReportPdfTemplate({
                         <span style={{ fontFamily: 'monospace', color: '#139169', fontWeight: 700 }}>{item.lingoteId}</span>
                       </td>
                       <td style={{ padding: '2px 4px', fontSize: '7px', borderBottom: '1px solid #f0f0f0', textAlign: 'right', backgroundColor: itemIdx % 2 === 1 ? '#fbfdfc' : 'transparent' }}>{formatNumber(item.pesoBruto)}</td>
-                      <td style={{ padding: '2px 4px', fontSize: '7px', borderBottom: '1px solid #f0f0f0', textAlign: 'center', backgroundColor: itemIdx % 2 === 1 ? '#fbfdfc' : 'transparent' }}>{formatNumber(item.ley, 4)}</td>
+                      <td style={{ padding: '2px 4px', fontSize: '7px', borderBottom: '1px solid #f0f0f0', textAlign: 'center', backgroundColor: itemIdx % 2 === 1 ? '#fbfdfc' : 'transparent' }}>{formatNumber(item.ley, 2)}</td>
                       <td style={{ padding: '2px 4px', fontSize: '7px', borderBottom: '1px solid #f0f0f0', textAlign: 'right', fontWeight: 700, backgroundColor: itemIdx % 2 === 1 ? '#fbfdfc' : 'transparent' }}>{formatNumber(item.pesoFino)}</td>
                     </tr>
                   ))}

@@ -90,7 +90,7 @@ export function BarRegistrationForm({
             </div>
             <div className="text-center">
               <span className="text-[10px] font-mono text-[var(--pm-text-dim)] block">Peso Fino</span>
-              <span className="text-sm font-mono font-bold text-[var(--pm-text-primary)]">{formatNumber(liveFA, 4)} g</span>
+              <span className="text-sm font-mono font-bold text-[var(--pm-text-primary)]">{formatNumber(liveFA, 2)} g</span>
             </div>
           </motion.div>
         )}

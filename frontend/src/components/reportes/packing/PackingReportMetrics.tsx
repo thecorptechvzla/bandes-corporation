@@ -81,7 +81,7 @@ export default function PackingReportMetrics({ summary }: PackingReportMetricsPr
           className="text-[11px] mt-1"
           style={{ color: '#85e8c5' }}
         >
-          Ley Promedio General: {formatNumber(summary.leyProm, 4)}
+          Ley Promedio General: {formatNumber(summary.leyProm, 2)}
         </div>
       </div>
     </div>

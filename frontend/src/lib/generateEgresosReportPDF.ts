@@ -164,7 +164,7 @@ function drawSummaryTable(doc: jsPDF, y: number, pw: number, data: EgresosReport
     r.fecha,
     String(r.lingotes),
     `${formatNumber(r.pesoBruto)}`,
-    `${formatNumber(r.leyProm, 4)}`,
+    `${formatNumber(r.leyProm, 2)}`,
   ]);
 
   bodyRows.push([
@@ -269,7 +269,7 @@ function drawDetailedSection(doc: jsPDF, startY: number, pw: number, detailed: E
       item.lingoteId,
       `${formatNumber(item.pesoBruto)}`,
       item.pesoBrutoBalanza != null ? `${formatNumber(item.pesoBrutoBalanza)}` : '\u2014',
-      `${formatNumber(item.ley, 4)}`,
+      `${formatNumber(item.ley, 2)}`,
       `${formatNumber(item.pesoFino)}`,
     ]);
 

@@ -287,7 +287,7 @@ function drawDetailedSection(doc: jsPDF, startY: number, pw: number, records: Sa
       b.packingOrigen,
       b.fechaRecepcion,
       `${formatNumber(b.pesoBrutoRecibido)}`,
-      `${formatNumber(b.ley, 4)}`,
+      `${formatNumber(b.ley, 2)}`,
       `${formatNumber(b.pesoFinoDisponible)}`,
       `${formatNumber(b.pesoBrutoEnBoveda)}`,
       b.fueEgresado ? (b.fechaEgreso ?? '') : 'EN BOVEDA',
