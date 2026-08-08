@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Package, GitMerge, Camera } from 'lucide-react';
 import { ModalShell } from '@/components/ui/ModalShell';
+import { BarDetailModal } from '@/components/packing/BarDetailModal';
 import { formatNumber } from '@/lib/format';
 import type { Bar } from '@/types/api';
 
@@ -30,6 +31,7 @@ interface LotDetailModalProps {
 }
 
 export function LotDetailModal({ lot, bars, onClose, zIndex = 'z-[130]' }: LotDetailModalProps) {
+  const [selectedBarForModal, setSelectedBarForModal] = useState<Bar | null>(null);
   const lotBars = useMemo(() => bars.filter(b => b.lotId === lot.id), [bars, lot.id]);
   const totalGross = useMemo(() => lotBars.reduce((s, b) => s + Number(b.grossWeight || 0), 0), [lotBars]);
   const totalFine = useMemo(() => lotBars.reduce((s, b) => s + Number(b.fineWeight || 0), 0), [lotBars]);
@@ -139,7 +141,9 @@ export function LotDetailModal({ lot, bars, onClose, zIndex = 'z-[130]' }: LotDe
                   </thead>
                   <tbody className="divide-y divide-[var(--pm-border)]/20">
                     {lotBars.map((b, i) => (
-                      <tr key={b.id} className={`${i % 2 === 0 ? 'bg-transparent' : 'bg-[var(--pm-bg-base)]/20'} hover:bg-[var(--pm-bg-hover)]/30 transition-colors`}>
+                      <tr key={b.id}
+                        onClick={() => setSelectedBarForModal(b)}
+                        className={`${i % 2 === 0 ? 'bg-transparent' : 'bg-[var(--pm-bg-base)]/20'} hover:bg-[var(--pm-bg-hover)]/30 transition-colors cursor-pointer`}>
                         <td className="text-left px-4 py-3 font-mono font-bold text-[var(--pm-accent-gold)] tracking-wider">{b.barNumber}</td>
                         <td className="text-right px-4 py-3 font-mono text-[var(--pm-text-primary)]">{formatNumber(Number(b.grossWeight || 0), 2)}</td>
                         <td className="text-right px-4 py-3 font-mono text-[var(--pm-text-primary)]">{b.purity}</td>
@@ -186,6 +190,15 @@ export function LotDetailModal({ lot, bars, onClose, zIndex = 'z-[130]' }: LotDe
           </div>
         )}
       </div>
+
+      {selectedBarForModal && (
+        <BarDetailModal
+          bar={selectedBarForModal}
+          onClose={() => setSelectedBarForModal(null)}
+          readOnly
+          zIndex="z-[140]"
+        />
+      )}
     </ModalShell>
   );
 }

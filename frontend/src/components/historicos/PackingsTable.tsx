@@ -7,15 +7,7 @@ import { formatNumber, formatWeight } from '@/lib/format';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { StatusBadge } from '@/components/ui/StatusBadge';
-
-interface PackingBar {
-  id: string;
-  barNumber: string;
-  grossWeight: string | number;
-  purity: string | number;
-  fineWeight: string | number;
-  status: string;
-}
+import type { Bar } from '@/types/api';
 
 interface PackingItem {
   id: string;
@@ -24,7 +16,7 @@ interface PackingItem {
   _count?: { bars?: number; validated?: number };
   status: string;
   createdAt: string;
-  bars?: PackingBar[];
+  bars?: Bar[];
   fileName?: string;
 }
 
@@ -37,11 +29,12 @@ interface PackingsTableProps {
   loadingExpandedPacking: boolean;
   onExpand: (id: string | null) => void;
   onClearFilters: () => void;
+  onViewBar?: (bar: Bar) => void;
 }
 
 export function PackingsTable({
   packings, isLoading, hasAnyFilter, expandedPackingId,
-  expandedPacking, loadingExpandedPacking, onExpand, onClearFilters,
+  expandedPacking, loadingExpandedPacking, onExpand, onClearFilters, onViewBar,
 }: PackingsTableProps) {
   if (isLoading) {
     return (
@@ -193,7 +186,11 @@ export function PackingsTable({
                                     </thead>
                                     <tbody>
                                       {expandedPacking.bars.map(bar => (
-                                        <tr key={bar.id} className="border-b border-[var(--pm-border)]/20 hover:bg-[var(--pm-bg-tertiary)]/40 transition-colors">
+                                        <tr
+                                          key={bar.id}
+                                          onClick={() => onViewBar?.(bar)}
+                                          className="border-b border-[var(--pm-border)]/20 hover:bg-[var(--pm-bg-tertiary)]/40 transition-colors cursor-pointer"
+                                        >
                                           <td className="py-2 px-3 text-[var(--pm-text-primary)] font-semibold">{bar.barNumber || '—'}</td>
                                           <td className="py-2 px-3 text-right text-[var(--pm-text-primary)]">{formatWeight(Number(bar.grossWeight), 2)}</td>
                                           <td className="py-2 px-3 text-right text-[var(--pm-text-primary)]">{formatNumber(Number(bar.purity), 1)}</td>

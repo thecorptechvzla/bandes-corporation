@@ -69,6 +69,7 @@ export default function PackingPage() {
 
   const [detailBar, setDetailBar] = useState<Bar | null>(null);
   const [detailSaving, setDetailSaving] = useState(false);
+  const [historyViewBar, setHistoryViewBar] = useState<Bar | null>(null);
 
   const [historySearchQuery, setHistorySearchQuery] = useState('');
   const [historyDateFrom, setHistoryDateFrom] = useState('');
@@ -553,6 +554,7 @@ export default function PackingPage() {
               expandedPacking={expandedHistoryPacking} loadingExpandedPacking={loadingExpandedHistoryPacking}
               onExpand={setExpandedHistoryPackingId}
               onClearFilters={() => { setHistorySearchQuery(''); setHistoryDateFrom(''); setHistoryDateTo(''); setHistorySelectedProvider(''); }}
+              onViewBar={setHistoryViewBar}
             />
           </div>
         </div>
@@ -584,6 +586,16 @@ export default function PackingPage() {
           onValidate={handleDetailValidate}
           onSave={handleDetailSave}
           isSaving={detailSaving}
+        />
+      )}
+
+      {/* History Bar Detail Modal (read-only) */}
+      {historyViewBar && (
+        <BarDetailModal
+          bar={historyViewBar}
+          onClose={() => setHistoryViewBar(null)}
+          readOnly
+          zIndex="z-[110]"
         />
       )}
 

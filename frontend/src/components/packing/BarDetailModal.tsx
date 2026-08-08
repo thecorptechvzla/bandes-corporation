@@ -17,6 +17,8 @@ interface BarDetailModalProps {
   onValidate?: (barId: string, data: { grossWeight: number; purity: number; photoUrl?: string }) => void;
   onSave?: (barId: string, data: { grossWeight: number; purity: number; photoUrl?: string }) => void;
   isSaving?: boolean;
+  readOnly?: boolean;
+  zIndex?: string;
 }
 
 export function BarDetailModal({
@@ -26,6 +28,8 @@ export function BarDetailModal({
   onValidate,
   onSave,
   isSaving = false,
+  readOnly = false,
+  zIndex = 'z-50',
 }: BarDetailModalProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [showPinPad, setShowPinPad] = useState(false);
@@ -152,7 +156,7 @@ export function BarDetailModal({
 
   return (
     <>
-      <ModalShell isOpen onClose={onClose} noHeader noPadding size="lg"
+      <ModalShell isOpen onClose={onClose} noHeader noPadding size="lg" zIndex={zIndex}
         panelClassName="max-h-[90vh] flex flex-col"
         bodyClassName="flex-1 min-h-0 flex flex-col overflow-hidden">
         {/* Header */}
@@ -197,13 +201,15 @@ export function BarDetailModal({
                   }}
                 />
                 {/* Repeat button overlay */}
-                <div className="absolute bottom-2 right-2">
-                  <button type="button" onClick={handleRepeatPhoto}
-                    className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-black/60 backdrop-blur-sm border border-white/20 text-white hover:bg-black/80 text-[11px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer">
-                    <Camera className="w-3 h-3" />
-                    REPETIR FOTO
-                  </button>
-                </div>
+                {!readOnly && (
+                  <div className="absolute bottom-2 right-2">
+                    <button type="button" onClick={handleRepeatPhoto}
+                      className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-black/60 backdrop-blur-sm border border-white/20 text-white hover:bg-black/80 text-[11px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer">
+                      <Camera className="w-3 h-3" />
+                      REPETIR FOTO
+                    </button>
+                  </div>
+                )}
                 {/* Upload status */}
                 {photoUploadedUrl && (
                   <div className="absolute top-2 right-2">
@@ -290,7 +296,7 @@ export function BarDetailModal({
           </div>
 
           {/* Device Capture Buttons — industrial size */}
-          {(isPorValidar || isEditing) && (
+          {!readOnly && (isPorValidar || isEditing) && (
             <div className="grid grid-cols-3 gap-2">
               <button type="button" onClick={handleGetWeight} disabled={isReadingWeight}
                 className="group relative py-4 rounded-xl border border-[var(--pm-border)]/60 text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] hover:bg-[var(--pm-bg-hover)]/60 text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer disabled:opacity-50 disabled:cursor-wait flex flex-col items-center gap-2"
@@ -368,17 +374,19 @@ export function BarDetailModal({
                   className="py-3 px-5 rounded-lg border border-[var(--pm-border)] text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] hover:bg-[var(--pm-bg-tertiary)] text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer">
                   CERRAR
                 </button>
-                <button type="button" onClick={handleEditClick}
-                  className="py-3 px-5 rounded-lg text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2"
-                  style={{
-                    background: 'linear-gradient(135deg, rgba(16,185,129,0.15), rgba(16,185,129,0.05))',
-                    color: 'var(--pm-accent-emerald)',
-                    border: '1px solid rgba(16,185,129,0.25)',
-                  }}>
-                  <Pencil className="w-3.5 h-3.5" />
-                  EDITAR
-                </button>
-                {isPorValidar && onValidate && (
+                {!readOnly && (
+                  <button type="button" onClick={handleEditClick}
+                    className="py-3 px-5 rounded-lg text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2"
+                    style={{
+                      background: 'linear-gradient(135deg, rgba(16,185,129,0.15), rgba(16,185,129,0.05))',
+                      color: 'var(--pm-accent-emerald)',
+                      border: '1px solid rgba(16,185,129,0.25)',
+                    }}>
+                    <Pencil className="w-3.5 h-3.5" />
+                    EDITAR
+                  </button>
+                )}
+                {!readOnly && isPorValidar && onValidate && (
                   <button type="button" onClick={handleValidate} disabled={isSaving || !canValidate}
                     className="flex-1 py-3 rounded-lg text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     style={{
