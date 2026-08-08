@@ -294,6 +294,9 @@ export default function PackingPage() {
       { header: 'LEY AU (‰)', key: 'purity', width: 15 },
       { header: 'PESO FINO (g)', key: 'fineWeight', width: 16 },
     ];
+    ws.getColumn(2).numFmt = '#,##0.00';
+    ws.getColumn(3).numFmt = '#,##0.00';
+    ws.getColumn(4).numFmt = '#,##0.00';
     const hr = ws.getRow(1);
     hr.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 };
     hr.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1C1C1C' } };
