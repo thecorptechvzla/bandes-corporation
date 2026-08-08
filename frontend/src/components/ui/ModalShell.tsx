@@ -30,6 +30,7 @@ interface ModalShellProps {
   closeOnBackdrop?: boolean;
   hideCloseButton?: boolean;
   noPadding?: boolean;
+  bodyClassName?: string;
 }
 
 const sizeClasses = {
@@ -54,6 +55,7 @@ export function ModalShell({
   closeOnBackdrop = true,
   hideCloseButton = false,
   noPadding = false,
+  bodyClassName = '',
 }: ModalShellProps) {
   useBodyScrollLock(isOpen);
 
@@ -129,7 +131,7 @@ export function ModalShell({
           >
             {renderHeader()}
 
-            <div className={noPadding ? '' : 'p-6'}>
+            <div className={noPadding ? bodyClassName : `${bodyClassName} p-6`.trim()}>
               {children}
             </div>
 

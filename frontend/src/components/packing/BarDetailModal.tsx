@@ -152,9 +152,11 @@ export function BarDetailModal({
 
   return (
     <>
-      <ModalShell isOpen onClose={onClose} noHeader noPadding size="lg">
+      <ModalShell isOpen onClose={onClose} noHeader noPadding size="lg"
+        panelClassName="max-h-[90vh] flex flex-col"
+        bodyClassName="flex-1 min-h-0 flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-[var(--pm-border)]/20">
+        <div className="shrink-0 flex items-center justify-between px-6 pt-6 pb-4 border-b border-[var(--pm-border)]/20">
           <div>
             <span className="text-[10px] font-mono font-bold text-[var(--pm-accent-cyan)] uppercase tracking-wider flex items-center gap-1.5">
               <ClipboardCheck className="w-3.5 h-3.5" /> DETALLE DE BARRA
@@ -179,10 +181,10 @@ export function BarDetailModal({
           </div>
         </div>
 
-        {/* Body */}
-        <div className="p-6 space-y-5">
+        {/* Body — scrollable middle section */}
+        <div className="flex-1 overflow-y-auto min-h-0 v2-scroll p-6 space-y-5">
           {/* Photo Area — fixed height, read-only display */}
-          <div className="rounded-xl overflow-hidden border border-[var(--pm-border)] bg-black/60 relative aspect-video">
+          <div className="rounded-xl overflow-hidden border border-[var(--pm-border)] bg-black/60 relative aspect-video max-h-[40vh]">
             {srcProxy ? (
               <>
                 <img
@@ -329,8 +331,10 @@ export function BarDetailModal({
             </div>
           )}
 
-          {/* Action Buttons */}
-          <div className="flex gap-3">
+          </div>
+
+        {/* Footer — fixed action bar */}
+        <div className="shrink-0 flex gap-3 px-6 py-4 border-t border-[var(--pm-border)]/20">
             {isEditing ? (
               <>
                 <button type="button" onClick={handleCancelEdit}
@@ -398,7 +402,6 @@ export function BarDetailModal({
                 )}
               </>
             )}
-          </div>
         </div>
       </ModalShell>
 
