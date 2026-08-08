@@ -98,7 +98,7 @@ export function CameraTerminal({ onCapture, onClose }: CameraTerminalProps) {
       )}
 
       {/* Viewfinder */}
-      <div className="flex-1 min-h-0 relative mx-3 mt-3 rounded-xl overflow-hidden bg-black border-2 border-[var(--pm-accent-cyan)]/30 flex items-center justify-center">
+      <div className="relative aspect-video mx-3 mt-3 rounded-xl overflow-hidden bg-black border-2 border-[var(--pm-accent-cyan)]/30 flex items-center justify-center">
         {error ? (
           <div className="text-center p-6">
             <Camera className="w-8 h-8 text-[var(--pm-accent-red)]/50 mx-auto mb-2" />
@@ -114,7 +114,7 @@ export function CameraTerminal({ onCapture, onClose }: CameraTerminalProps) {
               autoPlay
               playsInline
               muted
-              className="w-full h-full object-cover"
+              className="absolute inset-0 w-full h-full object-cover object-center"
             />
             {/* Scan frame overlay */}
             <div className="absolute inset-0 pointer-events-none">

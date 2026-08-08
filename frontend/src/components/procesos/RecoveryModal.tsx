@@ -202,7 +202,7 @@ export function RecoveryModal({ lot, lotBarsMap, processLotsMap, onClose, upload
             </label>
 
             {cameraMode === 'camera' && (
-              <div className="rounded-xl overflow-hidden border border-[var(--pm-border)]" style={{ height: '280px' }}>
+              <div className="rounded-xl overflow-hidden border border-[var(--pm-border)] bg-black">
                 <CameraTerminal
                   onCapture={handleCapture}
                   onClose={() => setCameraMode('idle')}
@@ -227,8 +227,8 @@ export function RecoveryModal({ lot, lotBarsMap, processLotsMap, onClose, upload
             )}
 
             {cameraMode === 'idle' && photoPreviewUrl && (
-              <div className="relative rounded-xl overflow-hidden border border-[var(--pm-border)]">
-                <img src={photoPreviewUrl} alt="Evidencia" className="w-full max-h-48 object-contain bg-black" />
+              <div className="relative rounded-xl overflow-hidden border border-[var(--pm-border)] aspect-video">
+                <img src={photoPreviewUrl} alt="Evidencia" className="w-full h-full object-cover object-center bg-black" />
                 {photoUploading && (
                   <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                     <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[var(--pm-bg-deepest)]/90 border border-[var(--pm-border)]">
