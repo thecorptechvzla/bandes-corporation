@@ -182,13 +182,13 @@ export function BarDetailModal({
         {/* Body */}
         <div className="p-6 space-y-5">
           {/* Photo Area — fixed height, read-only display */}
-          <div className="rounded-xl overflow-hidden border border-[var(--pm-border)] bg-black/60 h-[180px] relative">
+          <div className="rounded-xl overflow-hidden border border-[var(--pm-border)] bg-black/60 relative aspect-video">
             {srcProxy ? (
               <>
                 <img
                   src={srcProxy}
                   alt={`Barra ${bar.barNumber}`}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover object-center"
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
                     target.style.display = 'none';
