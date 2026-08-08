@@ -238,63 +238,74 @@ export async function generateEgresosReportExcel(params: GenerateEgresosReportEx
       sheet.getRow(currentRow).height = 22;
       currentRow++;
 
-      // Lingote headers
-      const lingoteHeaders = ['Lote / Barra', 'Lingote / Serie', 'Peso Bruto', 'Peso Balanza', 'Ley', 'Peso Fino'];
-      const lhr = sheet.getRow(currentRow);
-      lingoteHeaders.forEach((h, i) => {
-        const cell = lhr.getCell(i + 1);
-        cell.value = h;
-        cell.font = { bold: true, size: 9, color: { argb: 'FFFFFFFF' } };
-        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: `FF${green}` } };
-        cell.alignment = { horizontal: i < 2 ? 'left' : i === 2 || i === 3 || i === 5 ? 'right' : 'center' };
-      });
-      currentRow++;
-
-      // Lingote data
-      egreso.items.forEach((item, itemIdx) => {
-        const lr = sheet.getRow(currentRow);
-        lr.getCell(1).value = item.lote;
-        lr.getCell(1).font = { size: 9 };
-        lr.getCell(2).value = item.lingoteId;
-        lr.getCell(2).font = { bold: true, size: 9, color: { argb: `FF${green}` } };
-        lr.getCell(3).value = item.pesoBruto;
-        lr.getCell(3).font = { size: 9 };
-        lr.getCell(3).numFmt = '#,##0.00';
-        lr.getCell(3).alignment = { horizontal: 'right' };
-        lr.getCell(4).value = item.pesoBrutoBalanza ?? '—';
-        lr.getCell(4).font = { size: 9 };
-        lr.getCell(4).numFmt = '#,##0.00';
-        lr.getCell(4).alignment = { horizontal: 'right' };
-        lr.getCell(5).value = item.ley;
-        lr.getCell(5).font = { size: 9 };
-        lr.getCell(5).numFmt = '0.0000';
-        lr.getCell(5).alignment = { horizontal: 'center' };
-        lr.getCell(6).value = item.pesoFino;
-        lr.getCell(6).font = { size: 9 };
-        lr.getCell(6).numFmt = '#,##0.00';
-        lr.getCell(6).alignment = { horizontal: 'right' };
-
-        if (itemIdx % 2 === 1) {
-          for (let c = 1; c <= 6; c++) {
-            lr.getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFBFDFC' } };
-          }
-        }
+      // Each lot with its bars
+      egreso.lotes.forEach((lote) => {
+        // Lot header
+        sheet.mergeCells(`A${currentRow}:H${currentRow}`);
+        const lotHeaderCell = sheet.getCell(`A${currentRow}`);
+        const recoveredText = lote.recovered != null ? ` | Peso Bruto Recuperado: ${formatNumber(lote.recovered)} gr` : '';
+        const leyText = lote.ley != null ? ` | Ley: ${formatNumber(lote.ley, 2)}` : '';
+        lotHeaderCell.value = `${lote.loteName}${recoveredText}${leyText} | ${lote.barras.length} ${lote.barras.length === 1 ? 'barra' : 'barras'}`;
+        lotHeaderCell.font = { bold: true, size: 9, color: { argb: 'FF333333' } };
+        lotHeaderCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF5F8F7' } };
+        lotHeaderCell.alignment = { vertical: 'middle' };
+        sheet.getRow(currentRow).height = 18;
         currentRow++;
+
+        // Bars sub-headers
+        const barHeaders = ['Código Barra', 'Peso Bruto (gr)', 'Ley', 'Peso Balanza (gr)', 'Proveedor'];
+        const bhRow = sheet.getRow(currentRow);
+        barHeaders.forEach((h, i) => {
+          const cell = bhRow.getCell(i + 1);
+          cell.value = h;
+          cell.font = { bold: true, size: 8, color: { argb: 'FFFFFFFF' } };
+          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: `FF${green}` } };
+          cell.alignment = { horizontal: i === 0 || i === 4 ? 'left' : i === 2 ? 'center' : 'right', vertical: 'middle' };
+        });
+        currentRow++;
+
+        // Bars data
+        lote.barras.forEach((barra, barraIdx) => {
+          const br = sheet.getRow(currentRow);
+          br.getCell(1).value = barra.barCode;
+          br.getCell(1).font = { bold: true, size: 9, color: { argb: `FF${green}` } };
+          br.getCell(2).value = barra.pesoBruto;
+          br.getCell(2).font = { size: 9 };
+          br.getCell(2).numFmt = '#,##0.00';
+          br.getCell(2).alignment = { horizontal: 'right' };
+          br.getCell(3).value = barra.ley;
+          br.getCell(3).font = { size: 9 };
+          br.getCell(3).numFmt = '0.0000';
+          br.getCell(3).alignment = { horizontal: 'center' };
+          br.getCell(4).value = barra.pesoBalanza ?? '—';
+          br.getCell(4).font = { size: 9 };
+          br.getCell(4).numFmt = '#,##0.00';
+          br.getCell(4).alignment = { horizontal: 'right' };
+          br.getCell(5).value = barra.proveedor;
+          br.getCell(5).font = { size: 9 };
+
+          if (barraIdx % 2 === 1) {
+            for (let c = 1; c <= 5; c++) {
+              br.getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFBFDFC' } };
+            }
+          }
+          currentRow++;
+        });
       });
 
       // Subtotal
       const stRow = sheet.getRow(currentRow);
       stRow.getCell(1).value = `Subtotal — ${egreso.lingotes} Lingotes`;
       stRow.getCell(1).font = { bold: true, size: 9, color: { argb: `FF${green}` } };
-      stRow.getCell(3).value = egreso.pesoBruto;
-      stRow.getCell(3).font = { bold: true, size: 9, color: { argb: `FF${green}` } };
-      stRow.getCell(3).numFmt = '#,##0.00';
-      stRow.getCell(3).alignment = { horizontal: 'right' };
-      stRow.getCell(6).value = egreso.pesoFino;
-      stRow.getCell(6).font = { bold: true, size: 9, color: { argb: `FF${green}` } };
-      stRow.getCell(6).numFmt = '#,##0.00';
-      stRow.getCell(6).alignment = { horizontal: 'right' };
-      for (let c = 1; c <= 6; c++) {
+      stRow.getCell(2).value = egreso.pesoBruto;
+      stRow.getCell(2).font = { bold: true, size: 9, color: { argb: `FF${green}` } };
+      stRow.getCell(2).numFmt = '#,##0.00';
+      stRow.getCell(2).alignment = { horizontal: 'right' };
+      stRow.getCell(5).value = egreso.pesoFino;
+      stRow.getCell(5).font = { bold: true, size: 9, color: { argb: `FF${green}` } };
+      stRow.getCell(5).numFmt = '#,##0.00';
+      stRow.getCell(5).alignment = { horizontal: 'right' };
+      for (let c = 1; c <= 5; c++) {
         stRow.getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: `FF${greenLight}` } };
         stRow.getCell(c).border = { top: { style: 'medium', color: { argb: `FF${green}` } } };
       }
@@ -322,7 +333,7 @@ export async function generateEgresosReportExcel(params: GenerateEgresosReportEx
     sheet.getCell(`D${currentRow}`).font = { bold: true, size: 12, color: { argb: `FF${green}` } };
     sheet.getCell(`D${currentRow}`).numFmt = '#,##0.00';
 
-    sheet.getCell(`E${currentRow}`).value = 'Peso Bruto Total';
+    sheet.getCell(`E${currentRow}`).value = 'Peso Fino Total';
     sheet.getCell(`E${currentRow}`).font = { bold: true, size: 9, color: { argb: `FF${green}` } };
     sheet.getCell(`F${currentRow}`).value = summary.pesoFinoTotal;
     sheet.getCell(`F${currentRow}`).font = { bold: true, size: 12, color: { argb: `FF${green}` } };

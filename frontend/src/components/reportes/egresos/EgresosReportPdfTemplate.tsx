@@ -173,41 +173,68 @@ export default function EgresosReportPdfTemplate({
                 </div>
                 <span style={{ color: '#777777', fontSize: '6.5px' }}>{egreso.fecha} | {egreso.destino}</span>
               </div>
-              {/* Tabla de lingotes */}
-              <table style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse', boxSizing: 'border-box' }}>
-                <thead>
-                  <tr>
-                    <th style={{ width: '20%', backgroundColor: '#139169', color: '#ffffff', fontWeight: 700, fontSize: '7px', padding: '2px 4px', textAlign: 'left', border: '1px solid #139169' }}>LOTE / BARRA</th>
-                    <th style={{ width: '18%', backgroundColor: '#139169', color: '#ffffff', fontWeight: 700, fontSize: '7px', padding: '2px 4px', textAlign: 'left', border: '1px solid #139169' }}>LINGOTE / SERIE</th>
-                    <th style={{ width: '20%', backgroundColor: '#139169', color: '#ffffff', fontWeight: 700, fontSize: '7px', padding: '2px 4px', textAlign: 'right', border: '1px solid #139169' }}>PESO BRUTO (GR)</th>
-                    <th style={{ width: '14%', backgroundColor: '#139169', color: '#ffffff', fontWeight: 700, fontSize: '7px', padding: '2px 4px', textAlign: 'center', border: '1px solid #139169' }}>LEY</th>
-                    <th style={{ width: '28%', backgroundColor: '#139169', color: '#ffffff', fontWeight: 700, fontSize: '7px', padding: '2px 4px', textAlign: 'right', border: '1px solid #139169' }}>PESO FINO (GR)</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {egreso.items.map((item, itemIdx) => (
-                    <tr key={`${egreso.id}-${item.lingoteId}-${itemIdx}`}>
-                      <td style={{ padding: '2px 4px', fontSize: '7px', borderBottom: '1px solid #f0f0f0', backgroundColor: itemIdx % 2 === 1 ? '#fbfdfc' : 'transparent', wordWrap: 'break-word', overflow: 'hidden' }}>
-                        <span style={{ fontFamily: 'monospace', color: '#333' }}>{item.lote}</span>
-                      </td>
-                      <td style={{ padding: '2px 4px', fontSize: '7px', borderBottom: '1px solid #f0f0f0', backgroundColor: itemIdx % 2 === 1 ? '#fbfdfc' : 'transparent', wordWrap: 'break-word', overflow: 'hidden' }}>
-                        <span style={{ fontFamily: 'monospace', color: '#139169', fontWeight: 700 }}>{item.lingoteId}</span>
-                      </td>
-                      <td style={{ padding: '2px 4px', fontSize: '7px', borderBottom: '1px solid #f0f0f0', textAlign: 'right', backgroundColor: itemIdx % 2 === 1 ? '#fbfdfc' : 'transparent' }}>{formatNumber(item.pesoBruto)}</td>
-                      <td style={{ padding: '2px 4px', fontSize: '7px', borderBottom: '1px solid #f0f0f0', textAlign: 'center', backgroundColor: itemIdx % 2 === 1 ? '#fbfdfc' : 'transparent' }}>{formatNumber(item.ley, 2)}</td>
-                      <td style={{ padding: '2px 4px', fontSize: '7px', borderBottom: '1px solid #f0f0f0', textAlign: 'right', fontWeight: 700, backgroundColor: itemIdx % 2 === 1 ? '#fbfdfc' : 'transparent' }}>{formatNumber(item.pesoFino)}</td>
-                    </tr>
-                  ))}
-                  {/* Subtotal */}
-                  <tr>
-                    <td style={{ padding: '2px 4px', fontSize: '7px', backgroundColor: '#eaf4f0', fontWeight: 700, color: '#139169', borderTop: '2px solid #139169' }}>Subtotal — {egreso.lingotes} Lingotes</td>
-                    <td style={{ padding: '2px 4px', backgroundColor: '#eaf4f0', borderTop: '2px solid #139169' }} />
-                    <td style={{ padding: '2px 4px', fontSize: '7px', backgroundColor: '#eaf4f0', borderTop: '2px solid #139169', textAlign: 'right', fontWeight: 700, color: '#139169' }}>{formatNumber(egreso.pesoBruto)} g</td>
-                    <td style={{ padding: '2px 4px', backgroundColor: '#eaf4f0', borderTop: '2px solid #139169' }} />
-                    <td style={{ padding: '2px 4px', fontSize: '7px', backgroundColor: '#eaf4f0', borderTop: '2px solid #139169', textAlign: 'right', fontWeight: 700, color: '#139169' }}>{formatNumber(egreso.pesoFino)} g</td>
-                  </tr>
-                </tbody>
-              </table>
+
+              {/* Lotes con sus barras */}
+              {egreso.lotes.map((lote, loteIdx) => (
+                <div key={`${egreso.id}-lote-${loteIdx}`} style={{ borderBottom: loteIdx < egreso.lotes.length - 1 ? '1px solid #e0e0e0' : 'none' }}>
+                  {/* Cabecera del lote */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#f5f8f7', padding: '2px 6px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: '7px', color: '#333333' }}>{lote.loteName}</span>
+                      {lote.recovered != null && (
+                        <span style={{ fontSize: '6px', color: '#777777' }}>Peso Bruto Recuperado: {formatNumber(lote.recovered)} gr</span>
+                      )}
+                      {lote.ley != null && (
+                        <span style={{ fontSize: '6px', color: '#777777' }}>Ley: {formatNumber(lote.ley, 2)}</span>
+                      )}
+                    </div>
+                    <span style={{ fontSize: '6px', fontWeight: 600, color: '#777777' }}>
+                      {lote.barras.length} {lote.barras.length === 1 ? 'barra' : 'barras'}
+                    </span>
+                  </div>
+
+                  {/* Sub-tabla de barras */}
+                  {lote.barras.length > 0 && (
+                    <table style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse', boxSizing: 'border-box' }}>
+                      <thead>
+                        <tr>
+                          <th style={{ width: '18%', backgroundColor: '#139169', color: '#ffffff', fontWeight: 700, fontSize: '6px', padding: '2px 4px', textAlign: 'left', border: '1px solid #139169' }}>CÓDIGO BARRA</th>
+                          <th style={{ width: '18%', backgroundColor: '#139169', color: '#ffffff', fontWeight: 700, fontSize: '6px', padding: '2px 4px', textAlign: 'right', border: '1px solid #139169' }}>PESO BRUTO (GR)</th>
+                          <th style={{ width: '12%', backgroundColor: '#139169', color: '#ffffff', fontWeight: 700, fontSize: '6px', padding: '2px 4px', textAlign: 'center', border: '1px solid #139169' }}>LEY</th>
+                          <th style={{ width: '20%', backgroundColor: '#139169', color: '#ffffff', fontWeight: 700, fontSize: '6px', padding: '2px 4px', textAlign: 'right', border: '1px solid #139169' }}>PESO BALANZA (GR)</th>
+                          <th style={{ width: '32%', backgroundColor: '#139169', color: '#ffffff', fontWeight: 700, fontSize: '6px', padding: '2px 4px', textAlign: 'left', border: '1px solid #139169' }}>PROVEEDOR</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {lote.barras.map((barra, barraIdx) => (
+                          <tr key={`${egreso.id}-lote-${loteIdx}-barra-${barraIdx}`}>
+                            <td style={{ padding: '1px 4px', fontSize: '6.5px', borderBottom: '1px solid #f0f0f0', backgroundColor: barraIdx % 2 === 1 ? '#fbfdfc' : 'transparent' }}>
+                              <span style={{ fontFamily: 'monospace', color: '#139169', fontWeight: 700 }}>{barra.barCode}</span>
+                            </td>
+                            <td style={{ padding: '1px 4px', fontSize: '6.5px', borderBottom: '1px solid #f0f0f0', textAlign: 'right', backgroundColor: barraIdx % 2 === 1 ? '#fbfdfc' : 'transparent' }}>{formatNumber(barra.pesoBruto)}</td>
+                            <td style={{ padding: '1px 4px', fontSize: '6.5px', borderBottom: '1px solid #f0f0f0', textAlign: 'center', backgroundColor: barraIdx % 2 === 1 ? '#fbfdfc' : 'transparent' }}>{formatNumber(barra.ley, 2)}</td>
+                            <td style={{ padding: '1px 4px', fontSize: '6.5px', borderBottom: '1px solid #f0f0f0', textAlign: 'right', backgroundColor: barraIdx % 2 === 1 ? '#fbfdfc' : 'transparent' }}>
+                              {barra.pesoBalanza != null ? formatNumber(barra.pesoBalanza) : '—'}
+                            </td>
+                            <td style={{ padding: '1px 4px', fontSize: '6.5px', borderBottom: '1px solid #f0f0f0', backgroundColor: barraIdx % 2 === 1 ? '#fbfdfc' : 'transparent' }}>
+                              {barra.proveedor}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
+                </div>
+              ))}
+
+              {/* Subtotal */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#eaf4f0', borderTop: '2px solid #139169', padding: '2px 6px' }}>
+                <span style={{ fontSize: '7px', fontWeight: 700, color: '#139169' }}>Subtotal — {egreso.lingotes} Lingotes</span>
+                <div style={{ display: 'flex', gap: '12px' }}>
+                  <span style={{ fontSize: '7px', fontWeight: 700, color: '#139169' }}>{formatNumber(egreso.pesoBruto)} gr</span>
+                  <span style={{ fontSize: '7px', fontWeight: 700, color: '#139169' }}>{formatNumber(egreso.pesoFino)} gr</span>
+                </div>
+              </div>
             </div>
           ))}
 

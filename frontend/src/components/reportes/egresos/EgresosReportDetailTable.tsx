@@ -73,115 +73,159 @@ export default function EgresosReportDetailTable({ records, summary, onReprint }
             </div>
           </div>
 
-          {/* Tabla de lingotes */}
-          <table className="w-full border-collapse text-left">
-            <thead>
-              <tr>
-                {[
-                  { label: 'N° Lote / ID Barra', align: 'left' },
-                  { label: 'N° Lingote / Serie', align: 'left' },
-                  { label: 'Peso Bruto (gr)', align: 'right' },
-                  { label: 'Peso Balanza (gr)', align: 'right' },
-                  { label: 'Ley', align: 'center' },
-                  { label: 'Peso Fino (gr)', align: 'right' },
-                ].map((h) => (
-                  <th
-                    key={h.label}
-                    className={`px-4 py-3 text-[11px] font-bold uppercase tracking-wider text-${h.align}`}
-                    style={{
-                      backgroundColor: 'var(--report-bg-main)',
-                      color: 'var(--report-text-muted)',
-                      borderBottom: '1px solid var(--report-border-color)',
-                    }}
-                  >
-                    {h.label}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {egreso.items.map((item, itemIdx) => (
-                <tr
-                  key={`${egreso.id}-${item.lingoteId}-${itemIdx}`}
-                  style={{
-                    backgroundColor: itemIdx % 2 === 0 ? 'transparent' : 'var(--report-bg-table-row-even)',
-                    borderBottom: '1px solid rgba(255,255,255,0.03)',
-                  }}
-                >
-                  <td className="px-4 py-3">
-                    <span
-                      className="font-mono text-[12px] font-semibold"
-                      style={{ color: 'var(--report-text-table)' }}
-                    >
-                      {item.lote}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span
-                      className="font-mono text-[12px] font-semibold"
-                      style={{ color: 'var(--report-color-primary)' }}
-                    >
-                      {item.lingoteId}
-                    </span>
-                  </td>
-                  <td
-                    className="px-4 py-3 text-right text-[12px] font-medium"
-                    style={{ color: 'var(--report-text-main)' }}
-                  >
-                    {formatNumber(item.pesoBruto)}
-                  </td>
-                  <td
-                    className="px-4 py-3 text-right text-[12px] font-medium"
-                    style={{ color: 'var(--report-text-main)' }}
-                  >
-                    {item.pesoBrutoBalanza != null ? formatNumber(item.pesoBrutoBalanza) : '—'}
-                  </td>
-                  <td
-                    className="px-4 py-3 text-center text-[12px] font-medium"
-                    style={{ color: 'var(--report-text-table)' }}
-                  >
-                    {formatNumber(item.ley, 2)}
-                  </td>
-                  <td
-                    className="px-4 py-3 text-right text-[12px] font-medium"
-                    style={{ color: 'var(--report-text-main)' }}
-                  >
-                    {formatNumber(item.pesoFino)}
-                  </td>
-                </tr>
-              ))}
-
-              {/* Subtotal */}
-              <tr
+          {/* Lotes con sus barras */}
+          {egreso.lotes.map((lote, loteIdx) => (
+            <div
+              key={`${egreso.id}-lote-${loteIdx}`}
+              style={{
+                borderBottom: loteIdx < egreso.lotes.length - 1 ? '1px solid var(--report-border-color)' : 'none',
+              }}
+            >
+              {/* Cabecera del lote */}
+              <div
+                className="flex items-center justify-between px-4 py-2"
                 style={{
                   backgroundColor: 'var(--report-bg-main)',
-                  borderTop: '2px solid var(--report-color-primary)',
                 }}
               >
-                <td
-                  className="px-4 py-3 text-[12px] font-bold"
-                  style={{ color: 'var(--report-color-primary)' }}
+                <div className="flex items-center gap-3">
+                  <span
+                    className="font-mono font-bold text-[11px]"
+                    style={{ color: 'var(--report-text-table)' }}
+                  >
+                    {lote.loteName}
+                  </span>
+                  {lote.recovered != null && (
+                    <span
+                      className="text-[10px]"
+                      style={{ color: 'var(--report-text-muted)' }}
+                    >
+                      Peso Bruto Recuperado: {formatNumber(lote.recovered)} gr
+                    </span>
+                  )}
+                  {lote.ley != null && (
+                    <span
+                      className="text-[10px]"
+                      style={{ color: 'var(--report-text-muted)' }}
+                    >
+                      Ley: {formatNumber(lote.ley, 2)}
+                    </span>
+                  )}
+                </div>
+                <span
+                  className="text-[10px] font-semibold"
+                  style={{ color: 'var(--report-text-muted)' }}
                 >
-                  Subtotal — {egreso.lingotes} Lingotes
-                </td>
-                <td className="px-4 py-3" />
-                <td
-                  className="px-4 py-3 text-right text-[12px] font-bold"
-                  style={{ color: 'var(--report-color-primary)' }}
-                >
-                  {formatNumber(egreso.pesoBruto)} gr
-                </td>
-                <td className="px-4 py-3" />
-                <td className="px-4 py-3" />
-                <td
-                  className="px-4 py-3 text-right text-[12px] font-bold"
-                  style={{ color: 'var(--report-color-primary)' }}
-                >
-                  {formatNumber(egreso.pesoFino)} gr
-                </td>
-              </tr>
-            </tbody>
-          </table>
+                  {lote.barras.length} {lote.barras.length === 1 ? 'barra' : 'barras'}
+                </span>
+              </div>
+
+              {/* Sub-tabla de barras */}
+              {lote.barras.length > 0 && (
+                <table className="w-full border-collapse text-left">
+                  <thead>
+                    <tr>
+                      {[
+                        { label: 'Código Barra', align: 'left' as const },
+                        { label: 'Peso Bruto (gr)', align: 'right' as const },
+                        { label: 'Ley', align: 'center' as const },
+                        { label: 'Peso Balanza (gr)', align: 'right' as const },
+                        { label: 'Proveedor', align: 'left' as const },
+                      ].map((h) => (
+                        <th
+                          key={h.label}
+                          className={`px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-${h.align}`}
+                          style={{
+                            backgroundColor: 'rgba(19, 145, 105, 0.06)',
+                            color: 'var(--report-text-muted)',
+                            borderBottom: '1px solid var(--report-border-color)',
+                          }}
+                        >
+                          {h.label}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {lote.barras.map((barra, barraIdx) => (
+                      <tr
+                        key={`${egreso.id}-lote-${loteIdx}-barra-${barraIdx}`}
+                        style={{
+                          backgroundColor: barraIdx % 2 === 0 ? 'transparent' : 'var(--report-bg-table-row-even)',
+                          borderBottom: '1px solid rgba(255,255,255,0.03)',
+                        }}
+                      >
+                        <td className="px-4 py-2">
+                          <span
+                            className="font-mono text-[11px] font-semibold"
+                            style={{ color: 'var(--report-color-primary)' }}
+                          >
+                            {barra.barCode}
+                          </span>
+                        </td>
+                        <td
+                          className="px-4 py-2 text-right text-[11px] font-medium"
+                          style={{ color: 'var(--report-text-main)' }}
+                        >
+                          {formatNumber(barra.pesoBruto)}
+                        </td>
+                        <td
+                          className="px-4 py-2 text-center text-[11px] font-medium"
+                          style={{ color: 'var(--report-text-table)' }}
+                        >
+                          {formatNumber(barra.ley, 2)}
+                        </td>
+                        <td
+                          className="px-4 py-2 text-right text-[11px] font-medium"
+                          style={{ color: 'var(--report-text-main)' }}
+                        >
+                          {barra.pesoBalanza != null ? formatNumber(barra.pesoBalanza) : '—'}
+                        </td>
+                        <td className="px-4 py-2">
+                          <span
+                            className="text-[11px]"
+                            style={{ color: 'var(--report-text-table)' }}
+                          >
+                            {barra.proveedor}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          ))}
+
+          {/* Subtotal */}
+          <div
+            className="flex items-center justify-between px-4 py-3"
+            style={{
+              backgroundColor: 'var(--report-bg-main)',
+              borderTop: '2px solid var(--report-color-primary)',
+            }}
+          >
+            <span
+              className="text-[12px] font-bold"
+              style={{ color: 'var(--report-color-primary)' }}
+            >
+              Subtotal — {egreso.lingotes} Lingotes
+            </span>
+            <div className="flex items-center gap-6">
+              <span
+                className="text-[12px] font-bold"
+                style={{ color: 'var(--report-color-primary)' }}
+              >
+                {formatNumber(egreso.pesoBruto)} gr
+              </span>
+              <span
+                className="text-[12px] font-bold"
+                style={{ color: 'var(--report-color-primary)' }}
+              >
+                {formatNumber(egreso.pesoFino)} gr
+              </span>
+            </div>
+          </div>
         </div>
       ))}
 

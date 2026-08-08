@@ -264,69 +264,129 @@ function drawDetailedSection(doc: jsPDF, startY: number, pw: number, detailed: E
     doc.text(`${egreso.fecha} | ${egreso.destino}`, pw - 14, y + 5.5, { align: 'right' });
     y += bannerH + 2;
 
-    const bodyRows = egreso.items.map((item) => [
-      item.lote || '\u2014',
-      item.lingoteId,
-      `${formatNumber(item.pesoBruto)}`,
-      item.pesoBrutoBalanza != null ? `${formatNumber(item.pesoBrutoBalanza)}` : '\u2014',
-      `${formatNumber(item.ley, 2)}`,
-      `${formatNumber(item.pesoFino)}`,
-    ]);
+    // Draw each lot with its bars
+    egreso.lotes.forEach((lote, loteIdx) => {
+      const pageH = doc.internal.pageSize.getHeight();
+      if (y + 30 > pageH - 20) {
+        doc.addPage();
+        y = 15;
+      }
 
+      // Lot header
+      doc.setFillColor(245, 248, 247);
+      doc.rect(10, y, pw - 20, 7, 'F');
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(7);
+      doc.setTextColor(...GRAY_DARK);
+      doc.text(lote.loteName, 14, y + 5);
+
+      if (lote.recovered != null) {
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(6);
+        doc.setTextColor(...GRAY);
+        doc.text(`Peso Bruto Recuperado: ${formatNumber(lote.recovered)} gr`, pw - 14, y + 5, { align: 'right' });
+      }
+
+      if (lote.ley != null) {
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(6);
+        doc.setTextColor(...GRAY);
+        const leyText = `Ley: ${formatNumber(lote.ley, 2)}`;
+        const recoveredWidth = lote.recovered != null ? doc.getTextWidth(`Peso Bruto Recuperado: ${formatNumber(lote.recovered)} gr`) : 0;
+        doc.text(leyText, pw - 16 - recoveredWidth, y + 5, { align: 'right' });
+      }
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(6);
+      doc.setTextColor(...GRAY);
+      doc.text(`${lote.barras.length} ${lote.barras.length === 1 ? 'barra' : 'barras'}`, pw / 2, y + 5, { align: 'center' });
+      y += 7;
+
+      // Bars sub-table
+      if (lote.barras.length > 0) {
+        const barBodyRows = lote.barras.map((barra) => [
+          barra.barCode,
+          `${formatNumber(barra.pesoBruto)}`,
+          `${formatNumber(barra.ley, 2)}`,
+          barra.pesoBalanza != null ? `${formatNumber(barra.pesoBalanza)}` : '\u2014',
+          barra.proveedor,
+        ]);
+
+        autoTable(doc, {
+          startY: y,
+          head: [['Código Barra', 'Peso Bruto (g)', 'Ley', 'Peso Balanza (g)', 'Proveedor']],
+          body: barBodyRows,
+          theme: 'grid',
+          headStyles: {
+            fillColor: [19, 145, 105],
+            textColor: WHITE,
+            fontStyle: 'bold',
+            fontSize: 6,
+            halign: 'center',
+            cellPadding: 2,
+            lineColor: GREEN,
+            lineWidth: 0.2,
+          },
+          bodyStyles: {
+            fontSize: 6,
+            textColor: [51, 51, 51],
+            cellPadding: 1.5,
+            lineColor: [240, 240, 240],
+            lineWidth: 0.15,
+          },
+          columnStyles: {
+            0: { cellWidth: 30, halign: 'left' },
+            1: { halign: 'right' },
+            2: { cellWidth: 18, halign: 'center' },
+            3: { halign: 'right' },
+            4: { cellWidth: 50, halign: 'left' },
+          },
+          alternateRowStyles: {
+            fillColor: ROW_ALT,
+          },
+          margin: { left: 14, right: 10 },
+        });
+
+        y = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 3;
+      }
+
+      // Add spacing between lots
+      if (loteIdx < egreso.lotes.length - 1) {
+        y += 2;
+      }
+    });
+
+    // Subtotal
     const totPesoBruto = egreso.items.reduce((a, b) => a + b.pesoBruto, 0);
     const totPesoFino = egreso.items.reduce((a, b) => a + b.pesoFino, 0);
-    bodyRows.push([
+
+    const subRows = [[
       `Subtotal \u2014 ${egreso.lingotes} Lingotes`,
       '',
       `${formatNumber(totPesoBruto)} g`,
       '',
-      '',
       `${formatNumber(totPesoFino)} g`,
-    ]);
+    ]];
 
     autoTable(doc, {
       startY: y,
-      head: [['Lote / Barra', 'Lingote / Serie', 'Peso Bruto (g)', 'Peso Balanza (g)', 'Ley', 'Peso Fino (g)']],
-      body: bodyRows,
+      body: subRows,
       theme: 'grid',
-      headStyles: {
-        fillColor: GREEN,
-        textColor: WHITE,
+      bodyStyles: {
+        fontSize: 7,
         fontStyle: 'bold',
-        fontSize: 6.5,
-        halign: 'center',
+        textColor: GREEN,
         cellPadding: 2.5,
+        fillColor: GREEN_LIGHT,
         lineColor: GREEN,
         lineWidth: 0.3,
       },
-      bodyStyles: {
-        fontSize: 6.5,
-        textColor: [51, 51, 51],
-        cellPadding: 2,
-        lineColor: [240, 240, 240],
-        lineWidth: 0.2,
-      },
       columnStyles: {
-        0: { cellWidth: 36, halign: 'left' },
-        1: { cellWidth: 30, halign: 'left' },
+        0: { cellWidth: 50, halign: 'left' },
         2: { halign: 'right' },
-        3: { halign: 'right' },
-        4: { cellWidth: 22, halign: 'center' },
-        5: { halign: 'right' },
-      },
-      alternateRowStyles: {
-        fillColor: ROW_ALT,
+        4: { halign: 'right' },
       },
       margin: { left: 10, right: 10 },
-      didParseCell: (data) => {
-        if (data.section === 'body' && data.row.index === egreso.items.length) {
-          data.cell.styles.fontStyle = 'bold';
-          data.cell.styles.textColor = GREEN;
-          data.cell.styles.fillColor = GREEN_LIGHT;
-          data.cell.styles.lineColor = GREEN;
-          data.cell.styles.lineWidth = 0.3;
-        }
-      },
     });
 
     y = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 6;

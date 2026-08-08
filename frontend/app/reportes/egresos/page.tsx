@@ -73,8 +73,8 @@ export default function EgresosReportPage() {
     const destinoClient = destinatario
       ? { rif: destinatario.rif, contactInfo: destinatario.contactInfo }
       : undefined;
-    generateDispatchPDF(convertExitToDispatchResult(record.exit), destinoClient, copyType);
-  }, [clients]);
+    generateDispatchPDF(convertExitToDispatchResult(record.exit), destinoClient, copyType, appliedReportType === 'detallado');
+  }, [clients, appliedReportType]);
 
   const handleGenerate = useCallback(async () => {
     setIsGenerating(true);

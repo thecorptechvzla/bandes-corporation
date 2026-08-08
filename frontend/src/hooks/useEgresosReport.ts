@@ -1,11 +1,13 @@
 import { api } from '@/lib/api';
 import type { MaterialExit } from '@/types/api';
 import type {
+  BarraLote,
   EgresoDetailedRecord,
   EgresoRecord,
   EgresoReportType,
   EgresoSummary,
   LingoteEgreso,
+  LoteDetallado,
 } from '@/components/reportes/egresos/types';
 
 interface ReportBarEgresoDTO {
@@ -151,7 +153,44 @@ export function toEgresoDetailedRecord(e: ReportEgresoDTO, index: number): Egres
     pesoFino: Number(b.fineWeight ?? 0),
   }));
 
-  return { ...base, items: [...fromDetails, ...fromBars] };
+  const lotes: LoteDetallado[] = (e.exitDetails ?? []).map((d) => {
+    const bars = d.bars ?? [];
+    const recovered = d.lot?.recovered != null ? Number(d.lot.recovered) : undefined;
+    const totalGross = bars.reduce((acc, b) => acc + Number(b.grossWeight ?? 0), 0);
+    const usable = recovered != null && recovered > 0 && totalGross > 0;
+
+    let allocated = 0;
+    const barras: BarraLote[] = bars.map((b, i) => {
+      let pesoBalanza: number | undefined;
+      if (usable) {
+        if (i === bars.length - 1) {
+          pesoBalanza = round(recovered! - allocated);
+        } else {
+          pesoBalanza = round((recovered! * Number(b.grossWeight ?? 0)) / totalGross);
+          allocated += pesoBalanza;
+        }
+      }
+      return {
+        barCode: b.barNumber,
+        pesoBruto: Number(b.grossWeight ?? 0),
+        ley: Number(b.purity ?? 0) / 1000,
+        pesoBalanza,
+        proveedor: b.client?.name ?? '—',
+      };
+    });
+
+    const totalPesoFino = barras.reduce((acc, b) => acc + b.pesoBruto * b.ley, 0);
+    const ley = totalGross > 0 ? totalPesoFino / totalGross : 0;
+
+    return {
+      loteName: d.lot?.name ?? '—',
+      recovered,
+      ley,
+      barras,
+    };
+  });
+
+  return { ...base, items: [...fromDetails, ...fromBars], lotes };
 }
 
 export async function fetchEgresosReport({

@@ -7,6 +7,21 @@ export interface LingoteEgreso {
   pesoFino: number;
 }
 
+export interface BarraLote {
+  barCode: string;
+  pesoBruto: number;
+  ley: number;
+  pesoBalanza?: number;
+  proveedor: string;
+}
+
+export interface LoteDetallado {
+  loteName: string;
+  recovered?: number;
+  ley?: number;
+  barras: BarraLote[];
+}
+
 export interface EgresoRecord {
   id: string;
   guia: string;
@@ -24,6 +39,7 @@ export interface EgresoRecord {
 
 export interface EgresoDetailedRecord extends EgresoRecord {
   items: LingoteEgreso[];
+  lotes: LoteDetallado[];
 }
 
 export interface EgresoSummary {

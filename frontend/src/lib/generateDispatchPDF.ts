@@ -22,6 +22,7 @@ interface LotItem {
   purity?: number;
   validatedWeight?: number;
   recovered?: number;
+  inputBars?: BarItem[];
 }
 
 export interface DispatchResult {
@@ -57,6 +58,14 @@ export function convertExitToDispatchResult(exit: MaterialExit): DispatchResult 
       const lotFineWeight = lotBars.reduce((sum, b) => sum + Number(b.fineWeight || 0), 0);
       const lotPurity = lotGrossWeight > 0 ? (lotFineWeight / lotGrossWeight) * 1000 : 0;
 
+      const inputBars: BarItem[] = lotBars.map(b => ({
+        barNumber: b.barNumber,
+        grossWeight: Number(b.grossWeight || 0),
+        purity: Number(b.purity || 0),
+        fineWeight: Number(b.fineWeight || 0),
+        provider: b.client?.name || 'DESCONOCIDO',
+      }));
+
       const composition = computeComposition(
         lotBars.map(b => ({
           clientId: b.clientId || '',
@@ -75,6 +84,7 @@ export function convertExitToDispatchResult(exit: MaterialExit): DispatchResult 
           fineWeight: lotFineWeight,
           purity: lotPurity,
           recovered,
+          inputBars,
         } as LotItem));
       }
       return [{
@@ -86,6 +96,7 @@ export function convertExitToDispatchResult(exit: MaterialExit): DispatchResult 
         fineWeight: lotFineWeight,
         purity: lotPurity,
         recovered,
+        inputBars,
       } as LotItem];
     });
     lots.forEach(l => {
@@ -134,6 +145,7 @@ export async function generateDispatchPDF(
   data: DispatchResult,
   destinationClient?: { rif?: string; contactInfo?: string },
   copyType: CopyType = 'CLIENTE',
+  showInputBars = false,
 ) {
   const doc = new jsPDF('p', 'mm', 'a4');
   const pw = 210, m = 15, cw = pw - m * 2;
@@ -275,6 +287,25 @@ export async function generateDispatchPDF(
           doc.text((Number(lot.purity) || 0).toFixed(2).replace('.', ','), m + 3 + lotColsW[0] + lotColsW[1] + lotColsW[2] + lotColsW[3], y + 1);
           doc.text(formatWeight(Number(lot.fineWeight ?? 0)), pw - m - 2, y + 1, { align: 'right' });
           y += 7;
+
+          if (showInputBars && lot.inputBars && lot.inputBars.length > 0) {
+            lot.inputBars.forEach((bar) => {
+              if (y > 260) { doc.addPage(); y = 20; }
+              doc.setFillColor(242, 250, 247);
+              doc.rect(m, y - 3.5, cw, 6, 'F');
+              doc.setFontSize(6);
+              doc.setFont('helvetica', 'normal');
+              doc.setTextColor(19, 145, 105);
+              doc.text('  └', m + 3, y + 0.5);
+              doc.setTextColor(80, 80, 80);
+              doc.text(bar.barNumber, m + 3 + lotColsW[0], y + 0.5);
+              doc.text(formatWeight(bar.grossWeight), m + 3 + lotColsW[0] + lotColsW[1], y + 0.5);
+              doc.text('—', m + 3 + lotColsW[0] + lotColsW[1] + lotColsW[2], y + 0.5);
+              doc.text((Number(bar.purity) || 0).toFixed(2).replace('.', ','), m + 3 + lotColsW[0] + lotColsW[1] + lotColsW[2] + lotColsW[3], y + 0.5);
+              doc.text(formatWeight(bar.fineWeight), pw - m - 2, y + 0.5, { align: 'right' });
+              y += 5;
+            });
+          }
         });
       }
 
