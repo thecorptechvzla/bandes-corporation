@@ -20,6 +20,8 @@ const ROLE_LABELS: Record<string, string> = {
   AMBOS: 'Mixto',
 };
 
+const TH = 'text-[10px] text-[var(--pm-text-dim)] font-mono font-bold uppercase tracking-widest';
+
 interface ClientTableProps {
   clients: Client[];
   totalCount: number;
@@ -38,11 +40,11 @@ function SkeletonRows() {
     <tbody>
       {Array.from({ length: 6 }).map((_, i) => (
         <tr key={i} className="border-b border-[var(--pm-border)]/50">
-          <td className="px-4 py-3.5"><div className="skeleton h-4 w-24 rounded mx-auto" /></td>
+          <td className="pr-6 py-3.5"><div className="skeleton h-4 w-24 rounded ml-auto" /></td>
           <td className="px-4 py-3.5"><div className="skeleton h-4 w-40 rounded" /></td>
           <td className="px-4 py-3.5"><div className="skeleton h-5 w-16 rounded mx-auto" /></td>
           <td className="px-4 py-3.5 hidden sm:table-cell"><div className="skeleton h-4 w-28 rounded" /></td>
-          <td className="px-4 py-3.5"><div className="skeleton h-4 w-12 rounded mx-auto" /></td>
+          <td className="pr-6 py-3.5"><div className="skeleton h-4 w-12 rounded ml-auto" /></td>
         </tr>
       ))}
     </tbody>
@@ -63,11 +65,11 @@ export function ClientTable({
           <table className="w-full table-fixed border-collapse font-sans text-xs">
             <thead>
               <tr className="border-b border-[var(--pm-border)]">
-                <th className="w-[20%] text-center px-4 py-3 text-[11px] text-[var(--pm-text-dim)] font-mono font-bold uppercase tracking-wider">RIF</th>
-                <th className="w-[35%] text-left px-4 py-3 text-[11px] text-[var(--pm-text-dim)] font-mono font-bold uppercase tracking-wider">Nombre</th>
-                <th className="w-[15%] text-center px-4 py-3 text-[11px] text-[var(--pm-text-dim)] font-mono font-bold uppercase tracking-wider">Rol</th>
-                <th className="w-[20%] text-left px-4 py-3 text-[11px] text-[var(--pm-text-dim)] font-mono font-bold uppercase tracking-wider hidden sm:table-cell">Contacto</th>
-                <th className="w-[10%] text-center px-4 py-3 text-[11px] text-[var(--pm-text-dim)] font-mono font-bold uppercase tracking-wider">Acciones</th>
+                <th className={`w-[15%] text-right pr-6 py-3 ${TH}`}>RIF</th>
+                <th className={`w-[35%] text-left px-4 py-3 ${TH}`}>Nombre</th>
+                <th className={`w-[15%] text-center px-4 py-3 ${TH}`}>Rol</th>
+                <th className={`w-[20%] text-left px-4 py-3 hidden sm:table-cell ${TH}`}>Contacto</th>
+                <th className={`w-[15%] text-right pr-6 py-3 ${TH}`}>Acciones</th>
               </tr>
             </thead>
             <SkeletonRows />
@@ -107,11 +109,11 @@ export function ClientTable({
           <table className="w-full table-fixed border-collapse font-sans text-xs">
             <thead>
               <tr className="border-b border-[var(--pm-border)]">
-                <th className="w-[20%] text-center px-4 py-3 text-[11px] text-[var(--pm-text-dim)] font-mono font-bold uppercase tracking-wider">RIF</th>
-                <th className="w-[35%] text-left px-4 py-3 text-[11px] text-[var(--pm-text-dim)] font-mono font-bold uppercase tracking-wider">Nombre</th>
-                <th className="w-[15%] text-center px-4 py-3 text-[11px] text-[var(--pm-text-dim)] font-mono font-bold uppercase tracking-wider">Rol</th>
-                <th className="w-[20%] text-left px-4 py-3 text-[11px] text-[var(--pm-text-dim)] font-mono font-bold uppercase tracking-wider hidden sm:table-cell">Contacto</th>
-                <th className="w-[10%] text-center px-4 py-3 text-[11px] text-[var(--pm-text-dim)] font-mono font-bold uppercase tracking-wider">Acciones</th>
+                <th className={`w-[15%] text-right pr-6 py-3 ${TH}`}>RIF</th>
+                <th className={`w-[35%] text-left px-4 py-3 ${TH}`}>Nombre</th>
+                <th className={`w-[15%] text-center px-4 py-3 ${TH}`}>Rol</th>
+                <th className={`w-[20%] text-left px-4 py-3 hidden sm:table-cell ${TH}`}>Contacto</th>
+                <th className={`w-[15%] text-right pr-6 py-3 ${TH}`}>Acciones</th>
               </tr>
             </thead>
             <tbody>
@@ -123,7 +125,7 @@ export function ClientTable({
                   transition={{ delay: 0.2 + idx * 0.03, duration: 0.25 }}
                   className="pm-table-row border-b border-[var(--pm-border)]/30"
                 >
-                  <td className="text-center px-4 py-3 font-mono font-bold text-cyan-400 tracking-wider text-[11px]">
+                  <td className="text-right pr-6 py-3 font-mono font-bold text-cyan-400 tracking-wider text-[11px]">
                     {formatRif(client.rif)}
                   </td>
                   <td className="text-left px-4 py-3 font-sans font-bold text-[var(--pm-text-primary)]">
@@ -137,8 +139,8 @@ export function ClientTable({
                   <td className="text-left px-4 py-3 font-mono text-[var(--pm-text-dim)] hidden sm:table-cell">
                     {client.contactInfo || <span className="opacity-30">&mdash;</span>}
                   </td>
-                  <td className="text-center px-4 py-3">
-                    <div className="flex items-center justify-center gap-1">
+                  <td className="text-right pr-6 py-3">
+                    <div className="flex items-center justify-end gap-1">
                       <button
                         onClick={() => onEdit(client)}
                         className="p-1.5 rounded-lg hover:bg-[var(--pm-accent-gold)]/10 text-[var(--pm-text-dim)] hover:text-[var(--pm-accent-gold)] active:scale-90 transition-all cursor-pointer"
