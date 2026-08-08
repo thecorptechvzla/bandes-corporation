@@ -16,6 +16,7 @@ interface AvailableLot {
   availableWeight: number;
   recovered?: number;
   grossWeight?: number;
+  photoUrl?: string | null;
   barCount: number;
   isMixed?: boolean;
   composition?: { clientId: string; clientName: string; weight: number; percentage: number }[];
@@ -37,8 +38,8 @@ export function LotDetailModal({ lot, bars, onClose }: LotDetailModalProps) {
   );
 
   const lotPhotoUrl = useMemo(
-    () => lotBars.find(b => b.photoUrl)?.photoUrl || null,
-    [lotBars],
+    () => lot.photoUrl || lotBars.find(b => b.photoUrl)?.photoUrl || null,
+    [lot, lotBars],
   );
   const srcProxy = lotPhotoUrl?.startsWith('data:')
     ? lotPhotoUrl
@@ -70,12 +71,12 @@ export function LotDetailModal({ lot, bars, onClose }: LotDetailModalProps) {
           </div>
         ) : (
           <div className="space-y-5">
-            <div className="rounded-xl overflow-hidden border border-[var(--pm-border)] bg-black/60 flex items-center justify-center min-h-[140px]">
+            <div className="relative aspect-video overflow-hidden rounded-xl border border-[var(--pm-border)] bg-black/60">
               {lotPhotoUrl ? (
                 <img
                   src={srcProxy}
                   alt={`Lote ${lot.name}`}
-                  className="w-full object-cover max-h-48"
+                  className="w-full h-full object-cover object-center absolute inset-0"
                 />
               ) : (
                 <div className="text-center p-6">
@@ -109,17 +110,15 @@ export function LotDetailModal({ lot, bars, onClose }: LotDetailModalProps) {
               </div>
             )}
 
-            <div className="p-4 rounded-xl border border-[var(--pm-accent-gold)]/30 bg-[var(--pm-accent-gold)]/[0.08] flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.35)' }}>
-                  <Package className="w-4 h-4 text-[var(--pm-accent-gold)]" />
-                </div>
-                <div>
-                  <span className="text-[10px] font-mono font-bold text-[var(--pm-accent-gold)] uppercase tracking-wider">Peso Bruto Físico (Resultado)</span>
-                  <p className="text-[11px] font-mono text-[var(--pm-text-dim)] mt-0.5">Peso real recuperado tras la fundición</p>
-                </div>
+            <div className="grid grid-cols-2 divide-x divide-[var(--pm-border)] rounded-xl border border-[var(--pm-accent-gold)]/30 bg-[var(--pm-accent-gold)]/[0.08]">
+              <div className="flex flex-col items-center justify-center gap-0.5 py-4 px-4 text-center">
+                <span className="text-[10px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider">Peso Bruto (SP)</span>
+                <span className="text-lg font-mono font-bold text-slate-400">{formatNumber(totalGross, 2)} g</span>
               </div>
-              <span className="text-xl font-mono font-bold text-[var(--pm-accent-gold)]">{formatNumber(Number(lot.recovered ?? lot.grossWeight ?? 0), 2)} g</span>
+              <div className="flex flex-col items-center justify-center gap-0.5 py-4 px-4 text-center">
+                <span className="text-[10px] font-mono font-bold text-[var(--pm-accent-gold)] uppercase tracking-wider">Peso Balanza</span>
+                <span className="text-2xl font-mono font-bold text-[var(--pm-accent-gold)]">{formatNumber(Number(lot.recovered ?? lot.grossWeight ?? 0), 2)} g</span>
+              </div>
             </div>
 
             <div className="flex items-center justify-between text-[11px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider">
@@ -158,18 +157,8 @@ export function LotDetailModal({ lot, bars, onClose }: LotDetailModalProps) {
                 </table>
               </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="p-4 rounded-xl border border-[var(--pm-border)]/40 bg-[var(--pm-bg-deepest)]/40 flex items-center gap-3">
-                <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.2)' }}>
-                  <Package className="w-4 h-4 text-[var(--pm-accent-gold)]" />
-                </div>
-                <div className="min-w-0">
-                  <span className="text-[10px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider">R (Recuperado Físico)</span>
-                  <p className="text-sm font-mono font-bold text-[var(--pm-accent-gold)]">{formatNumber(Number(lot.recovered ?? lot.grossWeight ?? 0), 2)} g</p>
-                </div>
-              </div>
-              <div className="p-4 rounded-xl border bg-[var(--pm-bg-deepest)]/40 flex items-center gap-3"
-                style={{ borderColor: efficiency !== null && efficiency >= 99 ? 'rgba(16,185,129,0.3)' : efficiency !== null && efficiency >= 95 ? 'rgba(212,175,55,0.3)' : 'rgba(239,68,68,0.3)' }}>
+            <div className="p-4 rounded-xl border bg-[var(--pm-bg-deepest)]/40 flex items-center gap-3"
+              style={{ borderColor: efficiency !== null && efficiency >= 99 ? 'rgba(16,185,129,0.3)' : efficiency !== null && efficiency >= 95 ? 'rgba(212,175,55,0.3)' : 'rgba(239,68,68,0.3)' }}>
                 <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
                   style={{
                     background: efficiency !== null && efficiency >= 99 ? 'rgba(16,185,129,0.1)' : efficiency !== null && efficiency >= 95 ? 'rgba(212,175,55,0.1)' : 'rgba(239,68,68,0.1)',
@@ -193,7 +182,6 @@ export function LotDetailModal({ lot, bars, onClose }: LotDetailModalProps) {
                   </p>
                 </div>
               </div>
-            </div>
           </div>
         )}
       </div>

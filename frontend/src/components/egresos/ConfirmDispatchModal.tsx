@@ -9,6 +9,7 @@ import type { Bar } from '@/types/api';
 interface AvailableLot {
   name: string;
   grossWeight: number;
+  recovered?: number;
   clientName: string;
 }
 
@@ -44,10 +45,16 @@ export function ConfirmDispatchModal({
   const barCount = selectedBars.length;
   const itemCount = lotCount + barCount;
 
-  const grossWeight = useMemo(
+  const balanzaTotal = useMemo(
     () =>
-      selectedLots.reduce((s, l) => s + Number(l.grossWeight || 0), 0) +
-      selectedBars.reduce((s, b) => s + Number(b.grossWeight || 0), 0),
+      selectedLots.reduce(
+        (s, l) =>
+          s +
+          (l.recovered && l.recovered > 0
+            ? Number(l.recovered)
+            : Number(l.grossWeight || 0)),
+        0,
+      ) + selectedBars.reduce((s, b) => s + Number(b.grossWeight || 0), 0),
     [selectedLots, selectedBars],
   );
 
@@ -102,11 +109,11 @@ export function ConfirmDispatchModal({
           </span>
         </div>
         <div className="border-t border-[var(--pm-border)] pt-2 flex justify-between">
-          <span className="text-[var(--pm-text-dim)]">Peso Bruto:</span>
-          <span className="text-lg font-bold text-[var(--pm-accent-gold)]">{fmtWeight(grossWeight)}</span>
+          <span className="text-[var(--pm-text-dim)]">Peso Balanza:</span>
+          <span className="text-lg font-bold text-[var(--pm-accent-gold)]">{fmtWeight(balanzaTotal)}</span>
         </div>
         <div className="pt-1 text-[10px] text-[var(--pm-text-dim)]">
-          Se entregarán {lotCount > 0 && `${lotCount} lote(s)`}{lotCount > 0 && barCount > 0 && ' + '}{barCount > 0 && `${barCount} barra(s)`} de {clientCount} proveedor{clientCount !== 1 ? 'es' : ''} con un peso bruto de {fmtWeight(grossWeight)} a <strong className="text-[var(--pm-text-primary)]">{destinationClient?.name?.toUpperCase()}</strong>.
+          Se entregarán {lotCount > 0 && `${lotCount} lote(s)`}{lotCount > 0 && barCount > 0 && ' + '}{barCount > 0 && `${barCount} barra(s)`} de {clientCount} proveedor{clientCount !== 1 ? 'es' : ''} con un peso balanza de {fmtWeight(balanzaTotal)} a <strong className="text-[var(--pm-text-primary)]">{destinationClient?.name?.toUpperCase()}</strong>.
         </div>
       </div>
     </ModalShell>

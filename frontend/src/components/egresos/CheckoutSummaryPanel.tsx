@@ -18,6 +18,7 @@ interface AvailableLot {
   clientRif: string;
   availableWeight: number;
   grossWeight: number;
+  recovered?: number;
   barCount: number;
 }
 
@@ -50,6 +51,9 @@ export function CheckoutSummaryPanel({
   const lotCount = selectedLots.length;
   const barCount = selectedBars.length;
   const itemCount = lotCount + barCount;
+  const balanzaTotal =
+    selectedLots.reduce((s, l) => s + (l.recovered && l.recovered > 0 ? l.recovered : l.grossWeight), 0) +
+    selectedBars.reduce((s, b) => s + Number(b.grossWeight || 0), 0);
 
   return (
     <motion.div initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.15, duration: 0.4 }}
@@ -74,18 +78,28 @@ export function CheckoutSummaryPanel({
           </div>
         ) : (
           <>
-            {/* Total weight — Peso Bruto destacado */}
-            <div className="text-center py-4 px-4 rounded-xl border border-[var(--pm-accent-amber)]/20 bg-[var(--pm-accent-amber)]/5">
-              <span className="text-[10px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider block mb-1">
-                Peso Bruto Total
-              </span>
-              <span className="text-2xl font-mono font-bold text-[var(--pm-accent-amber)] tracking-tight">
-                {fmtWeightDisplay(grossTotal)}
-              </span>
-              <span className="text-[11px] font-mono text-[var(--pm-text-dim)] block mt-1">
+            {/* Total weight — SP (teórico) vs Balanza (físico) */}
+            <div className="py-3 px-4 rounded-xl border border-[var(--pm-accent-amber)]/20 bg-[var(--pm-accent-amber)]/5">
+              <div className="flex items-center justify-center space-x-8 py-1">
+                {/* Bloque SP */}
+                <div className="text-center">
+                  <span className="block text-[10px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider mb-1">Peso Bruto (SP)</span>
+                  <span className="text-xl font-mono font-bold text-slate-400">{fmtWeightDisplay(grossTotal)}</span>
+                </div>
+
+                {/* Separador */}
+                <div className="w-px h-10 bg-[var(--pm-border)]"></div>
+
+                {/* Bloque Balanza (el físico que sale) */}
+                <div className="text-center">
+                  <span className="block text-[10px] font-mono text-[var(--pm-accent-amber)]/80 uppercase font-bold tracking-wider mb-1">Peso Balanza</span>
+                  <span className="text-3xl font-mono font-bold text-[var(--pm-accent-amber)] tracking-tight">{fmtWeightDisplay(balanzaTotal)}</span>
+                </div>
+              </div>
+              <span className="text-[11px] font-mono text-[var(--pm-text-dim)] block mt-1 text-center">
                 {clientCount} proveedor{clientCount !== 1 ? 'es' : ''} · {lotCount > 0 && `${lotCount} lote(s)`}{lotCount > 0 && barCount > 0 && ' + '}{barCount > 0 && `${barCount} barra(s)`}
               </span>
-              <span className="text-[10px] font-mono text-[var(--pm-text-dim)] block mt-0.5">
+              <span className="text-[10px] font-mono text-[var(--pm-text-dim)] block mt-0.5 text-center">
                 Peso Neto: {fmtWeightDisplay(totalWeight)}
               </span>
             </div>
@@ -158,7 +172,7 @@ export function CheckoutSummaryPanel({
                 border: `1px solid ${itemCount > 0 && destinationClient ? 'rgba(16,185,129,0.3)' : 'var(--pm-border)'}`,
               }}>
               <Send className="w-4 h-4" />
-              Ejecutar Salida · {formatNumber(grossTotal, 2)} g
+              Ejecutar Salida · {formatNumber(balanzaTotal, 2)} g
             </button>
           </>
         )}

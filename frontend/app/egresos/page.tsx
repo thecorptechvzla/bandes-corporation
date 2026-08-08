@@ -31,6 +31,7 @@ interface AvailableLot {
   availableWeight: number;
   grossWeight: number;
   recovered: number;
+  photoUrl: string | null;
   barCount: number;
   isMixed: boolean;
   composition: { clientId: string; clientName: string; weight: number; percentage: number }[];
@@ -89,6 +90,7 @@ const [selectedLotIds, setSelectedLotIds] = useState<Set<string>>(new Set());
               eligibleBars.reduce((s, b) => s + Number(b.grossWeight), 0),
             ),
             recovered,
+            photoUrl: l.photoUrl || null,
             barCount: eligibleBars.length,
             isMixed: isMixedLot(eligibleBars),
             composition,
