@@ -33,7 +33,6 @@ interface ProcesoModalProps {
 
 interface ProcessBar {
   bar: Bar;
-  lotName: string;
 }
 
 interface ProcessGroup {
@@ -70,13 +69,6 @@ export function ProcesoModal({
       }
     }
 
-    const lotNames = new Map<string, string>();
-    for (const p of processes) {
-      for (const l of p.lots ?? []) {
-        if (l.id && l.name) lotNames.set(l.id, l.name);
-      }
-    }
-
     const byProcess = new Map<string, ProcessGroup>();
     const unassigned: ProcessGroup[] = [];
 
@@ -91,7 +83,7 @@ export function ProcesoModal({
     for (const bar of bars) {
       if (q && !bar.barNumber.toLowerCase().includes(q)) continue;
       const proc = bar.lotId ? lotProcess.get(bar.lotId) : undefined;
-      const item: ProcessBar = { bar, lotName: bar.lotId ? lotNames.get(bar.lotId) ?? '' : '' };
+      const item: ProcessBar = { bar };
       if (!proc) {
         let g = unassigned.find((u) => u.process.name === 'Sin Proceso');
         if (!g) {
@@ -266,7 +258,7 @@ export function ProcesoModal({
                                     <tr>
                                       <th className="w-[15%] text-left px-4 py-3 bg-[var(--hud-bg-primary)]">Código</th>
                                       <th className="w-[15%] text-right px-4 py-3">Ley Au</th>
-                                      <th className="w-[20%] text-left px-4 py-3">Lote</th>
+                                      <th className="w-[20%] text-left px-4 py-3">Proveedor</th>
                                       <th className="w-[20%] text-right px-4 py-3">Peso Bruto</th>
                                       <th className="w-[20%] text-right px-4 py-3">Peso Fino</th>
                                       <th className="w-[12%] text-right px-4 py-3">Estado</th>
@@ -283,7 +275,7 @@ export function ProcesoModal({
                                             <span className="text-[11px]">{bar.barNumber}</span>
                                           </td>
                                           <td className="text-right px-4 py-3 font-mono text-[var(--hud-accent-cyan)]">{formatNumber(Number(bar.purity), 2)}</td>
-                                          <td className="text-left px-4 py-3 font-mono text-[var(--hud-text-dim)] truncate">{item.lotName}</td>
+                                          <td className="text-left px-4 py-3 font-mono text-[var(--hud-text-dim)] truncate">{bar.client?.name ?? 'Desconocido'}</td>
                                           <td className="text-right px-4 py-3 font-mono text-[var(--hud-accent-gold)]">{formatNumber(Number(bar.grossWeight), 2)}</td>
                                           <td className="text-right px-4 py-3 font-mono text-[var(--hud-text-primary)]">{formatNumber(Number(bar.fineWeight), 2)}</td>
                                           <td className="text-right px-4 py-3 whitespace-nowrap">
