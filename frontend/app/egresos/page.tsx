@@ -88,9 +88,7 @@ const [selectedLotIds, setSelectedLotIds] = useState<Set<string>>(new Set());
             availableWeight: Number(
               l.fineWeight != null ? l.fineWeight : fineFromBars,
             ),
-            grossWeight: Number(
-              l.recovered != null ? l.recovered : grossFromBars,
-            ),
+            grossWeight: grossFromBars,
             recovered,
             photoUrl: l.photoUrl || null,
             barCount: eligibleBars.length,
@@ -129,7 +127,7 @@ const [selectedLotIds, setSelectedLotIds] = useState<Set<string>>(new Set());
       clientId: l.clientId,
       clientName: l.clientName,
       clientRif: l.clientRif,
-      pesoBruto: l.recovered > 0 ? l.recovered : null,
+      pesoBruto: l.recovered ?? l.grossWeight,
       leyAu: l.recovered > 0 && l.availableWeight > 0
         ? (l.availableWeight / l.recovered) * 1000
         : null,
@@ -257,7 +255,7 @@ const [selectedLotIds, setSelectedLotIds] = useState<Set<string>>(new Set());
       groups[l.clientId].push({
         type: 'lot', id: l.id, code: l.name, provider: l.clientName,
         clientId: l.clientId, clientName: l.clientName, clientRif: l.clientRif,
-        pesoBruto: l.recovered > 0 ? l.recovered : null,
+        pesoBruto: l.recovered ?? l.grossWeight,
         leyAu: l.recovered > 0 && l.availableWeight > 0
           ? (l.availableWeight / l.recovered) * 1000
           : null,
