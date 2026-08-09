@@ -62,9 +62,10 @@ export function SupplierDirectory({
       cBars.sort((a, b) => {
         const getPriority = (status: string) => {
           switch (status) {
-            case 'IN_STOCK': return 1;
-            case 'POR_VALIDAR': return 2;
-            case 'EXITED': return 3;
+            case 'PROCESANDO': return 1;
+            case 'IN_STOCK': return 2;
+            case 'POR_VALIDAR': return 3;
+            case 'EXITED': return 4;
             default: return 99;
           }
         };
