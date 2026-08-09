@@ -389,11 +389,20 @@ const [selectedLotIds, setSelectedLotIds] = useState<Set<string>>(new Set());
 
       const hasBoth = selectedLots.length > 0 && selectedBars.length > 0;
 
+      const despachoGrossSP = lotTotalGross + barTotalGross;
+      const despachoBalanza =
+        selectedLots.reduce((s, l) => s + (Number(l.recovered) > 0 ? Number(l.recovered) : Number(l.grossWeight)), 0) +
+        selectedBars.reduce((s, b) => s + Number(b.grossWeight), 0);
+      const despachoMerma = despachoGrossSP - despachoBalanza;
+
       setDispatchResult({
         reference: `DESP-${Date.now().toString(36).toUpperCase()}`,
         destination: result.destination,
         totalWeight: Number(result.totalWeight),
         grossWeight: Number((lotTotalGross + barTotalGross).toFixed(2)),
+        totalGrossSP: Number(despachoGrossSP),
+        totalBalanza: Number(despachoBalanza),
+        totalMerma: Number(despachoMerma),
         lotCount: selectedLots.length || undefined,
         barCount: selectedBars.length || undefined,
         providerCount: allProviders.size,

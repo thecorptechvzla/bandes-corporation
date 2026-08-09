@@ -30,6 +30,9 @@ export interface DispatchResult {
   destination: string;
   totalWeight: number;
   grossWeight?: number;
+  totalGrossSP: number;
+  totalBalanza: number;
+  totalMerma: number;
   lotCount?: number;
   barCount?: number;
   providerCount: number;
@@ -126,10 +129,22 @@ export function convertExitToDispatchResult(exit: MaterialExit): DispatchResult 
     ...(exit.bars ?? []),
   ].reduce((sum, b) => sum + Number(b.grossWeight ?? 0), 0);
 
+  const totalBalanza =
+    (exit.exitDetails ?? []).reduce((sum, d) => {
+      const lotGross = (d.bars ?? []).reduce((s, b) => s + Number(b.grossWeight || 0), 0);
+      return sum + (Number(d.lot?.recovered) > 0 ? Number(d.lot?.recovered) : lotGross);
+    }, 0) +
+    (exit.bars ?? []).reduce((s, b) => s + Number(b.grossWeight || 0), 0);
+
+  const totalMerma = grossTotal - totalBalanza;
+
   return {
     reference: `DESP-${exit.id.slice(0, 8).toUpperCase()}`,
     destination: exit.destination,
     totalWeight: grossTotal > 0 ? grossTotal : Number(exit.totalWeight),
+    totalGrossSP: grossTotal,
+    totalBalanza,
+    totalMerma,
     lotCount: lots.length || undefined,
     barCount: bars.length || undefined,
     providerCount: providerMap.size,
@@ -365,7 +380,7 @@ export async function generateDispatchPDF(
       const itemLabel = isBarMode ? 'barras' : 'lotes';
       doc.text(`Total de ${itemLabel}: ${itemCount}`, m, y); y += 5;
     }
-    doc.text(`Peso Bruto Total : ${formatWeight(Number(data.totalWeight))}`, m, y); y += 5;
+    doc.text(`Peso Físico : ${formatWeight(data.totalBalanza)}`, m, y); y += 5;
     if (hasMixedLot) {
 /*       doc.setTextColor(168, 85, 247);
  */      doc.text('Incluye lote(s) MIXTO(s): material consolidado de varios proveedores.', m, y); y += 5;
@@ -381,7 +396,15 @@ export async function generateDispatchPDF(
   doc.setTextColor(40, 40, 40);
   doc.setFontSize(11);
   doc.setFont('helvetica', 'bold');
-  doc.text(`PESO BRUTO: ${formatWeight(Number(data.totalWeight))}`, m, y); y += 7;
+  if (isEmpresa) {
+    doc.text(`PESO BRUTO (ENTRADA): ${formatWeight(data.totalGrossSP)}`, m, y); y += 6;
+    doc.text(`PESO BALANZA (SALIDA): ${formatWeight(data.totalBalanza)}`, m, y); y += 6;
+    const merma = data.totalMerma;
+    doc.text(merma < 0 ? `MERMA DE FUNDICIÓN: −${formatWeight(Math.abs(merma))}` : `MERMA DE FUNDICIÓN: ${formatWeight(merma)}`, m, y);
+  } else {
+    doc.text(`PESO FÍSICO: ${formatWeight(data.totalBalanza)}`, m, y);
+  }
+  y += 7;
   if (isMixed) {
     doc.text(`LOTES: ${data.lotCount ?? 0}  |  BARRAS: ${data.barCount ?? 0}`, m, y);
   } else {
