@@ -188,13 +188,13 @@ export function BarDetailModal({
         {/* Body — scrollable middle section */}
         <div className="flex-1 overflow-y-auto min-h-0 v2-scroll p-6 space-y-5">
           {/* Photo Area — fixed height, read-only display */}
-          <div className="rounded-xl overflow-hidden border border-[var(--pm-border)] bg-black/60 relative aspect-video max-h-[40vh]">
+          <div className="relative aspect-video w-full rounded-xl overflow-hidden border border-[var(--pm-border)] bg-black/60">
             {srcProxy ? (
               <>
                 <img
                   src={srcProxy}
                   alt={`Barra ${bar.barNumber}`}
-                  className="w-full h-full object-cover object-center"
+                  className="w-full h-full object-cover object-center absolute inset-0"
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
                     target.style.display = 'none';
