@@ -110,7 +110,7 @@ export default function EgresosReportDetailTable({ records, summary, onReprint }
                       className="text-[10px]"
                       style={{ color: 'var(--report-text-muted)' }}
                     >
-                      Ley: {formatLey(lote.ley)}
+                      Ley (‰): {formatLey(lote.ley)}
                     </span>
                   )}
                 </div>
@@ -130,7 +130,7 @@ export default function EgresosReportDetailTable({ records, summary, onReprint }
                       {[
                         { label: 'Código Barra', align: 'left' as const },
                         { label: 'Peso Bruto (gr)', align: 'right' as const },
-                        { label: 'Ley', align: 'center' as const },
+                        { label: 'Ley (‰)', align: 'center' as const },
                         { label: 'Peso Balanza (gr)', align: 'right' as const },
                         { label: 'Proveedor', align: 'left' as const },
                       ].map((h) => (

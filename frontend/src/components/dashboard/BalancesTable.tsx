@@ -87,7 +87,7 @@ export function BalancesTable({ clientBalances, totalBalance, onClientClick }: B
                 <th className={TH_STICKY} style={{ background: 'transparent' }}>Proveedor</th>
                 <th className={TH}>Ingreso Bruto</th>
                 <th className={TH}>Peso Fino</th>
-                <th className={TH}>Ley Au</th>
+                <th className={TH}>Ley Au (‰)</th>
                 <th className={TH}>Egresos</th>
                 <th className={TH}>Balance</th>
                 <th className={TH}>Merma</th>
@@ -110,7 +110,7 @@ export function BalancesTable({ clientBalances, totalBalance, onClientClick }: B
                     {fmtG(c.fa)}
                   </td>
                   <td className="text-right text-xs font-mono text-slate-400 px-4 py-3">
-                    {formatNumber(c.leyAu, 2)}%
+                    {formatNumber(c.leyAu, 2)}‰
                   </td>
                   <td className="text-right text-xs font-mono text-rose-400 px-4 py-3">
                     {fmtG(c.egresos)}

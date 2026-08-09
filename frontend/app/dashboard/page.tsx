@@ -245,7 +245,7 @@ export default function V2DashboardPage() {
               .reduce((s2, b) => s2 + Number(b.grossWeight), 0), 0),
         0);
       const balance = ingresoBruto - egresos;
-      const leyAu = ingresoBruto > 0 ? (fa / ingresoBruto) * 100 : 0;
+      const leyAu = ingresoBruto > 0 ? (fa / ingresoBruto) * 1000 : 0;
       const sinFundir = Math.max(0, fa - r);
       const faProcesado = clientBars
         .filter(b => b.status === 'COMPLETADO')

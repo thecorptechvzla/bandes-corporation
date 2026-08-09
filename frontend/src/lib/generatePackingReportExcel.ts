@@ -153,7 +153,7 @@ export async function generatePackingReportExcel(params: GeneratePackingReportEx
   // ── TABLE ──
   if (reportType === 'resumido') {
     // Resumido mode
-    const headers = ws.addRow(['N° Packing / Archivo', 'Cliente / Razón Social', 'Cant. Barras', 'Peso Bruto (gr)', 'Ley', 'Peso Fino (gr)']);
+    const headers = ws.addRow(['N° Packing / Archivo', 'Cliente / Razón Social', 'Cant. Barras', 'Peso Bruto (gr)', 'Ley (‰)', 'Peso Fino (gr)']);
     headers.height = 22;
     headers.eachCell((cell) => {
       cell.fill = fill(C.green);
@@ -232,7 +232,7 @@ export async function generatePackingReportExcel(params: GeneratePackingReportEx
       });
 
       // ── 4-column header ──
-      const barHeaders = ws.addRow(['N° Lote / ID Barra', 'Peso Bruto (gr)', 'Ley', 'Peso Fino (gr)']);
+      const barHeaders = ws.addRow(['N° Lote / ID Barra', 'Peso Bruto (gr)', 'Ley (‰)', 'Peso Fino (gr)']);
       barHeaders.height = 20;
       barHeaders.eachCell((cell) => {
         cell.fill = fill(C.green);

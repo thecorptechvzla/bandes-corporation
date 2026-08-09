@@ -309,7 +309,7 @@ function drawDetailedSection(doc: jsPDF, startY: number, pw: number, records: Sa
 
     autoTable(doc, {
       startY: y,
-      head: [['N Lote / ID Barra', 'Packing Origen', 'Fecha Recepcion', 'Peso Bruto Recibido (g)', 'Ley', 'Peso Fino Disponible (g)', 'Peso Bruto Boveda (g)', 'Fecha Egreso / Estatus']],
+      head: [['N Lote / ID Barra', 'Packing Origen', 'Fecha Recepcion', 'Peso Bruto Recibido (g)', 'Ley (‰)', 'Peso Fino Disponible (g)', 'Peso Bruto Boveda (g)', 'Fecha Egreso / Estatus']],
       body: bodyRows,
       theme: 'grid',
       headStyles: {

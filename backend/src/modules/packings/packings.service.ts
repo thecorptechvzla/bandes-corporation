@@ -100,7 +100,7 @@ export class PackingsService {
       const barras = g?._count._all ?? 0;
       const pesoBruto = Number(g?._sum.grossWeight ?? 0);
       const pesoFino = Number(g?._sum.fineWeight ?? 0);
-      const ley = pesoBruto > 0 ? pesoFino / pesoBruto : 0;
+      const ley = pesoBruto > 0 ? (pesoFino / pesoBruto) * 1000 : 0;
       return { ...p, barras, pesoBruto, pesoFino, ley };
     });
   }
@@ -111,7 +111,7 @@ export class PackingsService {
   ): T & { barras: number; pesoBruto: number; pesoFino: number; ley: number } {
     const pesoBruto = bars.reduce((s, b) => s + Number(b.grossWeight ?? 0), 0);
     const pesoFino = bars.reduce((s, b) => s + Number(b.fineWeight ?? 0), 0);
-    const ley = pesoBruto > 0 ? pesoFino / pesoBruto : 0;
+    const ley = pesoBruto > 0 ? (pesoFino / pesoBruto) * 1000 : 0;
     return { ...p, barras: bars.length, pesoBruto, pesoFino, ley };
   }
 

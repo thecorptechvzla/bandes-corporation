@@ -128,7 +128,7 @@ function drawKPICards(doc: jsPDF, y: number, pw: number, summary: PackingReportD
   const cards = [
     { label: 'TOTAL PACKINGS', value: String(summary.totalPackings), sub: 'Procesados' },
     { label: 'TOTAL BARRAS', value: String(summary.totalBarras), sub: 'Unidades recibidas' },
-    { label: 'TOTAL PESO BRUTO', value: `${formatNumber(summary.pesoBrutoTotal)} g`, sub: `Ley Prom: ${formatLey(summary.leyProm)}` },
+    { label: 'TOTAL PESO BRUTO', value: `${formatNumber(summary.pesoBrutoTotal)} g`, sub: `Ley Prom (‰): ${formatLey(summary.leyProm)}` },
   ];
 
   cards.forEach((card, i) => {
@@ -181,7 +181,7 @@ function drawSummaryTable(doc: jsPDF, y: number, pw: number, data: PackingReport
 
   autoTable(doc, {
     startY: y,
-    head: [['N\u00b0 Packing / Archivo', 'Cliente / Raz\u00f3n Social', 'Barras', 'Peso Bruto (g)', 'Ley', 'Peso Fino (g)']],
+    head: [['N\u00b0 Packing / Archivo', 'Cliente / Raz\u00f3n Social', 'Barras', 'Peso Bruto (g)', 'Ley (‰)', 'Peso Fino (g)']],
     body: bodyRows,
     theme: 'grid',
     headStyles: {
@@ -286,7 +286,7 @@ function drawDetailedSection(doc: jsPDF, startY: number, pw: number, detailed: P
 
     autoTable(doc, {
       startY: y,
-      head: [['N\u00b0 Lote / ID Barra', 'Peso Bruto (g)', 'Ley', 'Peso Fino (g)']],
+      head: [['N\u00b0 Lote / ID Barra', 'Peso Bruto (g)', 'Ley (‰)', 'Peso Fino (g)']],
       body: bodyRows,
       theme: 'grid',
       headStyles: {

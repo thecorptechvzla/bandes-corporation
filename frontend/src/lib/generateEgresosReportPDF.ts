@@ -178,7 +178,7 @@ function drawSummaryTable(doc: jsPDF, y: number, pw: number, data: EgresosReport
 
   autoTable(doc, {
     startY: y,
-    head: [['N\u00b0 Egreso / Gu\u00eda', 'Cliente', 'Fecha', 'Lingotes', 'Peso Bruto (g)', 'Ley Prom.']],
+    head: [['N\u00b0 Egreso / Gu\u00eda', 'Cliente', 'Fecha', 'Lingotes', 'Peso Bruto (g)', 'Ley Prom. (‰)']],
     body: bodyRows,
     theme: 'grid',
     headStyles: {
@@ -293,7 +293,7 @@ function drawDetailedSection(doc: jsPDF, startY: number, pw: number, detailed: E
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(6);
         doc.setTextColor(...GRAY);
-        const leyText = `Ley: ${formatLey(lote.ley)}`;
+        const leyText = `Ley (‰): ${formatLey(lote.ley)}`;
         const recoveredWidth = lote.recovered != null ? doc.getTextWidth(`Peso Bruto Recuperado: ${formatNumber(lote.recovered)} gr`) : 0;
         doc.text(leyText, pw - 16 - recoveredWidth, y + 5, { align: 'right' });
       }
@@ -316,7 +316,7 @@ function drawDetailedSection(doc: jsPDF, startY: number, pw: number, detailed: E
 
         autoTable(doc, {
           startY: y,
-          head: [['Código Barra', 'Peso Bruto (g)', 'Ley', 'Peso Balanza (g)', 'Proveedor']],
+          head: [['Código Barra', 'Peso Bruto (g)', 'Ley (‰)', 'Peso Balanza (g)', 'Proveedor']],
           body: barBodyRows,
           theme: 'grid',
           headStyles: {

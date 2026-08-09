@@ -136,7 +136,7 @@ export async function generateEgresosReportExcel(params: GenerateEgresosReportEx
       ...(showFecha ? ['Fecha'] : []),
       'Lingotes',
       'Peso Bruto (gr)',
-      'Ley Prom.',
+      'Ley Prom. (‰)',
     ];
     const headerRow = sheet.getRow(9);
     headers.forEach((h, i) => {
@@ -246,7 +246,7 @@ export async function generateEgresosReportExcel(params: GenerateEgresosReportEx
         sheet.mergeCells(`A${currentRow}:H${currentRow}`);
         const lotHeaderCell = sheet.getCell(`A${currentRow}`);
         const recoveredText = lote.recovered != null ? ` | Peso Bruto Recuperado: ${formatNumber(lote.recovered)} gr` : '';
-        const leyText = lote.ley != null ? ` | Ley: ${formatLey(lote.ley)}` : '';
+        const leyText = lote.ley != null ? ` | Ley (‰): ${formatLey(lote.ley)}` : '';
         lotHeaderCell.value = `${lote.loteName}${recoveredText}${leyText} | ${lote.barras.length} ${lote.barras.length === 1 ? 'barra' : 'barras'}`;
         lotHeaderCell.font = { bold: true, size: 9, color: { argb: 'FF333333' } };
         lotHeaderCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF5F8F7' } };
@@ -255,7 +255,7 @@ export async function generateEgresosReportExcel(params: GenerateEgresosReportEx
         currentRow++;
 
         // Bars sub-headers
-        const barHeaders = ['Código Barra', 'Peso Bruto (gr)', 'Ley', 'Peso Balanza (gr)', 'Proveedor'];
+        const barHeaders = ['Código Barra', 'Peso Bruto (gr)', 'Ley (‰)', 'Peso Balanza (gr)', 'Proveedor'];
         const bhRow = sheet.getRow(currentRow);
         barHeaders.forEach((h, i) => {
           const cell = bhRow.getCell(i + 1);

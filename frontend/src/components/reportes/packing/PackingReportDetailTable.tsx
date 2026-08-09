@@ -55,7 +55,7 @@ export default function PackingReportDetailTable({ records, summary }: PackingRe
                 {[
                   { label: 'N° Lote / ID Barra', align: 'left' },
                   { label: 'Peso Bruto (gr)', align: 'right' },
-                  { label: 'Ley', align: 'center' },
+                  { label: 'Ley (‰)', align: 'center' },
                   { label: 'Peso Fino (gr)', align: 'right' },
                 ].map((h) => (
                   <th
@@ -231,7 +231,7 @@ export default function PackingReportDetailTable({ records, summary }: PackingRe
               className="text-[10px] mt-0.5"
               style={{ color: 'var(--report-text-muted)' }}
             >
-              Ley Prom: {formatLey(summary.leyProm)}
+              Ley Prom (‰): {formatLey(summary.leyProm)}
             </div>
           </div>
         </div>

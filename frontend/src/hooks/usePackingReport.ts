@@ -37,7 +37,7 @@ export function computeSummary(records: PackingRecord[]): PackingSummary {
   const totalBarras = records.reduce((acc, r) => acc + r.barras, 0);
   const pesoBrutoTotal = records.reduce((acc, r) => acc + r.pesoBruto, 0);
   const pesoFinoTotal = records.reduce((acc, r) => acc + r.pesoFino, 0);
-  const leyProm = pesoBrutoTotal > 0 ? pesoFinoTotal / pesoBrutoTotal : 0;
+  const leyProm = pesoBrutoTotal > 0 ? (pesoFinoTotal / pesoBrutoTotal) * 1000 : 0;
   return { totalPackings, totalBarras, pesoBrutoTotal, pesoFinoTotal, leyProm };
 }
 
@@ -61,7 +61,7 @@ export function toPackingDetailedRecord(p: ReportPackingDTO): PackingDetailedRec
     lote: b.lot?.name ?? '',
     barId: b.barNumber,
     pesoBruto: Number(b.grossWeight),
-    ley: Number(b.purity) / 1000,
+    ley: Number(b.purity),
     pesoFino: Number(b.fineWeight),
   }));
 

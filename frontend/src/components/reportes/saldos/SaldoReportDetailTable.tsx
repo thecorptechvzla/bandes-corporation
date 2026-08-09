@@ -54,7 +54,7 @@ export default function SaldoReportDetailTable({ records }: SaldoReportDetailTab
                     { label: 'Packing de Origen', align: 'left' },
                     { label: 'Fecha Recepción', align: 'center' },
                     { label: 'Peso Bruto Recibido (g)', align: 'right' },
-                    { label: 'Ley', align: 'center' },
+                    { label: 'Ley (‰)', align: 'center' },
                     { label: 'Peso Fino Disponible (g)', align: 'right' },
                     { label: 'Peso Bruto en Bóveda Actualmente (g)', align: 'right' },
                     { label: 'Fecha Egreso / Estatus', align: 'center' },

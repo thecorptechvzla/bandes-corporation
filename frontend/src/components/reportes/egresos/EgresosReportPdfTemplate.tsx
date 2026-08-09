@@ -117,7 +117,7 @@ export default function EgresosReportPdfTemplate({
                 ...(showFecha ? [{ label: 'Fecha', width: '10%' }] : []),
                 { label: 'Lingotes', width: '8%' },
                 { label: 'Peso Bruto (g)', width: '15%' },
-                { label: 'Ley Prom.', width: '10%' },
+                { label: 'Ley Prom. (‰)', width: '10%' },
               ].map((h) => (
                 <th key={h.label} style={{ backgroundColor: '#139169', color: '#ffffff', fontWeight: 700, fontSize: '7.5px', padding: '3px 4px', textAlign: 'left', border: '1px solid #139169', width: h.width }}>
                   {h.label.toUpperCase()}
@@ -185,7 +185,7 @@ export default function EgresosReportPdfTemplate({
                         <span style={{ fontSize: '6px', color: '#777777' }}>Peso Bruto Recuperado: {formatNumber(lote.recovered)} gr</span>
                       )}
                       {lote.ley != null && (
-                        <span style={{ fontSize: '6px', color: '#777777' }}>Ley: {formatLey(lote.ley)}</span>
+                        <span style={{ fontSize: '6px', color: '#777777' }}>Ley (‰): {formatLey(lote.ley)}</span>
                       )}
                     </div>
                     <span style={{ fontSize: '6px', fontWeight: 600, color: '#777777' }}>
@@ -200,7 +200,7 @@ export default function EgresosReportPdfTemplate({
                         <tr>
                           <th style={{ width: '18%', backgroundColor: '#139169', color: '#ffffff', fontWeight: 700, fontSize: '6px', padding: '2px 4px', textAlign: 'left', border: '1px solid #139169' }}>CÓDIGO BARRA</th>
                           <th style={{ width: '18%', backgroundColor: '#139169', color: '#ffffff', fontWeight: 700, fontSize: '6px', padding: '2px 4px', textAlign: 'right', border: '1px solid #139169' }}>PESO BRUTO (GR)</th>
-                          <th style={{ width: '12%', backgroundColor: '#139169', color: '#ffffff', fontWeight: 700, fontSize: '6px', padding: '2px 4px', textAlign: 'center', border: '1px solid #139169' }}>LEY</th>
+                          <th style={{ width: '12%', backgroundColor: '#139169', color: '#ffffff', fontWeight: 700, fontSize: '6px', padding: '2px 4px', textAlign: 'center', border: '1px solid #139169' }}>LEY (‰)</th>
                           <th style={{ width: '20%', backgroundColor: '#139169', color: '#ffffff', fontWeight: 700, fontSize: '6px', padding: '2px 4px', textAlign: 'right', border: '1px solid #139169' }}>PESO BALANZA (GR)</th>
                           <th style={{ width: '32%', backgroundColor: '#139169', color: '#ffffff', fontWeight: 700, fontSize: '6px', padding: '2px 4px', textAlign: 'left', border: '1px solid #139169' }}>PROVEEDOR</th>
                         </tr>

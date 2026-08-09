@@ -238,7 +238,7 @@ export async function generateSaldosReportExcel(params: GenerateSaldosReportExce
       currentRow++;
 
       // Bar headers — 8 columns
-      const barHeaders = ['N Lote / ID Barra', 'Packing Origen', 'Fecha Recepcion', 'Peso Bruto Recibido (g)', 'Ley', 'Peso Fino Disponible (g)', 'Peso Bruto Boveda (g)', 'Fecha Egreso / Estatus'];
+      const barHeaders = ['N Lote / ID Barra', 'Packing Origen', 'Fecha Recepcion', 'Peso Bruto Recibido (g)', 'Ley (‰)', 'Peso Fino Disponible (g)', 'Peso Bruto Boveda (g)', 'Fecha Egreso / Estatus'];
       const bhr = sheet.getRow(currentRow);
       barHeaders.forEach((h, i) => {
         const cell = bhr.getCell(i + 1);

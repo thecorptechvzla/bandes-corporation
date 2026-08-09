@@ -67,7 +67,7 @@ export default function PackingReportTable({ records, summary }: PackingReportTa
                 borderBottom: '1px solid var(--report-border-color)',
               }}
             >
-              Ley
+Ley (‰)
             </th>
             <th
               className="px-4 py-3 text-[11px] font-bold uppercase tracking-wider text-right"

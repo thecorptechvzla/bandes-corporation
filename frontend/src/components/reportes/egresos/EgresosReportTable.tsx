@@ -32,7 +32,7 @@ export default function EgresosReportTable({ records, summary, dateFrom, dateTo,
               ...(showFecha ? [{ label: 'Fecha Egreso', align: 'center' }] : []),
               { label: 'Cant. Lingotes', align: 'center' },
               { label: 'Peso Bruto (gr)', align: 'right' },
-              { label: 'Ley Prom.', align: 'center' },
+              { label: 'Ley Prom. (‰)', align: 'center' },
               { label: 'Comprobantes', align: 'center' },
             ].map((h) => (
               <th

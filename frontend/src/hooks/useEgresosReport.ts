@@ -79,7 +79,7 @@ export function toEgresoRecord(e: ReportEgresoDTO, index: number): EgresoRecord 
 
   const pesoBruto = bars.reduce((acc, b) => acc + Number(b.grossWeight ?? 0), 0);
   const pesoFino = bars.reduce((acc, b) => acc + Number(b.fineWeight ?? 0), 0);
-  const leyProm = pesoBruto > 0 ? pesoFino / pesoBruto : 0;
+  const leyProm = pesoBruto > 0 ? (pesoFino / pesoBruto) * 1000 : 0;
 
   return {
     id: `EGR-${padNumber(index + 1)}`,
@@ -131,7 +131,7 @@ function prorateByLot(details: ReportDetailEgresoDTO[]): LingoteEgreso[] {
         lingoteId: b.barNumber,
         pesoBruto: Number(b.grossWeight ?? 0),
         pesoBrutoBalanza,
-        ley: Number(b.purity ?? 0) / 1000,
+        ley: Number(b.purity ?? 0),
         pesoFino: Number(b.fineWeight ?? 0),
       });
     });
@@ -149,7 +149,7 @@ export function toEgresoDetailedRecord(e: ReportEgresoDTO, index: number): Egres
     lingoteId: b.barNumber,
     pesoBruto: Number(b.grossWeight ?? 0),
     pesoBrutoBalanza: undefined,
-    ley: Number(b.purity ?? 0) / 1000,
+    ley: Number(b.purity ?? 0),
     pesoFino: Number(b.fineWeight ?? 0),
   }));
 
@@ -173,14 +173,14 @@ export function toEgresoDetailedRecord(e: ReportEgresoDTO, index: number): Egres
       return {
         barCode: b.barNumber,
         pesoBruto: Number(b.grossWeight ?? 0),
-        ley: Number(b.purity ?? 0) / 1000,
+        ley: Number(b.purity ?? 0),
         pesoBalanza,
         proveedor: b.client?.name ?? '—',
       };
     });
 
-    const totalPesoFino = barras.reduce((acc, b) => acc + b.pesoBruto * b.ley, 0);
-    const ley = totalGross > 0 ? totalPesoFino / totalGross : 0;
+    const totalPesoFino = barras.reduce((acc, b) => acc + (b.pesoBruto * b.ley) / 1000, 0);
+    const ley = totalGross > 0 ? (totalPesoFino / totalGross) * 1000 : 0;
 
     return {
       loteName: d.lot?.name ?? '—',
@@ -194,16 +194,16 @@ export function toEgresoDetailedRecord(e: ReportEgresoDTO, index: number): Egres
     const barrasSueltas: BarraLote[] = e.bars.map((b) => ({
       barCode: b.barNumber,
       pesoBruto: Number(b.grossWeight ?? 0),
-      ley: Number(b.purity ?? 0) / 1000,
+      ley: Number(b.purity ?? 0),
       pesoBalanza: undefined,
       proveedor: b.client?.name ?? '—',
     }));
     const totalGross = barrasSueltas.reduce((acc, b) => acc + b.pesoBruto, 0);
-    const totalPesoFino = barrasSueltas.reduce((acc, b) => acc + b.pesoBruto * b.ley, 0);
+    const totalPesoFino = barrasSueltas.reduce((acc, b) => acc + (b.pesoBruto * b.ley) / 1000, 0);
     lotes.push({
       loteName: '—',
       recovered: undefined,
-      ley: totalGross > 0 ? totalPesoFino / totalGross : 0,
+      ley: totalGross > 0 ? (totalPesoFino / totalGross) * 1000 : 0,
       barras: barrasSueltas,
     });
   }
