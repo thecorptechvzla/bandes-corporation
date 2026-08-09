@@ -2,19 +2,13 @@
 
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ClipboardCheck, Shield, Check, Lock } from 'lucide-react';
+import { ClipboardCheck, Shield, Check, Lock, FileDown } from 'lucide-react';
 import { formatNumber } from '@/lib/format';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
-import type { Bar } from '@/types/api';
+import type { Bar, Packing } from '@/types/api';
 
-interface SelectedPacking {
-  id: string;
-  fileName: string;
-  bars?: Bar[];
-  client?: { name: string };
-  createdAt: string;
-}
+type SelectedPacking = Packing;
 
 interface ValidationDetailPanelProps {
   selectedPacking: SelectedPacking | null;
@@ -27,12 +21,13 @@ interface ValidationDetailPanelProps {
   onRowClick: (bar: Bar) => void;
   onSetEvidenceBarId: (id: string | null) => void;
   onSetConfirmFinalizeModal: (v: boolean) => void;
+  onDownloadReport?: (packing: SelectedPacking) => void;
 }
 
 export function ValidationDetailPanel({
   selectedPacking, validationResult, validationEdits,
   allBarsValidated, validatedCount, totalCount, isPending,
-  onRowClick, onSetEvidenceBarId, onSetConfirmFinalizeModal,
+  onRowClick, onSetEvidenceBarId, onSetConfirmFinalizeModal, onDownloadReport,
 }: ValidationDetailPanelProps) {
   return (
     <motion.div initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.15, duration: 0.4 }}
@@ -71,6 +66,15 @@ export function ValidationDetailPanel({
               <span className={`text-[10px] font-mono whitespace-nowrap ${allBarsValidated ? 'text-[var(--pm-accent-emerald)]' : 'text-[var(--pm-text-dim)]'}`}>
                 {validatedCount} de {totalCount} barras validadas
               </span>
+              <button onClick={() => onDownloadReport?.(selectedPacking)}
+                className="px-4 py-2 rounded-lg text-[11px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer flex items-center gap-2"
+                style={{
+                  background: 'rgba(217,167,41,0.08)',
+                  color: 'var(--pm-accent-gold)',
+                  border: '1px solid rgba(217,167,41,0.25)',
+                }}>
+                <FileDown className="w-3.5 h-3.5" /> DESCARGAR REPORTE
+              </button>
               <button onClick={() => onSetConfirmFinalizeModal(true)} disabled={!allBarsValidated || isPending}
                 className={`px-4 py-2 rounded-lg text-[11px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2 ${allBarsValidated ? 'active:scale-95' : ''}`}
                 style={{

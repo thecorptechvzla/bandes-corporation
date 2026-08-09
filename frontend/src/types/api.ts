@@ -46,6 +46,8 @@ export interface Lot {
 export interface Bar {
   id: string;
   barNumber: string;
+  spGrossWeight?: number | null;
+  spPurity?: number | null;
   grossWeight: number;
   purity: number;
   fineWeight: number;

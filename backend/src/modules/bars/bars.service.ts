@@ -64,6 +64,8 @@ export class BarsService {
     return this.prisma.bar.create({
       data: {
         barNumber: data.barNumber,
+        spGrossWeight: data.grossWeight,
+        spPurity: data.purity,
         grossWeight: data.grossWeight,
         purity: data.purity,
         fineWeight,
@@ -284,6 +286,8 @@ export class BarsService {
       const created = await tx.bar.createMany({
         data: barsToCreate.map((b) => ({
           barNumber: b.barNumber,
+          spGrossWeight: b.grossWeight,
+          spPurity: b.purity,
           grossWeight: b.grossWeight,
           purity: b.purity,
           fineWeight: b.fineWeight,

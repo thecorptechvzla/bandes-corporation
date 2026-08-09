@@ -7,6 +7,7 @@ import { useBars, useCreateBar, useBulkUploadBars, useUpdateBar } from '@/hooks/
 import { usePackings, usePacking, useValidatePacking, useCreatePacking, useFinalizePacking } from '@/hooks/usePackings';
 import { api } from '@/lib/api';
 import { formatNumber } from '@/lib/format';
+import { generateValidationPDF, type ValidationPackingData } from '@/lib/generateValidationPDF';
 import type { Bar, BulkUploadResult } from '@/types/api';
 import { FolderUp, AlertTriangle, Check, Trash2 } from 'lucide-react';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
@@ -466,6 +467,14 @@ export default function PackingPage() {
     if (tab === 'registro') setSelectedPackingId(null);
   };
 
+  const handleDownloadReport = (packing: ValidationPackingData) => {
+    generateValidationPDF(packing);
+  };
+
+  const handleDownloadHistoryReport = (packing: ValidationPackingData) => {
+    generateValidationPDF(packing);
+  };
+
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }} className="space-y-6">
       {/* Header */}
@@ -542,6 +551,7 @@ export default function PackingPage() {
               onRowClick={handleRowClick}
               onSetEvidenceBarId={setEvidenceBarId}
               onSetConfirmFinalizeModal={setConfirmFinalizeModal}
+              onDownloadReport={handleDownloadReport}
             />
           </div>
 
@@ -568,6 +578,7 @@ export default function PackingPage() {
               onExpand={setExpandedHistoryPackingId}
               onClearFilters={() => { setHistorySearchQuery(''); setHistoryDateFrom(''); setHistoryDateTo(''); setHistorySelectedProvider(''); }}
               onViewBar={setHistoryViewBar}
+              onDownloadReport={handleDownloadHistoryReport}
             />
           </div>
         </div>

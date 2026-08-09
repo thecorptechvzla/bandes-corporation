@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ChevronDown, Hash, Building2, Layers, AlertCircle, FileStack } from 'lucide-react';
+import { ChevronDown, Hash, Building2, Layers, AlertCircle, FileStack, Printer } from 'lucide-react';
 import { formatNumber, formatWeight } from '@/lib/format';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -30,11 +30,12 @@ interface PackingsTableProps {
   onExpand: (id: string | null) => void;
   onClearFilters: () => void;
   onViewBar?: (bar: Bar) => void;
+  onDownloadReport?: (packing: PackingItem) => void;
 }
 
 export function PackingsTable({
   packings, isLoading, hasAnyFilter, expandedPackingId,
-  expandedPacking, loadingExpandedPacking, onExpand, onClearFilters, onViewBar,
+  expandedPacking, loadingExpandedPacking, onExpand, onClearFilters, onViewBar, onDownloadReport,
 }: PackingsTableProps) {
   if (isLoading) {
     return (
@@ -169,9 +170,22 @@ export function PackingsTable({
                                     <Layers className="w-3 h-3 inline mr-1.5" />
                                     Barras del Packing #{p.packingNumber}
                                   </h4>
-                                  <span className="text-xs font-mono text-[var(--pm-accent-gold)]">
-                                    {formatWeight(weight ?? 0, 2)} total
-                                  </span>
+                                  <div className="flex items-center gap-3">
+                                    <span className="text-xs font-mono text-[var(--pm-accent-gold)]">
+                                      {formatWeight(weight ?? 0, 2)} total
+                                    </span>
+                                    <button
+                                      onClick={() => onDownloadReport?.(expandedPacking)}
+                                      className="flex items-center gap-1.5 text-[10px] font-mono font-bold uppercase tracking-wider px-3 py-1.5 rounded-lg transition-all active:scale-95 cursor-pointer"
+                                      style={{
+                                        background: 'rgba(217,167,41,0.08)',
+                                        color: 'var(--pm-accent-gold)',
+                                        border: '1px solid rgba(217,167,41,0.25)',
+                                      }}
+                                    >
+                                      <Printer className="w-3 h-3" /> IMPRIMIR REPORTE
+                                    </button>
+                                  </div>
                                 </div>
                                 <div className="overflow-x-auto">
                                   <table className="w-full text-[11px] font-mono">

@@ -84,6 +84,8 @@ model Lot {
 model Bar {
   id          String    @id @default(uuid())
   barNumber   String
+  spGrossWeight Decimal? @db.Decimal(15, 4)
+  spPurity      Decimal? @db.Decimal(7, 4)
   grossWeight Decimal   @db.Decimal(15, 4)
   purity      Decimal   @db.Decimal(7, 4)
   fineWeight  Decimal   @db.Decimal(15, 4)
