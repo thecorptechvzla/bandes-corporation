@@ -187,7 +187,7 @@ export function ExitedBarsModal({
         fino += r.weightFino;
       }
     }
-    return { bruto, balanza, fino };
+    return { bruto, balanza, merma: bruto - balanza, fino };
   }, [groups]);
 
   return (
@@ -252,6 +252,7 @@ export function ExitedBarsModal({
                     const clientTotals = {
                       bruto: group.rows.reduce((s, r) => s + r.weightBruto, 0),
                       balanza: group.rows.reduce((s, r) => s + r.weightBalanza, 0),
+                      merma: group.rows.reduce((s, r) => s + (Number(r.weightBruto) - Number(r.weightBalanza)), 0),
                       fino: group.rows.reduce((s, r) => s + r.weightFino, 0),
                     };
 
@@ -275,7 +276,7 @@ export function ExitedBarsModal({
                               </div>
                               <div className="flex items-center gap-3 flex-shrink-0">
                           <span className="text-[11px] font-mono text-[var(--hud-text-dim)] whitespace-nowrap">
-                            Bruto: <span className="text-white font-bold">{formatNumber(clientTotals.bruto, 2)} g</span> · Balanza: <span className="text-amber-400 font-bold">{formatNumber(clientTotals.balanza, 2)} g</span> · Fino: <span className="text-[var(--hud-text-primary)] font-bold">{formatNumber(clientTotals.fino, 2)} g</span>
+                            BI: <span className="text-white font-bold">{formatNumber(clientTotals.bruto, 2)} g</span> · BR: <span className="text-amber-400 font-bold">{formatNumber(clientTotals.balanza, 2)} g</span> · M: <span className="text-[var(--hud-accent-red)] font-bold">{formatNumber(clientTotals.merma, 2)} g</span> · Fino: <span className="text-[var(--hud-text-primary)] font-bold">{formatNumber(clientTotals.fino, 2)} g</span>
                           </span>
                                 <span className="text-[11px] font-mono text-[var(--hud-text-dim)] bg-[var(--hud-bg-deepest)]/50 px-2 py-0.5 border border-[var(--hud-border)] rounded whitespace-nowrap">
                                   {group.rows.length} REGISTRO{group.rows.length !== 1 ? 'S' : ''}
@@ -301,12 +302,13 @@ export function ExitedBarsModal({
                                 <table className="w-full table-fixed border-collapse text-xs font-sans">
                                   <thead>
                                     <tr>
-                                      <th className="w-[26%] text-left px-4 py-3 bg-[var(--hud-bg-primary)]">Código</th>
-                                      <th className="w-[16%] text-right px-4 py-3">Peso Bruto</th>
-                                      <th className="w-[18%] text-right px-4 py-3">Peso Balanza</th>
-                                      <th className="w-[14%] text-right px-4 py-3">Peso Fino</th>
-                                      <th className="w-[12%] text-right px-4 py-3">N° Barras</th>
-                                      <th className="w-[14%] text-right px-4 py-3">Estado</th>
+                                      <th className="w-[24%] text-left px-4 py-3 bg-[var(--hud-bg-primary)]">Código</th>
+                                      <th className="w-[15%] text-right px-4 py-3">BI (Bruto Inicial)</th>
+                                      <th className="w-[16%] text-right px-4 py-3">BR (Bruto Refundido)</th>
+                                      <th className="w-[12%] text-right px-4 py-3">M (Merma)</th>
+                                      <th className="w-[13%] text-right px-4 py-3">Peso Fino</th>
+                                      <th className="w-[10%] text-right px-4 py-3">N° Barras</th>
+                                      <th className="w-[10%] text-right px-4 py-3">Estado</th>
                                     </tr>
                                   </thead>
                                   <tbody>
@@ -342,6 +344,9 @@ export function ExitedBarsModal({
                                         <td className="text-right px-4 py-3 font-mono font-bold text-amber-400">
                                           {formatNumber(Number(row.weightBalanza), 2)} g
                                         </td>
+                                        <td className="text-right px-4 py-3 font-mono font-semibold text-[var(--hud-accent-red)]">
+                                          {formatNumber(Number(row.weightBruto) - Number(row.weightBalanza), 2)} g
+                                        </td>
                                         <td className="text-right px-4 py-3 font-mono text-[var(--hud-text-primary)]">
                                           {formatWeight(Number(row.weightFino))}
                                         </td>
@@ -363,6 +368,7 @@ export function ExitedBarsModal({
                                       </td>
                                       <td className="text-right px-4 py-3 font-mono text-xs text-[var(--hud-text-primary)]">{formatNumber(clientTotals.bruto, 2)} g</td>
                                       <td className="text-right px-4 py-3 font-mono text-xs font-bold text-amber-400">{formatNumber(clientTotals.balanza, 2)} g</td>
+                                      <td className="text-right px-4 py-3 font-mono text-xs font-bold text-[var(--hud-accent-red)]">{formatNumber(clientTotals.merma, 2)} g</td>
                                       <td className="text-right px-4 py-3 font-mono text-xs text-[var(--hud-text-primary)]">{formatNumber(clientTotals.fino, 2)} g</td>
                                       <td />
                                       <td />
@@ -391,7 +397,7 @@ export function ExitedBarsModal({
                     </span>
                     <div className="flex items-center gap-5">
                       <span className="text-xs font-mono text-[var(--hud-text-dim)]">
-                        Peso Bruto:{' '}
+                        BI (Bruto Inicial):{' '}
                         <span className="text-[var(--hud-accent-gold)] font-bold text-sm">
                           {formatNumber(grandTotal.bruto, 2)}
                         </span>{' '}
@@ -399,9 +405,17 @@ export function ExitedBarsModal({
                       </span>
                       <span className="text-[11px] text-[var(--hud-text-dim)]/30">|</span>
                       <span className="text-xs font-mono text-[var(--hud-text-dim)]">
-                        Peso Balanza:{' '}
+                        BR (Bruto Refundido):{' '}
                         <span className="text-amber-400 font-bold text-sm">
                           {formatNumber(grandTotal.balanza, 2)}
+                        </span>{' '}
+                        <span className="text-[11px] text-[var(--hud-text-dim)]">g</span>
+                      </span>
+                      <span className="text-[11px] text-[var(--hud-text-dim)]/30">|</span>
+                      <span className="text-xs font-mono text-[var(--hud-text-dim)]">
+                        M (Merma):{' '}
+                        <span className="text-[var(--hud-accent-red)] font-bold text-sm">
+                          {formatNumber(grandTotal.merma, 2)}
                         </span>{' '}
                         <span className="text-[11px] text-[var(--hud-text-dim)]">g</span>
                       </span>
@@ -420,18 +434,25 @@ export function ExitedBarsModal({
                     <div className="text-[11px] font-bold text-[var(--hud-text-primary)] uppercase tracking-wider mb-2">
                       GRAN TOTAL
                     </div>
-                    <div className="grid grid-cols-3 gap-x-4 gap-y-2">
+                    <div className="grid grid-cols-4 gap-x-4 gap-y-2">
                       <div>
-                        <div className="text-[10px] text-[var(--hud-text-dim)] uppercase tracking-wider">Peso Bruto</div>
+                        <div className="text-[10px] text-[var(--hud-text-dim)] uppercase tracking-wider">BI (Bruto Inicial)</div>
                         <div className="text-[13px] font-mono font-bold text-[var(--hud-accent-gold)] leading-tight whitespace-nowrap">
                           {formatNumber(grandTotal.bruto, 2)}{' '}
                           <span className="text-[11px] font-normal text-[var(--hud-text-dim)]">g</span>
                         </div>
                       </div>
                       <div>
-                        <div className="text-[10px] text-[var(--hud-text-dim)] uppercase tracking-wider">Peso Balanza</div>
+                        <div className="text-[10px] text-[var(--hud-text-dim)] uppercase tracking-wider">BR (Bruto Refundido)</div>
                         <div className="text-[13px] font-mono font-bold text-amber-400 leading-tight whitespace-nowrap">
                           {formatNumber(grandTotal.balanza, 2)}{' '}
+                          <span className="text-[11px] font-normal text-[var(--hud-text-dim)]">g</span>
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-[10px] text-[var(--hud-text-dim)] uppercase tracking-wider">M (Merma)</div>
+                        <div className="text-[13px] font-mono font-bold text-[var(--hud-accent-red)] leading-tight whitespace-nowrap">
+                          {formatNumber(grandTotal.merma, 2)}{' '}
                           <span className="text-[11px] font-normal text-[var(--hud-text-dim)]">g</span>
                         </div>
                       </div>

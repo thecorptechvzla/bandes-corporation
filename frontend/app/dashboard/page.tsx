@@ -188,6 +188,23 @@ export default function V2DashboardPage() {
     [filteredBars],
   );
 
+  const egresadoBalanza = useMemo(
+    () =>
+      filteredExits.reduce(
+        (s, e) =>
+          s
+          + (e.exitDetails ?? []).reduce(
+              (sd, d) => sd + Number(d.lot?.recovered ?? d.weightAported ?? 0),
+              0,
+            )
+          + (e.bars ?? []).reduce((sb, b) => sb + Number(b.grossWeight ?? 0), 0),
+        0,
+      ),
+    [filteredExits],
+  );
+
+  const egresadoMerma = egresadoGross - egresadoBalanza;
+
   const sparkEgresado = useMemo(() => {
     const days: Record<string, number> = {};
     filteredBars
@@ -388,7 +405,7 @@ export default function V2DashboardPage() {
       label: 'Oro Egresado',
       value: egresadoGross,
       subicon: ArrowUpRight,
-      sublabel: `Barras despachadas: ${formatNumber(egresadoGross, 2)} g`,
+      sublabel: `BR: ${formatNumber(egresadoBalanza, 2)} g | M: ${formatNumber(egresadoMerma, 2)} g`,
       accent: KPI_COLORS[4].accent,
       tag: 'DESPACHADO',
       postfix: '',
