@@ -59,7 +59,20 @@ export function SupplierDirectory({
     }
 
     for (const [, cBars] of grouped) {
-      cBars.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      cBars.sort((a, b) => {
+        const getPriority = (status: string) => {
+          switch (status) {
+            case 'IN_STOCK': return 1;
+            case 'POR_VALIDAR': return 2;
+            case 'EXITED': return 3;
+            default: return 99;
+          }
+        };
+        const priorityA = getPriority(a.status);
+        const priorityB = getPriority(b.status);
+        if (priorityA !== priorityB) return priorityA - priorityB;
+        return a.barNumber.localeCompare(b.barNumber);
+      });
     }
 
     const filtered = (clients ?? [])
