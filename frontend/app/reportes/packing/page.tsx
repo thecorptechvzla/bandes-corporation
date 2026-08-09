@@ -38,6 +38,8 @@ export default function PackingReportPage() {
   const [filteredSummary, setFilteredSummary] = useState<PackingSummary>({
     totalPackings: 0,
     totalBarras: 0,
+    totalValidadas: 0,
+    totalPendientes: 0,
     pesoBrutoTotal: 0,
     leyProm: 0,
     pesoFinoTotal: 0,

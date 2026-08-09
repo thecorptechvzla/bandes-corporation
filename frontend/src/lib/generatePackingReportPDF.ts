@@ -127,7 +127,7 @@ function drawKPICards(doc: jsPDF, y: number, pw: number, summary: PackingReportD
 
   const cards = [
     { label: 'TOTAL PACKINGS', value: String(summary.totalPackings), sub: 'Procesados' },
-    { label: 'TOTAL BARRAS', value: String(summary.totalBarras), sub: 'Unidades recibidas' },
+    { label: 'TOTAL BARRAS', value: `${summary.totalBarras} (${summary.totalValidadas} / ${summary.totalPendientes})`, sub: 'Unidades recibidas — Val. / Pend.' },
     { label: 'TOTAL PESO BRUTO', value: `${formatNumber(summary.pesoBrutoTotal)} g`, sub: `Ley Prom (‰): ${formatLey(summary.leyProm)}` },
   ];
 
@@ -164,7 +164,7 @@ function drawSummaryTable(doc: jsPDF, y: number, pw: number, data: PackingReport
   const bodyRows = records.map((r) => [
     `${r.id}\n${r.file}`,
     r.client,
-    String(r.barras),
+    `${r.barras} (${r.barrasValidadas} / ${r.barrasPendientes})`,
     `${formatNumber(r.pesoBruto)}`,
     `${formatLey(r.ley)}`,
     `${formatNumber(r.pesoFino)}`,
@@ -173,7 +173,7 @@ function drawSummaryTable(doc: jsPDF, y: number, pw: number, data: PackingReport
   bodyRows.push([
     `TOTALES (${summary.totalPackings} Packings)`,
     '\u2014',
-    `${summary.totalBarras} Barras`,
+    `${summary.totalBarras} (${summary.totalValidadas} / ${summary.totalPendientes}) Barras`,
     `${formatNumber(summary.pesoBrutoTotal)} g`,
     `${formatLey(summary.leyProm)} (Prom)`,
     `${formatNumber(summary.pesoFinoTotal)} g`,
@@ -181,7 +181,7 @@ function drawSummaryTable(doc: jsPDF, y: number, pw: number, data: PackingReport
 
   autoTable(doc, {
     startY: y,
-    head: [['N\u00b0 Packing / Archivo', 'Cliente / Raz\u00f3n Social', 'Barras', 'Peso Bruto (g)', 'Ley (‰)', 'Peso Fino (g)']],
+    head: [['N\u00b0 Packing / Archivo', 'Cliente / Raz\u00f3n Social', 'Barras (Val. / Pend.)', 'Peso Bruto (g)', 'Ley (‰)', 'Peso Fino (g)']],
     body: bodyRows,
     theme: 'grid',
     headStyles: {
@@ -267,26 +267,57 @@ function drawDetailedSection(doc: jsPDF, startY: number, pw: number, detailed: P
     doc.text(packing.client, pw - 14, y + 5.5, { align: 'right' });
     y += bannerH + 2;
 
-    const bodyRows = packing.bars.map((bar) => [
-      `${bar.lote}\n${bar.barId}`,
-      `${formatNumber(bar.pesoBruto)}`,
-      `${formatLey(bar.ley)}`,
-      `${formatNumber(bar.pesoFino)}`,
-    ]);
+    const spWeightFor = (b: (typeof packing.bars)[number]): number | null => {
+      if (b.spGrossWeight != null) return b.spGrossWeight;
+      if (b.status === 'POR_VALIDAR') return b.pesoBruto;
+      return null;
+    };
+    const spPurityFor = (b: (typeof packing.bars)[number]): number | null => {
+      if (b.spPurity != null) return b.spPurity;
+      if (b.status === 'POR_VALIDAR') return b.ley;
+      return null;
+    };
+    const fmtWeight = (v: number | null | undefined) => (v != null ? formatNumber(Number(v), 2) : '-');
+    const fmtdiff = (v: number | null | undefined) => (v != null ? `${v > 0 ? '+' : ''}${formatNumber(Number(v), 2)}` : '-');
 
-    const totPesoBruto = packing.bars.reduce((a, b) => a + b.pesoBruto, 0);
-    const avgLey = packing.bars.length > 0 ? packing.bars.reduce((a, b) => a + b.ley, 0) / packing.bars.length : 0;
-    const totPesoFino = packing.bars.reduce((a, b) => a + b.pesoFino, 0);
+    const bodyRows = packing.bars.map((bar) => {
+      const isPorValidar = bar.status === 'POR_VALIDAR';
+      const spW = spWeightFor(bar);
+      const spP = spPurityFor(bar);
+      const difW = !isPorValidar && bar.spGrossWeight != null ? Math.round((bar.pesoBruto - bar.spGrossWeight) * 100) / 100 : null;
+      const difP = !isPorValidar && bar.spPurity != null ? Math.round((bar.ley - bar.spPurity) * 100) / 100 : null;
+      return [
+        `${bar.lote}\n${bar.barId}`,
+        fmtWeight(spW),
+        spP != null ? formatLey(spP) : '-',
+        isPorValidar ? '-' : fmtWeight(bar.pesoBruto),
+        isPorValidar ? '-' : formatLey(bar.ley),
+        fmtdiff(difW),
+        fmtdiff(difP),
+        isPorValidar ? 'POR VALIDAR' : 'VALIDADA',
+      ];
+    });
+
+    const spTotal = packing.bars.reduce((a, b) => a + Number(spWeightFor(b) ?? 0), 0);
+    const valTotal = packing.bars.reduce((a, b) => a + (b.status === 'POR_VALIDAR' ? 0 : b.pesoBruto), 0);
+    const difTotal = packing.bars.reduce(
+      (a, b) => a + (b.status !== 'POR_VALIDAR' && b.spGrossWeight != null ? b.pesoBruto - b.spGrossWeight : 0),
+      0,
+    );
     bodyRows.push([
       `Subtotal \u2014 ${packing.barras} Barras`,
-      `${formatNumber(totPesoBruto)} g`,
-      `${formatLey(avgLey)}`,
-      `${formatNumber(totPesoFino)} g`,
+      `${formatNumber(spTotal)} g`,
+      '\u03a3 Ley SP',
+      `${formatNumber(valTotal)} g`,
+      '\u03a3 Ley Val.',
+      `${difTotal > 0 ? '+' : ''}${formatNumber(difTotal)} g`,
+      '\u03a3 Dif. Ley',
+      `${packing.barras} (${packing.barrasValidadas} / ${packing.barrasPendientes})`,
     ]);
 
     autoTable(doc, {
       startY: y,
-      head: [['N\u00b0 Lote / ID Barra', 'Peso Bruto (g)', 'Ley (‰)', 'Peso Fino (g)']],
+      head: [['C\u00d3DIGO BARRA', 'BRUTO SP', 'LEY SP (\u2030)', 'BRUTO VAL.', 'LEY VAL. (\u2030)', 'DIF. BRUTO', 'DIF. LEY', 'ESTADO']],
       body: bodyRows,
       theme: 'grid',
       headStyles: {
@@ -307,10 +338,14 @@ function drawDetailedSection(doc: jsPDF, startY: number, pw: number, detailed: P
         lineWidth: 0.2,
       },
       columnStyles: {
-        0: { cellWidth: 50, halign: 'left' },
+        0: { cellWidth: 40, halign: 'left' },
         1: { halign: 'right' },
-        2: { cellWidth: 24, halign: 'center' },
+        2: { halign: 'right' },
         3: { halign: 'right' },
+        4: { halign: 'right' },
+        5: { halign: 'right' },
+        6: { halign: 'right' },
+        7: { halign: 'center' },
       },
       alternateRowStyles: {
         fillColor: ROW_ALT,
@@ -323,6 +358,19 @@ function drawDetailedSection(doc: jsPDF, startY: number, pw: number, detailed: P
           data.cell.styles.fillColor = GREEN_LIGHT;
           data.cell.styles.lineColor = GREEN;
           data.cell.styles.lineWidth = 0.3;
+        }
+        if (data.section === 'body' && data.row.index < packing.bars.length) {
+          const estado = data.row.raw[7] as string;
+          if (estado === 'POR VALIDAR') {
+            data.cell.styles.textColor = [153, 111, 0];
+          }
+          if (estado === 'VALIDADA' && (data.column.index === 5 || data.column.index === 6)) {
+            const dif = data.row.raw[data.column.index] as string;
+            if (dif !== '-') {
+              data.cell.styles.textColor = GREEN;
+              data.cell.styles.fontStyle = 'bold';
+            }
+          }
         }
       },
     });
@@ -354,11 +402,13 @@ function drawTotalesGenerales(doc: jsPDF, y: number, pw: number, summary: Packin
   doc.setLineWidth(0.3);
   doc.roundedRect(10, y, pw - 20, boxH, 1, 1, 'S');
 
-  const colW = (pw - 20) / 3;
+  const colW = (pw - 20) / 5;
   const cols = [
-    { label: 'Total Barras', value: String(summary.totalBarras) },
+    { label: 'Total Barras (Val / Pend)', value: `${summary.totalBarras} (${summary.totalValidadas} / ${summary.totalPendientes})` },
     { label: 'Peso Bruto Total', value: `${formatNumber(summary.pesoBrutoTotal)} g` },
     { label: 'Peso Fino Total', value: `${formatNumber(summary.pesoFinoTotal)} g` },
+    { label: 'Barras Validadas', value: String(summary.totalValidadas) },
+    { label: 'Barras Pendientes', value: String(summary.totalPendientes) },
   ];
 
   cols.forEach((col, i) => {

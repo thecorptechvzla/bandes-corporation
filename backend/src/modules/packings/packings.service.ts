@@ -95,24 +95,55 @@ export class PackingsService {
 
     const sumsByPacking = new Map(grouped.map((g) => [g.packingId, g]));
 
+    // Conteo por estado para el desglose VAL. / PEND. del resumen.
+    const groupedByStatus = ids.length
+      ? await this.prisma.bar.groupBy({
+          by: ['packingId', 'status'],
+          where: { packingId: { in: ids } },
+          _count: { _all: true },
+        })
+      : [];
+
+    const countsByPacking = new Map<string, { validadas: number; pendientes: number }>();
+    for (const g of groupedByStatus) {
+      if (g.packingId == null) continue;
+      const entry = countsByPacking.get(g.packingId) ?? { validadas: 0, pendientes: 0 };
+      if (g.status === 'POR_VALIDAR') {
+        entry.pendientes = g._count._all ?? 0;
+      } else {
+        entry.validadas = g._count._all ?? 0;
+      }
+      countsByPacking.set(g.packingId, entry);
+    }
+
     return packings.map((p) => {
       const g = sumsByPacking.get(p.id);
       const barras = g?._count._all ?? 0;
       const pesoBruto = Number(g?._sum.grossWeight ?? 0);
       const pesoFino = Number(g?._sum.fineWeight ?? 0);
       const ley = pesoBruto > 0 ? (pesoFino / pesoBruto) * 1000 : 0;
-      return { ...p, barras, pesoBruto, pesoFino, ley };
+      const counts = countsByPacking.get(p.id) ?? { validadas: 0, pendientes: 0 };
+      return { ...p, barras, pesoBruto, pesoFino, ley, barrasValidadas: counts.validadas, barrasPendientes: counts.pendientes };
     });
   }
 
   private withPackingAggregates<T extends object>(
     p: T,
-    bars: Array<{ grossWeight: unknown; fineWeight: unknown }>,
-  ): T & { barras: number; pesoBruto: number; pesoFino: number; ley: number } {
+    bars: Array<{ grossWeight: unknown; fineWeight: unknown; status: string }>,
+  ): T & { barras: number; pesoBruto: number; pesoFino: number; ley: number; barrasValidadas: number; barrasPendientes: number } {
     const pesoBruto = bars.reduce((s, b) => s + Number(b.grossWeight ?? 0), 0);
     const pesoFino = bars.reduce((s, b) => s + Number(b.fineWeight ?? 0), 0);
     const ley = pesoBruto > 0 ? (pesoFino / pesoBruto) * 1000 : 0;
-    return { ...p, barras: bars.length, pesoBruto, pesoFino, ley };
+    const validadas = bars.filter((b) => b.status !== 'POR_VALIDAR').length;
+    return {
+      ...p,
+      barras: bars.length,
+      pesoBruto,
+      pesoFino,
+      ley,
+      barrasValidadas: validadas,
+      barrasPendientes: bars.length - validadas,
+    };
   }
 
   async findAll() {

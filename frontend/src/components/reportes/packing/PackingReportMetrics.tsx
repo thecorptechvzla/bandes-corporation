@@ -50,13 +50,13 @@ export default function PackingReportMetrics({ summary }: PackingReportMetricsPr
           TOTAL BARRAS
         </div>
         <div className="text-[18px] font-bold text-white">
-          {summary.totalBarras} Barras
+          {summary.totalBarras} Barras ({summary.totalValidadas} / {summary.totalPendientes})
         </div>
         <div
           className="text-[11px] mt-1"
           style={{ color: '#85e8c5' }}
         >
-          Recibidas en total
+          Recibidas en total — Validadas / Pendientes
         </div>
       </div>
 

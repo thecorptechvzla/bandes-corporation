@@ -47,7 +47,7 @@ export default function PackingReportTable({ records, summary }: PackingReportTa
                 borderBottom: '1px solid var(--report-border-color)',
               }}
             >
-              Cant. Barras
+              BARRAS (VAL. / PEND.)
             </th>
             <th
               className="px-4 py-3 text-[11px] font-bold uppercase tracking-wider text-right"
@@ -111,7 +111,7 @@ Ley (‰)
                 className="px-4 py-3 text-center text-[12px] font-medium"
                 style={{ color: 'var(--report-text-table)' }}
               >
-                {row.barras}
+                {row.barras} ({row.barrasValidadas} / {row.barrasPendientes})
               </td>
               <td
                 className="px-4 py-3 text-right text-[12px] font-medium"
@@ -150,7 +150,7 @@ Ley (‰)
               className="px-4 py-3 text-center text-[12px] font-bold"
               style={{ color: 'var(--report-color-primary)' }}
             >
-              {summary.totalBarras} Barras
+              {summary.totalBarras} ({summary.totalValidadas} / {summary.totalPendientes}) Barras
             </td>
             <td
               className="px-4 py-3 text-right text-[12px] font-bold"

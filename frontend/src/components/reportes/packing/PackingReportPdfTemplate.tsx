@@ -1,5 +1,7 @@
 'use client';
 
+import type { CSSProperties } from 'react';
+
 import { formatLey, formatNumber } from '@/lib/format';
 import type { PackingReportData, ReportType } from './types';
 
@@ -93,8 +95,8 @@ export default function PackingReportPdfTemplate({
         <div style={{ display: 'table-cell', width: '3.5%' }} />
         <div style={{ display: 'table-cell', width: '31%', backgroundColor: '#f4f9f7', border: '1px solid #c2e5d9', borderRadius: '4px', padding: '4px', textAlign: 'center', boxSizing: 'border-box' }}>
           <div className="pdf-metric-title" style={{ fontWeight: 700, color: '#139169', textTransform: 'uppercase' }}>Total Barras</div>
-          <div className="pdf-metric-value" style={{ fontWeight: 700, color: '#111111', fontSize: '11px', margin: '1px 0' }}>{summary.totalBarras}</div>
-          <div className="pdf-metric-footer" style={{ color: '#666666', fontSize: '7px' }}>Unidades recibidas</div>
+          <div className="pdf-metric-value" style={{ fontWeight: 700, color: '#111111', fontSize: '11px', margin: '1px 0' }}>{summary.totalBarras} ({summary.totalValidadas} / {summary.totalPendientes})</div>
+          <div className="pdf-metric-footer" style={{ color: '#666666', fontSize: '7px' }}>Unidades recibidas — Validas / Pend</div>
         </div>
         <div style={{ display: 'table-cell', width: '3.5%' }} />
         <div style={{ display: 'table-cell', width: '31%', backgroundColor: '#f4f9f7', border: '1px solid #c2e5d9', borderRadius: '4px', padding: '4px', textAlign: 'center', boxSizing: 'border-box' }}>
@@ -110,9 +112,9 @@ export default function PackingReportPdfTemplate({
           <thead>
             <tr>
               {[
-                { label: 'N° Packing / Archivo', width: '24%' },
-                { label: 'Cliente / Razón Social', width: '32%' },
-                { label: 'Barras', width: '10%' },
+                { label: 'N° Packing / Archivo', width: '22%' },
+                { label: 'Cliente / Razón Social', width: '30%' },
+                { label: 'Barras (Val/Pend)', width: '14%' },
                 { label: 'Peso Bruto (g)', width: '12%' },
                 { label: 'Ley', width: '10%' },
                 { label: 'Peso Fino (g)', width: '12%' },
@@ -133,7 +135,7 @@ export default function PackingReportPdfTemplate({
                 <td style={{ borderBottom: '1px solid #e6e6e6', backgroundColor: idx % 2 === 1 ? '#fbfdfc' : 'transparent' }}>
                   <strong>{row.client}</strong>
                 </td>
-                <td style={{ borderBottom: '1px solid #e6e6e6', textAlign: 'center', backgroundColor: idx % 2 === 1 ? '#fbfdfc' : 'transparent' }}>{row.barras}</td>
+                <td style={{ borderBottom: '1px solid #e6e6e6', textAlign: 'center', backgroundColor: idx % 2 === 1 ? '#fbfdfc' : 'transparent' }}>{row.barras} ({row.barrasValidadas} / {row.barrasPendientes})</td>
                 <td style={{ borderBottom: '1px solid #e6e6e6', textAlign: 'right', backgroundColor: idx % 2 === 1 ? '#fbfdfc' : 'transparent' }}>{formatNumber(row.pesoBruto)}</td>
                 <td style={{ borderBottom: '1px solid #e6e6e6', textAlign: 'right', backgroundColor: idx % 2 === 1 ? '#fbfdfc' : 'transparent' }}>{formatLey(row.ley)}</td>
                 <td style={{ borderBottom: '1px solid #e6e6e6', textAlign: 'right', fontWeight: 700, backgroundColor: idx % 2 === 1 ? '#fbfdfc' : 'transparent' }}>{formatNumber(row.pesoFino)}</td>
@@ -143,7 +145,7 @@ export default function PackingReportPdfTemplate({
               {[
                 { text: `TOTALES (${summary.totalPackings} Packings)`, align: 'left' as const },
                 { text: '—', align: 'left' as const },
-                { text: String(summary.totalBarras), align: 'center' as const },
+                { text: `${summary.totalBarras} (${summary.totalValidadas} / ${summary.totalPendientes})`, align: 'center' as const },
                 { text: `${formatNumber(summary.pesoBrutoTotal)} g`, align: 'right' as const },
                 { text: formatLey(summary.leyProm), align: 'right' as const },
                 { text: `${formatNumber(summary.pesoFinoTotal)} g`, align: 'right' as const },
@@ -168,49 +170,86 @@ export default function PackingReportPdfTemplate({
                 </div>
                 <span className="pdf-banner-client" style={{ fontWeight: 600, color: '#333333' }}>{packing.client}</span>
               </div>
-              {/* Tabla de barras (4 columnas) */}
+              {/* Tabla de barras (8 columnas espejo) */}
               <table style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse', boxSizing: 'border-box' }}>
                 <thead>
                   <tr>
-                    <th style={{ width: '35%', backgroundColor: '#139169', color: '#ffffff', fontWeight: 700, fontSize: '7.5px', padding: '3px 4px', textAlign: 'left', border: '1px solid #139169' }}>
-                      N° LOTE / ID BARRA
+                    <th style={{ width: '16%', backgroundColor: '#139169', color: '#ffffff', fontWeight: 700, fontSize: '7.5px', padding: '3px 4px', textAlign: 'left', border: '1px solid #139169' }}>
+                      CÓDIGO BARRA
                     </th>
-                    <th style={{ width: '22%', backgroundColor: '#139169', color: '#ffffff', fontWeight: 700, fontSize: '7.5px', padding: '3px 4px', textAlign: 'right', border: '1px solid #139169' }}>
-                      PESO BRUTO (GR)
+                    <th style={{ width: '12%', backgroundColor: '#139169', color: '#ffffff', fontWeight: 700, fontSize: '7.5px', padding: '3px 4px', textAlign: 'right', border: '1px solid #139169' }}>
+                      BRUTO SP
                     </th>
-                    <th style={{ width: '18%', backgroundColor: '#139169', color: '#ffffff', fontWeight: 700, fontSize: '7.5px', padding: '3px 4px', textAlign: 'center', border: '1px solid #139169' }}>
-                      LEY
+                    <th style={{ width: '11%', backgroundColor: '#139169', color: '#ffffff', fontWeight: 700, fontSize: '7.5px', padding: '3px 4px', textAlign: 'right', border: '1px solid #139169' }}>
+                      LEY SP (‰)
                     </th>
-                    <th style={{ width: '25%', backgroundColor: '#139169', color: '#ffffff', fontWeight: 700, fontSize: '7.5px', padding: '3px 4px', textAlign: 'right', border: '1px solid #139169' }}>
-                      PESO FINO (GR)
+                    <th style={{ width: '12%', backgroundColor: '#139169', color: '#ffffff', fontWeight: 700, fontSize: '7.5px', padding: '3px 4px', textAlign: 'right', border: '1px solid #139169' }}>
+                      BRUTO VAL.
+                    </th>
+                    <th style={{ width: '11%', backgroundColor: '#139169', color: '#ffffff', fontWeight: 700, fontSize: '7.5px', padding: '3px 4px', textAlign: 'right', border: '1px solid #139169' }}>
+                      LEY VAL. (‰)
+                    </th>
+                    <th style={{ width: '12%', backgroundColor: '#139169', color: '#ffffff', fontWeight: 700, fontSize: '7.5px', padding: '3px 4px', textAlign: 'right', border: '1px solid #139169' }}>
+                      DIF. BRUTO
+                    </th>
+                    <th style={{ width: '11%', backgroundColor: '#139169', color: '#ffffff', fontWeight: 700, fontSize: '7.5px', padding: '3px 4px', textAlign: 'right', border: '1px solid #139169' }}>
+                      DIF. LEY
+                    </th>
+                    <th style={{ width: '15%', backgroundColor: '#139169', color: '#ffffff', fontWeight: 700, fontSize: '7.5px', padding: '3px 4px', textAlign: 'center', border: '1px solid #139169' }}>
+                      ESTADO
                     </th>
                   </tr>
                 </thead>
                 <tbody>
-                  {packing.bars.map((bar, barIdx) => (
-                    <tr key={`${packing.uid}-${bar.barId}-${barIdx}`}>
-                      <td style={{ padding: '2px 4px', fontSize: '7.5px', borderBottom: '1px solid #f0f0f0', backgroundColor: barIdx % 2 === 1 ? '#fbfdfc' : 'transparent', wordWrap: 'break-word', overflow: 'hidden' }}>
-                        <span style={{ fontFamily: 'monospace', color: '#333', fontSize: '7.5px' }}>{bar.lote}</span>
-                        <span style={{ display: 'block', fontFamily: 'monospace', color: '#139169', fontSize: '6.5px' }}>{bar.barId}</span>
-                      </td>
-                      <td style={{ padding: '2px 4px', fontSize: '7.5px', borderBottom: '1px solid #f0f0f0', textAlign: 'right', backgroundColor: barIdx % 2 === 1 ? '#fbfdfc' : 'transparent', wordWrap: 'break-word', overflow: 'hidden' }}>
-                        {formatNumber(bar.pesoBruto)}
-                      </td>
-                      <td style={{ padding: '2px 4px', fontSize: '7.5px', borderBottom: '1px solid #f0f0f0', textAlign: 'center', backgroundColor: barIdx % 2 === 1 ? '#fbfdfc' : 'transparent', wordWrap: 'break-word', overflow: 'hidden' }}>
-                        {formatLey(bar.ley)}
-                      </td>
-                      <td style={{ padding: '2px 4px', fontSize: '7.5px', borderBottom: '1px solid #f0f0f0', textAlign: 'right', fontWeight: 700, backgroundColor: barIdx % 2 === 1 ? '#fbfdfc' : 'transparent', wordWrap: 'break-word', overflow: 'hidden' }}>
-                        {formatNumber(bar.pesoFino)}
-                      </td>
-                    </tr>
-                  ))}
+                  {packing.bars.map((bar, barIdx) => {
+                    const isPorValidar = bar.status === 'POR_VALIDAR';
+                    const spW = bar.spGrossWeight ?? (isPorValidar ? bar.pesoBruto : null);
+                    const spP = bar.spPurity ?? (isPorValidar ? bar.ley : null);
+                    const difW = !isPorValidar && bar.spGrossWeight != null ? Math.round((bar.pesoBruto - bar.spGrossWeight) * 100) / 100 : null;
+                    const difP = !isPorValidar && bar.spPurity != null ? Math.round((bar.ley - bar.spPurity) * 100) / 100 : null;
+                    const rowBg = barIdx % 2 === 1 ? '#fbfdfc' : 'transparent';
+                    const cellBase: CSSProperties = { padding: '2px 4px', fontSize: '7.5px', borderBottom: '1px solid #f0f0f0', backgroundColor: rowBg, wordWrap: 'break-word', overflow: 'hidden' };
+                    const diffColor = (dif: number | null) => dif != null
+                      ? { color: '#139169', fontWeight: 700 }
+                      : {};
+                    return (
+                      <tr key={`${packing.uid}-${bar.barId}-${barIdx}`}>
+                        <td style={{ ...cellBase, textAlign: 'left' }}>
+                          <span style={{ fontFamily: 'monospace', color: '#333', fontSize: '7.5px' }}>{bar.lote}</span>
+                          <span style={{ display: 'block', fontFamily: 'monospace', color: '#139169', fontSize: '6.5px' }}>{bar.barId}</span>
+                        </td>
+                        <td style={{ ...cellBase, textAlign: 'right' }}>{spW != null ? formatNumber(spW) : '-'}</td>
+                        <td style={{ ...cellBase, textAlign: 'right' }}>{spP != null ? formatLey(spP) : '-'}</td>
+                        <td style={{ ...cellBase, textAlign: 'right' }}>{isPorValidar ? '-' : formatNumber(bar.pesoBruto)}</td>
+                        <td style={{ ...cellBase, textAlign: 'right' }}>{isPorValidar ? '-' : formatLey(bar.ley)}</td>
+                        <td style={{ ...cellBase, textAlign: 'right', ...(difW != null ? diffColor(difW) : {}) }}>{difW != null ? `${difW > 0 ? '+' : ''}${formatNumber(difW)}` : '-'}</td>
+                        <td style={{ ...cellBase, textAlign: 'right', ...(difP != null ? diffColor(difP) : {}) }}>{difP != null ? `${difP > 0 ? '+' : ''}${formatLey(difP)}` : '-'}</td>
+                        <td style={{ ...cellBase, textAlign: 'center' }}>
+                          <span style={{ fontFamily: 'monospace', fontSize: '7px', fontWeight: 700, padding: '1px 5px', border: '1px solid', borderRadius: '2px', color: isPorValidar ? '#996F00' : '#139169', borderColor: isPorValidar ? '#E3C98A' : '#13916955', backgroundColor: isPorValidar ? '#F7EFD8' : '#EAF4F0' }}>
+                            {isPorValidar ? 'POR VALIDAR' : 'VALIDADA'}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
                   {/* Subtotal */}
-                  <tr className="pdf-subtotal-row">
-                    <td style={{ padding: '2px 4px', fontSize: '7.5px', backgroundColor: '#eaf4f0', fontWeight: 700, color: '#139169', borderTop: '2px solid #139169' }}>Subtotal — {packing.barras} Barras</td>
-                    <td style={{ padding: '2px 4px', fontSize: '7.5px', backgroundColor: '#eaf4f0', borderTop: '2px solid #139169', textAlign: 'right', fontWeight: 700, color: '#139169' }}>{formatNumber(packing.pesoBruto)} g</td>
-                    <td style={{ padding: '2px 4px', fontSize: '7.5px', backgroundColor: '#eaf4f0', borderTop: '2px solid #139169', textAlign: 'center', fontWeight: 700, color: '#139169' }}>{formatLey(packing.ley)}</td>
-                    <td style={{ padding: '2px 4px', fontSize: '7.5px', backgroundColor: '#eaf4f0', borderTop: '2px solid #139169', textAlign: 'right', fontWeight: 700, color: '#139169' }}>{formatNumber(packing.pesoFino)} g</td>
-                  </tr>
+                  {(() => {
+                    const spTotal = packing.bars.reduce((a, b) => a + (b.spGrossWeight ?? (b.status === 'POR_VALIDAR' ? b.pesoBruto : 0)), 0);
+                    const valTotal = packing.bars.reduce((a, b) => a + (b.status === 'POR_VALIDAR' ? 0 : b.pesoBruto), 0);
+                    const difTotal = packing.bars.reduce((a, b) => a + (b.status !== 'POR_VALIDAR' && b.spGrossWeight != null ? b.pesoBruto - b.spGrossWeight : 0), 0);
+                    return (
+                      <tr className="pdf-subtotal-row">
+                        <td style={{ padding: '2px 4px', fontSize: '7.5px', backgroundColor: '#eaf4f0', fontWeight: 700, color: '#139169', borderTop: '2px solid #139169' }}>Subtotal — {packing.barras} Barras</td>
+                        <td style={{ padding: '2px 4px', fontSize: '7.5px', backgroundColor: '#eaf4f0', borderTop: '2px solid #139169', textAlign: 'right', fontWeight: 700, color: '#139169' }}>{formatNumber(spTotal)} g</td>
+                        <td style={{ padding: '2px 4px', fontSize: '7.5px', backgroundColor: '#eaf4f0', borderTop: '2px solid #139169', textAlign: 'right', fontWeight: 700, color: '#139169' }}>Σ Ley SP</td>
+                        <td style={{ padding: '2px 4px', fontSize: '7.5px', backgroundColor: '#eaf4f0', borderTop: '2px solid #139169', textAlign: 'right', fontWeight: 700, color: '#139169' }}>{formatNumber(valTotal)} g</td>
+                        <td style={{ padding: '2px 4px', fontSize: '7.5px', backgroundColor: '#eaf4f0', borderTop: '2px solid #139169', textAlign: 'right', fontWeight: 700, color: '#139169' }}>Σ Ley Val.</td>
+                        <td style={{ padding: '2px 4px', fontSize: '7.5px', backgroundColor: '#eaf4f0', borderTop: '2px solid #139169', textAlign: 'right', fontWeight: 700, color: '#139169' }}>{difTotal > 0 ? '+' : ''}{formatNumber(difTotal)} g</td>
+                        <td style={{ padding: '2px 4px', fontSize: '7.5px', backgroundColor: '#eaf4f0', borderTop: '2px solid #139169', textAlign: 'right', fontWeight: 700, color: '#139169' }}>Σ Dif. Ley</td>
+                        <td style={{ padding: '2px 4px', fontSize: '7.5px', backgroundColor: '#eaf4f0', borderTop: '2px solid #139169', textAlign: 'right', fontWeight: 700, color: '#139169' }}>{packing.barras}</td>
+                      </tr>
+                    );
+                  })()}
                 </tbody>
               </table>
             </div>
@@ -224,7 +263,7 @@ export default function PackingReportPdfTemplate({
             <div style={{ display: 'table', width: '100%', tableLayout: 'fixed' }}>
               <div style={{ display: 'table-cell', width: '33.33%', padding: '6px', textAlign: 'center', borderRight: '1px solid #e0e0e0' }}>
                 <div className="pdf-totals-label" style={{ fontWeight: 700, color: '#666666', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '1px' }}>Total Barras</div>
-                <div className="pdf-totals-value" style={{ fontWeight: 700, color: '#139169' }}>{summary.totalBarras}</div>
+                <div className="pdf-totals-value" style={{ fontWeight: 700, color: '#139169' }}>{summary.totalBarras} ({summary.totalValidadas} / {summary.totalPendientes})</div>
               </div>
               <div style={{ display: 'table-cell', width: '33.33%', padding: '6px', textAlign: 'center', borderRight: '1px solid #e0e0e0' }}>
                 <div className="pdf-totals-label" style={{ fontWeight: 700, color: '#666666', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '1px' }}>Peso Bruto Total</div>
