@@ -58,12 +58,12 @@ export function EvidenceModal({ barId, bars, packingBars, spValues, barPhotoUrls
       </div>
 
       <div className="p-6 space-y-5">
-        <div className="rounded-xl overflow-hidden border border-[var(--pm-border)] bg-black/60 flex items-center justify-center min-h-[160px]">
+        <div className="relative aspect-video w-full rounded-xl overflow-hidden border border-[var(--pm-border)] bg-black/60">
           {photoUrl ? (
             <img
               src={srcProxy}
               alt={`Barra ${bar.barNumber}`}
-              className="w-full object-cover max-h-56"
+              className="w-full h-full object-cover object-center absolute inset-0"
             />
           ) : (
             <div className="text-center p-6">
