@@ -129,7 +129,7 @@ export class BarsService {
 
     if (!headerMap.code || !headerMap.grossWeight || !headerMap.purity) {
       throw new BadRequestException(
-        'El archivo debe contener las columnas: CÓDIGO, PESO BRUTO (g), PUREZA (‰)',
+        'El archivo debe contener las columnas: CÓDIGO, PESO BRUTO (g), LEY AU (‰) o PUREZA (‰)',
       );
     }
 

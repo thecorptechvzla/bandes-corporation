@@ -3,7 +3,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Search, ChevronUp, ChevronDown, Trash2, Package } from 'lucide-react';
-import { formatNumber } from '@/lib/format';
+import { formatNumber, formatLey } from '@/lib/format';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import type { Bar, Client } from '@/types/api';
@@ -88,6 +88,7 @@ export function BarInventoryPanel({
                               <tr>
                                 <th className="text-center">Código</th>
                                 <th className="text-right">Peso Bruto (g)</th>
+                                <th className="text-right">Ley Au (‰)</th>
                                 <th className="text-right">Peso Fino (g)</th>
                                 <th className="text-center">Estado</th>
                                 <th className="text-center">Acción</th>
@@ -103,6 +104,7 @@ export function BarInventoryPanel({
                                   className={`${idx % 2 === 0 ? 'bg-transparent' : 'bg-[var(--pm-bg-deepest)]/30'} transition-all duration-150 ${isPackingValidated ? 'cursor-pointer hover:bg-white/[0.04] active:scale-[0.98]' : 'cursor-default'}`}>
                                   <td className="px-4 py-3 text-center font-mono font-bold text-[var(--pm-accent-gold)] tracking-wider text-[11px]">{bar.barNumber}</td>
                                   <td className="px-4 py-3 text-right font-mono font-medium text-slate-200">{formatNumber(Number(bar.grossWeight), 2)}</td>
+                                  <td className="px-4 py-3 text-right font-mono font-medium text-slate-200">{bar.purity != null ? formatLey(Number(bar.purity)) : '—'}</td>
                                   <td className="px-4 py-3 text-right font-mono font-medium text-slate-200">{formatNumber(Number(bar.fineWeight), 2)}</td>
                                   <td className="text-center">
                                     <StatusBadge status={bar.status} size="sm" />
