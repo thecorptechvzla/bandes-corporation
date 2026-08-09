@@ -154,7 +154,7 @@ export function ProcessAuditModal({ process, lots, lotBarsMap, clients, onClose 
             <div key={group.clientId} className="space-y-2">
               <div className="flex items-center justify-between px-1">
                 <span className="text-[11px] font-mono font-bold text-[var(--pm-text-primary)] uppercase tracking-wider">
-                  Cliente: <span className="text-[var(--pm-accent-gold)]">{group.clientName}</span>
+                  Proveedor: <span className="text-[var(--pm-accent-gold)]">{group.clientName}</span>
                 </span>
                 <span className="text-[10px] font-mono text-[var(--pm-text-dim)]">
                   {group.rows.length} barra{group.rows.length !== 1 ? 's' : ''} · {formatWeight(group.bruto)}
