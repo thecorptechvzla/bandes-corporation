@@ -207,14 +207,14 @@ export default function DashboardFilters({
             type="date"
             value={startDate}
             onChange={(e) => onChange({ startDate: e.target.value, endDate, supplierId, clientId })}
-            className="w-24 md:w-28 px-2 pr-10 py-1 bg-[var(--hud-bg-deepest)] border border-[var(--hud-border)] rounded-lg text-[11px] font-mono text-[var(--hud-text-primary)] outline-none transition-colors focus:border-emerald-500/40 [color-scheme:dark]"
+            className="w-36 md:w-40 min-w-[140px] px-2 pr-10 py-1 bg-[var(--hud-bg-deepest)] border border-[var(--hud-border)] rounded-lg text-[11px] font-mono text-[var(--hud-text-primary)] outline-none transition-colors focus:border-emerald-500/40 [color-scheme:dark]"
           />
           <span className="text-[11px] text-[var(--hud-text-dim)]">—</span>
           <input
             type="date"
             value={endDate}
             onChange={(e) => onChange({ startDate, endDate: e.target.value, supplierId, clientId })}
-            className="w-24 md:w-28 px-2 pr-10 py-1 bg-[var(--hud-bg-deepest)] border border-[var(--hud-border)] rounded-lg text-[11px] font-mono text-[var(--hud-text-primary)] outline-none transition-colors focus:border-emerald-500/40 [color-scheme:dark]"
+            className="w-36 md:w-40 min-w-[140px] px-2 pr-10 py-1 bg-[var(--hud-bg-deepest)] border border-[var(--hud-border)] rounded-lg text-[11px] font-mono text-[var(--hud-text-primary)] outline-none transition-colors focus:border-emerald-500/40 [color-scheme:dark]"
           />
         </div>
 
