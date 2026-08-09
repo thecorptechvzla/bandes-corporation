@@ -9,7 +9,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 
 interface ExitDetail {
   id: string;
-  lot?: { name?: string; process?: { client?: { name?: string } } } | null;
+  lot?: { name?: string; recovered?: number | null; process?: { client?: { name?: string } } } | null;
   bars?: { id: string; barNumber: string; fineWeight?: number; grossWeight?: number }[];
   weightAported: string | number;
 }
@@ -18,8 +18,10 @@ interface ExitItem {
   id: string;
   destination?: string;
   grossWeight: number;
+  totalBR?: number;
   createdAt: string;
   exitDetails: ExitDetail[];
+  bars?: { id: string; barNumber: string; grossWeight?: number; fineWeight?: number; client?: { name?: string } }[];
 }
 
 interface ExitsTableProps {
@@ -70,7 +72,7 @@ export function ExitsTable({
               <th className="text-left px-4 py-3 text-[11px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider">Proveedores</th>
               <th className="text-left px-4 py-3 text-[11px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider">Destino</th>
               <th className="text-left px-4 py-3 text-[11px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider">Lotes</th>
-              <th className="text-left px-4 py-3 text-[11px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider">Peso Bruto</th>
+              <th className="text-left px-4 py-3 text-[11px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider">BI / BR</th>
               <th className="text-left px-4 py-3 text-[11px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider">Fecha</th>
               <th className="text-center px-4 py-3 text-[11px] font-mono font-bold text-[var(--pm-text-dim)] uppercase tracking-wider">Comprobantes</th>
               <th className="px-4 py-3 w-10" />
@@ -120,9 +122,14 @@ export function ExitsTable({
                       </span>
                     </td>
                     <td className="px-4 py-3.5">
-                      <span className="text-sm font-mono font-semibold text-[var(--pm-accent-gold)]">
-                        {formatWeight(Number(e.grossWeight), 2)}
-                      </span>
+                      <div className="flex flex-col">
+                        <span className="text-slate-400 text-[10px]">
+                          BI: {formatWeight(Number(e.grossWeight), 2)}
+                        </span>
+                        <span className="text-amber-400 font-bold">
+                          BR: {formatWeight(Number(e.totalBR ?? e.grossWeight), 2)}
+                        </span>
+                      </div>
                     </td>
                     <td className="px-4 py-3.5">
                       <span className="text-xs font-mono text-[var(--pm-text-dim)]">
@@ -175,71 +182,153 @@ export function ExitsTable({
                                   Detalle del Despacho
                                 </h4>
                                 <div className="space-y-3">
-                                  {e.exitDetails.map((detail, idx) => (
-                                    <div
-                                      key={`${e.id}-detail-${idx}`}
-                                      className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 rounded-xl border border-[var(--pm-border)]/20 bg-[var(--pm-bg-tertiary)]/25"
-                                    >
-                                      {/* 1 · Identificación */}
-                                      <div className="min-w-0">
-                                        <span className="block text-[10px] font-semibold uppercase tracking-wider text-slate-400">Lote / Barra</span>
-                                        <span className="mt-1 block text-sm font-medium text-white truncate">
-                                          {detail.lot?.name ?? '—'}
-                                        </span>
-                                        {detail.bars && detail.bars.length > 0 && (
-                                          <div className="mt-2 flex flex-wrap gap-1">
-                                            {detail.bars.map((bar, barIdx) => (
-                                              <span
-                                                key={`${e.id}-detail-${idx}-bar-${barIdx}`}
-                                                className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono bg-[var(--pm-bg-tertiary)] text-[var(--pm-text-dim)] border border-[var(--pm-border)]/30"
-                                              >
-                                                {bar.barNumber}
-                                                <span className="text-[var(--pm-accent-gold)]">({formatWeight(Number(bar.fineWeight), 1)})</span>
-                                              </span>
-                                            ))}
+                                  {e.exitDetails.map((detail, idx) => {
+                                    const bi =
+                                      (detail.bars ?? []).reduce((s, b) => s + Number(b.grossWeight || 0), 0) ||
+                                      Number(detail.weightAported ?? 0) ||
+                                      0;
+                                    const br =
+                                      Number(detail.lot?.recovered ?? 0) > 0
+                                        ? Number(detail.lot?.recovered)
+                                        : bi;
+                                    const m = bi - br;
+                                    return (
+                                      <div
+                                        key={`${e.id}-detail-${idx}`}
+                                        className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 rounded-xl border border-[var(--pm-border)]/20 bg-[var(--pm-bg-tertiary)]/25"
+                                      >
+                                        {/* 1 · Identificación */}
+                                        <div className="min-w-0">
+                                          <span className="block text-[10px] font-semibold uppercase tracking-wider text-slate-400">Lote / Barra</span>
+                                          <span className="mt-1 block text-sm font-medium text-white truncate">
+                                            {detail.lot?.name ?? '—'}
+                                          </span>
+                                          {detail.bars && detail.bars.length > 0 && (
+                                            <div className="mt-2 flex flex-wrap gap-1">
+                                              {detail.bars.map((bar, barIdx) => (
+                                                <span
+                                                  key={`${e.id}-detail-${idx}-bar-${barIdx}`}
+                                                  className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono bg-[var(--pm-bg-tertiary)] text-[var(--pm-text-dim)] border border-[var(--pm-border)]/30"
+                                                >
+                                                  {bar.barNumber}
+                                                  <span className="text-[var(--pm-accent-gold)]">({formatWeight(Number(bar.fineWeight), 1)})</span>
+                                                </span>
+                                              ))}
+                                            </div>
+                                          )}
+                                          <span className="mt-2 block text-[10px] font-semibold uppercase tracking-wider text-slate-400">Cant. Barras</span>
+                                          <span className="mt-0.5 block text-sm font-medium text-white">{detail.bars?.length ?? 0}</span>
+                                        </div>
+
+                                        {/* 2 · Actores */}
+                                        <div className="min-w-0">
+                                          <span className="block text-[10px] font-semibold uppercase tracking-wider text-slate-400">Proveedor</span>
+                                          <span className="mt-1 block text-sm font-medium text-white truncate">
+                                            {detail.lot?.process?.client?.name ?? '—'}
+                                          </span>
+                                        </div>
+
+                                        {/* 3 · Métricas BI | BR | M */}
+                                        <div className="min-w-0">
+                                          <span className="block text-[10px] font-semibold uppercase tracking-wider text-slate-400">BI | BR | M</span>
+                                          <div className="mt-1 space-y-0.5">
+                                            <span className="block text-sm font-semibold text-[var(--pm-text-primary)]">
+                                              BI: {formatWeight(bi, 2)}
+                                            </span>
+                                            <span className="block text-sm font-semibold text-[var(--pm-accent-gold)]">
+                                              BR: {formatWeight(br, 2)}
+                                            </span>
+                                            <span className="block text-sm font-semibold text-[var(--hud-accent-red)]">
+                                              M: {formatWeight(m, 2)}
+                                            </span>
                                           </div>
-                                        )}
-                                        <span className="mt-2 block text-[10px] font-semibold uppercase tracking-wider text-slate-400">Cant. Barras</span>
-                                        <span className="mt-0.5 block text-sm font-medium text-white">{detail.bars?.length ?? 0}</span>
-                                      </div>
+                                        </div>
 
-                                      {/* 2 · Actores */}
-                                      <div className="min-w-0">
-                                        <span className="block text-[10px] font-semibold uppercase tracking-wider text-slate-400">Proveedor</span>
-                                        <span className="mt-1 block text-sm font-medium text-white truncate">
-                                          {detail.lot?.process?.client?.name ?? '—'}
-                                        </span>
+                                        {/* 4 · Acciones */}
+                                        <div className="flex flex-col items-start md:items-end justify-center gap-2 min-w-0" onClick={ev => ev.stopPropagation()}>
+                                          <button
+                                            type="button"
+                                            onClick={() => onPDFCliente(e)}
+                                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-[10px] font-mono font-semibold uppercase tracking-wider border border-transparent bg-slate-800/60 text-slate-300 hover:text-white hover:bg-slate-700/50 transition-all active:scale-95 cursor-pointer"
+                                            title="Descargar Comprobante Cliente"
+                                          >
+                                            <Download className="w-3 h-3" /> Cliente
+                                          </button>
+                                          <button
+                                            type="button"
+                                            onClick={() => onPDFEmpresa(e)}
+                                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-[10px] font-mono font-semibold uppercase tracking-wider border border-transparent bg-slate-800/60 text-slate-300 hover:text-white hover:bg-slate-700/50 transition-all active:scale-95 cursor-pointer"
+                                            title="Descargar Comprobante Empresa"
+                                          >
+                                            <Download className="w-3 h-3" /> Empresa
+                                          </button>
+                                        </div>
                                       </div>
+                                    );
+                                  })}
+                                  {e.bars && e.bars.length > 0 && e.bars.map((bar, idx) => {
+                                    const gw = Number(bar.grossWeight ?? 0);
+                                    return (
+                                      <div
+                                        key={`${e.id}-bar-${idx}`}
+                                        className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 rounded-xl border border-[var(--pm-border)]/20 bg-[var(--pm-bg-tertiary)]/25"
+                                      >
+                                        {/* 1 · Identificación */}
+                                        <div className="min-w-0">
+                                          <span className="block text-[10px] font-semibold uppercase tracking-wider text-slate-400">Barra Suelta</span>
+                                          <span className="mt-1 block text-sm font-medium text-white truncate">
+                                            {bar.barNumber}
+                                          </span>
+                                          <span className="mt-2 block text-[10px] font-semibold uppercase tracking-wider text-slate-400">Cant. Barras</span>
+                                          <span className="mt-0.5 block text-sm font-medium text-white">1</span>
+                                        </div>
 
-                                      {/* 3 · Métricas */}
-                                      <div className="min-w-0">
-                                        <span className="block text-[10px] font-semibold uppercase tracking-wider text-slate-400">Peso Aportado</span>
-                                        <span className="mt-1 block text-lg font-semibold text-[var(--pm-accent-gold)]">
-                                          {formatWeight(Number(detail.weightAported), 2)}
-                                        </span>
-                                      </div>
+                                        {/* 2 · Actores */}
+                                        <div className="min-w-0">
+                                          <span className="block text-[10px] font-semibold uppercase tracking-wider text-slate-400">Proveedor</span>
+                                          <span className="mt-1 block text-sm font-medium text-white truncate">
+                                            {bar.client?.name ?? '—'}
+                                          </span>
+                                        </div>
 
-                                      {/* 4 · Acciones */}
-                                      <div className="flex flex-col items-start md:items-end justify-center gap-2 min-w-0" onClick={ev => ev.stopPropagation()}>
-                                        <button
-                                          type="button"
-                                          onClick={() => onPDFCliente(e)}
-                                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-[10px] font-mono font-semibold uppercase tracking-wider border border-transparent bg-slate-800/60 text-slate-300 hover:text-white hover:bg-slate-700/50 transition-all active:scale-95 cursor-pointer"
-                                          title="Descargar Comprobante Cliente"
-                                        >
-                                          <Download className="w-3 h-3" /> Cliente
-                                        </button>
-                                        <button
-                                          type="button"
-                                          onClick={() => onPDFEmpresa(e)}
-                                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-[10px] font-mono font-semibold uppercase tracking-wider border border-transparent bg-slate-800/60 text-slate-300 hover:text-white hover:bg-slate-700/50 transition-all active:scale-95 cursor-pointer"
-                                          title="Descargar Comprobante Empresa"
-                                        >
-                                          <Download className="w-3 h-3" /> Empresa
-                                        </button>
+                                        {/* 3 · Métricas BI | BR | M */}
+                                        <div className="min-w-0">
+                                          <span className="block text-[10px] font-semibold uppercase tracking-wider text-slate-400">BI | BR | M</span>
+                                          <div className="mt-1 space-y-0.5">
+                                            <span className="block text-sm font-semibold text-[var(--pm-text-primary)]">
+                                              BI: {formatWeight(gw, 2)}
+                                            </span>
+                                            <span className="block text-sm font-semibold text-[var(--pm-accent-gold)]">
+                                              BR: {formatWeight(gw, 2)}
+                                            </span>
+                                            <span className="block text-sm font-semibold text-[var(--hud-accent-red)]">
+                                              M: {formatWeight(0, 2)}
+                                            </span>
+                                          </div>
+                                        </div>
+
+                                        {/* 4 · Acciones */}
+                                        <div className="flex flex-col items-start md:items-end justify-center gap-2 min-w-0" onClick={ev => ev.stopPropagation()}>
+                                          <button
+                                            type="button"
+                                            onClick={() => onPDFCliente(e)}
+                                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-[10px] font-mono font-semibold uppercase tracking-wider border border-transparent bg-slate-800/60 text-slate-300 hover:text-white hover:bg-slate-700/50 transition-all active:scale-95 cursor-pointer"
+                                            title="Descargar Comprobante Cliente"
+                                          >
+                                            <Download className="w-3 h-3" /> Cliente
+                                          </button>
+                                          <button
+                                            type="button"
+                                            onClick={() => onPDFEmpresa(e)}
+                                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-[10px] font-mono font-semibold uppercase tracking-wider border border-transparent bg-slate-800/60 text-slate-300 hover:text-white hover:bg-slate-700/50 transition-all active:scale-95 cursor-pointer"
+                                            title="Descargar Comprobante Empresa"
+                                          >
+                                            <Download className="w-3 h-3" /> Empresa
+                                          </button>
+                                        </div>
                                       </div>
-                                    </div>
-                                  ))}
+                                    );
+                                  })}
                                 </div>
                               </div>
                             </div>

@@ -9,6 +9,7 @@ import type { MaterialExit } from '@/types/api';
 
 type ViewLote = {
   name?: string;
+  recovered?: number | null;
   process?: { client?: { name?: string } };
 };
 
@@ -23,8 +24,10 @@ type ViewExit = {
   id: string;
   destination: string;
   grossWeight: number;
+  totalBR: number;
   createdAt: string;
   exitDetails: ViewDetalle[];
+  bars?: { id: string; barNumber: string; grossWeight?: number; fineWeight?: number; client?: { name?: string } }[];
 };
 
 export function ExitsHistoryView() {
@@ -59,12 +62,19 @@ export function ExitsHistoryView() {
             (d.bars || []).reduce((s, b) => s + Number(b.grossWeight || 0), 0),
           0,
         ),
+      totalBR:
+        (ex.exitDetails || []).reduce((sum, d) => {
+          const lotGross = (d.bars || []).reduce((s, b) => s + Number(b.grossWeight || 0), 0);
+          return sum + (Number(d.lot?.recovered) > 0 ? Number(d.lot?.recovered) : lotGross);
+        }, 0) +
+        (ex.bars || []).reduce((s, b) => s + Number(b.grossWeight || 0), 0),
       createdAt: ex.createdAt,
       exitDetails: (ex.exitDetails || []).map<ViewDetalle>(d => ({
         id: d.id,
         lot: d.lot
           ? {
               name: d.lot.name,
+              recovered: d.lot.recovered ?? null,
               process: d.lot.process
                 ? { client: d.lot.process.client ? { name: d.lot.process.client.name } : undefined }
                 : undefined,
@@ -77,6 +87,13 @@ export function ExitsHistoryView() {
           grossWeight: b.grossWeight,
         })),
         weightAported: d.weightAported,
+      })),
+      bars: (ex.bars || []).map(b => ({
+        id: b.id,
+        barNumber: b.barNumber,
+        grossWeight: b.grossWeight,
+        fineWeight: b.fineWeight,
+        client: b.client ? { name: b.client.name } : undefined,
       })),
     }));
   }, [exits]);
