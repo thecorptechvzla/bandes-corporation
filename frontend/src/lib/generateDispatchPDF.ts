@@ -391,7 +391,7 @@ export async function generateDispatchPDF(
       const itemLabel = isBarMode ? 'barras' : 'lotes';
       doc.text(`Total de ${itemLabel}: ${itemCount}`, m, y); y += 5;
     }
-    doc.text(`Peso Físico : ${formatWeight(data.totalBalanza)}`, m, y); y += 5;
+    doc.text(`Bruto Refundido : ${formatWeight(data.totalBalanza)}`, m, y); y += 5;
     if (hasMixedLot) {
 /*       doc.setTextColor(168, 85, 247);
  */      doc.text('Incluye lote(s) MIXTO(s): material consolidado de varios proveedores.', m, y); y += 5;
@@ -413,7 +413,7 @@ export async function generateDispatchPDF(
     const merma = data.totalMerma;
     doc.text(merma < 0 ? `MERMA DE FUNDICIÓN: −${formatWeight(Math.abs(merma))}` : `MERMA DE FUNDICIÓN: ${formatWeight(merma)}`, m, y); y += 6;
   } else {
-    doc.text(`PESO FÍSICO: ${formatWeight(data.totalBalanza)}`, m, y); y += 6;
+    doc.text(`BRUTO REFUNDIDO: ${formatWeight(data.totalBalanza)}`, m, y); y += 6;
   }
   doc.text(`LEY PROMEDIO: ${formatLey(data.leyPromedio)} ‰`, m, y);
   y += 7;
