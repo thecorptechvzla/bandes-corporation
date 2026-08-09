@@ -46,6 +46,7 @@ export function useUpdateBar() {
       api.patch(`/bars/${id}`, data).then((r) => r.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['bars'] });
+      queryClient.invalidateQueries({ queryKey: ['packings'] });
     },
   });
 }

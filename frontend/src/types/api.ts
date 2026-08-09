@@ -133,6 +133,7 @@ export interface UpdateBarRequest {
   grossWeight?: number;
   purity?: number;
   leyAg?: number;
+  photoUrl?: string;
 }
 
 export interface CreateProcessRequest {

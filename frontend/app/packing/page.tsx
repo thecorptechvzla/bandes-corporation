@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useClients } from '@/hooks/useClients';
-import { useBars, useCreateBar, useBulkUploadBars } from '@/hooks/useBars';
+import { useBars, useCreateBar, useBulkUploadBars, useUpdateBar } from '@/hooks/useBars';
 import { usePackings, usePacking, useValidatePacking, useCreatePacking, useFinalizePacking } from '@/hooks/usePackings';
 import { api } from '@/lib/api';
 import { formatNumber } from '@/lib/format';
@@ -33,6 +33,7 @@ export default function PackingPage() {
   const { data: packings = [] } = usePackings();
   const createBar = useCreateBar();
   const bulkUploadMutation = useBulkUploadBars();
+  const updateBar = useUpdateBar();
 
   const [clientId, setClientId] = useState('');
   const [barNumber, setBarNumber] = useState('');
@@ -379,10 +380,22 @@ export default function PackingPage() {
 
     setDetailSaving(true);
     try {
-      await validatePacking.mutateAsync({
-        id: selectedPacking.id,
-        bars: [{ barId, grossWeight: data.grossWeight, purity: data.purity, photoUrl: data.photoUrl }],
-      });
+      if (detailBar?.status === 'POR_VALIDAR') {
+        await validatePacking.mutateAsync({
+          id: selectedPacking.id,
+          bars: [{ barId, grossWeight: data.grossWeight, purity: data.purity, photoUrl: data.photoUrl }],
+        });
+      } else {
+        await updateBar.mutateAsync({
+          id: barId,
+          data: {
+            grossWeight: data.grossWeight,
+            purity: data.purity,
+            ...(detailBar?.leyAg != null && { leyAg: detailBar.leyAg }),
+            ...(data.photoUrl != null && { photoUrl: data.photoUrl }),
+          },
+        });
+      }
       setDetailBar(null);
     } catch (err) {
       console.error('Save error:', err);

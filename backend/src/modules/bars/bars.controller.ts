@@ -74,6 +74,10 @@ export class BarsController {
     body: {
       lotId?: string | null;
       status?: 'POR_VALIDAR' | 'IN_STOCK' | 'PROCESANDO' | 'COMPLETADO' | 'EXITED';
+      grossWeight?: number;
+      purity?: number;
+      leyAg?: number;
+      photoUrl?: string;
     },
   ) {
     return this.service.update(id, body);

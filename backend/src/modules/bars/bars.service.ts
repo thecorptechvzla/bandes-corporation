@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import ExcelJS from 'exceljs';
 
@@ -97,12 +98,38 @@ export class BarsService {
     data: {
       lotId?: string | null;
       status?: 'POR_VALIDAR' | 'IN_STOCK' | 'PROCESANDO' | 'COMPLETADO' | 'EXITED';
+      grossWeight?: number;
+      purity?: number;
+      leyAg?: number;
+      photoUrl?: string;
     },
   ) {
     const bar = await this.findOne(id);
+
+    const baseGross = Number(bar.grossWeight ?? 0);
+    const basePurity = Number(bar.purity ?? 0);
+
+    const updateData: Prisma.BarUncheckedUpdateInput = {};
+
+    if (data.lotId !== undefined) updateData.lotId = data.lotId;
+    if (data.status) updateData.status = data.status;
+    if (data.grossWeight !== undefined) {
+      updateData.grossWeight = data.grossWeight;
+      updateData.fineWeight = Math.round(data.grossWeight * ((data.purity ?? basePurity) / 1000) * 100) / 100;
+    }
+    if (data.purity !== undefined) {
+      updateData.purity = data.purity;
+      updateData.fineWeight = Math.round(((data.grossWeight ?? baseGross) * data.purity) / 1000 * 100) / 100;
+    }
+    if (data.leyAg !== undefined) {
+      updateData.leyAg = data.leyAg;
+      updateData.fineWeightAg = Math.round(((data.grossWeight ?? baseGross) * data.leyAg) / 1000 * 100) / 100;
+    }
+    if (data.photoUrl !== undefined) updateData.photoUrl = data.photoUrl;
+
     return this.prisma.bar.update({
       where: { id },
-      data,
+      data: updateData,
       include: { client: { select: { id: true, name: true } } },
     });
   }
