@@ -87,8 +87,16 @@ export function toEgresoRecord(e: ReportEgresoDTO, index: number): EgresoRecord 
   const bars = collectBars(e);
 
   const pesoBruto = bars.reduce((acc, b) => acc + Number(b.grossWeight ?? 0), 0);
-  const pesoFino = bars.reduce((acc, b) => acc + Number(b.fineWeight ?? 0), 0);
-  const leyProm = pesoBruto > 0 ? (pesoFino / pesoBruto) * 1000 : 0;
+
+  const pesoFino =
+    (e.exitDetails ?? []).reduce((sum, d) => {
+      const bs = d.bars ?? [];
+      const totalGross = bs.reduce((s, b) => s + Number(b.grossWeight ?? 0), 0);
+      const fineOfBars = bs.reduce((s, b) => s + Number(b.fineWeight ?? 0), 0);
+      const rec = Number(d.lot?.recovered ?? 0);
+      return sum + (rec > 0 && totalGross > 0 ? (rec / totalGross) * fineOfBars : fineOfBars);
+    }, 0) +
+    (e.bars ?? []).reduce((s, b) => s + Number(b.fineWeight ?? 0), 0);
 
   const pesoBrutoBalanza =
     (e.exitDetails ?? []).reduce((sum, d) => {
@@ -97,6 +105,8 @@ export function toEgresoRecord(e: ReportEgresoDTO, index: number): EgresoRecord 
     }, 0) +
     (e.bars ?? []).reduce((s, b) => s + Number(b.grossWeight ?? 0), 0);
   const merma = pesoBruto - pesoBrutoBalanza;
+
+  const leyProm = pesoBrutoBalanza > 0 ? (pesoFino / pesoBrutoBalanza) * 1000 : 0;
 
   return {
     id: `EGR-${padNumber(index + 1)}`,
@@ -151,7 +161,7 @@ function prorateByLot(details: ReportDetailEgresoDTO[]): LingoteEgreso[] {
         pesoBruto: Number(b.grossWeight ?? 0),
         pesoBrutoBalanza,
         ley: Number(b.purity ?? 0),
-        pesoFino: Number(b.fineWeight ?? 0),
+        pesoFino: Number(((pesoBrutoBalanza ?? Number(b.grossWeight ?? 0)) * Number(b.purity ?? 0)) / 1000),
       });
     });
   }
@@ -198,8 +208,9 @@ export function toEgresoDetailedRecord(e: ReportEgresoDTO, index: number): Egres
       };
     });
 
-    const totalPesoFino = barras.reduce((acc, b) => acc + (b.pesoBruto * b.ley) / 1000, 0);
-    const ley = totalGross > 0 ? (totalPesoFino / totalGross) * 1000 : 0;
+    const brTotal = barras.reduce((acc, b) => acc + (b.pesoBalanza ?? b.pesoBruto), 0);
+    const totalPesoFino = barras.reduce((acc, b) => acc + ((b.pesoBalanza ?? b.pesoBruto) * b.ley) / 1000, 0);
+    const ley = brTotal > 0 ? (totalPesoFino / brTotal) * 1000 : 0;
 
     return {
       loteName: d.lot?.name ?? '—',
