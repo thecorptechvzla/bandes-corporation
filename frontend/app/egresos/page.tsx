@@ -393,7 +393,11 @@ const [selectedLotIds, setSelectedLotIds] = useState<Set<string>>(new Set());
       const despachoBalanza =
         selectedLots.reduce((s, l) => s + (Number(l.recovered) > 0 ? Number(l.recovered) : Number(l.grossWeight)), 0) +
         selectedBars.reduce((s, b) => s + Number(b.grossWeight), 0);
+      const despachoFino =
+        selectedLots.reduce((s, l) => s + Number(l.availableWeight ?? 0), 0) +
+        selectedBars.reduce((s, b) => s + Number(b.fineWeight ?? 0), 0);
       const despachoMerma = despachoGrossSP - despachoBalanza;
+      const leyPromedio = despachoBalanza > 0 ? (despachoFino / despachoBalanza) * 1000 : 0;
 
       setDispatchResult({
         reference: `DESP-${Date.now().toString(36).toUpperCase()}`,
@@ -401,8 +405,10 @@ const [selectedLotIds, setSelectedLotIds] = useState<Set<string>>(new Set());
         totalWeight: Number(result.totalWeight),
         grossWeight: Number((lotTotalGross + barTotalGross).toFixed(2)),
         totalGrossSP: Number(despachoGrossSP),
+        totalFino: Number(despachoFino),
         totalBalanza: Number(despachoBalanza),
         totalMerma: Number(despachoMerma),
+        leyPromedio: Number(leyPromedio),
         lotCount: selectedLots.length || undefined,
         barCount: selectedBars.length || undefined,
         providerCount: allProviders.size,

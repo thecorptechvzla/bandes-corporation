@@ -1,5 +1,5 @@
 import { jsPDF } from 'jspdf';
-import { formatWeight } from '@/lib/format';
+import { formatWeight, formatLey } from '@/lib/format';
 import { computeComposition } from '@/lib/composition';
 import type { MaterialExit } from '@/types/api';
 
@@ -31,8 +31,10 @@ export interface DispatchResult {
   totalWeight: number;
   grossWeight?: number;
   totalGrossSP: number;
+  totalFino: number;
   totalBalanza: number;
   totalMerma: number;
+  leyPromedio: number;
   lotCount?: number;
   barCount?: number;
   providerCount: number;
@@ -129,6 +131,11 @@ export function convertExitToDispatchResult(exit: MaterialExit): DispatchResult 
     ...(exit.bars ?? []),
   ].reduce((sum, b) => sum + Number(b.grossWeight ?? 0), 0);
 
+  const totalFino = [
+    ...(exit.exitDetails ?? []).flatMap((d) => d.bars ?? []),
+    ...(exit.bars ?? []),
+  ].reduce((sum, b) => sum + Number(b.fineWeight ?? 0), 0);
+
   const totalBalanza =
     (exit.exitDetails ?? []).reduce((sum, d) => {
       const lotGross = (d.bars ?? []).reduce((s, b) => s + Number(b.grossWeight || 0), 0);
@@ -138,13 +145,17 @@ export function convertExitToDispatchResult(exit: MaterialExit): DispatchResult 
 
   const totalMerma = grossTotal - totalBalanza;
 
+  const leyPromedio = totalBalanza > 0 ? (totalFino / totalBalanza) * 1000 : 0;
+
   return {
     reference: `DESP-${exit.id.slice(0, 8).toUpperCase()}`,
     destination: exit.destination,
     totalWeight: grossTotal > 0 ? grossTotal : Number(exit.totalWeight),
     totalGrossSP: grossTotal,
+    totalFino,
     totalBalanza,
     totalMerma,
+    leyPromedio,
     lotCount: lots.length || undefined,
     barCount: bars.length || undefined,
     providerCount: providerMap.size,
@@ -400,10 +411,11 @@ export async function generateDispatchPDF(
     doc.text(`PESO BRUTO (ENTRADA): ${formatWeight(data.totalGrossSP)}`, m, y); y += 6;
     doc.text(`PESO BALANZA (SALIDA): ${formatWeight(data.totalBalanza)}`, m, y); y += 6;
     const merma = data.totalMerma;
-    doc.text(merma < 0 ? `MERMA DE FUNDICIÓN: −${formatWeight(Math.abs(merma))}` : `MERMA DE FUNDICIÓN: ${formatWeight(merma)}`, m, y);
+    doc.text(merma < 0 ? `MERMA DE FUNDICIÓN: −${formatWeight(Math.abs(merma))}` : `MERMA DE FUNDICIÓN: ${formatWeight(merma)}`, m, y); y += 6;
   } else {
-    doc.text(`PESO FÍSICO: ${formatWeight(data.totalBalanza)}`, m, y);
+    doc.text(`PESO FÍSICO: ${formatWeight(data.totalBalanza)}`, m, y); y += 6;
   }
+  doc.text(`LEY PROMEDIO: ${formatLey(data.leyPromedio)} ‰`, m, y);
   y += 7;
   if (isMixed) {
     doc.text(`LOTES: ${data.lotCount ?? 0}  |  BARRAS: ${data.barCount ?? 0}`, m, y);
