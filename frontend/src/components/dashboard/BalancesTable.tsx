@@ -30,16 +30,19 @@ export function BalancesTable({ clientBalances, totalBalance, onClientClick }: B
           acc.ingresoBruto += c.ingresoBruto;
           acc.fa += c.fa;
           acc.egresos += c.egresos;
+          acc.egresoBI += c.egresoBI;
+          acc.egresoBR += c.egresoBR;
           acc.balance += c.balance;
           acc.mermaG += c.mermaG;
           return acc;
         },
-        { ingresoBruto: 0, fa: 0, egresos: 0, balance: 0, mermaG: 0 },
+        { ingresoBruto: 0, fa: 0, egresos: 0, egresoBI: 0, egresoBR: 0, balance: 0, mermaG: 0 },
       ),
     [sorted],
   );
 
   const leyTotal = totals.ingresoBruto > 0 ? (totals.fa / totals.ingresoBruto) * 100 : null;
+  const mermaTotalPct = totals.egresoBI > 0 ? (totals.mermaG / totals.egresoBI) * 100 : null;
 
   const handleRowClick = useCallback((e: React.MouseEvent<HTMLTableSectionElement>) => {
     const tr = (e.target as HTMLElement).closest('tr');
@@ -81,14 +84,15 @@ export function BalancesTable({ clientBalances, totalBalance, onClientClick }: B
         </div>
       ) : (
         <div className="overflow-x-auto flex-1 min-h-0">
-          <table className="w-full border-collapse" style={{ minWidth: 1200 }}>
+          <table className="w-full border-collapse" style={{ minWidth: 1350 }}>
             <thead>
               <tr className="border-b border-slate-800/60">
                 <th className={TH_STICKY} style={{ background: 'transparent' }}>Proveedor</th>
                 <th className={TH}>Ingreso Bruto</th>
                 <th className={TH}>Peso Fino</th>
                 <th className={TH}>Ley Au (‰)</th>
-                <th className={TH}>Egresos</th>
+                <th className={TH}>Egresos BI</th>
+                <th className={TH}>Egresos BR</th>
                 <th className={TH}>Balance</th>
                 <th className={TH}>Merma</th>
               </tr>
@@ -113,7 +117,10 @@ export function BalancesTable({ clientBalances, totalBalance, onClientClick }: B
                     {formatNumber(c.leyAu, 2)}‰
                   </td>
                   <td className="text-right text-xs font-mono text-rose-400 px-4 py-3">
-                    {fmtG(c.egresos)}
+                    {fmtG(c.egresoBI)}
+                  </td>
+                  <td className="text-right text-xs font-mono text-rose-300 px-4 py-3">
+                    {fmtG(c.egresoBR)}
                   </td>
                   <td className={`text-right text-xs font-mono font-bold px-4 py-3 ${c.balance >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
                     {fmtG(Math.abs(c.balance))}
@@ -144,7 +151,10 @@ export function BalancesTable({ clientBalances, totalBalance, onClientClick }: B
                   {leyTotal !== null ? `${formatNumber(leyTotal, 2)}%` : '—'}
                 </td>
                 <td className="text-right text-xs font-mono font-bold text-amber-400 px-4 py-3">
-                  {fmtG(totals.egresos)}
+                  {fmtG(totals.egresoBI)}
+                </td>
+                <td className="text-right text-xs font-mono font-bold text-amber-400 px-4 py-3">
+                  {fmtG(totals.egresoBR)}
                 </td>
                 <td className={`text-right text-xs font-mono font-bold px-4 py-3 ${totals.balance >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
                   {fmtG(Math.abs(totals.balance))}
@@ -152,7 +162,9 @@ export function BalancesTable({ clientBalances, totalBalance, onClientClick }: B
                 </td>
                 <td className="text-right text-xs font-mono font-bold text-amber-400 px-4 py-3">
                   {fmtG(totals.mermaG)}
-                  <span className="text-slate-500 ml-1">(—)</span>
+                  <span className="text-slate-500 ml-1">
+                    {mermaTotalPct !== null ? `(${formatNumber(mermaTotalPct, 1)}%)` : '(—)'}
+                  </span>
                 </td>
               </tr>
             </tfoot>

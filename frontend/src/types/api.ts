@@ -260,6 +260,8 @@ export interface ClientBalance {
   r: number;
   sinFundir: number;
   egresos: number;
+  egresoBI: number;
+  egresoBR: number;
   balance: number;
   mermaG: number;
   mermaPct: number;

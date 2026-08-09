@@ -250,26 +250,23 @@ export default function V2DashboardPage() {
           .filter((l) => !dispatchedLotIds.has(l.id))
           .reduce((sl, l) => sl + Number(l.recovered ?? 0), 0);
       const r = clientProcesses.reduce((s, p) => s + lotRecovered(p.lots ?? []), 0);
-      const rCerrado = clientProcesses
-        .filter(p => p.status === 'CLOSED')
-        .reduce((s, p) => s + lotRecovered(p.lots ?? []), 0);
-      const egresos = filteredExits.reduce((sum, e) =>
+      const egresoBI = clientBars
+        .filter(b => b.status === 'EXITED')
+        .reduce((s, b) => s + Number(b.grossWeight), 0);
+      const egresoBR = filteredExits.reduce((sum, e) =>
         sum
         + (e.bars ?? []).filter(b => b.clientId === client.id)
             .reduce((s, b) => s + Number(b.grossWeight), 0)
-        + (e.exitDetails ?? []).reduce((s, d) =>
-            s + (d.bars ?? []).filter(b => b.clientId === client.id)
-              .reduce((s2, b) => s2 + Number(b.grossWeight), 0), 0),
+        + (e.exitDetails ?? []).filter(d => d.lot?.process?.client?.id === client.id)
+            .reduce((s, d) => s + Number(d.lot?.recovered ?? d.weightAported ?? 0), 0),
         0);
+      const egresos = egresoBI;
       const balance = ingresoBruto - egresos;
       const leyAu = ingresoBruto > 0 ? (fa / ingresoBruto) * 1000 : 0;
       const sinFundir = Math.max(0, fa - r);
-      const faProcesado = clientBars
-        .filter(b => b.status === 'COMPLETADO')
-        .reduce((s, b) => s + Number(b.fineWeight), 0);
-      const mermaG = Math.max(0, faProcesado - rCerrado);
-      const mermaPct = faProcesado > 0 ? (mermaG / faProcesado) * 100 : 0;
-      return { id: client.id, name: client.name, ingresoBruto, fa, leyAu, ingreso: fa, r, sinFundir, egresos, balance, mermaG, mermaPct };
+      const mermaG = egresoBI - egresoBR;
+      const mermaPct = egresoBI > 0 ? (mermaG / egresoBI) * 100 : 0;
+      return { id: client.id, name: client.name, ingresoBruto, fa, leyAu, ingreso: fa, r, sinFundir, egresos, egresoBI, egresoBR, balance, mermaG, mermaPct };
     })
       .filter(c => c.ingresoBruto > 0 || c.fa > 0 || c.egresos > 0)
       .sort((a, b) => b.ingresoBruto - a.ingresoBruto);
