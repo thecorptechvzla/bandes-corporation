@@ -10,8 +10,9 @@ interface SaldoReportDetailTableProps {
 export default function SaldoReportDetailTable({ records }: SaldoReportDetailTableProps) {
   const totalIngresado = records.reduce((a, r) => a + r.totalRecibido, 0);
   const totalEgresado = records.reduce((a, r) => a + r.totalEgresado, 0);
+  const totalEgresadoBR = records.reduce((a, r) => a + r.totalEgresadoBR, 0);
+  const mermaTotal = records.reduce((a, r) => a + r.merma, 0);
   const saldoTotal = records.reduce((a, r) => a + r.saldoActual, 0);
-  const barrasTotal = records.reduce((a, r) => a + r.barrasEnBoveda, 0);
 
   return (
     <div className="space-y-4">
@@ -39,7 +40,9 @@ export default function SaldoReportDetailTable({ records }: SaldoReportDetailTab
             </span>
             <div className="flex items-center gap-4 text-[10px] mt-1" style={{ color: 'var(--report-text-muted)' }}>
               <span>Peso Bruto Recibido: <strong style={{ color: 'var(--report-text-main)' }}>{formatNumber(cliente.totalRecibido)} g</strong></span>
-              <span>Peso Bruto Egresado: <strong style={{ color: 'var(--report-text-main)' }}>{formatNumber(cliente.totalEgresado)} g</strong></span>
+              <span>Egresado BI: <strong style={{ color: 'var(--report-text-main)' }}>{formatNumber(cliente.totalEgresado)} g</strong></span>
+              <span>Egresado BR: <strong style={{ color: 'var(--report-text-main)' }}>{formatNumber(cliente.totalEgresadoBR)} g</strong></span>
+              <span>MERMA: <strong style={{ color: 'var(--report-text-main)' }}>{formatNumber(cliente.merma)} g</strong></span>
               <span>BALANCE PESO BRUTO: <strong style={{ color: 'var(--report-color-primary)' }}>{formatNumber(cliente.saldoActual)} g</strong></span>
             </div>
           </div>
@@ -56,7 +59,7 @@ export default function SaldoReportDetailTable({ records }: SaldoReportDetailTab
                     { label: 'Peso Bruto Recibido (g)', align: 'right' },
                     { label: 'Ley (‰)', align: 'center' },
                     { label: 'Peso Fino Disponible (g)', align: 'right' },
-                    { label: 'Peso Bruto en Bóveda Actualmente (g)', align: 'right' },
+                    { label: 'Peso en Bóveda / Egreso (BI/BR/M)', align: 'right' },
                     { label: 'Fecha Egreso / Estatus', align: 'center' },
                   ].map((h) => (
                     <th
@@ -123,10 +126,18 @@ export default function SaldoReportDetailTable({ records }: SaldoReportDetailTab
                       {formatNumber(barra.pesoFinoDisponible)}
                     </td>
                     <td
-                      className="px-3 py-3 text-right text-[11px] font-medium"
+                      className="px-3 py-3 text-right text-[11px]"
                       style={{ color: 'var(--report-text-main)' }}
                     >
-                      {formatNumber(barra.pesoBrutoEnBoveda)}
+                      {barra.fueEgresado ? (
+                        <span className="text-[10px] whitespace-nowrap">
+                          BI: {formatNumber(barra.pesoBrutoRecibido)}
+                          {' · '}BR: {formatNumber(barra.pesoBrutoEnBoveda)}
+                          {' · '}M: {formatNumber(barra.pesoBrutoRecibido - barra.pesoBrutoEnBoveda)}
+                        </span>
+                      ) : (
+                        <span className="font-medium">{formatNumber(barra.pesoBrutoEnBoveda)}</span>
+                      )}
                     </td>
                     <td className="px-3 py-3 text-center">
                       {barra.fueEgresado ? (
@@ -212,7 +223,7 @@ export default function SaldoReportDetailTable({ records }: SaldoReportDetailTab
           </span>
         </div>
         <div
-          className="grid grid-cols-4 gap-px"
+          className="grid grid-cols-5 gap-px"
           style={{
             backgroundColor: 'var(--report-border-color)',
           }}
@@ -242,7 +253,7 @@ export default function SaldoReportDetailTable({ records }: SaldoReportDetailTab
               className="text-[10px] font-bold uppercase tracking-wider mb-1"
               style={{ color: 'var(--report-text-muted)' }}
             >
-              Total Peso Bruto Egresado
+              Total Egresado BI
             </div>
             <div
               className="text-[14px] font-bold"
@@ -259,13 +270,13 @@ export default function SaldoReportDetailTable({ records }: SaldoReportDetailTab
               className="text-[10px] font-bold uppercase tracking-wider mb-1"
               style={{ color: 'var(--report-text-muted)' }}
             >
-              Balance Peso Bruto Restante
+              Total Egresado BR
             </div>
             <div
               className="text-[14px] font-bold"
               style={{ color: 'var(--report-color-primary)' }}
             >
-              {formatNumber(saldoTotal)} g
+              {formatNumber(totalEgresadoBR)} g
             </div>
           </div>
           <div
@@ -276,13 +287,30 @@ export default function SaldoReportDetailTable({ records }: SaldoReportDetailTab
               className="text-[10px] font-bold uppercase tracking-wider mb-1"
               style={{ color: 'var(--report-text-muted)' }}
             >
-              Total Barras en Bóveda
+              MERMA Total
             </div>
             <div
               className="text-[14px] font-bold"
               style={{ color: 'var(--report-color-primary)' }}
             >
-              {barrasTotal}
+              {formatNumber(mermaTotal)} g
+            </div>
+          </div>
+          <div
+            className="px-4 py-3 text-center"
+            style={{ backgroundColor: 'var(--report-bg-card)' }}
+          >
+            <div
+              className="text-[10px] font-bold uppercase tracking-wider mb-1"
+              style={{ color: 'var(--report-text-muted)' }}
+            >
+              Balance Final (BR)
+            </div>
+            <div
+              className="text-[14px] font-bold"
+              style={{ color: 'var(--report-color-primary)' }}
+            >
+              {formatNumber(saldoTotal)} g
             </div>
           </div>
         </div>

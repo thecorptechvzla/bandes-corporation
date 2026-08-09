@@ -10,6 +10,8 @@ interface SaldoReportTableProps {
 export default function SaldoReportTable({ records }: SaldoReportTableProps) {
   const totalIngresado = records.reduce((a, r) => a + r.totalRecibido, 0);
   const totalEgresado = records.reduce((a, r) => a + r.totalEgresado, 0);
+  const totalEgresadoBR = records.reduce((a, r) => a + r.totalEgresadoBR, 0);
+  const mermaTotal = records.reduce((a, r) => a + r.merma, 0);
   const saldoTotal = records.reduce((a, r) => a + r.saldoActual, 0);
   const barrasTotal = records.reduce((a, r) => a + r.barrasEnBoveda, 0);
 
@@ -26,7 +28,9 @@ export default function SaldoReportTable({ records }: SaldoReportTableProps) {
             {[
               { label: 'Cliente / Proveedor', align: 'left' },
               { label: 'Total Peso Bruto Recibido (g)', align: 'right' },
-              { label: 'Total Peso Bruto Egresado (g)', align: 'right' },
+              { label: 'Egresado BI (g)', align: 'right' },
+              { label: 'Egresado BR (g)', align: 'right' },
+              { label: 'MERMA (g)', align: 'right' },
               { label: 'Balance Peso Bruto Restante (g)', align: 'right' },
               { label: 'Barras en Bóveda', align: 'center' },
             ].map((h) => (
@@ -74,6 +78,18 @@ export default function SaldoReportTable({ records }: SaldoReportTableProps) {
                 {formatNumber(row.totalEgresado)}
               </td>
               <td
+                className="px-4 py-3 text-right text-[12px] font-medium"
+                style={{ color: 'var(--report-text-main)' }}
+              >
+                {formatNumber(row.totalEgresadoBR)}
+              </td>
+              <td
+                className="px-4 py-3 text-right text-[12px] font-medium"
+                style={{ color: 'var(--report-text-main)' }}
+              >
+                {formatNumber(row.merma)}
+              </td>
+              <td
                 className="px-4 py-3 text-right text-[12px] font-bold"
                 style={{ color: 'var(--report-color-primary)' }}
               >
@@ -110,6 +126,18 @@ export default function SaldoReportTable({ records }: SaldoReportTableProps) {
               style={{ color: 'var(--report-color-primary)' }}
             >
               {formatNumber(totalEgresado)} g
+            </td>
+            <td
+              className="px-4 py-3 text-right text-[12px] font-bold"
+              style={{ color: 'var(--report-color-primary)' }}
+            >
+              {formatNumber(totalEgresadoBR)} g
+            </td>
+            <td
+              className="px-4 py-3 text-right text-[12px] font-bold"
+              style={{ color: 'var(--report-color-primary)' }}
+            >
+              {formatNumber(mermaTotal)} g
             </td>
             <td
               className="px-4 py-3 text-right text-[12px] font-bold"

@@ -64,7 +64,7 @@ export async function generateEgresosReportExcel(params: GenerateEgresosReportEx
   };
 
   // ── KPI Header Row ──
-  const kpiHeaderRow = sheet.addRow(['TOTAL EGRESOS', '', 'TOTAL LINGOTES', '', 'PESO BRUTO TOTAL', '', '', '']);
+  const kpiHeaderRow = sheet.addRow(['TOTAL EGRESOS', '', 'TOTAL LINGOTES', '', 'PESO BRUTO EGRESADO (BR)', '', '', '']);
   const kHn = kpiHeaderRow.number;
   sheet.mergeCells(`A${kHn}:B${kHn}`);
   sheet.mergeCells(`C${kHn}:D${kHn}`);
@@ -84,7 +84,7 @@ export async function generateEgresosReportExcel(params: GenerateEgresosReportEx
   });
 
   // ── KPI Value Row ──
-  const kpiValueRow = sheet.addRow([summary.totalEgresos, '', summary.totalLingotes, '', `${formatNumber(summary.pesoBrutoTotal)} g`, '', '', '']);
+  const kpiValueRow = sheet.addRow([summary.totalEgresos, '', summary.totalLingotes, '', `${formatNumber(summary.pesoBrutoBalanzaTotal)} g`, '', '', '']);
   const kVn = kpiValueRow.number;
   sheet.mergeCells(`A${kVn}:B${kVn}`);
   sheet.mergeCells(`C${kVn}:D${kVn}`);
@@ -104,7 +104,7 @@ export async function generateEgresosReportExcel(params: GenerateEgresosReportEx
   });
 
   // ── KPI Subtitle Row ──
-  const kpiSubRow = sheet.addRow(['Egresos registrados', '', 'Piezas extraídas', '', 'Acumulado del período', '', '', '']);
+  const kpiSubRow = sheet.addRow(['Egresos registrados', '', 'Piezas extraídas', '', `BI: ${formatNumber(summary.pesoBrutoTotal)} g | M: ${formatNumber(summary.mermaTotal)} g`, '', '', '']);
   const kSn = kpiSubRow.number;
   sheet.mergeCells(`A${kSn}:B${kSn}`);
   sheet.mergeCells(`C${kSn}:D${kSn}`);
@@ -135,7 +135,9 @@ export async function generateEgresosReportExcel(params: GenerateEgresosReportEx
       'Cliente',
       ...(showFecha ? ['Fecha'] : []),
       'Lingotes',
-      'Peso Bruto (gr)',
+      'BI (gr)',
+      'BR (gr)',
+      'M (gr)',
       'Ley Prom. (‰)',
     ];
     const headerRow = sheet.getRow(9);
@@ -144,7 +146,9 @@ export async function generateEgresosReportExcel(params: GenerateEgresosReportEx
       cell.value = h;
       cell.font = { bold: true, size: 10, color: { argb: 'FFFFFFFF' } };
       cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: `FF${green}` } };
-      cell.alignment = { horizontal: i < 3 ? 'left' : i < 3 + (showFecha ? 1 : 0) ? 'right' : 'left', vertical: 'middle' };
+      const isWeight = h === 'BI (gr)' || h === 'BR (gr)' || h === 'M (gr)';
+      const isCentered = h === 'Fecha' || h === 'Lingotes' || h === 'Ley Prom. (‰)';
+      cell.alignment = { horizontal: isWeight ? 'right' : isCentered ? 'center' : 'left', vertical: 'middle' };
       cell.border = {
         top: { style: 'thin', color: { argb: `FF${green}` } },
         bottom: { style: 'thin', color: { argb: `FF${green}` } },
@@ -182,12 +186,22 @@ export async function generateEgresosReportExcel(params: GenerateEgresosReportEx
       r.getCell(col).numFmt = '#,##0.00';
       r.getCell(col).alignment = { horizontal: 'right' };
       col++;
+      r.getCell(col).value = row.pesoBrutoBalanza;
+      r.getCell(col).font = { size: 10 };
+      r.getCell(col).numFmt = '#,##0.00';
+      r.getCell(col).alignment = { horizontal: 'right' };
+      col++;
+      r.getCell(col).value = row.merma;
+      r.getCell(col).font = { size: 10 };
+      r.getCell(col).numFmt = '#,##0.00';
+      r.getCell(col).alignment = { horizontal: 'right' };
+      col++;
       r.getCell(col).value = truncateLey(row.leyProm);
       r.getCell(col).font = { size: 10 };
       r.getCell(col).numFmt = '0.00';
       r.getCell(col).alignment = { horizontal: 'center' };
 
-      const totalCols = 3 + (showFecha ? 1 : 0) + 3;
+      const totalCols = 4 + (showFecha ? 1 : 0) + 4;
       if (idx % 2 === 1) {
         for (let c = 1; c <= totalCols; c++) {
           r.getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFBFDFC' } };
@@ -198,7 +212,7 @@ export async function generateEgresosReportExcel(params: GenerateEgresosReportEx
     // Totals row
     const totalRowIdx = 10 + records.length;
     const tr = sheet.getRow(totalRowIdx);
-    const totalCols = 3 + (showFecha ? 1 : 0) + 3;
+    const totalCols = 4 + (showFecha ? 1 : 0) + 4;
     let tc = 1;
     tr.getCell(tc).value = `TOTALES (${summary.totalEgresos} Egresos)`;
     tr.getCell(tc).font = { bold: true, size: 10, color: { argb: `FF${green}` } };
@@ -213,6 +227,15 @@ export async function generateEgresosReportExcel(params: GenerateEgresosReportEx
     tr.getCell(tc).numFmt = '#,##0.00';
     tr.getCell(tc).alignment = { horizontal: 'right' };
     tc++;
+    tr.getCell(tc).value = summary.pesoBrutoBalanzaTotal;
+    tr.getCell(tc).font = { bold: true, size: 10, color: { argb: `FF${green}` } };
+    tr.getCell(tc).numFmt = '#,##0.00';
+    tr.getCell(tc).alignment = { horizontal: 'right' };
+    tc++;
+    tr.getCell(tc).value = summary.mermaTotal;
+    tr.getCell(tc).font = { bold: true, size: 10, color: { argb: `FF${green}` } };
+    tr.getCell(tc).numFmt = '#,##0.00';
+    tr.getCell(tc).alignment = { horizontal: 'right' };
 
     for (let c = 1; c <= totalCols; c++) {
       tr.getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: `FF${greenLight}` } };
@@ -255,14 +278,15 @@ export async function generateEgresosReportExcel(params: GenerateEgresosReportEx
         currentRow++;
 
         // Bars sub-headers
-        const barHeaders = ['Código Barra', 'Peso Bruto (gr)', 'Ley (‰)', 'Peso Balanza (gr)', 'Proveedor'];
+        const barHeaders = ['Código Barra', 'BI (gr)', 'BR (gr)', 'M (gr)', 'Ley (‰)', 'Proveedor'];
         const bhRow = sheet.getRow(currentRow);
         barHeaders.forEach((h, i) => {
           const cell = bhRow.getCell(i + 1);
           cell.value = h;
           cell.font = { bold: true, size: 8, color: { argb: 'FFFFFFFF' } };
           cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: `FF${green}` } };
-          cell.alignment = { horizontal: i === 0 || i === 4 ? 'left' : i === 2 ? 'center' : 'right', vertical: 'middle' };
+          const isWeight = h === 'BI (gr)' || h === 'BR (gr)' || h === 'M (gr)';
+          cell.alignment = { horizontal: i === 0 || i === 5 ? 'left' : i === 4 ? 'center' : 'right', vertical: 'middle' };
         });
         currentRow++;
 
@@ -275,19 +299,23 @@ export async function generateEgresosReportExcel(params: GenerateEgresosReportEx
           br.getCell(2).font = { size: 9 };
           br.getCell(2).numFmt = '#,##0.00';
           br.getCell(2).alignment = { horizontal: 'right' };
-          br.getCell(3).value = truncateLey(barra.ley);
+          br.getCell(3).value = barra.pesoBalanza ?? barra.pesoBruto;
           br.getCell(3).font = { size: 9 };
-          br.getCell(3).numFmt = '0.00';
-          br.getCell(3).alignment = { horizontal: 'center' };
-          br.getCell(4).value = barra.pesoBalanza ?? '—';
+          br.getCell(3).numFmt = '#,##0.00';
+          br.getCell(3).alignment = { horizontal: 'right' };
+          br.getCell(4).value = barra.pesoBruto - (barra.pesoBalanza ?? barra.pesoBruto);
           br.getCell(4).font = { size: 9 };
           br.getCell(4).numFmt = '#,##0.00';
           br.getCell(4).alignment = { horizontal: 'right' };
-          br.getCell(5).value = barra.proveedor;
+          br.getCell(5).value = truncateLey(barra.ley);
           br.getCell(5).font = { size: 9 };
+          br.getCell(5).numFmt = '0.00';
+          br.getCell(5).alignment = { horizontal: 'center' };
+          br.getCell(6).value = barra.proveedor;
+          br.getCell(6).font = { size: 9 };
 
           if (barraIdx % 2 === 1) {
-            for (let c = 1; c <= 5; c++) {
+            for (let c = 1; c <= 6; c++) {
               br.getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFBFDFC' } };
             }
           }
@@ -296,14 +324,8 @@ export async function generateEgresosReportExcel(params: GenerateEgresosReportEx
 
         // Apply border around the lot block
         const lotEndRow = currentRow - 1;
-        const borderGreen = {
-          top: { style: 'thin' as const, color: { argb: `FF${green}` } },
-          bottom: { style: 'thin' as const, color: { argb: `FF${green}` } },
-          left: { style: 'thin' as const, color: { argb: `FF${green}` } },
-          right: { style: 'thin' as const, color: { argb: `FF${green}` } },
-        };
         for (let r = lotStartRow; r <= lotEndRow; r++) {
-          for (let c = 1; c <= 5; c++) {
+          for (let c = 1; c <= 6; c++) {
             const cell = sheet.getRow(r).getCell(c);
             cell.border = borderGreen;
           }
@@ -318,11 +340,19 @@ export async function generateEgresosReportExcel(params: GenerateEgresosReportEx
       stRow.getCell(2).font = { bold: true, size: 9, color: { argb: `FF${green}` } };
       stRow.getCell(2).numFmt = '#,##0.00';
       stRow.getCell(2).alignment = { horizontal: 'right' };
-      stRow.getCell(5).value = egreso.pesoFino;
-      stRow.getCell(5).font = { bold: true, size: 9, color: { argb: `FF${green}` } };
-      stRow.getCell(5).numFmt = '#,##0.00';
-      stRow.getCell(5).alignment = { horizontal: 'right' };
-      for (let c = 1; c <= 5; c++) {
+      stRow.getCell(3).value = egreso.pesoBrutoBalanza;
+      stRow.getCell(3).font = { bold: true, size: 9, color: { argb: `FF${green}` } };
+      stRow.getCell(3).numFmt = '#,##0.00';
+      stRow.getCell(3).alignment = { horizontal: 'right' };
+      stRow.getCell(4).value = egreso.merma;
+      stRow.getCell(4).font = { bold: true, size: 9, color: { argb: `FF${green}` } };
+      stRow.getCell(4).numFmt = '#,##0.00';
+      stRow.getCell(4).alignment = { horizontal: 'right' };
+      stRow.getCell(6).value = egreso.pesoFino;
+      stRow.getCell(6).font = { bold: true, size: 9, color: { argb: `FF${green}` } };
+      stRow.getCell(6).numFmt = '#,##0.00';
+      stRow.getCell(6).alignment = { horizontal: 'right' };
+      for (let c = 1; c <= 6; c++) {
         stRow.getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: `FF${greenLight}` } };
         stRow.getCell(c).border = { top: { style: 'medium', color: { argb: `FF${green}` } } };
       }
@@ -344,17 +374,23 @@ export async function generateEgresosReportExcel(params: GenerateEgresosReportEx
     sheet.getCell(`B${currentRow}`).value = summary.totalLingotes;
     sheet.getCell(`B${currentRow}`).font = { bold: true, size: 12, color: { argb: `FF${green}` } };
 
-    sheet.getCell(`C${currentRow}`).value = 'Peso Bruto Total';
+    sheet.getCell(`C${currentRow}`).value = 'Peso Bruto Total (BI)';
     sheet.getCell(`C${currentRow}`).font = { bold: true, size: 9, color: { argb: `FF${green}` } };
     sheet.getCell(`D${currentRow}`).value = summary.pesoBrutoTotal;
     sheet.getCell(`D${currentRow}`).font = { bold: true, size: 12, color: { argb: `FF${green}` } };
     sheet.getCell(`D${currentRow}`).numFmt = '#,##0.00';
 
-    sheet.getCell(`E${currentRow}`).value = 'Peso Fino Total';
+    sheet.getCell(`E${currentRow}`).value = 'Peso Balanza Total (BR)';
     sheet.getCell(`E${currentRow}`).font = { bold: true, size: 9, color: { argb: `FF${green}` } };
-    sheet.getCell(`F${currentRow}`).value = summary.pesoFinoTotal;
+    sheet.getCell(`F${currentRow}`).value = summary.pesoBrutoBalanzaTotal;
     sheet.getCell(`F${currentRow}`).font = { bold: true, size: 12, color: { argb: `FF${green}` } };
     sheet.getCell(`F${currentRow}`).numFmt = '#,##0.00';
+
+    sheet.getCell(`G${currentRow}`).value = 'Merma Total';
+    sheet.getCell(`G${currentRow}`).font = { bold: true, size: 9, color: { argb: `FF${green}` } };
+    sheet.getCell(`H${currentRow}`).value = summary.mermaTotal;
+    sheet.getCell(`H${currentRow}`).font = { bold: true, size: 12, color: { argb: `FF${green}` } };
+    sheet.getCell(`H${currentRow}`).numFmt = '#,##0.00';
   }
 
   // Column widths

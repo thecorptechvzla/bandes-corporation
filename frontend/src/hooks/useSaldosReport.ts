@@ -69,6 +69,11 @@ export function computeSaldosReport({
   const lotById = new Map<string, Lot>();
   lots.forEach((l) => lotById.set(l.id, l));
 
+  const esExitEnPeriodo = (e: MaterialExit) => {
+    const t = new Date(e.createdAt).getTime();
+    return t >= fromT && t <= toT;
+  };
+
   const targetClients = clientId ? clients.filter((c) => c.id === clientId) : clients;
 
   const records: SaldoRecord[] = [];
@@ -91,7 +96,18 @@ export function computeSaldosReport({
     });
     const egresadoGross = egresado.reduce((s, b) => s + Number(b.grossWeight ?? 0), 0);
 
-    const saldoActual = receivedGross - egresadoGross;
+    const egresadoBR = exits
+      .filter(esExitEnPeriodo)
+      .reduce((sum, e) =>
+        sum
+        + (e.bars ?? []).filter((b) => b.clientId === client.id)
+            .reduce((s, b) => s + Number(b.grossWeight ?? 0), 0)
+        + (e.exitDetails ?? []).filter((d) => d.lot?.process?.client?.id === client.id)
+            .reduce((s, d) => s + Number(d.lot?.recovered ?? d.weightAported ?? 0), 0),
+        0);
+    const merma = egresadoGross - egresadoBR;
+
+    const saldoActual = receivedGross - egresadoBR;
     const barrasEnBoveda = received.length - egresado.length;
 
     const record: SaldoRecord = {
@@ -99,6 +115,8 @@ export function computeSaldosReport({
       totalRecibido: receivedGross,
       totalBarrasRecibidas: received.length,
       totalEgresado: egresadoGross,
+      totalEgresadoBR: egresadoBR,
+      merma,
       totalBarrasEgresadas: egresado.length,
       saldoActual,
       barrasEnBoveda,

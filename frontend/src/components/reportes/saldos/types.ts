@@ -15,6 +15,8 @@ export interface SaldoRecord {
   totalRecibido: number;
   totalBarrasRecibidas: number;
   totalEgresado: number;
+  totalEgresadoBR: number;
+  merma: number;
   totalBarrasEgresadas: number;
   saldoActual: number;
   barrasEnBoveda: number;

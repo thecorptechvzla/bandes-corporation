@@ -31,7 +31,9 @@ export default function EgresosReportTable({ records, summary, dateFrom, dateTo,
               { label: 'Cliente / Razón Social', align: 'left' },
               ...(showFecha ? [{ label: 'Fecha Egreso', align: 'center' }] : []),
               { label: 'Cant. Lingotes', align: 'center' },
-              { label: 'Peso Bruto (gr)', align: 'right' },
+              { label: 'BI (gr)', align: 'right' },
+              { label: 'BR (gr)', align: 'right' },
+              { label: 'M (gr)', align: 'right' },
               { label: 'Ley Prom. (‰)', align: 'center' },
               { label: 'Comprobantes', align: 'center' },
             ].map((h) => (
@@ -98,6 +100,18 @@ export default function EgresosReportTable({ records, summary, dateFrom, dateTo,
                 {formatNumber(row.pesoBruto)}
               </td>
               <td
+                className="px-4 py-3 text-right text-[12px] font-medium"
+                style={{ color: 'var(--report-text-main)' }}
+              >
+                {formatNumber(row.pesoBrutoBalanza)}
+              </td>
+              <td
+                className="px-4 py-3 text-right text-[12px] font-medium"
+                style={{ color: 'var(--report-text-main)' }}
+              >
+                {formatNumber(row.merma)}
+              </td>
+              <td
                 className="px-4 py-3 text-center text-[12px] font-medium"
                 style={{ color: 'var(--report-text-table)' }}
               >
@@ -152,6 +166,18 @@ export default function EgresosReportTable({ records, summary, dateFrom, dateTo,
               style={{ color: 'var(--report-color-primary)' }}
             >
               {formatNumber(summary.pesoBrutoTotal)} gr
+            </td>
+            <td
+              className="px-4 py-3 text-right text-[12px] font-bold"
+              style={{ color: 'var(--report-color-primary)' }}
+            >
+              {formatNumber(summary.pesoBrutoBalanzaTotal)} gr
+            </td>
+            <td
+              className="px-4 py-3 text-right text-[12px] font-bold"
+              style={{ color: 'var(--report-color-primary)' }}
+            >
+              {formatNumber(summary.mermaTotal)} gr
             </td>
             <td className="px-4 py-3" />
             <td className="px-4 py-3" />

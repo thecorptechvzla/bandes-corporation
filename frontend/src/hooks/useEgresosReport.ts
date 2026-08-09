@@ -57,7 +57,16 @@ export function computeSummary(records: EgresoRecord[]): EgresoSummary {
   const totalLingotes = records.reduce((a, r) => a + r.lingotes, 0);
   const pesoFinoTotal = records.reduce((a, r) => a + r.pesoFino, 0);
   const pesoBrutoTotal = records.reduce((a, r) => a + r.pesoBruto, 0);
-  return { totalEgresos, totalLingotes, pesoFinoTotal, pesoBrutoTotal };
+  const pesoBrutoBalanzaTotal = records.reduce((a, r) => a + r.pesoBrutoBalanza, 0);
+  const mermaTotal = records.reduce((a, r) => a + r.merma, 0);
+  return {
+    totalEgresos,
+    totalLingotes,
+    pesoFinoTotal,
+    pesoBrutoTotal,
+    pesoBrutoBalanzaTotal,
+    mermaTotal,
+  };
 }
 
 function collectBars(e: ReportEgresoDTO): Array<ReportBarEgresoDTO & { lotName?: string }> {
@@ -81,6 +90,14 @@ export function toEgresoRecord(e: ReportEgresoDTO, index: number): EgresoRecord 
   const pesoFino = bars.reduce((acc, b) => acc + Number(b.fineWeight ?? 0), 0);
   const leyProm = pesoBruto > 0 ? (pesoFino / pesoBruto) * 1000 : 0;
 
+  const pesoBrutoBalanza =
+    (e.exitDetails ?? []).reduce((sum, d) => {
+      const lotGross = (d.bars ?? []).reduce((s, b) => s + Number(b.grossWeight ?? 0), 0);
+      return sum + (Number(d.lot?.recovered ?? 0) > 0 ? Number(d.lot?.recovered) : lotGross);
+    }, 0) +
+    (e.bars ?? []).reduce((s, b) => s + Number(b.grossWeight ?? 0), 0);
+  const merma = pesoBruto - pesoBrutoBalanza;
+
   return {
     id: `EGR-${padNumber(index + 1)}`,
     guia: e.destination,
@@ -90,6 +107,8 @@ export function toEgresoRecord(e: ReportEgresoDTO, index: number): EgresoRecord 
     fecha: e.createdAt.slice(0, 10),
     lingotes: bars.length,
     pesoBruto,
+    pesoBrutoBalanza,
+    merma,
     leyProm,
     pesoFino,
     destino: e.destination,

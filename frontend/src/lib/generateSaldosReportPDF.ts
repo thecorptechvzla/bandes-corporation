@@ -131,7 +131,9 @@ function drawFilterMetadata(doc: jsPDF, y: number, pw: number, params: GenerateS
 
 function drawKPICards(doc: jsPDF, y: number, pw: number, records: SaldoRecord[]) {
   const totalIngresado = records.reduce((a, r) => a + r.totalRecibido, 0);
-  const totalEgresado = records.reduce((a, r) => a + r.totalEgresado, 0);
+  const totalEgresadoBI = records.reduce((a, r) => a + r.totalEgresado, 0);
+  const totalEgresadoBR = records.reduce((a, r) => a + r.totalEgresadoBR, 0);
+  const mermaTotal = records.reduce((a, r) => a + r.merma, 0);
   const saldoActual = records.reduce((a, r) => a + r.saldoActual, 0);
 
   const gap = 4;
@@ -140,7 +142,7 @@ function drawKPICards(doc: jsPDF, y: number, pw: number, records: SaldoRecord[])
 
   const cards = [
     { label: 'TOTAL PESO BRUTO INGRESADO', value: `${formatNumber(totalIngresado)} g`, sub: 'Peso Bruto Recibido' },
-    { label: 'TOTAL PESO BRUTO EGRESADO', value: `${formatNumber(totalEgresado)} g`, sub: 'Peso Bruto Egresado' },
+    { label: 'TOTAL PESO BRUTO EGRESADO (BR)', value: `${formatNumber(totalEgresadoBR)} g`, sub: `BI: ${formatNumber(totalEgresadoBI)} g | M: ${formatNumber(mermaTotal)} g` },
     { label: 'BALANCE PESO BRUTO ACTUAL', value: `${formatNumber(saldoActual)} g`, sub: 'Peso Bruto Restante Disponible' },
   ];
 
@@ -178,6 +180,8 @@ function drawKPICards(doc: jsPDF, y: number, pw: number, records: SaldoRecord[])
 function drawSummaryTable(doc: jsPDF, y: number, pw: number, records: SaldoRecord[]) {
   const totalIngresado = records.reduce((a, r) => a + r.totalRecibido, 0);
   const totalEgresado = records.reduce((a, r) => a + r.totalEgresado, 0);
+  const totalEgresadoBR = records.reduce((a, r) => a + r.totalEgresadoBR, 0);
+  const mermaTotal = records.reduce((a, r) => a + r.merma, 0);
   const saldoTotal = records.reduce((a, r) => a + r.saldoActual, 0);
   const barrasTotal = records.reduce((a, r) => a + r.barrasEnBoveda, 0);
 
@@ -185,6 +189,8 @@ function drawSummaryTable(doc: jsPDF, y: number, pw: number, records: SaldoRecor
     r.cliente,
     `${formatNumber(r.totalRecibido)}`,
     `${formatNumber(r.totalEgresado)}`,
+    `${formatNumber(r.totalEgresadoBR)}`,
+    `${formatNumber(r.merma)}`,
     `${formatNumber(r.saldoActual)}`,
     `${r.barrasEnBoveda}`,
   ]);
@@ -193,20 +199,22 @@ function drawSummaryTable(doc: jsPDF, y: number, pw: number, records: SaldoRecor
     `TOTALES (${records.length} Proveedores)`,
     `${formatNumber(totalIngresado)}`,
     `${formatNumber(totalEgresado)}`,
+    `${formatNumber(totalEgresadoBR)}`,
+    `${formatNumber(mermaTotal)}`,
     `${formatNumber(saldoTotal)}`,
     `${barrasTotal} Barras`,
   ]);
 
   autoTable(doc, {
     startY: y,
-    head: [['Cliente / Proveedor', 'Total Peso Bruto Recibido (g)', 'Total Peso Bruto Egresado (g)', 'Balance Peso Bruto Restante (g)', 'Barras en Boveda']],
+    head: [['Cliente / Proveedor', 'Total Recibido (g)', 'Egresado BI (g)', 'Egresado BR (g)', 'MERMA (g)', 'Balance Restante (g)', 'Barras Boveda']],
     body: bodyRows,
     theme: 'grid',
     headStyles: {
       fillColor: GREEN,
       textColor: WHITE,
       fontStyle: 'bold',
-      fontSize: 7.5,
+      fontSize: 7,
       halign: 'center',
       valign: 'middle',
       cellPadding: 3,
@@ -214,18 +222,20 @@ function drawSummaryTable(doc: jsPDF, y: number, pw: number, records: SaldoRecor
       lineWidth: 0.3,
     },
     bodyStyles: {
-      fontSize: 7.5,
+      fontSize: 7,
       textColor: [51, 51, 51],
       cellPadding: 2.5,
       lineColor: [230, 230, 230],
       lineWidth: 0.2,
     },
     columnStyles: {
-      0: { cellWidth: 58, halign: 'left' },
+      0: { cellWidth: 50, halign: 'left' },
       1: { halign: 'right' },
       2: { halign: 'right' },
-      3: { halign: 'right', fontStyle: 'bold', textColor: GREEN },
-      4: { halign: 'center' },
+      3: { halign: 'right' },
+      4: { halign: 'right' },
+      5: { halign: 'right', fontStyle: 'bold', textColor: GREEN },
+      6: { halign: 'center' },
     },
     alternateRowStyles: {
       fillColor: ROW_ALT,
@@ -275,7 +285,7 @@ function drawDetailedSection(doc: jsPDF, startY: number, pw: number, records: Sa
     doc.setFontSize(6.5);
     doc.setTextColor(...GRAY);
     doc.text(
-      `Peso Bruto Recibido: ${formatNumber(cliente.totalRecibido)} g  |  Peso Bruto Egresado: ${formatNumber(cliente.totalEgresado)} g  |  BALANCE PESO BRUTO: ${formatNumber(cliente.saldoActual)} g`,
+      `Peso Bruto Recibido: ${formatNumber(cliente.totalRecibido)} g  |  Egresado BI: ${formatNumber(cliente.totalEgresado)} g  |  Egresado BR: ${formatNumber(cliente.totalEgresadoBR)} g  |  MERMA: ${formatNumber(cliente.merma)} g  |  BALANCE PESO BRUTO: ${formatNumber(cliente.saldoActual)} g`,
       14,
       y + 11
     );
@@ -289,7 +299,9 @@ function drawDetailedSection(doc: jsPDF, startY: number, pw: number, records: Sa
       `${formatNumber(b.pesoBrutoRecibido)}`,
       `${formatLey(b.ley)}`,
       `${formatNumber(b.pesoFinoDisponible)}`,
-      `${formatNumber(b.pesoBrutoEnBoveda)}`,
+      b.fueEgresado
+        ? `BI: ${formatNumber(b.pesoBrutoRecibido)} g | BR: ${formatNumber(b.pesoBrutoEnBoveda)} g | M: ${formatNumber(b.pesoBrutoRecibido - b.pesoBrutoEnBoveda)} g`
+        : `${formatNumber(b.pesoBrutoEnBoveda)}`,
       b.fueEgresado ? (b.fechaEgreso ?? '') : 'EN BOVEDA',
     ]);
 
@@ -309,7 +321,7 @@ function drawDetailedSection(doc: jsPDF, startY: number, pw: number, records: Sa
 
     autoTable(doc, {
       startY: y,
-      head: [['N Lote / ID Barra', 'Packing Origen', 'Fecha Recepcion', 'Peso Bruto Recibido (g)', 'Ley (‰)', 'Peso Fino Disponible (g)', 'Peso Bruto Boveda (g)', 'Fecha Egreso / Estatus']],
+      head: [['N Lote / ID Barra', 'Packing Origen', 'Fecha Recepcion', 'Peso Bruto Recibido (g)', 'Ley (‰)', 'Peso Fino Disponible (g)', 'Boveda / Egreso (BI-BR-M)', 'Fecha Egreso / Estatus']],
       body: bodyRows,
       theme: 'grid',
       headStyles: {

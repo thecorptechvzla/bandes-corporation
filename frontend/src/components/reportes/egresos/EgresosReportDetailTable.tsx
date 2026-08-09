@@ -129,9 +129,10 @@ export default function EgresosReportDetailTable({ records, summary, onReprint }
                     <tr>
                       {[
                         { label: 'Código Barra', align: 'left' as const },
-                        { label: 'Peso Bruto (gr)', align: 'right' as const },
+                        { label: 'BI (gr)', align: 'right' as const },
+                        { label: 'BR (gr)', align: 'right' as const },
+                        { label: 'M (gr)', align: 'right' as const },
                         { label: 'Ley (‰)', align: 'center' as const },
-                        { label: 'Peso Balanza (gr)', align: 'right' as const },
                         { label: 'Proveedor', align: 'left' as const },
                       ].map((h) => (
                         <th
@@ -172,16 +173,26 @@ export default function EgresosReportDetailTable({ records, summary, onReprint }
                           {formatNumber(barra.pesoBruto)}
                         </td>
                         <td
+                          className="px-4 py-2 text-right text-[11px] font-medium"
+                          style={{ color: 'var(--report-text-main)' }}
+                        >
+                          {formatNumber(barra.pesoBalanza ?? barra.pesoBruto)}
+                        </td>
+                        <td
+                          className="px-4 py-2 text-right text-[11px] font-medium"
+                          style={{
+                            color: (barra.pesoBalanza ?? barra.pesoBruto) >= barra.pesoBruto
+                              ? 'var(--report-text-main)'
+                              : '#c0392b',
+                          }}
+                        >
+                          {formatNumber(barra.pesoBruto - (barra.pesoBalanza ?? barra.pesoBruto))}
+                        </td>
+                        <td
                           className="px-4 py-2 text-center text-[11px] font-medium"
                           style={{ color: 'var(--report-text-table)' }}
                         >
                           {formatLey(barra.ley)}
-                        </td>
-                        <td
-                          className="px-4 py-2 text-right text-[11px] font-medium"
-                          style={{ color: 'var(--report-text-main)' }}
-                        >
-                          {barra.pesoBalanza != null ? formatNumber(barra.pesoBalanza) : '—'}
                         </td>
                         <td className="px-4 py-2">
                           <span
@@ -218,13 +229,25 @@ export default function EgresosReportDetailTable({ records, summary, onReprint }
                 className="text-[12px] font-bold"
                 style={{ color: 'var(--report-color-primary)' }}
               >
-                {formatNumber(egreso.pesoBruto)} gr
+                BI: {formatNumber(egreso.pesoBruto)} gr
               </span>
               <span
                 className="text-[12px] font-bold"
                 style={{ color: 'var(--report-color-primary)' }}
               >
-                {formatNumber(egreso.pesoFino)} gr
+                BR: {formatNumber(egreso.pesoBrutoBalanza)} gr
+              </span>
+              <span
+                className="text-[12px] font-bold"
+                style={{ color: 'var(--report-color-primary)' }}
+              >
+                M: {formatNumber(egreso.merma)} gr
+              </span>
+              <span
+                className="text-[12px] font-bold"
+                style={{ color: 'var(--report-color-primary)' }}
+              >
+                Fino: {formatNumber(egreso.pesoFino)} gr
               </span>
             </div>
           </div>
@@ -252,7 +275,7 @@ export default function EgresosReportDetailTable({ records, summary, onReprint }
           </span>
         </div>
         <div
-          className="grid grid-cols-3 gap-px"
+          className="grid grid-cols-5 gap-px"
           style={{
             backgroundColor: 'var(--report-border-color)',
           }}
@@ -282,13 +305,47 @@ export default function EgresosReportDetailTable({ records, summary, onReprint }
               className="text-[10px] font-bold uppercase tracking-wider mb-1"
               style={{ color: 'var(--report-text-muted)' }}
             >
-              Peso Bruto Total
+              Peso Bruto Total (BI)
             </div>
             <div
               className="text-[14px] font-bold"
               style={{ color: 'var(--report-color-primary)' }}
             >
               {formatNumber(summary.pesoBrutoTotal)} gr
+            </div>
+          </div>
+          <div
+            className="px-4 py-3 text-center"
+            style={{ backgroundColor: 'var(--report-bg-card)' }}
+          >
+            <div
+              className="text-[10px] font-bold uppercase tracking-wider mb-1"
+              style={{ color: 'var(--report-text-muted)' }}
+            >
+              Peso Balanza Total (BR)
+            </div>
+            <div
+              className="text-[14px] font-bold"
+              style={{ color: 'var(--report-color-primary)' }}
+            >
+              {formatNumber(summary.pesoBrutoBalanzaTotal)} gr
+            </div>
+          </div>
+          <div
+            className="px-4 py-3 text-center"
+            style={{ backgroundColor: 'var(--report-bg-card)' }}
+          >
+            <div
+              className="text-[10px] font-bold uppercase tracking-wider mb-1"
+              style={{ color: 'var(--report-text-muted)' }}
+            >
+              Merma Total
+            </div>
+            <div
+              className="text-[14px] font-bold"
+              style={{ color: 'var(--report-color-primary)' }}
+            >
+              {formatNumber(summary.mermaTotal)} gr
             </div>
           </div>
           <div

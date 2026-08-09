@@ -98,9 +98,9 @@ export default function EgresosReportPdfTemplate({
         </div>
         <div style={{ display: 'table-cell', width: '3.5%' }} />
         <div style={{ display: 'table-cell', width: '31%', backgroundColor: '#f4f9f7', border: '1px solid #c2e5d9', borderRadius: '4px', padding: '4px', textAlign: 'center', boxSizing: 'border-box' }}>
-          <div className="pdf-metric-title" style={{ fontWeight: 700, color: '#139169', textTransform: 'uppercase' }}>Peso Bruto Total</div>
-          <div className="pdf-metric-value" style={{ fontWeight: 700, color: '#111111', fontSize: '11px', margin: '1px 0' }}>{formatNumber(summary.pesoBrutoTotal)} g</div>
-          <div className="pdf-metric-footer" style={{ color: '#666666', fontSize: '7px' }}>Fino: {formatNumber(summary.pesoFinoTotal)} g</div>
+          <div className="pdf-metric-title" style={{ fontWeight: 700, color: '#139169', textTransform: 'uppercase' }}>Peso Bruto Egresado (BR)</div>
+          <div className="pdf-metric-value" style={{ fontWeight: 700, color: '#111111', fontSize: '11px', margin: '1px 0' }}>{formatNumber(summary.pesoBrutoBalanzaTotal)} g</div>
+          <div className="pdf-metric-footer" style={{ color: '#666666', fontSize: '7px' }}>BI: {formatNumber(summary.pesoBrutoTotal)} g | M: {formatNumber(summary.mermaTotal)} g</div>
         </div>
       </div>
 
@@ -112,12 +112,14 @@ export default function EgresosReportPdfTemplate({
           <thead>
             <tr>
               {[
-                { label: 'N° Egreso / Guía', width: '20%' },
-                { label: 'Cliente', width: '25%' },
-                ...(showFecha ? [{ label: 'Fecha', width: '10%' }] : []),
-                { label: 'Lingotes', width: '8%' },
-                { label: 'Peso Bruto (g)', width: '15%' },
-                { label: 'Ley Prom. (‰)', width: '10%' },
+                { label: 'N° Egreso / Guía', width: '16%' },
+                { label: 'Cliente', width: '18%' },
+                ...(showFecha ? [{ label: 'Fecha', width: '9%' }] : []),
+                { label: 'Lingotes', width: '6%' },
+                { label: 'BI (g)', width: '12%' },
+                { label: 'BR (g)', width: '12%' },
+                { label: 'M (g)', width: '12%' },
+                { label: 'Ley Prom. (‰)', width: '8%' },
               ].map((h) => (
                 <th key={h.label} style={{ backgroundColor: '#139169', color: '#ffffff', fontWeight: 700, fontSize: '7.5px', padding: '3px 4px', textAlign: 'left', border: '1px solid #139169', width: h.width }}>
                   {h.label.toUpperCase()}
@@ -140,6 +142,8 @@ export default function EgresosReportPdfTemplate({
                 )}
                 <td style={{ padding: '2px 4px', fontSize: '7.5px', borderBottom: '1px solid #e6e6e6', textAlign: 'center', backgroundColor: idx % 2 === 1 ? '#fbfdfc' : 'transparent' }}>{row.lingotes}</td>
                 <td style={{ padding: '2px 4px', fontSize: '7.5px', borderBottom: '1px solid #e6e6e6', textAlign: 'right', backgroundColor: idx % 2 === 1 ? '#fbfdfc' : 'transparent' }}>{formatNumber(row.pesoBruto)}</td>
+                <td style={{ padding: '2px 4px', fontSize: '7.5px', borderBottom: '1px solid #e6e6e6', textAlign: 'right', backgroundColor: idx % 2 === 1 ? '#fbfdfc' : 'transparent' }}>{formatNumber(row.pesoBrutoBalanza)}</td>
+                <td style={{ padding: '2px 4px', fontSize: '7.5px', borderBottom: '1px solid #e6e6e6', textAlign: 'right', backgroundColor: idx % 2 === 1 ? '#fbfdfc' : 'transparent' }}>{formatNumber(row.merma)}</td>
                 <td style={{ padding: '2px 4px', fontSize: '7.5px', borderBottom: '1px solid #e6e6e6', textAlign: 'center', backgroundColor: idx % 2 === 1 ? '#fbfdfc' : 'transparent' }}>{formatLey(row.leyProm)}</td>
               </tr>
             ))}
@@ -150,6 +154,8 @@ export default function EgresosReportPdfTemplate({
                 ...(showFecha ? [{ text: '', align: 'center' as const }] : []),
                 { text: String(summary.totalLingotes), align: 'center' as const },
                 { text: `${formatNumber(summary.pesoBrutoTotal)} g`, align: 'right' as const },
+                { text: `${formatNumber(summary.pesoBrutoBalanzaTotal)} g`, align: 'right' as const },
+                { text: `${formatNumber(summary.mermaTotal)} g`, align: 'right' as const },
                 { text: '', align: 'center' as const },
               ].map((cell, i) => (
                 <td key={i} style={{ padding: '2px 4px', fontSize: '7.5px', backgroundColor: '#eaf4f0', fontWeight: 700, color: '#139169', borderTop: '2px solid #139169', borderBottom: '2px solid #139169', textAlign: cell.align }}>
@@ -198,11 +204,12 @@ export default function EgresosReportPdfTemplate({
                     <table style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse', boxSizing: 'border-box' }}>
                       <thead>
                         <tr>
-                          <th style={{ width: '18%', backgroundColor: '#139169', color: '#ffffff', fontWeight: 700, fontSize: '6px', padding: '2px 4px', textAlign: 'left', border: '1px solid #139169' }}>CÓDIGO BARRA</th>
-                          <th style={{ width: '18%', backgroundColor: '#139169', color: '#ffffff', fontWeight: 700, fontSize: '6px', padding: '2px 4px', textAlign: 'right', border: '1px solid #139169' }}>PESO BRUTO (GR)</th>
-                          <th style={{ width: '12%', backgroundColor: '#139169', color: '#ffffff', fontWeight: 700, fontSize: '6px', padding: '2px 4px', textAlign: 'center', border: '1px solid #139169' }}>LEY (‰)</th>
-                          <th style={{ width: '20%', backgroundColor: '#139169', color: '#ffffff', fontWeight: 700, fontSize: '6px', padding: '2px 4px', textAlign: 'right', border: '1px solid #139169' }}>PESO BALANZA (GR)</th>
-                          <th style={{ width: '32%', backgroundColor: '#139169', color: '#ffffff', fontWeight: 700, fontSize: '6px', padding: '2px 4px', textAlign: 'left', border: '1px solid #139169' }}>PROVEEDOR</th>
+                          <th style={{ width: '14%', backgroundColor: '#139169', color: '#ffffff', fontWeight: 700, fontSize: '6px', padding: '2px 4px', textAlign: 'left', border: '1px solid #139169' }}>CÓDIGO BARRA</th>
+                          <th style={{ width: '14%', backgroundColor: '#139169', color: '#ffffff', fontWeight: 700, fontSize: '6px', padding: '2px 4px', textAlign: 'right', border: '1px solid #139169' }}>BI (GR)</th>
+                          <th style={{ width: '14%', backgroundColor: '#139169', color: '#ffffff', fontWeight: 700, fontSize: '6px', padding: '2px 4px', textAlign: 'right', border: '1px solid #139169' }}>BR (GR)</th>
+                          <th style={{ width: '14%', backgroundColor: '#139169', color: '#ffffff', fontWeight: 700, fontSize: '6px', padding: '2px 4px', textAlign: 'right', border: '1px solid #139169' }}>M (GR)</th>
+                          <th style={{ width: '10%', backgroundColor: '#139169', color: '#ffffff', fontWeight: 700, fontSize: '6px', padding: '2px 4px', textAlign: 'center', border: '1px solid #139169' }}>LEY (‰)</th>
+                          <th style={{ width: '34%', backgroundColor: '#139169', color: '#ffffff', fontWeight: 700, fontSize: '6px', padding: '2px 4px', textAlign: 'left', border: '1px solid #139169' }}>PROVEEDOR</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -212,10 +219,9 @@ export default function EgresosReportPdfTemplate({
                               <span style={{ fontFamily: 'monospace', color: '#139169', fontWeight: 700 }}>{barra.barCode}</span>
                             </td>
                             <td style={{ padding: '1px 4px', fontSize: '6.5px', borderBottom: '1px solid #f0f0f0', textAlign: 'right', backgroundColor: barraIdx % 2 === 1 ? '#fbfdfc' : 'transparent' }}>{formatNumber(barra.pesoBruto)}</td>
+                            <td style={{ padding: '1px 4px', fontSize: '6.5px', borderBottom: '1px solid #f0f0f0', textAlign: 'right', backgroundColor: barraIdx % 2 === 1 ? '#fbfdfc' : 'transparent' }}>{formatNumber(barra.pesoBalanza ?? barra.pesoBruto)}</td>
+                            <td style={{ padding: '1px 4px', fontSize: '6.5px', borderBottom: '1px solid #f0f0f0', textAlign: 'right', color: (barra.pesoBalanza ?? barra.pesoBruto) < barra.pesoBruto ? '#c0392b' : 'inherit', backgroundColor: barraIdx % 2 === 1 ? '#fbfdfc' : 'transparent' }}>{formatNumber(barra.pesoBruto - (barra.pesoBalanza ?? barra.pesoBruto))}</td>
                             <td style={{ padding: '1px 4px', fontSize: '6.5px', borderBottom: '1px solid #f0f0f0', textAlign: 'center', backgroundColor: barraIdx % 2 === 1 ? '#fbfdfc' : 'transparent' }}>{formatLey(barra.ley)}</td>
-                            <td style={{ padding: '1px 4px', fontSize: '6.5px', borderBottom: '1px solid #f0f0f0', textAlign: 'right', backgroundColor: barraIdx % 2 === 1 ? '#fbfdfc' : 'transparent' }}>
-                              {barra.pesoBalanza != null ? formatNumber(barra.pesoBalanza) : '—'}
-                            </td>
                             <td style={{ padding: '1px 4px', fontSize: '6.5px', borderBottom: '1px solid #f0f0f0', backgroundColor: barraIdx % 2 === 1 ? '#fbfdfc' : 'transparent' }}>
                               {barra.proveedor}
                             </td>
@@ -231,8 +237,10 @@ export default function EgresosReportPdfTemplate({
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#eaf4f0', borderTop: '2px solid #139169', padding: '2px 6px' }}>
                 <span style={{ fontSize: '7px', fontWeight: 700, color: '#139169' }}>Subtotal — {egreso.lingotes} Lingotes</span>
                 <div style={{ display: 'flex', gap: '12px' }}>
-                  <span style={{ fontSize: '7px', fontWeight: 700, color: '#139169' }}>{formatNumber(egreso.pesoBruto)} gr</span>
-                  <span style={{ fontSize: '7px', fontWeight: 700, color: '#139169' }}>{formatNumber(egreso.pesoFino)} gr</span>
+                  <span style={{ fontSize: '7px', fontWeight: 700, color: '#139169' }}>BI: {formatNumber(egreso.pesoBruto)} gr</span>
+                  <span style={{ fontSize: '7px', fontWeight: 700, color: '#139169' }}>BR: {formatNumber(egreso.pesoBrutoBalanza)} gr</span>
+                  <span style={{ fontSize: '7px', fontWeight: 700, color: '#139169' }}>M: {formatNumber(egreso.merma)} gr</span>
+                  <span style={{ fontSize: '7px', fontWeight: 700, color: '#139169' }}>Fino: {formatNumber(egreso.pesoFino)} gr</span>
                 </div>
               </div>
             </div>
@@ -244,15 +252,23 @@ export default function EgresosReportPdfTemplate({
               <span className="pdf-totals-header-text" style={{ fontWeight: 700, color: '#ffffff', textTransform: 'uppercase', letterSpacing: '0.5px', fontSize: '7.5px' }}>TOTALES GENERALES — {summary.totalEgresos} Egresos</span>
             </div>
             <div style={{ display: 'table', width: '100%', tableLayout: 'fixed' }}>
-              <div style={{ display: 'table-cell', width: '33.33%', padding: '4px', textAlign: 'center', borderRight: '1px solid #e0e0e0' }}>
+              <div style={{ display: 'table-cell', width: '20%', padding: '4px', textAlign: 'center', borderRight: '1px solid #e0e0e0' }}>
                 <div className="pdf-totals-label" style={{ fontWeight: 700, color: '#666666', textTransform: 'uppercase', fontSize: '6px', marginBottom: '1px' }}>Total Lingotes</div>
                 <div className="pdf-totals-value" style={{ fontWeight: 700, color: '#139169', fontSize: '10px' }}>{summary.totalLingotes}</div>
               </div>
-              <div style={{ display: 'table-cell', width: '33.33%', padding: '4px', textAlign: 'center', borderRight: '1px solid #e0e0e0' }}>
-                <div className="pdf-totals-label" style={{ fontWeight: 700, color: '#666666', textTransform: 'uppercase', fontSize: '6px', marginBottom: '1px' }}>Peso Bruto Total</div>
+              <div style={{ display: 'table-cell', width: '20%', padding: '4px', textAlign: 'center', borderRight: '1px solid #e0e0e0' }}>
+                <div className="pdf-totals-label" style={{ fontWeight: 700, color: '#666666', textTransform: 'uppercase', fontSize: '6px', marginBottom: '1px' }}>Peso Bruto Total (BI)</div>
                 <div className="pdf-totals-value" style={{ fontWeight: 700, color: '#139169', fontSize: '10px' }}>{formatNumber(summary.pesoBrutoTotal)} g</div>
               </div>
-              <div style={{ display: 'table-cell', width: '33.34%', padding: '4px', textAlign: 'center' }}>
+              <div style={{ display: 'table-cell', width: '20%', padding: '4px', textAlign: 'center', borderRight: '1px solid #e0e0e0' }}>
+                <div className="pdf-totals-label" style={{ fontWeight: 700, color: '#666666', textTransform: 'uppercase', fontSize: '6px', marginBottom: '1px' }}>Peso Balanza Total (BR)</div>
+                <div className="pdf-totals-value" style={{ fontWeight: 700, color: '#139169', fontSize: '10px' }}>{formatNumber(summary.pesoBrutoBalanzaTotal)} g</div>
+              </div>
+              <div style={{ display: 'table-cell', width: '20%', padding: '4px', textAlign: 'center', borderRight: '1px solid #e0e0e0' }}>
+                <div className="pdf-totals-label" style={{ fontWeight: 700, color: '#666666', textTransform: 'uppercase', fontSize: '6px', marginBottom: '1px' }}>Merma Total</div>
+                <div className="pdf-totals-value" style={{ fontWeight: 700, color: '#139169', fontSize: '10px' }}>{formatNumber(summary.mermaTotal)} g</div>
+              </div>
+              <div style={{ display: 'table-cell', width: '20%', padding: '4px', textAlign: 'center' }}>
                 <div className="pdf-totals-label" style={{ fontWeight: 700, color: '#666666', textTransform: 'uppercase', fontSize: '6px', marginBottom: '1px' }}>Peso Fino Total</div>
                 <div className="pdf-totals-value" style={{ fontWeight: 700, color: '#139169', fontSize: '10px' }}>{formatNumber(summary.pesoFinoTotal)} g</div>
               </div>

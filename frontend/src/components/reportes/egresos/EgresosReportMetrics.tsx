@@ -75,13 +75,13 @@ export default function EgresosReportMetrics({ summary }: EgresosReportMetricsPr
           TOTAL PESO BRUTO EGRESADO
         </div>
         <div className="text-[18px] font-bold text-white">
-          {formatNumber(summary.pesoBrutoTotal)} g
+          {formatNumber(summary.pesoBrutoBalanzaTotal)} g
         </div>
         <div
           className="text-[11px] mt-1"
           style={{ color: '#85e8c5' }}
         >
-          Peso Bruto Total: {formatNumber(summary.pesoBrutoTotal)} g
+          BR: {formatNumber(summary.pesoBrutoBalanzaTotal)} g · BI: {formatNumber(summary.pesoBrutoTotal)} g · M: {formatNumber(summary.mermaTotal)} g
         </div>
       </div>
     </div>

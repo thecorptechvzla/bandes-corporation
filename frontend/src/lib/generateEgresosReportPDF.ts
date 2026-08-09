@@ -125,7 +125,7 @@ function drawKPICards(doc: jsPDF, y: number, pw: number, summary: EgresosReportD
   const cards = [
     { label: 'TOTAL EGRESOS', value: String(summary.totalEgresos), sub: 'Salidas en el periodo' },
     { label: 'TOTAL LINGOTES', value: String(summary.totalLingotes), sub: 'Egresados' },
-    { label: 'PESO BRUTO TOTAL', value: `${formatNumber(summary.pesoBrutoTotal)} g`, sub: `Fino: ${formatNumber(summary.pesoFinoTotal)} g` },
+    { label: 'PESO BRUTO EGRESADO (BR)', value: `${formatNumber(summary.pesoBrutoBalanzaTotal)} g`, sub: `BI: ${formatNumber(summary.pesoBrutoTotal)} g | M: ${formatNumber(summary.mermaTotal)} g` },
   ];
 
   cards.forEach((card, i) => {
@@ -164,6 +164,8 @@ function drawSummaryTable(doc: jsPDF, y: number, pw: number, data: EgresosReport
     r.fecha,
     String(r.lingotes),
     `${formatNumber(r.pesoBruto)}`,
+    `${formatNumber(r.pesoBrutoBalanza)}`,
+    `${formatNumber(r.merma)}`,
     `${formatLey(r.leyProm)}`,
   ]);
 
@@ -173,12 +175,14 @@ function drawSummaryTable(doc: jsPDF, y: number, pw: number, data: EgresosReport
     '',
     String(summary.totalLingotes),
     `${formatNumber(summary.pesoBrutoTotal)} g`,
+    `${formatNumber(summary.pesoBrutoBalanzaTotal)} g`,
+    `${formatNumber(summary.mermaTotal)} g`,
     '',
   ]);
 
   autoTable(doc, {
     startY: y,
-    head: [['N\u00b0 Egreso / Gu\u00eda', 'Cliente', 'Fecha', 'Lingotes', 'Peso Bruto (g)', 'Ley Prom. (‰)']],
+    head: [['N\u00b0 Egreso / Gu\u00eda', 'Cliente', 'Fecha', 'Lingotes', 'BI (g)', 'BR (g)', 'M (g)', 'Ley Prom. (‰)']],
     body: bodyRows,
     theme: 'grid',
     headStyles: {
@@ -201,11 +205,13 @@ function drawSummaryTable(doc: jsPDF, y: number, pw: number, data: EgresosReport
     },
     columnStyles: {
       0: { cellWidth: 32, halign: 'left' },
-      1: { cellWidth: 42, halign: 'left' },
-      2: { cellWidth: 22, halign: 'center' },
-      3: { cellWidth: 18, halign: 'center' },
+      1: { cellWidth: 34, halign: 'left' },
+      2: { cellWidth: 20, halign: 'center' },
+      3: { cellWidth: 15, halign: 'center' },
       4: { halign: 'right' },
-      5: { cellWidth: 20, halign: 'center' },
+      5: { halign: 'right' },
+      6: { halign: 'right' },
+      7: { cellWidth: 20, halign: 'center' },
     },
     alternateRowStyles: {
       fillColor: ROW_ALT,
@@ -309,14 +315,15 @@ function drawDetailedSection(doc: jsPDF, startY: number, pw: number, detailed: E
         const barBodyRows = lote.barras.map((barra) => [
           barra.barCode,
           `${formatNumber(barra.pesoBruto)}`,
+          `${formatNumber(barra.pesoBalanza ?? barra.pesoBruto)}`,
+          `${formatNumber(barra.pesoBruto - (barra.pesoBalanza ?? barra.pesoBruto))}`,
           `${formatLey(barra.ley)}`,
-          barra.pesoBalanza != null ? `${formatNumber(barra.pesoBalanza)}` : '\u2014',
           barra.proveedor,
         ]);
 
         autoTable(doc, {
           startY: y,
-          head: [['Código Barra', 'Peso Bruto (g)', 'Ley (‰)', 'Peso Balanza (g)', 'Proveedor']],
+          head: [['Código Barra', 'BI (g)', 'BR (g)', 'M (g)', 'Ley (‰)', 'Proveedor']],
           body: barBodyRows,
           theme: 'grid',
           headStyles: {
@@ -339,9 +346,10 @@ function drawDetailedSection(doc: jsPDF, startY: number, pw: number, detailed: E
           columnStyles: {
             0: { cellWidth: 30, halign: 'left' },
             1: { halign: 'right' },
-            2: { cellWidth: 18, halign: 'center' },
+            2: { halign: 'right' },
             3: { halign: 'right' },
-            4: { cellWidth: 50, halign: 'left' },
+            4: { cellWidth: 18, halign: 'center' },
+            5: { cellWidth: 52, halign: 'left' },
           },
           alternateRowStyles: {
             fillColor: ROW_ALT,
@@ -365,15 +373,13 @@ function drawDetailedSection(doc: jsPDF, startY: number, pw: number, detailed: E
     });
 
     // Subtotal
-    const totPesoBruto = egreso.items.reduce((a, b) => a + b.pesoBruto, 0);
-    const totPesoFino = egreso.items.reduce((a, b) => a + b.pesoFino, 0);
-
     const subRows = [[
       `Subtotal \u2014 ${egreso.lingotes} Lingotes`,
+      `${formatNumber(egreso.pesoBruto)} g`,
+      `${formatNumber(egreso.pesoBrutoBalanza)} g`,
+      `${formatNumber(egreso.merma)} g`,
       '',
-      `${formatNumber(totPesoBruto)} g`,
-      '',
-      `${formatNumber(totPesoFino)} g`,
+      `${formatNumber(egreso.pesoFino)} g`,
     ]];
 
     autoTable(doc, {
@@ -390,9 +396,11 @@ function drawDetailedSection(doc: jsPDF, startY: number, pw: number, detailed: E
         lineWidth: 0.3,
       },
       columnStyles: {
-        0: { cellWidth: 50, halign: 'left' },
+        0: { cellWidth: 60, halign: 'left' },
+        1: { halign: 'right' },
         2: { halign: 'right' },
-        4: { halign: 'right' },
+        3: { halign: 'right' },
+        5: { halign: 'right' },
       },
       margin: { left: 10, right: 10 },
     });
@@ -424,10 +432,12 @@ function drawTotalesGenerales(doc: jsPDF, y: number, pw: number, summary: Egreso
   doc.setLineWidth(0.3);
   doc.roundedRect(10, y, pw - 20, boxH, 1, 1, 'S');
 
-  const colW = (pw - 20) / 3;
+  const colW = (pw - 20) / 5;
   const cols = [
     { label: 'Total Lingotes', value: String(summary.totalLingotes) },
-    { label: 'Peso Bruto Total', value: `${formatNumber(summary.pesoBrutoTotal)} g` },
+    { label: 'Peso Bruto (BI)', value: `${formatNumber(summary.pesoBrutoTotal)} g` },
+    { label: 'Peso Balanza (BR)', value: `${formatNumber(summary.pesoBrutoBalanzaTotal)} g` },
+    { label: 'Merma Total', value: `${formatNumber(summary.mermaTotal)} g` },
     { label: 'Peso Fino Total', value: `${formatNumber(summary.pesoFinoTotal)} g` },
   ];
 

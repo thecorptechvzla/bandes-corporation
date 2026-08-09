@@ -42,6 +42,8 @@ export default function EgresosReportPage() {
     totalLingotes: 0,
     pesoFinoTotal: 0,
     pesoBrutoTotal: 0,
+    pesoBrutoBalanzaTotal: 0,
+    mermaTotal: 0,
   });
 
   const [appliedClienteName, setAppliedClienteName] = useState('Todos los Clientes');

@@ -31,6 +31,8 @@ export interface EgresoRecord {
   fecha: string;
   lingotes: number;
   pesoBruto: number;
+  pesoBrutoBalanza: number;
+  merma: number;
   leyProm: number;
   pesoFino: number;
   destino: string;
@@ -47,6 +49,8 @@ export interface EgresoSummary {
   totalLingotes: number;
   pesoFinoTotal: number;
   pesoBrutoTotal: number;
+  pesoBrutoBalanzaTotal: number;
+  mermaTotal: number;
 }
 
 export interface EgresosReportData {

@@ -9,7 +9,9 @@ interface SaldoReportMetricsProps {
 
 export default function SaldoReportMetrics({ records }: SaldoReportMetricsProps) {
   const totalIngresado = records.reduce((a, r) => a + r.totalRecibido, 0);
-  const totalEgresado = records.reduce((a, r) => a + r.totalEgresado, 0);
+  const totalEgresadoBR = records.reduce((a, r) => a + r.totalEgresadoBR, 0);
+  const totalEgresadoBI = records.reduce((a, r) => a + r.totalEgresado, 0);
+  const mermaTotal = records.reduce((a, r) => a + r.merma, 0);
   const saldoActual = records.reduce((a, r) => a + r.saldoActual, 0);
 
   return (
@@ -51,16 +53,16 @@ export default function SaldoReportMetrics({ records }: SaldoReportMetricsProps)
           className="text-[11px] font-bold uppercase tracking-wider mb-2"
           style={{ color: 'var(--report-color-primary-light)' }}
         >
-          TOTAL PESO BRUTO EGRESADO
+          TOTAL PESO BRUTO EGRESADO (BR)
         </div>
         <div className="text-[18px] font-bold text-white">
-          {formatNumber(totalEgresado)} g
+          {formatNumber(totalEgresadoBR)} g
         </div>
         <div
           className="text-[11px] mt-1"
           style={{ color: '#85e8c5' }}
         >
-          Peso Bruto Egresado
+          BI: {formatNumber(totalEgresadoBI)} g · M: {formatNumber(mermaTotal)} g
         </div>
       </div>
 
