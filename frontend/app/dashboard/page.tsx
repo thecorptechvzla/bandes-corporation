@@ -400,9 +400,9 @@ export default function V2DashboardPage() {
     },
     {
       label: 'Oro Egresado',
-      value: egresadoGross,
+      value: egresadoBalanza,
       subicon: ArrowUpRight,
-      sublabel: `BR: ${formatNumber(egresadoBalanza, 2)} g | M: ${formatNumber(egresadoMerma, 2)} g`,
+      sublabel: `BI: ${formatNumber(egresadoGross, 2)} g | M: ${formatNumber(egresadoMerma, 2)} g`,
       accent: KPI_COLORS[4].accent,
       tag: 'DESPACHADO',
       postfix: '',
