@@ -52,6 +52,25 @@ export function PinPadModal({
   }, [isOpen, barInfo]);
 
   useEffect(() => {
+    if (!isOpen || unlocked) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key >= '0' && e.key <= '9') {
+        setPin(prev => prev.length < 4 ? prev + e.key : prev);
+        setError(false);
+      } else if (e.key === 'Backspace') {
+        setPin(prev => prev.slice(0, -1));
+        setError(false);
+      } else if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, unlocked, onClose]);
+
+  useEffect(() => {
     if (pin.length === 4) {
       const timer = setTimeout(() => {
         if (pin === SECURITY_PIN) {
@@ -202,6 +221,9 @@ export function PinPadModal({
                 );
               })}
             </div>
+            <p className="text-center text-[9px] font-mono text-[var(--pm-text-dim)]/50 mt-3 tracking-wider">
+              o escriba con el teclado
+            </p>
           </div>
         )}
 

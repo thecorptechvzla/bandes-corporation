@@ -380,13 +380,19 @@ export function BarDetailModal({
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.3, ease: 'easeOut' }}
+            transition={{ opacity: { duration: 0.3 }, x: { duration: 0.3, ease: 'easeOut' }, layout: { duration: 0.35, ease: [0.4, 0, 0.2, 1] } }}
+            layout
             className={`shrink-0 ${consoleCollapsed ? 'self-center' : 'self-start'}`}
           >
-            <div className={`flex flex-col overflow-hidden rounded-2xl border border-[var(--pm-border)]/40 bg-[var(--pm-bg-base)] shadow-2xl shadow-black/40 transition-all duration-300 ${consoleCollapsed ? 'w-12 items-center py-3' : 'w-auto p-4 max-h-full'}`}>
+            <motion.div
+              initial={false}
+              animate={{ width: consoleCollapsed ? 48 : 224 }}
+              transition={{ width: { duration: 0.35, ease: [0.4, 0, 0.2, 1] } }}
+              className="relative flex flex-col overflow-hidden max-h-full rounded-2xl border border-[var(--pm-border)]/40 bg-[var(--pm-bg-base)] shadow-2xl shadow-black/40"
+            >
               <button type="button" onClick={() => setConsoleCollapsed(v => !v)}
                 title={consoleCollapsed ? 'Mostrar consola' : 'Ocultar consola'}
-                className={`shrink-0 rounded-md hover:bg-[var(--pm-bg-tertiary)] text-[var(--pm-accent-cyan)] hover:text-white transition-all active:scale-90 cursor-pointer ${consoleCollapsed ? 'p-1.5' : 'ml-auto mb-3 p-1 text-[var(--pm-text-dim)]'}`}>
+                className={`shrink-0 rounded-md hover:bg-[var(--pm-bg-tertiary)] hover:text-white transition-all active:scale-90 cursor-pointer ${consoleCollapsed ? 'self-center my-3 p-1.5 text-[var(--pm-accent-cyan)]' : 'self-end m-2 mb-0 p-1 text-[var(--pm-text-dim)]'}`}>
                 <ChevronRight className={`w-5 h-5 transition-transform duration-300 ${consoleCollapsed ? '' : 'rotate-180'}`} />
               </button>
 
@@ -394,11 +400,11 @@ export function BarDetailModal({
                 {!consoleCollapsed && (
                   <motion.div
                     key="console-body"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.15 }}
-                    className="flex flex-col gap-4 overflow-y-auto min-h-0 v2-scroll"
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ opacity: { duration: 0.15 }, height: { duration: 0.3, ease: [0.4, 0, 0.2, 1] } }}
+                    className="flex flex-col gap-4 overflow-y-auto min-h-0 p-4 v2-scroll"
                   >
                     <span className="text-[9px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider flex items-center gap-1.5">
                       <Cpu className="w-3 h-3 text-[var(--pm-accent-cyan)]" /> CONSOLA DE HARDWARE
@@ -443,7 +449,7 @@ export function BarDetailModal({
                   </motion.div>
                 )}
               </AnimatePresence>
-            </div>
+            </motion.div>
           </motion.div>
         )}
       </ModalShell>
