@@ -8,15 +8,17 @@ import { HistoryFilters } from '@/components/historicos/HistoryFilters';
 import type { MaterialExit } from '@/types/api';
 
 type ViewLote = {
+  id?: string;
   name?: string;
   recovered?: number | null;
-  process?: { client?: { name?: string } };
+  photoUrl?: string | null;
+  process?: { id?: string; name?: string; client?: { id?: string; name?: string; rif?: string } };
 };
 
 type ViewDetalle = {
   id: string;
   lot?: ViewLote | null;
-  bars?: { id: string; barNumber: string; fineWeight?: number; grossWeight?: number }[];
+  bars?: { id: string; barNumber: string; fineWeight?: number; grossWeight?: number; clientId?: string; client?: { id?: string; name?: string } }[];
   weightAported: string | number;
 };
 
@@ -73,10 +75,18 @@ export function ExitsHistoryView() {
         id: d.id,
         lot: d.lot
           ? {
+              id: d.lot.id,
               name: d.lot.name,
               recovered: d.lot.recovered ?? null,
+              photoUrl: d.lot.photoUrl ?? null,
               process: d.lot.process
-                ? { client: d.lot.process.client ? { name: d.lot.process.client.name } : undefined }
+                ? {
+                    id: d.lot.process.id,
+                    name: d.lot.process.name,
+                    client: d.lot.process.client
+                      ? { id: d.lot.process.client.id, name: d.lot.process.client.name, rif: d.lot.process.client.rif }
+                      : undefined,
+                  }
                 : undefined,
             }
           : null,
@@ -85,6 +95,8 @@ export function ExitsHistoryView() {
           barNumber: b.barNumber,
           fineWeight: b.fineWeight,
           grossWeight: b.grossWeight,
+          clientId: b.clientId,
+          client: b.client ? { id: b.client.id, name: b.client.name } : undefined,
         })),
         weightAported: d.weightAported,
       })),

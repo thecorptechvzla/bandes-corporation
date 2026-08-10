@@ -1,16 +1,30 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronDown, Truck, FileStack, Download, User, Building } from 'lucide-react';
 import { formatNumber, formatWeight } from '@/lib/format';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { useBars } from '@/hooks/useBars';
+import { LotDetailModal } from '@/components/egresos/LotDetailModal';
+import { BarDetailModal } from '@/components/packing/BarDetailModal';
+import type { Bar } from '@/types/api';
 
 interface ExitDetail {
   id: string;
-  lot?: { name?: string; recovered?: number | null; process?: { client?: { name?: string } } } | null;
-  bars?: { id: string; barNumber: string; fineWeight?: number; grossWeight?: number }[];
+  lot?: {
+    id?: string;
+    name?: string;
+    recovered?: number | null;
+    photoUrl?: string | null;
+    process?: {
+      id?: string;
+      name?: string;
+      client?: { id?: string; name?: string; rif?: string };
+    };
+  } | null;
+  bars?: { id: string; barNumber: string; fineWeight?: number; grossWeight?: number; clientId?: string; client?: { id?: string; name?: string } }[];
   weightAported: string | number;
 }
 
@@ -39,6 +53,10 @@ export function ExitsTable({
   exits, isLoading, hasAnyFilter, expandedExitId, onExpand, onClearFilters,
   onPDFCliente, onPDFEmpresa,
 }: ExitsTableProps) {
+  const [selectedLotForModal, setSelectedLotForModal] = useState<any | null>(null);
+  const [selectedBarForModal, setSelectedBarForModal] = useState<Bar | null>(null);
+  const { data: allBars = [] } = useBars();
+
   if (isLoading) {
     return (
       <div className="glass-panel rounded-2xl border border-[var(--pm-border)]/40 overflow-hidden">
@@ -63,6 +81,7 @@ export function ExitsTable({
   }
 
   return (
+    <>
     <div className="glass-panel rounded-2xl border border-[var(--pm-border)]/40 overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full">
@@ -195,7 +214,27 @@ export function ExitsTable({
                                     return (
                                       <div
                                         key={`${e.id}-detail-${idx}`}
-                                        className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 rounded-xl border border-[var(--pm-border)]/20 bg-[var(--pm-bg-tertiary)]/25"
+                                        className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 rounded-xl border border-[var(--pm-border)]/20 bg-[var(--pm-bg-tertiary)]/25 cursor-pointer hover:bg-[#1A202C]/50 transition-colors"
+                                        onClick={() => {
+                                          if (detail.lot?.name) {
+                                            const lotData = {
+                                              id: detail.lot?.id || detail.id,
+                                              name: detail.lot.name,
+                                              processName: detail.lot?.process?.name || '',
+                                              clientId: detail.lot?.process?.client?.id || '',
+                                              clientName: detail.lot?.process?.client?.name || 'DESCONOCIDO',
+                                              clientRif: detail.lot?.process?.client?.rif || '—',
+                                              availableWeight: Number(detail.lot?.recovered ?? 0),
+                                              grossWeight: Number(detail.weightAported ?? 0),
+                                              recovered: Number(detail.lot?.recovered ?? 0),
+                                              photoUrl: detail.lot?.photoUrl || null,
+                                              barCount: detail.bars?.length ?? 0,
+                                              isMixed: (detail.bars?.length ?? 0) > 1,
+                                              composition: [],
+                                            };
+                                            setSelectedLotForModal(lotData);
+                                          }
+                                        }}
                                       >
                                         {/* 1 · Identificación */}
                                         <div className="min-w-0">
@@ -271,7 +310,13 @@ export function ExitsTable({
                                     return (
                                       <div
                                         key={`${e.id}-bar-${idx}`}
-                                        className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 rounded-xl border border-[var(--pm-border)]/20 bg-[var(--pm-bg-tertiary)]/25"
+                                        className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 rounded-xl border border-[var(--pm-border)]/20 bg-[var(--pm-bg-tertiary)]/25 cursor-pointer hover:bg-[#1A202C]/50 transition-colors"
+                                        onClick={() => {
+                                          const barData = allBars.find(b => b.id === bar.id);
+                                          if (barData) {
+                                            setSelectedBarForModal(barData);
+                                          }
+                                        }}
                                       >
                                         {/* 1 · Identificación */}
                                         <div className="min-w-0">
@@ -338,11 +383,29 @@ export function ExitsTable({
                     </tr>
                   )}
                 </React.Fragment>
-              );
-            })}
+              )}
+            )}
           </tbody>
         </table>
       </div>
     </div>
+
+    {/* Modales */}
+    {selectedLotForModal && (
+      <LotDetailModal
+        lot={selectedLotForModal}
+        bars={allBars}
+        onClose={() => setSelectedLotForModal(null)}
+      />
+    )}
+    {selectedBarForModal && (
+      <BarDetailModal
+        bar={selectedBarForModal}
+        readOnly={true}
+        zIndex="z-[150]"
+        onClose={() => setSelectedBarForModal(null)}
+      />
+    )}
+    </>
   );
 }
