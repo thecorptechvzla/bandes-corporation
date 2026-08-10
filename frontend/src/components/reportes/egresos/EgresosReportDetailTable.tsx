@@ -153,7 +153,15 @@ export default function EgresosReportDetailTable({ records, summary, onReprint }
 
               {/* Sub-tabla de barras */}
               {lote.barras.length > 0 && (
-                <table className="w-full border-collapse text-left">
+                <table className="w-full border-collapse table-fixed">
+                  <colgroup>
+                    <col className="w-[22%]" />
+                    <col className="w-[16%]" />
+                    <col className="w-[16%]" />
+                    <col className="w-[12%]" />
+                    <col className="w-[14%]" />
+                    <col className="w-[20%]" />
+                  </colgroup>
                   <thead>
                     <tr>
                       {[
@@ -166,8 +174,9 @@ export default function EgresosReportDetailTable({ records, summary, onReprint }
                       ].map((h) => (
                         <th
                           key={h.label}
-                          className={`px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-${h.align}`}
+                          className="px-4 py-2 text-[10px] font-bold uppercase tracking-wider"
                           style={{
+                            textAlign: h.align,
                             backgroundColor: 'rgba(19, 145, 105, 0.06)',
                             color: 'var(--report-text-muted)',
                             borderBottom: '1px solid var(--report-border-color)',
@@ -234,58 +243,34 @@ export default function EgresosReportDetailTable({ records, summary, onReprint }
                       </tr>
                     ))}
                   </tbody>
+                  <tfoot>
+                    <tr style={{ backgroundColor: 'var(--report-bg-main)', borderTop: '2px solid var(--report-color-primary)' }}>
+                      <td className="px-4 py-3 text-[12px] font-bold" style={{ color: 'var(--report-color-primary)' }}>
+                        Subtotal — {egreso.lingotes} {egreso.lingotes === 1 ? 'Lingote' : 'Lingotes'}
+                      </td>
+                      <td className="px-4 py-3 text-right text-[12px] font-bold" style={{ color: 'var(--report-color-primary)' }}>
+                        {formatNumber(egreso.pesoBruto)}
+                      </td>
+                      <td className="px-4 py-3 text-right text-[12px] font-bold" style={{ color: 'var(--report-color-primary)' }}>
+                        {formatNumber(egreso.pesoBrutoBalanza)}
+                      </td>
+                      <td className="px-4 py-3 text-right text-[12px] font-bold" style={{ color: 'var(--report-color-primary)' }}>
+                        {formatNumber(egreso.merma)}
+                      </td>
+                      <td className="px-4 py-3 text-center text-[12px] font-bold" style={{ color: 'var(--report-color-primary)' }}>
+                        {formatLey(egreso.leyProm)}‰
+                      </td>
+                      <td className="px-4 py-3 text-right text-[12px] font-bold" style={{ color: 'var(--report-color-primary)' }}>
+                        Fino: {formatNumber(egreso.pesoFino)}
+                      </td>
+                    </tr>
+                  </tfoot>
                 </table>
               )}
             </div>
           ))}
 
-          {/* Subtotal */}
-          <div
-            className="flex items-center justify-between px-4 py-3"
-            style={{
-              backgroundColor: 'var(--report-bg-main)',
-              borderTop: '2px solid var(--report-color-primary)',
-            }}
-          >
-            <span
-              className="text-[12px] font-bold"
-              style={{ color: 'var(--report-color-primary)' }}
-            >
-              Subtotal — {egreso.lingotes} Lingotes
-            </span>
-            <div className="flex items-center gap-6">
-              <span
-                className="text-[12px] font-bold"
-                style={{ color: 'var(--report-color-primary)' }}
-              >
-                BI: {formatNumber(egreso.pesoBruto)} gr
-              </span>
-              <span
-                className="text-[12px] font-bold"
-                style={{ color: 'var(--report-color-primary)' }}
-              >
-                BR: {formatNumber(egreso.pesoBrutoBalanza)} gr
-              </span>
-              <span
-                className="text-[12px] font-bold"
-                style={{ color: 'var(--report-color-primary)' }}
-              >
-                M: {formatNumber(egreso.merma)} gr
-              </span>
-              <span
-                className="text-[12px] font-bold"
-                style={{ color: 'var(--report-color-primary)' }}
-              >
-                Ley: {formatLey(egreso.leyProm)} ‰
-              </span>
-              <span
-                className="text-[12px] font-bold"
-                style={{ color: 'var(--report-color-primary)' }}
-              >
-                Fino: {formatNumber(egreso.pesoFino)} gr
-              </span>
-            </div>
-          </div>
+
               </motion.div>
             )}
           </AnimatePresence>
