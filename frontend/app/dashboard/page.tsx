@@ -549,6 +549,7 @@ export default function V2DashboardPage() {
         isOpen={isBovedaModalOpen}
         lots={bovedaLots}
         bars={inStockBars}
+        allBars={bars}
         clients={clients}
         lotGrossWeight={lotGrossWeight}
         lotFineWeight={lotFineWeight}

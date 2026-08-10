@@ -5,6 +5,7 @@ import { motion } from 'motion/react';
 import { CheckCircle2, ChevronRight, ChevronDown, X } from 'lucide-react';
 import { formatNumber, formatLey } from '@/lib/format';
 import { ModalShell } from '@/components/ui/ModalShell';
+import { BarDetailModal } from '@/components/packing/BarDetailModal';
 import type { Process, Lot, Bar, Client } from '@/types/api';
 
 interface ProcessDetailModalProps {
@@ -17,15 +18,17 @@ interface ProcessDetailModalProps {
 
 export function ProcessDetailModal({ process, lots, lotBarsMap, clients, onClose }: ProcessDetailModalProps) {
   const [expandedLotId, setExpandedLotId] = useState<string | null>(null);
+  const [selectedBarForModal, setSelectedBarForModal] = useState<Bar | null>(null);
 
   return (
-    <ModalShell
-      isOpen
-      onClose={onClose}
-      noHeader
-      noPadding
-      size="lg"
-    >
+    <>
+      <ModalShell
+        isOpen
+        onClose={onClose}
+        noHeader
+        noPadding
+        size="lg"
+      >
       {/* Header */}
       <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-[var(--pm-border)]">
         <div className="flex items-center gap-3">
@@ -157,7 +160,8 @@ export function ProcessDetailModal({ process, lots, lotBarsMap, clients, onClose
                                       <tbody>
                                         {lb.map((bar, bi) => (
                                           <tr key={bar.id}
-                                            className={`${bi % 2 === 1 ? 'bg-black/20' : ''} hover:bg-[var(--pm-accent-gold)]/[0.03] transition-colors`}
+                                            onClick={() => setSelectedBarForModal(bar)}
+                                            className={`${bi % 2 === 1 ? 'bg-black/20' : ''} hover:bg-[#1A202C]/50 transition-colors cursor-pointer`}
                                           >
                                             <td className="sticky left-0 bg-[var(--pm-bg-primary)] font-semibold text-[var(--pm-accent-gold)] z-10 text-left px-4 py-2.5">
                                               {bar.barNumber}
@@ -192,5 +196,15 @@ export function ProcessDetailModal({ process, lots, lotBarsMap, clients, onClose
               </div>
             </div>
     </ModalShell>
+
+      {selectedBarForModal && (
+        <BarDetailModal
+          bar={selectedBarForModal}
+          onClose={() => setSelectedBarForModal(null)}
+          readOnly
+          zIndex="z-[150]"
+        />
+      )}
+    </>
   );
 }

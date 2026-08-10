@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Warehouse, X, ChevronDown, ChevronLeft, ChevronRight, Building2 } from 'lucide-react';
 import { formatNumber } from '@/lib/format';
 import { SupplierDirectory } from '@/components/SupplierDirectory';
+import { BarDetailModal } from '@/components/packing/BarDetailModal';
+import { LotDetailModal } from '@/components/egresos/LotDetailModal';
 import type { Lot, Process, Client, Bar } from '@/types/api';
 
 function useBodyScrollLock(isOpen: boolean) {
@@ -27,12 +29,29 @@ interface BovedaLot extends Lot {
   client?: { id: string; name: string };
 }
 
+interface AvailableLot {
+  id: string;
+  name: string;
+  processName: string;
+  clientId: string;
+  clientName: string;
+  clientRif: string;
+  availableWeight: number;
+  recovered?: number;
+  grossWeight?: number;
+  photoUrl?: string | null;
+  barCount: number;
+  isMixed?: boolean;
+  composition?: { clientId: string; clientName: string; weight: number; percentage: number }[];
+}
+
 type Tab = 'fundido' | 'sinFundir';
 
 interface BovedaModalProps {
   isOpen: boolean;
   lots: BovedaLot[];
   bars: Bar[];
+  allBars?: Bar[];
   clients: Client[];
   lotGrossWeight?: Record<string, number>;
   lotFineWeight?: Record<string, number>;
@@ -40,10 +59,12 @@ interface BovedaModalProps {
   onBarClick?: (barId: string) => void;
 }
 
-export function BovedaModal({ isOpen, lots, bars, clients, lotGrossWeight, lotFineWeight, onClose, onBarClick }: BovedaModalProps) {
+export function BovedaModal({ isOpen, lots, bars, allBars, clients, lotGrossWeight, lotFineWeight, onClose, onBarClick }: BovedaModalProps) {
   const [tab, setTab] = useState<Tab>('fundido');
   const [expandedFundidoId, setExpandedFundidoId] = useState<string | null>(null);
   const [fundidoLotPages, setFundidoLotPages] = useState<Record<string, number>>({});
+  const [selectedBarForModal, setSelectedBarForModal] = useState<Bar | null>(null);
+  const [selectedLotForModal, setSelectedLotForModal] = useState<{ lot: AvailableLot; bars: Bar[] } | null>(null);
   useBodyScrollLock(isOpen);
 
   const LOTS_PER_PAGE = 10;
@@ -101,13 +122,14 @@ export function BovedaModal({ isOpen, lots, bars, clients, lotGrossWeight, lotFi
   const grandTotalFino = tab === 'fundido' ? totalFundidoFino : totalFineWeight;
 
   const tabDefs: { key: Tab; label: string; count: number }[] = [
-    { key: 'fundido', label: 'FUNDIDO', count: lots.length },
+    { key: 'fundido', label: 'REFUNDIDO', count: lots.length },
     { key: 'sinFundir', label: 'SIN REFUNDIR', count: bars.length },
   ];
 
   return (
-    <AnimatePresence>
-      {isOpen && (
+    <>
+      <AnimatePresence>
+        {isOpen && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -246,10 +268,32 @@ export function BovedaModal({ isOpen, lots, bars, clients, lotGrossWeight, lotFi
                                           </tr>
                                         </thead>
                                         <tbody>
-                                          {paginatedLots.map((lot, lotIdx) => (
+{paginatedLots.map((lot, lotIdx) => (
                                             <tr
                                               key={lot.id}
-                                              className={`${lotIdx % 2 === 1 ? 'bg-[var(--hud-bg-deepest)]/30' : ''}`}
+                                              onClick={() => {
+                                                const lotBars = (allBars ?? []).length > 0
+                                                  ? (allBars ?? []).filter((b) => b.lotId === lot.id)
+                                                  : (lot.bars ?? []);
+                                                const grossWeight = lotBars.reduce((s, b) => s + Number(b.grossWeight || 0), 0);
+                                                setSelectedLotForModal({
+                                                  lot: {
+                                                    id: lot.id,
+                                                    name: lot.name,
+                                                    processName: lot.process?.name ?? '—',
+                                                    clientId: lot.client?.id ?? lot.process?.clientId ?? 'unknown',
+                                                    clientName: lot.client?.name ?? lot.process?.client?.name ?? 'Desconocido',
+                                                    clientRif: clientMap.get(lot.client?.id ?? lot.process?.clientId ?? 'unknown')?.rif ?? '—',
+                                                    availableWeight: Number(lot.fineWeight ?? 0),
+                                                    recovered: Number(lot.recovered ?? 0),
+                                                    grossWeight,
+                                                    photoUrl: lot.photoUrl ?? null,
+                                                    barCount: lotBars.length,
+                                                  },
+                                                  bars: lotBars,
+                                                });
+                                              }}
+                                              className={`${lotIdx % 2 === 1 ? 'bg-[var(--hud-bg-deepest)]/30' : ''} cursor-pointer hover:bg-[#1A202C]/50 transition-colors`}
                                             >
                                               <td className="text-left px-4 py-3 sticky left-0 bg-[var(--hud-bg-primary)] font-semibold text-[var(--hud-accent-gold)]">
                                                 <span className="text-[11px]">{lot.process?.name ?? '—'}</span>
@@ -260,9 +304,9 @@ export function BovedaModal({ isOpen, lots, bars, clients, lotGrossWeight, lotFi
                                               <td className="text-left px-4 py-3 font-mono text-[11px] text-[var(--hud-text-dim)]">
                                                 {lot.operator ?? '—'}
                                               </td>
-<td className="text-right px-4 py-3 font-mono text-[11px] text-[var(--hud-accent-gold)] tabular-nums">
-                                                  {formatNumber(Number(lot.recovered ?? 0), 2)}
-                                                </td>
+                                              <td className="text-right px-4 py-3 font-mono text-[11px] text-[var(--hud-accent-gold)] tabular-nums">
+                                                {formatNumber(Number(lot.recovered ?? 0), 2)}
+                                              </td>
                                               <td className="text-right px-4 py-3 font-mono text-[11px] text-[var(--hud-text-dim)]">
                                                 {lot.recoveryAt
                                                   ? new Date(lot.recoveryAt).toLocaleDateString('es-AR')
@@ -337,7 +381,11 @@ export function BovedaModal({ isOpen, lots, bars, clients, lotGrossWeight, lotFi
                       purityFirst
                       showSearch
                       hideFooter
-                      onBarClick={onBarClick}
+                      onBarClick={(barId) => {
+                        const bar = bars.find((b) => b.id === barId);
+                        if (bar) setSelectedBarForModal(bar);
+                        else onBarClick?.(barId);
+                      }}
                     />
                   )}
                 </div>
@@ -415,6 +463,25 @@ export function BovedaModal({ isOpen, lots, bars, clients, lotGrossWeight, lotFi
           </motion.div>
         </motion.div>
       )}
-    </AnimatePresence>
+      </AnimatePresence>
+
+      {selectedBarForModal && (
+        <BarDetailModal
+          bar={selectedBarForModal}
+          onClose={() => setSelectedBarForModal(null)}
+          readOnly
+          zIndex="z-[150]"
+        />
+      )}
+
+      {selectedLotForModal && (
+        <LotDetailModal
+          lot={selectedLotForModal.lot}
+          bars={selectedLotForModal.bars}
+          onClose={() => setSelectedLotForModal(null)}
+          zIndex="z-[130]"
+        />
+      )}
+    </>
   );
 }
