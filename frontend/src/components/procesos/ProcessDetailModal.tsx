@@ -3,7 +3,7 @@
 import React, { useState, Fragment } from 'react';
 import { motion } from 'motion/react';
 import { CheckCircle2, ChevronRight, ChevronDown, X } from 'lucide-react';
-import { formatNumber } from '@/lib/format';
+import { formatNumber, formatLey } from '@/lib/format';
 import { ModalShell } from '@/components/ui/ModalShell';
 import type { Process, Lot, Bar, Client } from '@/types/api';
 
@@ -47,24 +47,41 @@ export function ProcessDetailModal({ process, lots, lotBarsMap, clients, onClose
       {/* Body */}
       <div className="p-6 space-y-4">
               {/* Summary cards */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <div className="p-3 rounded-xl border border-[var(--pm-border)] bg-[var(--pm-bg-deepest)]/50 text-center">
                   <span className="text-[10px] font-mono text-[var(--pm-text-dim)] block">Lotes</span>
                   <span className="text-lg font-mono font-bold text-[var(--pm-text-primary)]">{lots.length}</span>
                 </div>
                 <div className="p-3 rounded-xl border border-[var(--pm-border)] bg-[var(--pm-bg-deepest)]/50 text-center">
-                  <span className="text-[10px] font-mono text-[var(--pm-text-dim)] block">Peso Fino</span>
+                  <span className="text-[10px] font-mono text-[var(--pm-text-dim)] block">Bruto Inicial (BI)</span>
                   <span className="text-sm font-mono font-bold text-[var(--pm-accent-gold)]">
                     {formatNumber(lots.reduce((s, l) => {
                       const lb = lotBarsMap[l.id] || [];
-                      return s + lb.reduce((sb, b) => sb + Number(b.fineWeight), 0);
+                      return s + lb.reduce((sb, b) => sb + Number(b.grossWeight), 0);
                     }, 0), 2)} g
                   </span>
                 </div>
                 <div className="p-3 rounded-xl border border-[var(--pm-border)] bg-[var(--pm-bg-deepest)]/50 text-center">
-                  <span className="text-[10px] font-mono text-[var(--pm-text-dim)] block">Recuperado</span>
+                  <span className="text-[10px] font-mono text-[var(--pm-text-dim)] block">Bruto Refundido (BR)</span>
                   <span className="text-sm font-mono font-bold text-[var(--pm-accent-emerald)]">
                     {formatNumber(lots.reduce((s, l) => s + Number(l.recovered ?? 0), 0), 2)} g
+                  </span>
+                </div>
+                <div className="p-3 rounded-xl border border-[var(--pm-border)] bg-[var(--pm-bg-deepest)]/50 text-center">
+                  <span className="text-[10px] font-mono text-[var(--pm-text-dim)] block">Merma (M)</span>
+                  <span className={`text-sm font-mono font-bold ${(() => {
+                    const bi = lots.reduce((s, l) => {
+                      const lb = lotBarsMap[l.id] || [];
+                      return s + lb.reduce((sb, b) => sb + Number(b.grossWeight), 0);
+                    }, 0);
+                    const br = lots.reduce((s, l) => s + Number(l.recovered ?? 0), 0);
+                    const m = bi - br;
+                    return m > 0 ? 'text-[var(--pm-accent-red)]' : 'text-[var(--pm-accent-emerald)]';
+                  })()}`}>
+                    {formatNumber(lots.reduce((s, l) => {
+                      const lb = lotBarsMap[l.id] || [];
+                      return s + lb.reduce((sb, b) => sb + Number(b.grossWeight), 0);
+                    }, 0) - lots.reduce((s, l) => s + Number(l.recovered ?? 0), 0), 2)} g
                   </span>
                 </div>
               </div>
@@ -75,19 +92,19 @@ export function ProcessDetailModal({ process, lots, lotBarsMap, clients, onClose
                   <thead>
                     <tr className="border-b border-[var(--pm-border)]">
                       <th className="w-[30%] sticky left-0 bg-[var(--pm-bg-primary)] z-10 text-left px-4 py-3 text-[var(--pm-text-dim)] font-semibold uppercase tracking-wider">Lote</th>
-                      <th className="w-[17.5%] text-right px-4 py-3 text-[var(--pm-text-dim)] font-semibold uppercase tracking-wider">Peso Fino (g)</th>
-                      <th className="w-[17.5%] text-right px-4 py-3 text-[var(--pm-text-dim)] font-semibold uppercase tracking-wider">R (g)</th>
-                      <th className="w-[17.5%] text-right px-4 py-3 text-[var(--pm-text-dim)] font-semibold uppercase tracking-wider">DIF (g)</th>
-                      <th className="w-[17.5%] text-right px-4 py-3 text-[var(--pm-text-dim)] font-semibold uppercase tracking-wider">% RECUP</th>
+                      <th className="w-[17.5%] text-right px-4 py-3 text-[var(--pm-text-dim)] font-semibold uppercase tracking-wider">BI (G)</th>
+                      <th className="w-[17.5%] text-right px-4 py-3 text-[var(--pm-text-dim)] font-semibold uppercase tracking-wider">BR (G)</th>
+                      <th className="w-[17.5%] text-right px-4 py-3 text-[var(--pm-text-dim)] font-semibold uppercase tracking-wider">M (G)</th>
+                      <th className="w-[17.5%] text-right px-4 py-3 text-[var(--pm-text-dim)] font-semibold uppercase tracking-wider">Ley Au (‰)</th>
                     </tr>
                   </thead>
                   <tbody>
                     {lots.map((lot, idx) => {
                       const lb = lotBarsMap[lot.id] || [];
-                      const fa = lb.reduce((s, b) => s + Number(b.fineWeight), 0);
-                      const r = Number(lot.recovered ?? 0);
-                      const dif = fa - r;
-                      const pctRecup = fa > 0 ? (r / fa) * 100 : 0;
+                      const bi = lb.reduce((s, b) => s + Number(b.grossWeight), 0);
+                      const br = Number(lot.recovered ?? 0);
+                      const m = bi - br;
+                      const ley = lot.purity != null ? formatLey(Number(lot.purity)) : '—';
                       const isExpanded = expandedLotId === lot.id;
                       return (
                         <Fragment key={lot.id}>
@@ -110,16 +127,12 @@ export function ProcessDetailModal({ process, lots, lotBarsMap, clients, onClose
                                 {lot.moldCode && <span className="text-[10px] text-[var(--pm-text-dim)] ml-0.5">({lot.moldCode})</span>}
                               </div>
                             </td>
-                            <td className="text-right px-4 py-3 font-mono text-[var(--pm-accent-gold)]">{formatNumber(fa, 2)}</td>
-                            <td className="text-right px-4 py-3 font-mono text-[var(--pm-accent-emerald)]">{formatNumber(r, 2)}</td>
-                            <td className={`text-right px-4 py-3 font-mono ${dif >= 0 ? 'text-[var(--pm-accent-emerald)]' : 'text-[var(--pm-accent-red)]'}`}>
-                              {dif >= 0 ? '+' : ''}{formatNumber(dif, 2)}
+                            <td className="text-right px-4 py-3 font-mono text-[var(--pm-accent-gold)]">{formatNumber(bi, 2)}</td>
+                            <td className="text-right px-4 py-3 font-mono text-[var(--pm-accent-emerald)]">{formatNumber(br, 2)}</td>
+                            <td className={`text-right px-4 py-3 font-mono ${m > 0 ? 'text-[var(--pm-accent-red)]' : 'text-[var(--pm-accent-emerald)]'}`}>
+                              {formatNumber(m, 2)}
                             </td>
-                            <td className="text-right px-4 py-3">
-                              <span className={`px-1.5 py-0.5 rounded text-[11px] font-bold ${Math.abs(pctRecup - 100) <= 5 ? 'text-[var(--pm-accent-emerald)]' : 'text-[var(--pm-accent-red)]'}`}>
-                                {formatNumber(pctRecup, 2)}%
-                              </span>
-                            </td>
+                            <td className="text-right px-4 py-3 font-mono text-[var(--pm-accent-cyan)]">{ley}</td>
                           </tr>
                           {isExpanded && (
                             <tr key={`${lot.id}-bars`}>
