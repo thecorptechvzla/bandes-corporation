@@ -1,7 +1,9 @@
 'use client';
 
+import { useState } from 'react';
+import { AnimatePresence, motion } from 'motion/react';
 import { formatLey, formatNumber } from '@/lib/format';
-import { User, Building } from 'lucide-react';
+import { User, Building, ChevronDown, ChevronRight } from 'lucide-react';
 import type { CopyType } from '@/lib/generateDispatchPDF';
 import type { EgresoDetailedRecord, EgresoSummary } from './types';
 
@@ -12,6 +14,17 @@ interface EgresosReportDetailTableProps {
 }
 
 export default function EgresosReportDetailTable({ records, summary, onReprint }: EgresosReportDetailTableProps) {
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+
+  const toggleEgreso = (id: string) => {
+    setExpandedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
   return (
     <div className="space-y-4">
       {records.map((egreso) => (
@@ -24,11 +37,12 @@ export default function EgresosReportDetailTable({ records, summary, onReprint }
         >
           {/* Banner del egreso */}
           <div
-            className="flex items-center justify-between px-4 py-3 flex-wrap"
+            className="flex items-center justify-between px-4 py-3 flex-wrap cursor-pointer select-none"
             style={{
               background: 'linear-gradient(135deg, rgba(19, 145, 105, 0.15), rgba(19, 145, 105, 0.05))',
               borderBottom: '2px solid var(--report-color-primary)',
             }}
+            onClick={() => toggleEgreso(egreso.id)}
           >
             <div className="flex items-center gap-3">
               <span
@@ -51,7 +65,7 @@ export default function EgresosReportDetailTable({ records, summary, onReprint }
             >
               {egreso.fecha} | {egreso.destino}
             </span>
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
               <button
                 type="button"
                 onClick={() => onReprint?.(egreso, 'CLIENTE')}
@@ -70,9 +84,24 @@ export default function EgresosReportDetailTable({ records, summary, onReprint }
               >
                 <Building className="w-3 h-3" /> Empresa
               </button>
+              {expandedIds.has(egreso.id) ? (
+                <ChevronDown className="w-4 h-4" style={{ color: 'var(--report-color-primary)' }} />
+              ) : (
+                <ChevronRight className="w-4 h-4" style={{ color: 'var(--report-text-muted)' }} />
+              )}
             </div>
           </div>
 
+          <AnimatePresence initial={false}>
+            {expandedIds.has(egreso.id) && (
+              <motion.div
+                key="content"
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.3, ease: 'easeInOut' }}
+                className="overflow-hidden"
+              >
           {/* Lotes con sus barras */}
           {egreso.lotes.map((lote, loteIdx) => (
             <div
@@ -247,10 +276,19 @@ export default function EgresosReportDetailTable({ records, summary, onReprint }
                 className="text-[12px] font-bold"
                 style={{ color: 'var(--report-color-primary)' }}
               >
+                Ley: {formatLey(egreso.leyProm)} ‰
+              </span>
+              <span
+                className="text-[12px] font-bold"
+                style={{ color: 'var(--report-color-primary)' }}
+              >
                 Fino: {formatNumber(egreso.pesoFino)} gr
               </span>
             </div>
           </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       ))}
 
