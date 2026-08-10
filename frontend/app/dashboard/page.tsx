@@ -20,6 +20,7 @@ import { BovedaModal } from '@/components/dashboard/BovedaModal';
 import { KpiCardGrid, KPI_COLORS } from '@/components/dashboard/KpiCardGrid';
 import { ExitedBarsModal } from '@/components/dashboard/ExitedBarsModal';
 import { BalancesTable } from '@/components/dashboard/BalancesTable';
+import { computeClientEgresoBR } from '@/lib/prorateEgresoBR';
 import { TreemapPanel } from '@/components/dashboard/TreemapPanel';
 import { FlowAreaChart } from '@/components/dashboard/FlowAreaChart';
 import { ClientBalancesBarChart } from '@/components/dashboard/ClientBalancesBarChart';
@@ -101,7 +102,10 @@ export default function V2DashboardPage() {
     let result = exits;
     if (filterClientId) {
       result = result.filter((e) =>
-        e.exitDetails.some((d) => d.lot?.process?.client?.id === filterClientId),
+        (e.bars ?? []).some((b) => b.clientId === filterClientId)
+        || (e.exitDetails ?? []).some((d) =>
+          (d.bars ?? []).some((b) => b.clientId === filterClientId),
+        ),
       );
     }
     if (filterStartDate) result = result.filter((e) => new Date(e.createdAt) >= new Date(filterStartDate));
@@ -253,13 +257,10 @@ export default function V2DashboardPage() {
       const egresoBI = clientBars
         .filter(b => b.status === 'EXITED')
         .reduce((s, b) => s + Number(b.grossWeight), 0);
-      const egresoBR = filteredExits.reduce((sum, e) =>
-        sum
-        + (e.bars ?? []).filter(b => b.clientId === client.id)
-            .reduce((s, b) => s + Number(b.grossWeight), 0)
-        + (e.exitDetails ?? []).filter(d => d.lot?.process?.client?.id === client.id)
-            .reduce((s, d) => s + Number(d.lot?.recovered ?? d.weightAported ?? 0), 0),
-        0);
+      const egresoBR = filteredExits.reduce(
+        (sum, e) => sum + computeClientEgresoBR(e, client.id),
+        0,
+      );
       const egresos = egresoBI;
       const balance = ingresoBruto - egresos;
       const leyAu = ingresoBruto > 0 ? (fa / ingresoBruto) * 1000 : 0;

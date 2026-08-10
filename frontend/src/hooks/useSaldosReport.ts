@@ -1,5 +1,6 @@
 import type { Bar, Client, Lot, MaterialExit, Packing } from '@/types/api';
 import type { BarraEnBoveda, SaldoDetailedRecord, SaldoRecord } from '@/components/reportes/saldos/types';
+import { computeClientEgresoBR } from '@/lib/prorateEgresoBR';
 
 interface ComputeSaldosParams {
   clients: Client[];
@@ -98,13 +99,7 @@ export function computeSaldosReport({
 
     const egresadoBR = exits
       .filter(esExitEnPeriodo)
-      .reduce((sum, e) =>
-        sum
-        + (e.bars ?? []).filter((b) => b.clientId === client.id)
-            .reduce((s, b) => s + Number(b.grossWeight ?? 0), 0)
-        + (e.exitDetails ?? []).filter((d) => d.lot?.process?.client?.id === client.id)
-            .reduce((s, d) => s + Number(d.lot?.recovered ?? d.weightAported ?? 0), 0),
-        0);
+      .reduce((sum, e) => sum + computeClientEgresoBR(e, client.id), 0);
     const merma = egresadoGross - egresadoBR;
 
     const saldoActual = receivedGross - egresadoBR;

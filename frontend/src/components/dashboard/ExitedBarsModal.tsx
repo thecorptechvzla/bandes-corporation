@@ -33,6 +33,8 @@ interface ExitedRow {
   weightFino: number;
   barCount: number;
   barId?: string;
+  isPartialShare?: boolean;
+  portionPct?: number;
   lotInfo?: AvailableLot;
 }
 
@@ -107,44 +109,74 @@ export function ExitedBarsModal({
 
     for (const exit of exits) {
       for (const detail of exit.exitDetails ?? []) {
-        const weightedGross =
-          (detail.bars ?? []).reduce((s, b) => s + Number(b.grossWeight ?? 0), 0) ||
+        const barsOfLot = detail.bars ?? [];
+        const grossTotal =
+          barsOfLot.reduce((s, b) => s + Number(b.grossWeight ?? 0), 0) ||
           Number(detail.weightAported ?? 0) ||
           0;
-        const balanza = Number(detail.lot?.recovered ?? detail.weightAported ?? weightedGross);
-        const fineIn = (detail.bars ?? []).reduce((s, b) => s + Number(b.fineWeight ?? 0), 0);
+        const brLote = Number((detail.lot?.recovered ?? detail.weightAported ?? grossTotal) || 0);
+        const fineIn = barsOfLot.reduce((s, b) => s + Number(b.fineWeight ?? 0), 0);
         const lotPurity = Number(detail.lot?.purity ?? 0);
-        const weightFino =
+        const finoLote =
           lotPurity > 0
-            ? (balanza * lotPurity) / 1000
-            : weightedGross > 0
-              ? (fineIn / weightedGross) * balanza
+            ? (brLote * lotPurity) / 1000
+            : grossTotal > 0
+              ? (fineIn / grossTotal) * brLote
               : fineIn;
-        const providerId = detail.lot?.process?.client?.id ?? 'desconocido';
-        push({
-          key: `${exit.id}-${detail.id ?? detail.lotId}`,
-          code: detail.lot?.name ?? detail.lotId ?? '—',
-          isLot: true,
-          providerId,
-          providerName: detail.lot?.process?.client?.name ?? 'Desconocido',
-          weightBruto: weightedGross,
-          weightBalanza: balanza,
-          weightFino,
-          barCount: detail.bars?.length ?? 1,
-          lotInfo: {
-            id: detail.lotId,
-            name: detail.lot?.name ?? detail.lotId,
-            processName: detail.lot?.process?.name ?? '',
-            clientId: detail.lot?.process?.client?.id ?? '',
-            clientName: detail.lot?.process?.client?.name ?? 'Desconocido',
-            clientRif: '',
-            availableWeight: weightFino,
-            recovered: Number(detail.lot?.recovered ?? 0),
-            grossWeight: weightedGross,
-            photoUrl: detail.lot?.photoUrl ?? null,
-            barCount: detail.bars?.length ?? 1,
-          },
-        });
+
+        const providerMap = new Map<string, { providerName: string; gross: number; count: number }>();
+        for (const b of barsOfLot) {
+          const pid = b.clientId ?? b.client?.id ?? detail.lot?.process?.client?.id ?? 'desconocido';
+          if (!pid) continue;
+          const cur = providerMap.get(pid) ?? {
+            providerName: b.client?.name ?? detail.lot?.process?.client?.name ?? 'Desconocido',
+            gross: 0,
+            count: 0,
+          };
+          cur.gross += Number(b.grossWeight ?? 0);
+          cur.count += 1;
+          providerMap.set(pid, cur);
+        }
+        if (providerMap.size === 0) {
+          const ownerId = detail.lot?.process?.client?.id ?? 'desconocido';
+          providerMap.set(ownerId, {
+            providerName: detail.lot?.process?.client?.name ?? 'Desconocido',
+            gross: grossTotal,
+            count: barsOfLot.length || 1,
+          });
+        }
+
+        for (const [providerId, part] of providerMap) {
+          const ratio = grossTotal > 0 ? part.gross / grossTotal : 1;
+          const portionBR = brLote * ratio;
+          const portionFino = finoLote * ratio;
+          push({
+            key: `${exit.id}-${detail.id ?? detail.lotId}-${providerId}`,
+            code: detail.lot?.name ?? detail.lotId ?? '—',
+            isLot: true,
+            providerId,
+            providerName: part.providerName,
+            weightBruto: part.gross,
+            weightBalanza: portionBR,
+            weightFino: portionFino,
+            barCount: part.count,
+            isPartialShare: ratio < 0.9999,
+            portionPct: ratio * 100,
+            lotInfo: {
+              id: detail.lotId,
+              name: detail.lot?.name ?? detail.lotId,
+              processName: detail.lot?.process?.name ?? '',
+              clientId: detail.lot?.process?.client?.id ?? '',
+              clientName: detail.lot?.process?.client?.name ?? 'Desconocido',
+              clientRif: '',
+              availableWeight: finoLote,
+              recovered: Number(detail.lot?.recovered ?? 0),
+              grossWeight: grossTotal,
+              photoUrl: detail.lot?.photoUrl ?? null,
+              barCount: barsOfLot.length || 1,
+            },
+          });
+        }
       }
       for (const b of exit.bars ?? []) {
         const gw = Number(b.grossWeight ?? 0);
@@ -338,7 +370,14 @@ export function ExitedBarsModal({
                                           <div className="flex flex-col gap-0.5">
                                             <span className="text-[11px]">{row.code}</span>
                                             {row.isLot && (
-                                              <span className="text-[9px] font-mono text-teal-400/80 uppercase tracking-wider">Lote</span>
+                                              <span className="text-[9px] font-mono text-teal-400/80 uppercase tracking-wider flex items-center gap-1">
+                                                Lote
+                                                {row.isPartialShare && (
+                                                  <span className="text-amber-400/90">
+                                                    {formatNumber(row.portionPct ?? 0, 1)}%
+                                                  </span>
+                                                )}
+                                              </span>
                                             )}
                                           </div>
                                         </td>

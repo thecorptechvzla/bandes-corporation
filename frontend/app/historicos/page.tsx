@@ -127,7 +127,12 @@ export default function V2HistoricosPage() {
       if ((b.status === 'COMPLETADO' || b.status === 'EXITED') && b.lotId) {
         const lot = lots.find(l => l.id === b.lotId);
         if (lot && lot.recovered != null) {
-          entry.r += Number(lot.recovered || 0) / (filteredBars.filter(x => x.lotId === b.lotId).length || 1);
+          const lotBars = filteredBars.filter(x => x.lotId === b.lotId);
+          const grossTotalLote = lotBars.reduce((s, x) => s + Number(x.grossWeight || 0), 0);
+          const grossBar = Number(b.grossWeight || 0);
+          entry.r += grossTotalLote > 0
+            ? Number(lot.recovered || 0) * (grossBar / grossTotalLote)
+            : 0;
         }
       }
       map.set(b.clientId, entry);
