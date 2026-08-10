@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { ClipboardCheck, Camera, Check, Pencil, X, Zap, Scale, Microscope } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { ClipboardCheck, Camera, Check, Pencil, X, Zap, Scale, Microscope, Cpu, ChevronRight } from 'lucide-react';
 import { formatNumber } from '@/lib/format';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
@@ -42,6 +43,7 @@ export function BarDetailModal({
 
   const [isReadingWeight, setIsReadingWeight] = useState(false);
   const [scaleError, setScaleError] = useState<string | null>(null);
+  const [consoleCollapsed, setConsoleCollapsed] = useState(false);
 
   const isPorValidar = bar.status === 'POR_VALIDAR';
 
@@ -153,12 +155,15 @@ export function BarDetailModal({
 
   const canValidate = !isNaN(displayGross) && !isNaN(displayPurity) && displayGross > 0 && displayPurity > 0;
   const hasPhoto = !!photoUploadedUrl || !!bar.photoUrl;
+  const showSidebar = !readOnly && (isPorValidar || isEditing);
 
   return (
     <>
-      <ModalShell isOpen onClose={onClose} noHeader noPadding size="lg" zIndex={zIndex}
-        panelClassName="max-h-[90vh] flex flex-col"
-        bodyClassName="flex-1 min-h-0 flex flex-col overflow-hidden">
+      <ModalShell isOpen onClose={onClose} noHeader noPadding size={showSidebar ? 'xl' : 'lg'} zIndex={zIndex}
+        panelClassName="!bg-transparent !backdrop-blur-none !border-transparent max-h-[90vh] flex flex-col"
+        bodyClassName="flex-1 min-h-0 flex flex-row gap-4">
+        {/* Main card — real modal contents */}
+        <div className="flex-1 min-h-0 flex flex-col rounded-2xl overflow-hidden border border-[var(--pm-border)]/40 bg-[var(--pm-bg-base)] shadow-2xl shadow-black/40">
         {/* Header */}
         <div className="shrink-0 flex items-center justify-between px-6 pt-6 pb-4 border-b border-[var(--pm-border)]/20">
           <div>
@@ -185,8 +190,8 @@ export function BarDetailModal({
           </div>
         </div>
 
-        {/* Body — scrollable middle section */}
-        <div className="flex-1 overflow-y-auto min-h-0 v2-scroll p-6 space-y-5">
+        {/* Body — single column (photo + data) */}
+        <div className="flex-1 min-h-0 overflow-y-auto v2-scroll p-6 space-y-5">
           {/* Photo Area — fixed height, read-only display */}
           <div className="relative aspect-video w-full max-h-[40vh] mx-auto rounded-xl overflow-hidden border border-[var(--pm-border)] bg-black/60">
             {srcProxy ? (
@@ -294,50 +299,7 @@ export function BarDetailModal({
             <span className="text-[9px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider block text-center">PESO BRUTO</span>
             <span className="text-sm font-mono font-medium text-[var(--pm-accent-gold)] block text-center">{formatNumber(displayGross, 2)} g</span>
           </div>
-
-          {/* Device Capture Buttons — industrial size */}
-          {!readOnly && (isPorValidar || isEditing) && (
-            <div className="grid grid-cols-3 gap-2">
-              <button type="button" onClick={handleGetWeight} disabled={isReadingWeight}
-                className="group relative py-4 rounded-xl border border-[var(--pm-border)]/60 text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] hover:bg-[var(--pm-bg-hover)]/60 text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer disabled:opacity-50 disabled:cursor-wait flex flex-col items-center gap-2"
-                style={{ WebkitTapHighlightColor: 'transparent' }}>
-                <Scale className="w-5 h-5 text-[var(--pm-accent-gold)] group-hover:drop-shadow-[0_0_6px_rgba(212,175,55,0.4)]" />
-                <span>OBTENER PESO</span>
-                <span className="text-[9px] font-mono text-[var(--pm-text-dim)]/70 normal-case tracking-normal">
-                  {isReadingWeight ? (
-                    <span className="flex items-center gap-1.5">
-                      <span className="w-3 h-3 border-2 border-[var(--pm-accent-gold)]/30 border-t-[var(--pm-accent-gold)] rounded-full animate-spin" />
-                      Leyendo báscula...
-                    </span>
-                  ) : 'Báscula serial'}
-                </span>
-              </button>
-              <button type="button" onClick={() => {}}
-                className="group relative py-4 rounded-xl border border-[var(--pm-border)]/60 text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] hover:bg-[var(--pm-bg-hover)]/60 text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer flex flex-col items-center gap-2"
-                style={{ WebkitTapHighlightColor: 'transparent' }}>
-                <Microscope className="w-5 h-5 text-[var(--pm-accent-gold)] group-hover:drop-shadow-[0_0_6px_rgba(212,175,55,0.4)]" />
-                <span>OBTENER LEYES</span>
-                <span className="text-[9px] font-mono text-[var(--pm-text-dim)]/70 normal-case tracking-normal">Próximamente</span>
-              </button>
-              <button type="button" onClick={() => setShowCameraModal(true)}
-                className="group relative py-4 rounded-xl border border-[var(--pm-accent-cyan)]/30 bg-[var(--pm-accent-cyan)]/5 text-[var(--pm-accent-cyan)] hover:bg-[var(--pm-accent-cyan)]/10 text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer flex flex-col items-center gap-2"
-                style={{ WebkitTapHighlightColor: 'transparent' }}>
-                <Camera className="w-5 h-5 group-hover:drop-shadow-[0_0_6px_rgba(6,182,212,0.4)]" />
-                <span>ADJUNTAR FOTO</span>
-                {hasPhoto && (
-                  <span className="text-[9px] font-mono text-[var(--pm-accent-emerald)] normal-case tracking-normal">✓ Capturada</span>
-                )}
-              </button>
-            </div>
-          )}
-
-          {scaleError && (
-            <div className="flex items-center gap-2 p-3 rounded-lg text-xs font-mono bg-[var(--pm-accent-red)]/10 border border-[var(--pm-accent-red)]/25 text-[var(--pm-accent-red)]">
-              <Zap className="w-4 h-4 shrink-0" />{scaleError}
-            </div>
-          )}
-
-          </div>
+        </div>
 
         {/* Footer — fixed action bar */}
         <div className="shrink-0 flex gap-3 px-6 py-4 border-t border-[var(--pm-border)]/20">
@@ -411,6 +373,79 @@ export function BarDetailModal({
               </>
             )}
         </div>
+        </div>
+
+        {/* Docked hardware console — slides in from the right */}
+        {showSidebar && (
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.3, ease: 'easeOut' }}
+            className={`shrink-0 ${consoleCollapsed ? 'self-center' : 'self-start'}`}
+          >
+            <div className={`flex flex-col overflow-hidden rounded-2xl border border-[var(--pm-border)]/40 bg-[var(--pm-bg-base)] shadow-2xl shadow-black/40 transition-all duration-300 ${consoleCollapsed ? 'w-12 items-center py-3' : 'w-auto p-4 max-h-full'}`}>
+              <button type="button" onClick={() => setConsoleCollapsed(v => !v)}
+                title={consoleCollapsed ? 'Mostrar consola' : 'Ocultar consola'}
+                className={`shrink-0 rounded-md hover:bg-[var(--pm-bg-tertiary)] text-[var(--pm-accent-cyan)] hover:text-white transition-all active:scale-90 cursor-pointer ${consoleCollapsed ? 'p-1.5' : 'ml-auto mb-3 p-1 text-[var(--pm-text-dim)]'}`}>
+                <ChevronRight className={`w-5 h-5 transition-transform duration-300 ${consoleCollapsed ? '' : 'rotate-180'}`} />
+              </button>
+
+              <AnimatePresence initial={false}>
+                {!consoleCollapsed && (
+                  <motion.div
+                    key="console-body"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.15 }}
+                    className="flex flex-col gap-4 overflow-y-auto min-h-0 v2-scroll"
+                  >
+                    <span className="text-[9px] font-mono text-[var(--pm-text-dim)] uppercase tracking-wider flex items-center gap-1.5">
+                      <Cpu className="w-3 h-3 text-[var(--pm-accent-cyan)]" /> CONSOLA DE HARDWARE
+                    </span>
+
+                    <button type="button" onClick={handleGetWeight} disabled={isReadingWeight}
+                      className="group relative w-full py-5 rounded-xl border border-[var(--pm-border)]/60 text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] hover:bg-[var(--pm-bg-hover)]/60 text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer disabled:opacity-50 disabled:cursor-wait flex flex-col items-center justify-center gap-2"
+                      style={{ WebkitTapHighlightColor: 'transparent' }}>
+                      <Scale className="w-5 h-5 text-[var(--pm-accent-gold)] group-hover:drop-shadow-[0_0_6px_rgba(212,175,55,0.4)]" />
+                      <span>OBTENER PESO</span>
+                      <span className="text-[9px] font-mono text-[var(--pm-text-dim)]/70 normal-case tracking-normal">
+                        {isReadingWeight ? (
+                          <span className="flex items-center gap-1.5">
+                            <span className="w-3 h-3 border-2 border-[var(--pm-accent-gold)]/30 border-t-[var(--pm-accent-gold)] rounded-full animate-spin" />
+                            Leyendo báscula...
+                          </span>
+                        ) : 'Báscula serial'}
+                      </span>
+                    </button>
+                    <button type="button" onClick={() => {}}
+                      className="group relative w-full py-5 rounded-xl border border-[var(--pm-border)]/60 text-[var(--pm-text-dim)] hover:text-[var(--pm-text-primary)] hover:bg-[var(--pm-bg-hover)]/60 text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer flex flex-col items-center justify-center gap-2"
+                      style={{ WebkitTapHighlightColor: 'transparent' }}>
+                      <Microscope className="w-5 h-5 text-[var(--pm-accent-gold)] group-hover:drop-shadow-[0_0_6px_rgba(212,175,55,0.4)]" />
+                      <span>OBTENER LEYES</span>
+                      <span className="text-[9px] font-mono text-[var(--pm-text-dim)]/70 normal-case tracking-normal">Próximamente</span>
+                    </button>
+                    <button type="button" onClick={() => setShowCameraModal(true)}
+                      className="group relative w-full py-5 rounded-xl border border-[var(--pm-accent-cyan)]/30 bg-[var(--pm-accent-cyan)]/5 text-[var(--pm-accent-cyan)] hover:bg-[var(--pm-accent-cyan)]/10 text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer flex flex-col items-center justify-center gap-2"
+                      style={{ WebkitTapHighlightColor: 'transparent' }}>
+                      <Camera className="w-5 h-5 group-hover:drop-shadow-[0_0_6px_rgba(6,182,212,0.4)]" />
+                      <span>ADJUNTAR FOTO</span>
+                      {hasPhoto && (
+                        <span className="text-[9px] font-mono text-[var(--pm-accent-emerald)] normal-case tracking-normal">✓ Capturada</span>
+                      )}
+                    </button>
+
+                    {scaleError && (
+                      <div className="flex items-center gap-2 p-3 rounded-lg text-xs font-mono bg-[var(--pm-accent-red)]/10 border border-[var(--pm-accent-red)]/25 text-[var(--pm-accent-red)]">
+                        <Zap className="w-4 h-4 shrink-0" />{scaleError}
+                      </div>
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </motion.div>
+        )}
       </ModalShell>
 
       {/* Camera Capture Modal — separate overlay */}
