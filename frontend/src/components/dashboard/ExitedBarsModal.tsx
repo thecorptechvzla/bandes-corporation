@@ -112,10 +112,14 @@ export function ExitedBarsModal({
           Number(detail.weightAported ?? 0) ||
           0;
         const balanza = Number(detail.lot?.recovered ?? detail.weightAported ?? weightedGross);
+        const fineIn = (detail.bars ?? []).reduce((s, b) => s + Number(b.fineWeight ?? 0), 0);
+        const lotPurity = Number(detail.lot?.purity ?? 0);
         const weightFino =
-          (detail.bars ?? []).reduce((s, b) => s + Number(b.fineWeight ?? 0), 0) ||
-          Number(detail.lot?.availableWeight ?? 0) ||
-          0;
+          lotPurity > 0
+            ? (balanza * lotPurity) / 1000
+            : weightedGross > 0
+              ? (fineIn / weightedGross) * balanza
+              : fineIn;
         const providerId = detail.lot?.process?.client?.id ?? 'desconocido';
         push({
           key: `${exit.id}-${detail.id ?? detail.lotId}`,
