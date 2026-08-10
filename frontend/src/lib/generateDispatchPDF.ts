@@ -184,34 +184,52 @@ export async function generateDispatchPDF(
   const isEmpresa = copyType === 'EMPRESA';
   const hasMixedLot = (data.lots || []).some(l => l.isMixed);
 
+  // --- HEADER ESTÁNDAR ---
+  let yH = 12;
+
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(22);
+  doc.setFontSize(16);
   doc.setTextColor(19, 145, 105);
-  doc.text('BANDES', m, 14);
+  doc.text('BANDES', m, yH + 2);
+
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8);
-  doc.setTextColor(100, 100, 100);
-  doc.text('Banco de Desarrollo Económico y Social de Venezuela', m, 20);
+  doc.setTextColor(102, 102, 102);
+  doc.text('Banco de Desarrollo Económico y Social de Venezuela', m, yH + 8);
 
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8);
+  doc.setTextColor(68, 68, 68);
+  doc.text('R.I.F.: G-20001643-0', pw - m, yH, { align: 'right' });
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7.5);
+  doc.setTextColor(102, 102, 102);
+  doc.text('Gerencia General de Operaciones', pw - m, yH + 5, { align: 'right' });
+  doc.text('Caracas, Venezuela', pw - m, yH + 10, { align: 'right' });
+
+  yH += 15;
   doc.setDrawColor(19, 145, 105);
-  doc.setLineWidth(0.6);
-  doc.line(m, 24, pw - m, 24);
+  doc.setLineWidth(0.5);
+  doc.line(m, yH, pw - m, yH);
+  yH += 4;
 
-  doc.setTextColor(100, 100, 100);
-  doc.setFontSize(7);
-  doc.text('Sistema de Trazabilidad de Oro Fino', m, 30);
-
+  // --- TÍTULO DEL COMPROBANTE (centrado debajo de la línea verde) ---
   const titleSuffix = isMixed ? ' MIXTO' : isBarMode ? ' (BARRAS)' : ' GLOBAL';
   const copyLabel = isEmpresa ? 'EMPRESA' : 'CLIENTE';
   doc.setTextColor(19, 145, 105);
-  doc.setFontSize(13);
+  doc.setFontSize(12);
   doc.setFont('helvetica', 'bold');
-  doc.text(`COMPROBANTE DE DESPACHO${titleSuffix} — ${copyLabel}`, pw - m, 14, { align: 'right' });
+  doc.text(`COMPROBANTE DE DESPACHO${titleSuffix} — ${copyLabel}`, pw / 2, yH + 2, { align: 'center' });
+  yH += 7;
+
+  // Ref y Fecha alineados a la derecha
   doc.setTextColor(120, 120, 120);
   doc.setFontSize(7);
   doc.setFont('helvetica', 'normal');
-  doc.text(`Ref: ${data.reference}`, pw - m, 20, { align: 'right' });
-  doc.text(`Fecha: ${new Date(data.createdAt).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`, pw - m, 30, { align: 'right' });
+  doc.text(`Ref: ${data.reference}`, pw - m, yH + 1, { align: 'right' });
+  yH += 4;
+  doc.text(`Fecha: ${new Date(data.createdAt).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`, pw - m, yH + 1, { align: 'right' });
+  yH += 6;
 
   if (isEmpresa) {
     doc.setFontSize(48);
@@ -220,7 +238,7 @@ export async function generateDispatchPDF(
     doc.text('USO INTERNO', pw / 2, 160, { align: 'center', angle: 45 });
   }
 
-  y = 40;
+  y = yH + 2;
 
   doc.setFillColor(234, 244, 240);
   doc.rect(m, y - 4, cw, 7, 'F');
@@ -261,12 +279,7 @@ export async function generateDispatchPDF(
     doc.setFont('helvetica', 'bold');
     doc.text('DETALLE POR PROVEEDOR', m + 2, y + 1); y += 6;
 
-    if (hasMixedLot) {
-      doc.setFontSize(7);
-      doc.text('Nota: los lotes marcados con ◈ son MIXTOS y consolidan material de múltiples proveedores.', m, y); y += 6;
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'bold');
-    }
+
 
     data.providers.forEach((pv) => {
       if (y > 250) { doc.addPage(); y = 20; }
@@ -307,7 +320,7 @@ export async function generateDispatchPDF(
           doc.setFont('helvetica', 'normal');
           doc.setTextColor(80, 80, 80);
           doc.text(lot.isMixed ? 'MIXTA' : 'REFUNDIDA', m + 3, y + 1);
-          doc.text(`${lot.name}${lot.isMixed ? '  ◈' : ''}`, m + 3 + lotColsW[0], y + 1);
+          doc.text(`${lot.name}`, m + 3 + lotColsW[0], y + 1);
           doc.text(formatWeight(Number(lot.grossWeight ?? lot.recovered ?? 0)), m + 3 + lotColsW[0] + lotColsW[1], y + 1);
           doc.text(formatWeight(Number(lot.recovered ?? lot.grossWeight ?? 0)), m + 3 + lotColsW[0] + lotColsW[1] + lotColsW[2], y + 1);
           doc.text((Number(lot.purity) || 0).toFixed(2).replace('.', ','), m + 3 + lotColsW[0] + lotColsW[1] + lotColsW[2] + lotColsW[3], y + 1);
