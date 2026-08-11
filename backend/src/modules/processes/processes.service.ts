@@ -46,7 +46,14 @@ export class ProcessesService {
 
   async findAll() {
     return this.prisma.process.findMany({
-      include: { client: { select: { id: true, name: true } }, lots: true },
+      include: {
+        client: { select: { id: true, name: true } },
+        lots: {
+          include: {
+            bars: { include: { client: { select: { id: true, name: true } } } },
+          },
+        },
+      },
       orderBy: { name: 'asc' },
     });
   }

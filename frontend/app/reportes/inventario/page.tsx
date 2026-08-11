@@ -193,8 +193,8 @@ export default function BovedaReportPage() {
       clientName: l.client?.name ?? l.process?.client?.name ?? 'Desconocido',
       recovered: Number(l.recovered ?? 0),
       grossWeight: Number(l.fineWeight ?? 0),
-      bars: (l.bars ?? [])
-        .filter((b) => b.status === 'IN_STOCK' && !b.exitId && !b.exitDetailId)
+      bars: allBars
+        .filter((b) => b.lotId === l.id && !b.exitId && !b.exitDetailId)
         .map((b) => ({
           barNumber: b.barNumber,
           grossWeight: Number(b.grossWeight ?? 0),
@@ -219,7 +219,7 @@ export default function BovedaReportPage() {
       totalFineWeight: filteredStandaloneBars.reduce((s, b) => s + Number(b.fineWeight ?? 0), 0),
       generatedAt,
     };
-  }, [bovedaLots, filteredStandaloneBars, clients, generatedAt]);
+  }, [bovedaLots, filteredStandaloneBars, allBars, clients, generatedAt]);
 
   const handleExportPDF = async () => {
     setIsExporting(true);
