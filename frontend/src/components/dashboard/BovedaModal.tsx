@@ -2,8 +2,9 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Warehouse, X, ChevronDown, ChevronLeft, ChevronRight, Building2 } from 'lucide-react';
+import { Warehouse, X, ChevronDown, ChevronLeft, ChevronRight, Building2, Download } from 'lucide-react';
 import { formatNumber } from '@/lib/format';
+import { generateBovedaReportPDF, type BovedaLotData, type BovedaBarData } from '@/lib/generateBovedaReportPDF';
 import { SupplierDirectory } from '@/components/SupplierDirectory';
 import { BarDetailModal } from '@/components/packing/BarDetailModal';
 import { LotDetailModal } from '@/components/egresos/LotDetailModal';
@@ -121,6 +122,39 @@ export function BovedaModal({ isOpen, lots, bars, allBars, clients, lotGrossWeig
   const grandTotalBruto = tab === 'fundido' ? totalFundidoBruto : totalGrossWeight;
   const grandTotalFino = tab === 'fundido' ? totalFundidoFino : totalFineWeight;
 
+  const handleDownloadPDF = () => {
+    const mappedLots: BovedaLotData[] = lots.map(l => ({
+      id: l.id,
+      name: l.name,
+      processName: l.process?.name ?? '—',
+      clientName: l.client?.name ?? l.process?.client?.name ?? 'Desconocido',
+      operator: l.operator,
+      recovered: Number(l.recovered ?? 0),
+      grossWeight: lotGrossWeight?.[l.id] ?? 0,
+      bars: (allBars ?? l.bars ?? []).filter(b => b.lotId === l.id).map(b => ({
+        barNumber: b.barNumber,
+        grossWeight: Number(b.grossWeight ?? 0),
+        clientId: b.clientId,
+        clientName: b.client?.name ?? clients.find(c => c.id === b.clientId)?.name ?? 'DESCONOCIDO',
+      })),
+    }));
+    const clientLookup = new Map(clients.map(c => [c.id, c.name]));
+    const mappedBars: BovedaBarData[] = bars.map(b => ({
+      barNumber: b.barNumber,
+      grossWeight: Number(b.grossWeight ?? 0),
+      purity: Number(b.purity ?? 0),
+      fineWeight: Number(b.fineWeight ?? 0),
+      clientName: b.client?.name ?? clientLookup.get(b.clientId) ?? 'DESCONOCIDO',
+    }));
+    generateBovedaReportPDF({
+      lots: mappedLots,
+      bars: mappedBars,
+      totalRecovered,
+      totalGrossWeight: totalFundidoBrutoOriginal,
+      totalFineWeight,
+    });
+  };
+
   const tabDefs: { key: Tab; label: string; count: number }[] = [
     { key: 'fundido', label: 'REFUNDIDO', count: lots.length },
     { key: 'sinFundir', label: 'SIN REFUNDIR', count: bars.length },
@@ -156,12 +190,21 @@ export function BovedaModal({ isOpen, lots, bars, allBars, clients, lotGrossWeig
                   Oro en Bóveda
                 </h2>
               </div>
-              <button
-                onClick={onClose}
-                className="w-7 h-7 rounded-lg bg-[var(--hud-bg-deepest)]/50 border border-[var(--hud-border)] flex items-center justify-center text-[var(--hud-text-dim)] hover:text-[var(--hud-text-primary)] transition-all"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleDownloadPDF}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-mono font-bold uppercase tracking-wider text-[var(--hud-accent-gold)] bg-[var(--hud-accent-gold)]/10 border border-[var(--hud-accent-gold)]/25 hover:bg-[var(--hud-accent-gold)]/20 transition-all"
+                >
+                  <Download className="w-3 h-3" />
+                  Descargar Reporte
+                </button>
+                <button
+                  onClick={onClose}
+                  className="w-7 h-7 rounded-lg bg-[var(--hud-bg-deepest)]/50 border border-[var(--hud-border)] flex items-center justify-center text-[var(--hud-text-dim)] hover:text-[var(--hud-text-primary)] transition-all"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
             </div>
 
             {/* Tabs */}
