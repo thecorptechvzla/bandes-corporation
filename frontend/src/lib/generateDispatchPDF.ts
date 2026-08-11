@@ -23,6 +23,7 @@ interface LotItem {
   validatedWeight?: number;
   recovered?: number;
   inputBars?: BarItem[];
+  composition?: { clientId: string; clientName: string; weight: number; percentage: number }[];
 }
 
 export interface DispatchResult {
@@ -79,29 +80,18 @@ export function convertExitToDispatchResult(exit: MaterialExit): DispatchResult 
         })),
       );
       const recovered = d.lot?.recovered ?? lotGrossWeight;
-      if (composition.length > 1) {
-        return composition.map(entry => ({
-          name: d.lot?.name || '—',
-          weight: entry.weight,
-          provider: entry.clientName,
-          isMixed: true,
-          grossWeight: lotGrossWeight,
-          fineWeight: lotFineWeight,
-          purity: lotPurity,
-          recovered,
-          inputBars,
-        } as LotItem));
-      }
+      const processOwner = d.lot?.process?.client?.name || 'DESCONOCIDO';
       return [{
         name: d.lot?.name || '—',
         weight: Number(d.weightAported),
-        provider: d.lot?.process?.client?.name || 'DESCONOCIDO',
-        isMixed: false,
+        provider: processOwner,
+        isMixed: composition.length > 1,
         grossWeight: lotGrossWeight,
         fineWeight: lotFineWeight,
         purity: lotPurity,
         recovered,
         inputBars,
+        composition: composition.length > 1 ? composition : undefined,
       } as LotItem];
     });
     lots.forEach(l => {
