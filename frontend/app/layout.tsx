@@ -70,6 +70,7 @@ const reportesChilds = [
   { href: '/reportes/procesos', label: 'Procesos' },
   { href: '/reportes/egresos', label: 'Egresos' },
   { href: '/reportes/saldos', label: 'Balance' },
+  { href: '/reportes/inventario', label: 'Bóveda' },
 ];
 
 export default function RootLayout({
