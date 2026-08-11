@@ -35,6 +35,7 @@ interface AvailableLot {
   barCount: number;
   isMixed: boolean;
   composition: { clientId: string; clientName: string; weight: number; percentage: number }[];
+  inputBars: { barNumber: string; grossWeight: number; purity: number; fineWeight: number; provider: string }[];
 }
 
 const MIXED_GROUP_KEY = '__MIXED__';
@@ -94,6 +95,13 @@ const [selectedLotIds, setSelectedLotIds] = useState<Set<string>>(new Set());
             barCount: eligibleBars.length,
             isMixed: isMixedLot(eligibleBars),
             composition,
+            inputBars: eligibleBars.map(b => ({
+              barNumber: b.barNumber,
+              grossWeight: Number(b.grossWeight),
+              purity: Number(b.purity),
+              fineWeight: Number(b.fineWeight),
+              provider: clients.find(c => c.id === b.clientId)?.name || b.client?.name || 'DESCONOCIDO',
+            })),
           };
         }),
       )
@@ -370,10 +378,11 @@ const [selectedLotIds, setSelectedLotIds] = useState<Set<string>>(new Set());
             weight: entry.weight,
             provider: entry.clientName,
             isMixed: true,
+            inputBars: l.inputBars,
             ...physical,
           }));
         }
-        return [{ name: l.name, weight: l.availableWeight, provider: l.clientName, isMixed: false, ...physical }];
+        return [{ name: l.name, weight: l.availableWeight, provider: l.clientName, isMixed: false, inputBars: l.inputBars, ...physical }];
       });
 
       const allProviders = new Map<string, { count: number; weight: number }>();
