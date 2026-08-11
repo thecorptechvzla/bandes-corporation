@@ -231,9 +231,9 @@ export function generateBovedaReportPDF(data: BovedaReportData, type: BovedaRepo
       });
       for (const b of lot.bars ?? []) {
         rows.push({
-          proveedor: '',
+          proveedor: b.clientName || '',
           codigo: b.barNumber,
-          tipo: 'Barra',
+          tipo: '',
           origen: '',
           pesoBruto: Number(b.grossWeight ?? 0),
           level: 1,
@@ -278,7 +278,7 @@ export function generateBovedaReportPDF(data: BovedaReportData, type: BovedaRepo
       return Array.isArray(lines) ? lines : [lines];
     };
 
-    const lineW = 4.5;
+    const lineW = 5;
 
     // Header row
     checkPage(14);
@@ -316,9 +316,9 @@ export function generateBovedaReportPDF(data: BovedaReportData, type: BovedaRepo
         doc.setFillColor(248, 248, 248);
         doc.rect(m, y - 3.5, cw, rowH, 'F');
       }
-      doc.setFontSize(isChild ? 6 : 6.5);
+      doc.setFontSize(isChild ? 7 : 7.5);
       doc.setFont('helvetica', isChild ? 'italic' : 'normal');
-      doc.setTextColor(80, 80, 80);
+      doc.setTextColor(isChild ? 100 : 80, isChild ? 100 : 80, isChild ? 100 : 80);
 
       const drawLines = (lines: string[], x: number, opts?: { align?: 'right' }) => {
         (lines.length ? lines : ['']).forEach((ln, i) => {
@@ -327,17 +327,17 @@ export function generateBovedaReportPDF(data: BovedaReportData, type: BovedaRepo
       };
 
       drawLines(provLines, dX(0));
-      // Código (green, indented for child bars)
-      doc.setTextColor(isChild ? 120 : 19, isChild ? 160 : 145, isChild ? 140 : 105);
+      // Código (green for main, gray for child bars)
+      doc.setTextColor(isChild ? 100 : 19, isChild ? 100 : 145, isChild ? 100 : 105);
       drawLines(codeLines, dX(1));
       // Tipo
       doc.setTextColor(19, 145, 105);
       drawLines(wrapLines(r.tipo, maxW(2)), dX(2), { align: 'right' });
       // Origen
-      doc.setTextColor(80, 80, 80);
+      doc.setTextColor(isChild ? 100 : 80, isChild ? 100 : 80, isChild ? 100 : 80);
       drawLines(origenLines, dX(3));
       // Peso bruto
-      doc.setTextColor(isChild ? 120 : 19, isChild ? 160 : 145, isChild ? 140 : 105);
+      doc.setTextColor(isChild ? 100 : 19, isChild ? 100 : 145, isChild ? 100 : 105);
       doc.text(formatWeight(r.pesoBruto), pw - m - 2, y, { align: 'right' });
       y += rowH;
       rowIdx++;

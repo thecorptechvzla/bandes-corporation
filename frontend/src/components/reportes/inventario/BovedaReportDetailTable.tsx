@@ -56,9 +56,9 @@ export default function BovedaReportDetailTable({ lots, bars }: BovedaReportDeta
       });
       for (const b of lot.bars ?? []) {
         result.push({
-          proveedor: '',
+          proveedor: b.clientName || '',
           codigo: b.barNumber,
-          tipo: 'Barra',
+          tipo: '',
           origen: '',
           pesoBruto: Number(b.grossWeight ?? 0),
           level: 1,
@@ -165,7 +165,7 @@ export default function BovedaReportDetailTable({ lots, bars }: BovedaReportDeta
                     className="px-4 py-3 text-right text-[12px] font-medium align-top"
                     style={{ color: isChild ? 'var(--report-text-muted)' : 'var(--report-color-primary)' }}
                   >
-                    {isChild ? 'Barra' : row.tipo}
+                    {isChild ? '' : row.tipo}
                   </td>
                   <td className="px-4 py-3 align-top">
                     <span
@@ -179,7 +179,7 @@ export default function BovedaReportDetailTable({ lots, bars }: BovedaReportDeta
                     className="px-4 py-3 text-right text-[12px] font-bold"
                     style={{ color: isChild ? 'var(--report-text-muted)' : 'var(--report-color-primary)' }}
                   >
-                    {isChild ? `Base: ${formatWeight(row.pesoBruto)}` : formatWeight(row.pesoBruto)}
+                    {formatWeight(row.pesoBruto)}
                   </td>
                 </tr>
               );

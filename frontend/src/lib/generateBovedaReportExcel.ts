@@ -190,7 +190,7 @@ export async function generateBovedaReportExcel(params: GenerateBovedaReportExce
       const proveedor = lot.clientName || 'DESCONOCIDO';
       rows.push({ proveedor, codigo: lot.name, tipo: 'Refundido', origen: lot.processName || '—', pesoBruto: Number(lot.recovered ?? 0), level: 0 });
       for (const b of lot.bars ?? []) {
-        rows.push({ proveedor: '', codigo: b.barNumber, tipo: 'Barra', origen: '', pesoBruto: Number(b.grossWeight ?? 0), level: 1 });
+        rows.push({ proveedor: b.clientName || '', codigo: b.barNumber, tipo: '', origen: '', pesoBruto: Number(b.grossWeight ?? 0), level: 1 });
       }
     }
     for (const bar of data.bars) {
