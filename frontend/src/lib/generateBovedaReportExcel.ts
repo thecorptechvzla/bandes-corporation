@@ -175,37 +175,36 @@ export async function generateBovedaReportExcel(params: GenerateBovedaReportExce
       };
     }
   } else {
-    // DETALLADO — flat table
+    // DETALLADO — lote con desglose de barras hijas + barras sueltas
     interface DetailRow {
       proveedor: string;
       codigo: string;
-      estado: string;
-      condicion: string;
+      tipo: string;
       origen: string;
       pesoBruto: number;
+      level: 0 | 1;
     }
 
     const rows: DetailRow[] = [];
     for (const lot of data.lots) {
       const proveedor = lot.clientName || 'DESCONOCIDO';
-      const origen = (lot.bars && lot.bars.length > 0)
-        ? lot.bars.map(b => b.barNumber).join(', ')
-        : lot.processName;
-      rows.push({ proveedor, codigo: lot.name, estado: 'Validado', condicion: 'Refundido', origen, pesoBruto: Number(lot.recovered ?? 0) });
+      rows.push({ proveedor, codigo: lot.name, tipo: 'Refundido', origen: lot.processName || '—', pesoBruto: Number(lot.recovered ?? 0), level: 0 });
+      for (const b of lot.bars ?? []) {
+        rows.push({ proveedor: '', codigo: b.barNumber, tipo: 'Barra', origen: '', pesoBruto: Number(b.grossWeight ?? 0), level: 1 });
+      }
     }
     for (const bar of data.bars) {
-      rows.push({ proveedor: bar.clientName || 'DESCONOCIDO', codigo: bar.barNumber, estado: 'Validado', condicion: 'Sin refundir', origen: 'Ingreso directo', pesoBruto: bar.grossWeight });
+      rows.push({ proveedor: bar.clientName || 'DESCONOCIDO', codigo: bar.barNumber, tipo: 'Sin refundir', origen: 'Ingreso directo', pesoBruto: bar.grossWeight, level: 0 });
     }
-    rows.sort((a, b) => a.proveedor.localeCompare(b.proveedor) || a.codigo.localeCompare(b.codigo));
 
-    const headers = ['PROVEEDOR', 'CÓDIGO', 'ESTADO', 'CONDICIÓN', 'ORIGEN', 'PESO BRUTO (g)'];
+    const headers = ['PROVEEDOR', 'CÓDIGO', 'TIPO', 'ORIGEN', 'PESO BRUTO (g)'];
     const headerRow = sheet.getRow(6);
     headers.forEach((h, i) => {
       const cell = headerRow.getCell(i + 1);
       cell.value = h;
       cell.font = { bold: true, size: 10, color: { argb: 'FFFFFFFF' } };
       cell.fill = fillGreen;
-      const isRight = h.includes('g)') || h === 'ESTADO' || h === 'CONDICIÓN';
+      const isRight = h.includes('g)') || h === 'TIPO';
       cell.alignment = { horizontal: isRight ? 'right' : 'left', vertical: 'middle' };
       cell.border = borderGreen;
     });
@@ -213,44 +212,47 @@ export async function generateBovedaReportExcel(params: GenerateBovedaReportExce
 
     rows.forEach((r, idx) => {
       const row = sheet.getRow(7 + idx);
+      const isChild = r.level === 1;
       row.getCell(1).value = r.proveedor;
       row.getCell(1).font = { size: 10 };
-      row.getCell(2).value = r.codigo;
-      row.getCell(2).font = { bold: true, size: 10, color: { argb: greenARGB } };
+      row.getCell(2).value = isChild ? `  ↳ ${r.codigo}` : r.codigo;
+      row.getCell(2).font = { bold: true, size: isChild ? 9 : 10, color: { argb: isChild ? 'FF78A091' : greenARGB } };
       row.getCell(2).alignment = { horizontal: 'left', vertical: 'middle', wrapText: true };
-      row.getCell(3).value = r.estado;
-      row.getCell(3).font = { size: 10, color: { argb: greenARGB } };
+      row.getCell(3).value = r.tipo;
+      row.getCell(3).font = { size: isChild ? 9 : 10, color: { argb: greenARGB } };
       row.getCell(3).alignment = { horizontal: 'right', vertical: 'middle' };
-      row.getCell(4).value = r.condicion;
-      row.getCell(4).font = { size: 10 };
-      row.getCell(4).alignment = { horizontal: 'right', vertical: 'middle' };
-      row.getCell(5).value = r.origen;
-      row.getCell(5).font = { size: 10 };
-      row.getCell(5).alignment = { horizontal: 'left', vertical: 'middle', wrapText: true };
-      row.getCell(6).value = r.pesoBruto;
-      row.getCell(6).font = { bold: true, size: 10, color: { argb: greenARGB } };
-      row.getCell(6).numFmt = '#,##0.00';
-      row.getCell(6).alignment = { horizontal: 'right', vertical: 'middle' };
+      row.getCell(4).value = r.origen;
+      row.getCell(4).font = { size: isChild ? 9 : 10 };
+      row.getCell(4).alignment = { horizontal: 'left', vertical: 'middle', wrapText: true };
+      row.getCell(5).value = r.pesoBruto;
+      row.getCell(5).font = { bold: true, size: isChild ? 9 : 10, color: { argb: isChild ? 'FF78A091' : greenARGB } };
+      row.getCell(5).numFmt = '#,##0.00';
+      row.getCell(5).alignment = { horizontal: 'right', vertical: 'middle' };
 
-      if (idx % 2 === 1) {
-        for (let c = 1; c <= 6; c++) {
+      if (isChild) {
+        for (let c = 1; c <= 5; c++) {
+          row.getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF2F7F4' } };
+        }
+      } else if (idx % 2 === 1) {
+        for (let c = 1; c <= 5; c++) {
           row.getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFBFDFC' } };
         }
       }
     });
 
-    // Totals row
+    // Totals row (sums only main rows)
+    const mainRows = rows.filter((r) => r.level === 0);
     const totalRowIdx = 7 + rows.length;
     const tr = sheet.getRow(totalRowIdx);
-    const totalPeso = rows.reduce((a, r) => a + r.pesoBruto, 0);
-    tr.getCell(1).value = `TOTALES GENERALES — ${rows.length} registro(s)`;
+    const totalPeso = mainRows.reduce((a, r) => a + r.pesoBruto, 0);
+    tr.getCell(1).value = `TOTALES GENERALES — ${mainRows.length} registro(s)`;
     tr.getCell(1).font = { bold: true, size: 10, color: { argb: greenARGB } };
-    tr.getCell(6).value = totalPeso;
-    tr.getCell(6).font = { bold: true, size: 10, color: { argb: greenARGB } };
-    tr.getCell(6).numFmt = '#,##0.00';
-    tr.getCell(6).alignment = { horizontal: 'right' };
+    tr.getCell(5).value = totalPeso;
+    tr.getCell(5).font = { bold: true, size: 10, color: { argb: greenARGB } };
+    tr.getCell(5).numFmt = '#,##0.00';
+    tr.getCell(5).alignment = { horizontal: 'right' };
 
-    for (let c = 1; c <= 6; c++) {
+    for (let c = 1; c <= 5; c++) {
       tr.getCell(c).fill = fillGreenLight;
       tr.getCell(c).border = {
         top: { style: 'medium', color: { argb: greenARGB } },
@@ -264,8 +266,8 @@ export async function generateBovedaReportExcel(params: GenerateBovedaReportExce
   // Column widths
   const widthMap =
     reportType === 'DETALLADO'
-      ? // Proveedor | Código | Estado | Condición | Origen | Peso Bruto
-        [26, 24, 12, 16, 60, 16]
+      ? // Proveedor | Código | TIPO | Origen | Peso Bruto
+        [26, 26, 14, 60, 16]
       : // Proveedor | Cant. | Ref. | S/R | Bruto Ref. | Bruto S/R | Bruto Total
         [30, 12, 12, 12, 16, 16, 16];
   sheet.columns.forEach((col, i) => {

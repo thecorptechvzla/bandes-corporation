@@ -34,10 +34,10 @@ interface BovedaReportDetailTableProps {
 interface DetailRow {
   proveedor: string;
   codigo: string;
-  estado: string;
-  condicion: string;
+  tipo: string;
   origen: string;
   pesoBruto: number;
+  level: 0 | 1;
 }
 
 export default function BovedaReportDetailTable({ lots, bars }: BovedaReportDetailTableProps) {
@@ -46,35 +46,42 @@ export default function BovedaReportDetailTable({ lots, bars }: BovedaReportDeta
 
     for (const lot of lots) {
       const proveedor = lot.clientName || 'DESCONOCIDO';
-      const origen = (lot.bars && lot.bars.length > 0)
-        ? lot.bars.map(b => b.barNumber).join(', ')
-        : lot.processName;
       result.push({
         proveedor,
         codigo: lot.name,
-        estado: 'Validado',
-        condicion: 'Refundido',
-        origen,
+        tipo: 'Refundido',
+        origen: lot.processName || '—',
         pesoBruto: Number(lot.recovered ?? 0),
+        level: 0,
       });
+      for (const b of lot.bars ?? []) {
+        result.push({
+          proveedor: '',
+          codigo: b.barNumber,
+          tipo: 'Barra',
+          origen: '',
+          pesoBruto: Number(b.grossWeight ?? 0),
+          level: 1,
+        });
+      }
     }
 
     for (const bar of bars) {
       result.push({
         proveedor: bar.clientName || 'DESCONOCIDO',
         codigo: bar.barNumber,
-        estado: 'Validado',
-        condicion: 'Sin refundir',
+        tipo: 'Sin refundir',
         origen: 'Ingreso directo',
         pesoBruto: bar.grossWeight,
+        level: 0,
       });
     }
 
-    result.sort((a, b) => a.proveedor.localeCompare(b.proveedor) || a.codigo.localeCompare(b.codigo));
     return result;
   }, [lots, bars]);
 
-  const totalPeso = useMemo(() => rows.reduce((a, r) => a + r.pesoBruto, 0), [rows]);
+  const mainRows = useMemo(() => rows.filter((r) => r.level === 0), [rows]);
+  const totalPeso = useMemo(() => mainRows.reduce((a, r) => a + r.pesoBruto, 0), [mainRows]);
 
   return (
     <div
@@ -87,19 +94,17 @@ export default function BovedaReportDetailTable({ lots, bars }: BovedaReportDeta
         <table className="w-full border-collapse text-left table-fixed" style={{ minWidth: '960px' }}>
           <colgroup>
             <col style={{ width: '17%' }} />
-            <col style={{ width: '19%' }} />
-            <col style={{ width: '8%' }} />
-            <col style={{ width: '10%' }} />
-            <col style={{ width: '34%' }} />
+            <col style={{ width: '20%' }} />
             <col style={{ width: '12%' }} />
+            <col style={{ width: '34%' }} />
+            <col style={{ width: '17%' }} />
           </colgroup>
           <thead>
             <tr>
               {[
                 { label: 'Proveedor', align: 'left' },
                 { label: 'Código', align: 'left' },
-                { label: 'Estado', align: 'right' },
-                { label: 'Condición', align: 'right' },
+                { label: 'TIPO', align: 'right' },
                 { label: 'Origen', align: 'left' },
                 { label: 'Peso Bruto (g)', align: 'right' },
               ].map((h) => (
@@ -118,58 +123,67 @@ export default function BovedaReportDetailTable({ lots, bars }: BovedaReportDeta
             </tr>
           </thead>
           <tbody>
-            {rows.map((row, idx) => (
-              <tr
-                key={`${row.codigo}-${idx}`}
-                style={{
-                  backgroundColor: idx % 2 === 0 ? 'transparent' : 'var(--report-bg-table-row-even)',
-                  borderBottom: '1px solid rgba(255,255,255,0.03)',
-                }}
-              >
-                <td className="px-4 py-3 align-top">
-                  <span
-                    className="text-[12px] font-semibold"
-                    style={{ color: 'var(--report-text-table)', wordBreak: 'break-word', lineHeight: '1.4' }}
-                  >
-                    {row.proveedor}
-                  </span>
-                </td>
-                <td className="px-4 py-3 align-top">
-                  <span
-                    className="font-mono text-[11px] font-semibold"
-                    style={{ color: 'var(--report-color-primary)', wordBreak: 'break-all', lineHeight: '1.4' }}
-                  >
-                    {row.codigo}
-                  </span>
-                </td>
-                <td
-                  className="px-4 py-3 text-right text-[12px] font-medium align-top"
-                  style={{ color: 'var(--report-text-main)' }}
+            {rows.map((row, idx) => {
+              const isChild = row.level === 1;
+              return (
+                <tr
+                  key={`${row.codigo}-${idx}`}
+                  style={{
+                    backgroundColor: isChild
+                      ? 'rgba(19, 145, 105, 0.06)'
+                      : idx % 2 === 0
+                        ? 'transparent'
+                        : 'var(--report-bg-table-row-even)',
+                    borderBottom: '1px solid rgba(255,255,255,0.03)',
+                  }}
                 >
-                  {row.estado}
-                </td>
-                <td
-                  className="px-4 py-3 text-right text-[12px] font-medium align-top"
-                  style={{ color: 'var(--report-text-main)' }}
-                >
-                  {row.condicion}
-                </td>
-                <td className="px-4 py-3 align-top">
-                  <span
-                    className="text-[12px]"
-                    style={{ color: 'var(--report-text-main)', wordBreak: 'break-word', lineHeight: '1.4' }}
+                  <td className={`px-4 py-3 align-top ${isChild ? 'pl-8' : ''}`}>
+                    <span
+                      className={`text-[12px] ${isChild ? 'font-normal' : 'font-semibold'}`}
+                      style={{
+                        color: isChild ? 'var(--report-text-muted)' : 'var(--report-text-table)',
+                        wordBreak: 'break-word',
+                        lineHeight: '1.4',
+                      }}
+                    >
+                      {isChild ? '' : row.proveedor}
+                    </span>
+                  </td>
+                  <td className={`px-4 py-3 align-top ${isChild ? 'pl-8' : ''}`}>
+                    <span
+                      className="font-mono text-[11px] font-semibold"
+                      style={{
+                        color: isChild ? 'var(--report-text-muted)' : 'var(--report-color-primary)',
+                        wordBreak: 'break-all',
+                        lineHeight: '1.4',
+                      }}
+                    >
+                      {isChild ? `↳ ${row.codigo}` : row.codigo}
+                    </span>
+                  </td>
+                  <td
+                    className="px-4 py-3 text-right text-[12px] font-medium align-top"
+                    style={{ color: isChild ? 'var(--report-text-muted)' : 'var(--report-color-primary)' }}
                   >
-                    {row.origen}
-                  </span>
-                </td>
-                <td
-                  className="px-4 py-3 text-right text-[12px] font-bold"
-                  style={{ color: 'var(--report-color-primary)' }}
-                >
-                  {formatWeight(row.pesoBruto)}
-                </td>
-              </tr>
-            ))}
+                    {isChild ? 'Barra' : row.tipo}
+                  </td>
+                  <td className="px-4 py-3 align-top">
+                    <span
+                      className="text-[12px]"
+                      style={{ color: 'var(--report-text-main)', wordBreak: 'break-word', lineHeight: '1.4' }}
+                    >
+                      {isChild ? '' : row.origen}
+                    </span>
+                  </td>
+                  <td
+                    className="px-4 py-3 text-right text-[12px] font-bold"
+                    style={{ color: isChild ? 'var(--report-text-muted)' : 'var(--report-color-primary)' }}
+                  >
+                    {isChild ? `Base: ${formatWeight(row.pesoBruto)}` : formatWeight(row.pesoBruto)}
+                  </td>
+                </tr>
+              );
+            })}
             <tr
               style={{
                 backgroundColor: 'var(--report-bg-main)',
@@ -179,9 +193,9 @@ export default function BovedaReportDetailTable({ lots, bars }: BovedaReportDeta
               <td
                 className="px-4 py-3 text-[12px] font-bold"
                 style={{ color: 'var(--report-color-primary)' }}
-                colSpan={5}
+                colSpan={4}
               >
-                TOTALES GENERALES — {rows.length} registro(s)
+                TOTALES GENERALES — {mainRows.length} registro(s)
               </td>
               <td
                 className="px-4 py-3 text-right text-[12px] font-bold"

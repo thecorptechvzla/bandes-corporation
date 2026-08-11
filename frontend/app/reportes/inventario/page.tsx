@@ -10,6 +10,7 @@ import ReportGuideCard from '@/components/reportes/ReportGuideCard';
 import { useProcesses } from '@/hooks/useProcesses';
 import { useBars } from '@/hooks/useBars';
 import { useClients } from '@/hooks/useClients';
+import { useMaterialExits } from '@/hooks/useExits';
 import {
   generateBovedaReportPDF,
   type BovedaLotData,
@@ -36,6 +37,7 @@ export default function BovedaReportPage() {
   const { data: processes = [] } = useProcesses();
   const { data: allBars = [] } = useBars();
   const { data: clients = [] } = useClients({ role: 'PROVEEDOR' });
+  const { data: exits = [] } = useMaterialExits();
 
   const [appliedClienteName, setAppliedClienteName] = useState('Todos los Proveedores');
   const [appliedReportType, setAppliedReportType] = useState<BovedaReportType>('RESUMEN');
@@ -59,12 +61,22 @@ export default function BovedaReportPage() {
     return `${day}/${m}/${y}`;
   };
 
+  const dispatchedLotIds = useMemo(
+    () =>
+      new Set(
+        exits.flatMap((e) =>
+          (e.exitDetails ?? []).map((d) => d.lotId).filter(Boolean),
+        ),
+      ),
+    [exits],
+  );
+
   const bovedaLots = useMemo(() => {
     return processes
       .filter((p) => p.status === 'CLOSED')
       .flatMap((p) =>
         (p.lots ?? [])
-          .filter((l) => l.recovered != null)
+          .filter((l) => l.recovered != null && !dispatchedLotIds.has(l.id))
           .map((l) => ({ ...l, process: p, client: p.client })),
       )
       .filter((l) => {
@@ -85,10 +97,12 @@ export default function BovedaReportPage() {
         }
         return true;
       });
-  }, [processes, clienteId, fechaDesde, fechaHasta]);
+  }, [processes, clienteId, fechaDesde, fechaHasta, dispatchedLotIds]);
 
   const standaloneBars = useMemo(() => {
-    return allBars.filter((b) => b.status === 'IN_STOCK' && !b.lotId);
+    return allBars.filter(
+      (b) => b.status === 'IN_STOCK' && !b.lotId && !b.exitId && !b.exitDetailId,
+    );
   }, [allBars]);
 
   const filteredStandaloneBars = useMemo(() => {
@@ -179,12 +193,14 @@ export default function BovedaReportPage() {
       clientName: l.client?.name ?? l.process?.client?.name ?? 'Desconocido',
       recovered: Number(l.recovered ?? 0),
       grossWeight: Number(l.fineWeight ?? 0),
-      bars: (l.bars ?? []).map((b) => ({
-        barNumber: b.barNumber,
-        grossWeight: Number(b.grossWeight ?? 0),
-        clientId: b.clientId,
-        clientName: b.client?.name ?? clients.find((c) => c.id === b.clientId)?.name ?? 'DESCONOCIDO',
-      })),
+      bars: (l.bars ?? [])
+        .filter((b) => b.status === 'IN_STOCK' && !b.exitId && !b.exitDetailId)
+        .map((b) => ({
+          barNumber: b.barNumber,
+          grossWeight: Number(b.grossWeight ?? 0),
+          clientId: b.clientId,
+          clientName: b.client?.name ?? clients.find((c) => c.id === b.clientId)?.name ?? 'DESCONOCIDO',
+        })),
     }));
 
     const mappedBars: BovedaBarData[] = filteredStandaloneBars.map((b) => ({
