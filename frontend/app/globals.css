@@ -640,6 +640,15 @@ input::placeholder, textarea::placeholder {
 }
 
 /* ═══════════════════════════════════════════════════════
+   DARK NATIVE SELECT — Option Background for Dark Mode
+   ═══════════════════════════════════════════════════════ */
+
+:root select option {
+  background-color: #121417;
+  color: #e1e3e6;
+}
+
+/* ═══════════════════════════════════════════════════════
    REPORT DATE INPUTS — Calendar Icon White on Dark
    ═══════════════════════════════════════════════════════ */
 
