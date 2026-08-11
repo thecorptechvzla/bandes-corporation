@@ -322,7 +322,7 @@ export default function BovedaReportPage() {
             type="date"
             value={fechaDesde}
             onChange={(e) => setFechaDesde(e.target.value)}
-            className="w-full rounded-md px-3 py-2 text-[12px] border report-date-input"
+            className="w-full rounded-md px-3 py-2 text-[12px] border [color-scheme:dark]"
             style={{
               backgroundColor: 'var(--report-input-bg)',
               color: 'var(--report-text-main)',
@@ -342,7 +342,7 @@ export default function BovedaReportPage() {
             type="date"
             value={fechaHasta}
             onChange={(e) => setFechaHasta(e.target.value)}
-            className="w-full rounded-md px-3 py-2 text-[12px] border report-date-input"
+            className="w-full rounded-md px-3 py-2 text-[12px] border [color-scheme:dark]"
             style={{
               backgroundColor: 'var(--report-input-bg)',
               color: 'var(--report-text-main)',

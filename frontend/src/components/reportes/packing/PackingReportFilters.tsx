@@ -44,7 +44,7 @@ export default function PackingReportFilters({
             type="date"
             value={dateFrom}
             onChange={(e) => onDateFromChange(e.target.value)}
-            className="px-3 py-2 rounded-md text-[12px] outline-none report-date-input [color-scheme:dark]"
+            className="px-3 py-2 rounded-md text-[12px] outline-none [color-scheme:dark]"
             style={{
               backgroundColor: 'var(--report-bg-input)',
               border: '1px solid var(--report-border-input)',
@@ -62,7 +62,7 @@ export default function PackingReportFilters({
             type="date"
             value={dateTo}
             onChange={(e) => onDateToChange(e.target.value)}
-            className="px-3 py-2 rounded-md text-[12px] outline-none report-date-input [color-scheme:dark]"
+            className="px-3 py-2 rounded-md text-[12px] outline-none [color-scheme:dark]"
             style={{
               backgroundColor: 'var(--report-bg-input)',
               border: '1px solid var(--report-border-input)',

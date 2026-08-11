@@ -649,25 +649,6 @@ input::placeholder, textarea::placeholder {
 }
 
 /* ═══════════════════════════════════════════════════════
-   REPORT DATE INPUTS — Calendar Icon White on Dark
-   ═══════════════════════════════════════════════════════ */
-
-.report-date-input {
-  color-scheme: dark !important;
-}
-
-input[type="date"].report-date-input::-webkit-calendar-picker-indicator,
-input.report-date-input::-webkit-calendar-picker-indicator {
-  filter: invert(1) brightness(2) !important;
-  cursor: pointer;
-  opacity: 0.9;
-}
-
-.report-date-input::-webkit-calendar-picker-indicator:hover {
-  opacity: 1 !important;
-}
-
-/* ═══════════════════════════════════════════════════════
    PDF EXPORT — Packing Report Print Styles
    ═══════════════════════════════════════════════════════ */
 
