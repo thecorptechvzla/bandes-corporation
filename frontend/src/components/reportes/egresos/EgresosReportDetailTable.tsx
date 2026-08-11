@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { formatLey, formatNumber } from '@/lib/format';
 import { User, Building, ChevronDown, ChevronRight } from 'lucide-react';
@@ -15,6 +15,10 @@ interface EgresosReportDetailTableProps {
 
 export default function EgresosReportDetailTable({ records, summary, onReprint }: EgresosReportDetailTableProps) {
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    setExpandedIds(new Set(records.map((e) => e.id)));
+  }, [records]);
 
   const toggleEgreso = (id: string) => {
     setExpandedIds((prev) => {
