@@ -210,6 +210,9 @@ export function generateBovedaReportPDF(data: BovedaReportData, type: BovedaRepo
   //  ============================================================
   if (type === 'DETALLADO') {
     const GREEN: [number, number, number] = [19, 145, 105];
+    const BLOCK_LEFT = 14;
+    const BLOCK_RIGHT = pw - 10;
+    const BLOCK_WIDTH = BLOCK_RIGHT - BLOCK_LEFT;
     const GREEN_LIGHT: [number, number, number] = [234, 244, 240];
     const GREEN_BORDER: [number, number, number] = [194, 229, 217];
     const GRAY_DARK: [number, number, number] = [68, 68, 68];
@@ -218,7 +221,7 @@ export function generateBovedaReportPDF(data: BovedaReportData, type: BovedaRepo
 
     const tableCols = {
       theme: 'grid' as const,
-      margin: { left: 14, right: 10 },
+      margin: { left: BLOCK_LEFT, right: pw - BLOCK_RIGHT },
       columnStyles: {
         0: { cellWidth: 30 },
         1: { cellWidth: 52 },
@@ -262,7 +265,7 @@ export function generateBovedaReportPDF(data: BovedaReportData, type: BovedaRepo
     const encloseBlock = (startY: number) => {
       doc.setDrawColor(GREEN_BORDER[0], GREEN_BORDER[1], GREEN_BORDER[2]);
       doc.setLineWidth(0.5);
-      doc.roundedRect(14, startY - 0.5, pw - 28, y - startY + 0.5, 1.5, 1.5, 'S');
+      doc.roundedRect(BLOCK_LEFT, startY - 0.5, BLOCK_WIDTH, y - startY + 0.5, 1.5, 1.5, 'S');
       y += 2;
     };
 
@@ -284,7 +287,7 @@ export function generateBovedaReportPDF(data: BovedaReportData, type: BovedaRepo
       ley?: number,
     ) => {
       doc.setFillColor(245, 248, 247);
-      doc.rect(14, y, pw - 28, 7, 'F');
+      doc.rect(BLOCK_LEFT, y, BLOCK_WIDTH, 7, 'F');
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(7);
       doc.setTextColor(GRAY_DARK[0], GRAY_DARK[1], GRAY_DARK[2]);
@@ -293,7 +296,8 @@ export function generateBovedaReportPDF(data: BovedaReportData, type: BovedaRepo
       if (recovered != null) {
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(6);
-        doc.text(`Peso Bruto Recuperado: ${formatWeight(recovered)}`, pw - m - 2, y + 5, { align: 'right' });
+        const recoveredText = `Peso Bruto Recuperado: ${formatWeight(recovered)}`;
+        doc.text(recoveredText, pw - m - 2, y + 5, { align: 'right' });
       }
 
       if (ley != null) {
@@ -301,7 +305,7 @@ export function generateBovedaReportPDF(data: BovedaReportData, type: BovedaRepo
         doc.setFontSize(6);
         const leyText = `Ley (‰): ${formatLey(ley)}`;
         const recoveredWidth = recovered != null ? doc.getTextWidth(`Peso Bruto Recuperado: ${formatWeight(recovered)}`) : 0;
-        doc.text(leyText, pw - 16 - recoveredWidth, y + 5, { align: 'right' });
+        doc.text(leyText, pw - m - 2 - recoveredWidth - 8, y + 5, { align: 'right' });
       }
 
       doc.setFont('helvetica', 'normal');
