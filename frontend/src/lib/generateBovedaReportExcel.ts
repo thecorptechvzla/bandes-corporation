@@ -181,6 +181,7 @@ export async function generateBovedaReportExcel(params: GenerateBovedaReportExce
       codigo: string;
       tipo: string;
       origen: string;
+      ley: number;
       pesoBruto: number;
       level: 0 | 1;
     }
@@ -188,23 +189,23 @@ export async function generateBovedaReportExcel(params: GenerateBovedaReportExce
     const rows: DetailRow[] = [];
     for (const lot of data.lots) {
       const proveedor = lot.clientName || 'DESCONOCIDO';
-      rows.push({ proveedor, codigo: lot.name, tipo: 'Refundido', origen: lot.processName || '—', pesoBruto: Number(lot.recovered ?? 0), level: 0 });
+      rows.push({ proveedor, codigo: lot.name, tipo: 'Refundido', origen: lot.processName || '—', ley: Number(lot.purity ?? 0), pesoBruto: Number(lot.recovered ?? 0), level: 0 });
       for (const b of lot.bars ?? []) {
-        rows.push({ proveedor: b.clientName || '', codigo: b.barNumber, tipo: '', origen: '', pesoBruto: Number(b.grossWeight ?? 0), level: 1 });
+        rows.push({ proveedor: b.clientName || '', codigo: b.barNumber, tipo: '', origen: '', ley: Number(b.purity ?? 0), pesoBruto: Number(b.grossWeight ?? 0), level: 1 });
       }
     }
     for (const bar of data.bars) {
-      rows.push({ proveedor: bar.clientName || 'DESCONOCIDO', codigo: bar.barNumber, tipo: 'Sin refundir', origen: 'Ingreso directo', pesoBruto: bar.grossWeight, level: 0 });
+      rows.push({ proveedor: bar.clientName || 'DESCONOCIDO', codigo: bar.barNumber, tipo: 'Sin refundir', origen: 'Ingreso directo', ley: Number(bar.purity ?? 0), pesoBruto: bar.grossWeight, level: 0 });
     }
 
-    const headers = ['PROVEEDOR', 'CÓDIGO', 'TIPO', 'ORIGEN', 'PESO BRUTO (g)'];
+    const headers = ['PROVEEDOR', 'CÓDIGO', 'TIPO', 'ORIGEN', 'LEY (‰)', 'PESO BRUTO (g)'];
     const headerRow = sheet.getRow(6);
     headers.forEach((h, i) => {
       const cell = headerRow.getCell(i + 1);
       cell.value = h;
       cell.font = { bold: true, size: 10, color: { argb: 'FFFFFFFF' } };
       cell.fill = fillGreen;
-      const isRight = h.includes('g)') || h === 'TIPO';
+      const isRight = h.includes('g)') || h === 'TIPO' || h.includes('‰');
       cell.alignment = { horizontal: isRight ? 'right' : 'left', vertical: 'middle' };
       cell.border = borderGreen;
     });
@@ -215,7 +216,7 @@ export async function generateBovedaReportExcel(params: GenerateBovedaReportExce
       const isChild = r.level === 1;
       row.getCell(1).value = r.proveedor;
       row.getCell(1).font = { size: 10 };
-      row.getCell(2).value = isChild ? `  ↳ ${r.codigo}` : r.codigo;
+      row.getCell(2).value = isChild ? `   - ${r.codigo}` : r.codigo;
       row.getCell(2).font = { bold: true, size: isChild ? 9 : 10, color: { argb: isChild ? 'FF78A091' : greenARGB } };
       row.getCell(2).alignment = { horizontal: 'left', vertical: 'middle', wrapText: true };
       row.getCell(3).value = r.tipo;
@@ -224,17 +225,21 @@ export async function generateBovedaReportExcel(params: GenerateBovedaReportExce
       row.getCell(4).value = r.origen;
       row.getCell(4).font = { size: isChild ? 9 : 10 };
       row.getCell(4).alignment = { horizontal: 'left', vertical: 'middle', wrapText: true };
-      row.getCell(5).value = r.pesoBruto;
-      row.getCell(5).font = { bold: true, size: isChild ? 9 : 10, color: { argb: isChild ? 'FF78A091' : greenARGB } };
+      row.getCell(5).value = r.ley;
+      row.getCell(5).font = { size: isChild ? 9 : 10, color: { argb: isChild ? 'FF78A091' : greenARGB } };
       row.getCell(5).numFmt = '#,##0.00';
       row.getCell(5).alignment = { horizontal: 'right', vertical: 'middle' };
+      row.getCell(6).value = r.pesoBruto;
+      row.getCell(6).font = { bold: true, size: isChild ? 9 : 10, color: { argb: isChild ? 'FF78A091' : greenARGB } };
+      row.getCell(6).numFmt = '#,##0.00';
+      row.getCell(6).alignment = { horizontal: 'right', vertical: 'middle' };
 
       if (isChild) {
-        for (let c = 1; c <= 5; c++) {
+        for (let c = 1; c <= 6; c++) {
           row.getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF2F7F4' } };
         }
       } else if (idx % 2 === 1) {
-        for (let c = 1; c <= 5; c++) {
+        for (let c = 1; c <= 6; c++) {
           row.getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFBFDFC' } };
         }
       }
@@ -247,12 +252,12 @@ export async function generateBovedaReportExcel(params: GenerateBovedaReportExce
     const totalPeso = mainRows.reduce((a, r) => a + r.pesoBruto, 0);
     tr.getCell(1).value = `TOTALES GENERALES — ${mainRows.length} registro(s)`;
     tr.getCell(1).font = { bold: true, size: 10, color: { argb: greenARGB } };
-    tr.getCell(5).value = totalPeso;
-    tr.getCell(5).font = { bold: true, size: 10, color: { argb: greenARGB } };
-    tr.getCell(5).numFmt = '#,##0.00';
-    tr.getCell(5).alignment = { horizontal: 'right' };
+    tr.getCell(6).value = totalPeso;
+    tr.getCell(6).font = { bold: true, size: 10, color: { argb: greenARGB } };
+    tr.getCell(6).numFmt = '#,##0.00';
+    tr.getCell(6).alignment = { horizontal: 'right' };
 
-    for (let c = 1; c <= 5; c++) {
+    for (let c = 1; c <= 6; c++) {
       tr.getCell(c).fill = fillGreenLight;
       tr.getCell(c).border = {
         top: { style: 'medium', color: { argb: greenARGB } },
@@ -266,8 +271,8 @@ export async function generateBovedaReportExcel(params: GenerateBovedaReportExce
   // Column widths
   const widthMap =
     reportType === 'DETALLADO'
-      ? // Proveedor | Código | TIPO | Origen | Peso Bruto
-        [26, 26, 14, 60, 16]
+      ? // Proveedor | Código | TIPO | Origen | Ley | Peso Bruto
+        [26, 26, 14, 50, 12, 16]
       : // Proveedor | Cant. | Ref. | S/R | Bruto Ref. | Bruto S/R | Bruto Total
         [30, 12, 12, 12, 16, 16, 16];
   sheet.columns.forEach((col, i) => {

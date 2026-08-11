@@ -193,11 +193,13 @@ export default function BovedaReportPage() {
       clientName: l.client?.name ?? l.process?.client?.name ?? 'Desconocido',
       recovered: Number(l.recovered ?? 0),
       grossWeight: Number(l.fineWeight ?? 0),
+      purity: Number(l.purity ?? 0),
       bars: allBars
         .filter((b) => b.lotId === l.id && !b.exitId && !b.exitDetailId)
         .map((b) => ({
           barNumber: b.barNumber,
           grossWeight: Number(b.grossWeight ?? 0),
+          purity: Number(b.purity ?? 0),
           clientId: b.clientId,
           clientName: b.client?.name ?? clients.find((c) => c.id === b.clientId)?.name ?? 'DESCONOCIDO',
         })),

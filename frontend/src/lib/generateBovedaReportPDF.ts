@@ -1,9 +1,11 @@
 import { jsPDF } from 'jspdf';
-import { formatWeight, formatNumber } from '@/lib/format';
+import autoTable from 'jspdf-autotable';
+import { formatWeight, formatLey } from '@/lib/format';
 
 interface LotBar {
   barNumber: string;
   grossWeight: number;
+  purity?: number;
   clientId?: string;
   clientName?: string;
 }
@@ -15,6 +17,7 @@ export interface BovedaLotData {
   clientName: string;
   recovered?: number;
   grossWeight?: number;
+  purity?: number | null;
   bars?: LotBar[];
 }
 
@@ -203,159 +206,166 @@ export function generateBovedaReportPDF(data: BovedaReportData, type: BovedaRepo
   }
 
   // ============================================================
-  //  DETALLADO — TABLA POR LOTE CON DESGLOSE DE BARRAS
+  //  DETALLADO — BLOQUES POR LOTE CON DESGLOSE DE BARRAS
   //  ============================================================
   if (type === 'DETALLADO') {
-    // Build rows: main row per lot (refundido) with one sub-row per child bar,
-    // plus one main row per standalone bar (sin refundir).
-    interface DetailRow {
-      proveedor: string;
-      codigo: string;
-      tipo: string;
-      origen: string;
-      pesoBruto: number;
-      level: 0 | 1;
-    }
+    const GREEN: [number, number, number] = [19, 145, 105];
+    const GREEN_LIGHT: [number, number, number] = [234, 244, 240];
+    const GREEN_BORDER: [number, number, number] = [194, 229, 217];
+    const GRAY_DARK: [number, number, number] = [68, 68, 68];
+    const WHITE: [number, number, number] = [255, 255, 255];
+    const ROW_ALT: [number, number, number] = [251, 253, 252];
 
-    const rows: DetailRow[] = [];
+    const tableCols = {
+      theme: 'grid' as const,
+      margin: { left: 14, right: 10 },
+      columnStyles: {
+        0: { cellWidth: 30 },
+        1: { cellWidth: 52 },
+        2: { cellWidth: 40 },
+        3: { cellWidth: 18, halign: 'right' as const },
+        4: { cellWidth: 'auto' as const, halign: 'right' as const },
+      },
+    };
 
-    for (const lot of data.lots) {
-      const proveedor = lot.clientName || 'DESCONOCIDO';
-      rows.push({
-        proveedor,
-        codigo: lot.name,
-        tipo: 'Refundido',
-        origen: lot.processName || '—',
-        pesoBruto: Number(lot.recovered ?? 0),
-        level: 0,
+    const getFinalY = (): number =>
+      (doc as { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY ?? y;
+
+    const drawBarsTable = (
+      bars: { barNumber: string; proveedor: string; origen: string; ley: number; peso: number }[],
+    ) => {
+      checkPage(30);
+      autoTable(doc, {
+        ...tableCols,
+        startY: y,
+        head: [['Código Barra', 'Proveedor', 'Origen', 'Ley (‰)', 'Peso Bruto (g)']],
+        headStyles: { fillColor: GREEN, fontSize: 6, fontStyle: 'bold', textColor: WHITE },
+        bodyStyles: { fontSize: 6, textColor: [51, 51, 51], cellPadding: 1.2 },
+        alternateRowStyles: { fillColor: ROW_ALT },
+        body: bars.map((b) => [b.barNumber, b.proveedor, b.origen, formatLey(b.ley), formatWeight(b.peso)]),
       });
-      for (const b of lot.bars ?? []) {
-        rows.push({
-          proveedor: b.clientName || '',
-          codigo: b.barNumber,
-          tipo: '',
-          origen: '',
-          pesoBruto: Number(b.grossWeight ?? 0),
-          level: 1,
-        });
-      }
-    }
+      y = getFinalY() + 3;
+    };
 
-    for (const bar of data.bars) {
-      rows.push({
-        proveedor: bar.clientName || 'DESCONOCIDO',
-        codigo: bar.barNumber,
-        tipo: 'Sin refundir',
-        origen: 'Ingreso directo',
-        pesoBruto: bar.grossWeight,
-        level: 0,
+    const drawSubtotal = (label: string, peso: number, count: number) => {
+      autoTable(doc, {
+        ...tableCols,
+        startY: y,
+        head: [],
+        body: [[`${label} (${count} barra(s))`, '', '', '', formatWeight(peso)]],
+        bodyStyles: { fontSize: 7, fontStyle: 'bold', fillColor: GREEN_LIGHT, textColor: GREEN, cellPadding: 2 },
+        columnStyles: { ...tableCols.columnStyles, 0: { cellWidth: 60 } },
       });
-    }
+      y = getFinalY() + 4;
+    };
+
+    const encloseBlock = (startY: number) => {
+      doc.setDrawColor(GREEN_BORDER[0], GREEN_BORDER[1], GREEN_BORDER[2]);
+      doc.setLineWidth(0.5);
+      doc.roundedRect(14, startY - 0.5, pw - 28, y - startY + 0.5, 1.5, 1.5, 'S');
+      y += 2;
+    };
 
     // Section header
     checkPage(20);
-    doc.setFillColor(234, 244, 240);
+    doc.setFillColor(...GREEN_LIGHT);
     doc.rect(m, y - 4, cw, 7, 'F');
-    doc.setTextColor(19, 145, 105);
+    doc.setTextColor(...GREEN);
     doc.setFontSize(10);
     doc.setFont('helvetica', 'bold');
     doc.text(`DETALLADO — ${data.lots.length} lote(s) · ${data.bars.length} barra(s) sin refundir`, m + 2, y + 1);
     y += 10;
 
-    // Column widths: Proveedor | Código | TIPO | Origen | Peso Bruto (g)
-    // Reserve ~28mm for the right-aligned weight column; Código and Origen get
-    // generous widths and wrap onto multiple lines as needed.
-    const dLeftW = cw - 28;
-    const dColsW = [30, 42, 24, dLeftW - 96];
-    const dX = (col: number) => {
-      let x = m + 3;
-      for (let i = 0; i < col; i++) x += dColsW[i];
-      return x;
-    };
+    // Block header for each lot / group (clon del layout de Egresos)
+    const blockHeader = (
+      label: string,
+      count: number,
+      recovered?: number,
+      ley?: number,
+    ) => {
+      doc.setFillColor(245, 248, 247);
+      doc.rect(14, y, pw - 28, 7, 'F');
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(7);
+      doc.setTextColor(GRAY_DARK[0], GRAY_DARK[1], GRAY_DARK[2]);
+      doc.text(label, m + 1, y + 5);
 
-    const wrapLines = (text: string, maxW: number): string[] => {
-      const lines = doc.splitTextToSize(text, maxW);
-      return Array.isArray(lines) ? lines : [lines];
-    };
-
-    const lineW = 5;
-
-    // Header row
-    checkPage(14);
-    doc.setFillColor(19, 145, 105);
-    doc.rect(m, y - 3.5, cw, 6, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(5);
-    doc.setFont('helvetica', 'bold');
-    doc.text('PROVEEDOR', dX(0), y);
-    doc.text('CÓDIGO', dX(1), y);
-    doc.text('TIPO', dX(2), y, { align: 'right' });
-    doc.text('ORIGEN', dX(3), y);
-    doc.text('PESO BRUTO (g)', pw - m - 2, y, { align: 'right' });
-    y += 6;
-
-    // Data rows
-    let rowIdx = 0;
-    for (const r of rows) {
-      const maxW = (col: number) => dColsW[col] - 1;
-
-      const isChild = r.level === 1;
-      const codeText = isChild ? `  ↳ ${r.codigo}` : r.codigo;
-      const provLines = wrapLines(r.proveedor, maxW(0));
-      const codeLines = wrapLines(codeText, maxW(1));
-      const origenLines = wrapLines(r.origen, maxW(3));
-      const codeCols = Math.max(codeLines.length, Math.max(provLines.length, origenLines.length));
-      const rowH = codeCols * lineW + 1;
-
-      checkPage(rowH + 2);
-      if (isChild) {
-        // Subtle fill for child-bar rows
-        doc.setFillColor(242, 247, 244);
-        doc.rect(m, y - 3.5, cw, rowH, 'F');
-      } else if (rowIdx % 2 === 0) {
-        doc.setFillColor(248, 248, 248);
-        doc.rect(m, y - 3.5, cw, rowH, 'F');
+      if (recovered != null) {
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(6);
+        doc.text(`Peso Bruto Recuperado: ${formatWeight(recovered)}`, pw - m - 2, y + 5, { align: 'right' });
       }
-      doc.setFontSize(isChild ? 7 : 7.5);
-      doc.setFont('helvetica', isChild ? 'italic' : 'normal');
-      doc.setTextColor(isChild ? 100 : 80, isChild ? 100 : 80, isChild ? 100 : 80);
 
-      const drawLines = (lines: string[], x: number, opts?: { align?: 'right' }) => {
-        (lines.length ? lines : ['']).forEach((ln, i) => {
-          doc.text(ln, x, y + i * lineW, opts);
-        });
-      };
+      if (ley != null) {
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(6);
+        const leyText = `Ley (‰): ${formatLey(ley)}`;
+        const recoveredWidth = recovered != null ? doc.getTextWidth(`Peso Bruto Recuperado: ${formatWeight(recovered)}`) : 0;
+        doc.text(leyText, pw - 16 - recoveredWidth, y + 5, { align: 'right' });
+      }
 
-      drawLines(provLines, dX(0));
-      // Código (green for main, gray for child bars)
-      doc.setTextColor(isChild ? 100 : 19, isChild ? 100 : 145, isChild ? 100 : 105);
-      drawLines(codeLines, dX(1));
-      // Tipo
-      doc.setTextColor(19, 145, 105);
-      drawLines(wrapLines(r.tipo, maxW(2)), dX(2), { align: 'right' });
-      // Origen
-      doc.setTextColor(isChild ? 100 : 80, isChild ? 100 : 80, isChild ? 100 : 80);
-      drawLines(origenLines, dX(3));
-      // Peso bruto
-      doc.setTextColor(isChild ? 100 : 19, isChild ? 100 : 145, isChild ? 100 : 105);
-      doc.text(formatWeight(r.pesoBruto), pw - m - 2, y, { align: 'right' });
-      y += rowH;
-      rowIdx++;
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(6);
+      doc.text(`${count} ${count === 1 ? 'barra' : 'barras'}`, pw / 2, y + 5, { align: 'center' });
+      y += 7;
+    };
+
+    // One block per lot (fundido/refundido)
+    for (const lot of data.lots) {
+      const blockStart = y;
+      const bars = lot.bars ?? [];
+      const recovered = Number(lot.recovered ?? 0);
+      const pureza = Number(lot.purity ?? 0);
+
+      blockHeader(`LOTE ${lot.name}`, bars.length, recovered, pureza);
+
+      if (bars.length > 0) {
+        drawBarsTable(
+          bars.map((b) => ({
+            barNumber: b.barNumber,
+            proveedor: b.clientName || lot.clientName || 'DESCONOCIDO',
+            origen: '',
+            ley: Number(b.purity ?? 0),
+            peso: Number(b.grossWeight ?? 0),
+          })),
+        );
+        drawSubtotal('Subtotal Lote', bars.reduce((a, b) => a + Number(b.grossWeight ?? 0), 0), bars.length);
+      } else {
+        y += 2;
+        doc.setFontSize(6.5);
+        doc.setFont('helvetica', 'italic');
+        doc.setTextColor(100, 100, 100);
+        doc.text(`  Sin barras asociadas (peso recuperado ${formatWeight(recovered)})`, m + 2, y);
+        y += 6;
+      }
+
+      // Block border
+      encloseBlock(blockStart);
     }
 
-    // Totals row (sums only main rows, not child bars)
-    const mainRows = rows.filter((r) => r.level === 0);
-    if (mainRows.length > 0) {
-      checkPage(8);
-      doc.setFillColor(234, 244, 240);
-      doc.rect(m, y - 3.5, cw, 6, 'F');
-      doc.setTextColor(19, 145, 105);
-      doc.setFontSize(6.5);
-      doc.setFont('helvetica', 'bold');
-      const totalPeso = mainRows.reduce((a, r) => a + r.pesoBruto, 0);
-      doc.text(`TOTALES GENERALES — ${mainRows.length} registro(s)`, m + 3, y);
-      doc.text(formatWeight(totalPeso), pw - m - 2, y, { align: 'right' });
-      y += 8;
+    // Block: barras sin refundir (ingreso directo)
+    if (data.bars.length > 0) {
+      const blockStart = y;
+      blockHeader(
+        'BARRAS SIN REFUNDIR',
+        data.bars.length,
+        data.bars.reduce((a, b) => a + b.grossWeight, 0),
+      );
+      drawBarsTable(
+        data.bars.map((bar) => ({
+          barNumber: bar.barNumber,
+          proveedor: bar.clientName || 'DESCONOCIDO',
+          origen: 'Ingreso directo',
+          ley: Number(bar.purity ?? 0),
+          peso: Number(bar.grossWeight ?? 0),
+        })),
+      );
+      drawSubtotal(
+        'Subtotal Sin Refundir',
+        data.bars.reduce((a, b) => a + b.grossWeight, 0),
+        data.bars.length,
+      );
+      encloseBlock(blockStart);
     }
   }
 

@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { formatWeight } from '@/lib/format';
+import { formatWeight, formatLey } from '@/lib/format';
 
 interface BovedaLotData {
   id: string;
@@ -10,9 +10,11 @@ interface BovedaLotData {
   clientName: string;
   recovered?: number;
   grossWeight?: number;
+  purity?: number | null;
   bars?: {
     barNumber: string;
     grossWeight: number;
+    purity?: number;
     clientId?: string;
     clientName?: string;
   }[];
@@ -36,6 +38,7 @@ interface DetailRow {
   codigo: string;
   tipo: string;
   origen: string;
+  ley: number;
   pesoBruto: number;
   level: 0 | 1;
 }
@@ -51,6 +54,7 @@ export default function BovedaReportDetailTable({ lots, bars }: BovedaReportDeta
         codigo: lot.name,
         tipo: 'Refundido',
         origen: lot.processName || '—',
+        ley: Number(lot.purity ?? 0),
         pesoBruto: Number(lot.recovered ?? 0),
         level: 0,
       });
@@ -60,6 +64,7 @@ export default function BovedaReportDetailTable({ lots, bars }: BovedaReportDeta
           codigo: b.barNumber,
           tipo: '',
           origen: '',
+          ley: Number(b.purity ?? 0),
           pesoBruto: Number(b.grossWeight ?? 0),
           level: 1,
         });
@@ -72,6 +77,7 @@ export default function BovedaReportDetailTable({ lots, bars }: BovedaReportDeta
         codigo: bar.barNumber,
         tipo: 'Sin refundir',
         origen: 'Ingreso directo',
+        ley: Number(bar.purity ?? 0),
         pesoBruto: bar.grossWeight,
         level: 0,
       });
@@ -91,13 +97,14 @@ export default function BovedaReportDetailTable({ lots, bars }: BovedaReportDeta
       }}
     >
       <div className="overflow-x-auto">
-        <table className="w-full border-collapse text-left table-fixed" style={{ minWidth: '960px' }}>
+        <table className="w-full border-collapse text-left table-fixed" style={{ minWidth: '1020px' }}>
           <colgroup>
-            <col style={{ width: '17%' }} />
-            <col style={{ width: '20%' }} />
-            <col style={{ width: '12%' }} />
-            <col style={{ width: '34%' }} />
-            <col style={{ width: '17%' }} />
+            <col style={{ width: '16%' }} />
+            <col style={{ width: '19%' }} />
+            <col style={{ width: '11%' }} />
+            <col style={{ width: '30%' }} />
+            <col style={{ width: '10%' }} />
+            <col style={{ width: '14%' }} />
           </colgroup>
           <thead>
             <tr>
@@ -106,6 +113,7 @@ export default function BovedaReportDetailTable({ lots, bars }: BovedaReportDeta
                 { label: 'Código', align: 'left' },
                 { label: 'TIPO', align: 'right' },
                 { label: 'Origen', align: 'left' },
+                { label: 'Ley (‰)', align: 'right' },
                 { label: 'Peso Bruto (g)', align: 'right' },
               ].map((h) => (
                 <th
@@ -158,7 +166,7 @@ export default function BovedaReportDetailTable({ lots, bars }: BovedaReportDeta
                         lineHeight: '1.4',
                       }}
                     >
-                      {isChild ? `↳ ${row.codigo}` : row.codigo}
+                      {isChild ? `   - ${row.codigo}` : row.codigo}
                     </span>
                   </td>
                   <td
@@ -174,6 +182,12 @@ export default function BovedaReportDetailTable({ lots, bars }: BovedaReportDeta
                     >
                       {isChild ? '' : row.origen}
                     </span>
+                  </td>
+                  <td
+                    className="px-4 py-3 text-right text-[12px] font-medium align-top"
+                    style={{ color: isChild ? 'var(--report-text-muted)' : 'var(--report-color-primary)' }}
+                  >
+                    {formatLey(row.ley)}
                   </td>
                   <td
                     className="px-4 py-3 text-right text-[12px] font-bold"
@@ -193,7 +207,7 @@ export default function BovedaReportDetailTable({ lots, bars }: BovedaReportDeta
               <td
                 className="px-4 py-3 text-[12px] font-bold"
                 style={{ color: 'var(--report-color-primary)' }}
-                colSpan={4}
+                colSpan={5}
               >
                 TOTALES GENERALES — {mainRows.length} registro(s)
               </td>
