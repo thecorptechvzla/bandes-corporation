@@ -294,26 +294,29 @@ export async function generateDispatchPDF(
       const providerLots = (data.lots || []).filter(l => l.provider === pv.name);
       const providerBars = (data.bars || []).filter(b => b.provider === pv.name);
 
-      if (providerLots.length > 0) {
+      const hasItems = providerLots.length > 0 || providerBars.length > 0;
+      if (hasItems) {
         if (y > 255) { doc.addPage(); y = 20; }
         doc.setFillColor(19, 145, 105);
         doc.rect(m, y - 4, cw, 7, 'F');
         doc.setTextColor(255, 255, 255);
         doc.setFontSize(5.5);
         doc.setFont('helvetica', 'bold');
-        const lotColsW = [14, 40, 24, 28, 22, 0];
+        const colsW = [14, 40, 24, 28, 22, 0];
         doc.text('TIPO', m + 3, y + 1);
-        doc.text('CÓDIGO', m + 3 + lotColsW[0], y + 1);
-        doc.text('PESO BRUTO (g)', m + 3 + lotColsW[0] + lotColsW[1], y + 1);
-        doc.text('PESO BALANZA (g)', m + 3 + lotColsW[0] + lotColsW[1] + lotColsW[2], y + 1);
-        doc.text('LEY (‰)', m + 3 + lotColsW[0] + lotColsW[1] + lotColsW[2] + lotColsW[3], y + 1);
-        doc.text('PROVEEDOR', m + 3 + lotColsW[0] + lotColsW[1] + lotColsW[2] + lotColsW[3] + lotColsW[4], y + 1);
+        doc.text('CÓDIGO', m + 3 + colsW[0], y + 1);
+        doc.text('PESO BRUTO (g)', m + 3 + colsW[0] + colsW[1], y + 1);
+        doc.text('PESO BALANZA (g)', m + 3 + colsW[0] + colsW[1] + colsW[2], y + 1);
+        doc.text('LEY (‰)', m + 3 + colsW[0] + colsW[1] + colsW[2] + colsW[3], y + 1);
+        doc.text('PROVEEDOR', m + 3 + colsW[0] + colsW[1] + colsW[2] + colsW[3] + colsW[4], y + 1);
         doc.text('PESO FINO (g)', pw - m - 2, y + 1, { align: 'right' });
         y += 7;
 
-        providerLots.forEach((lot, idx) => {
+        let rowIdx = 0;
+
+        providerLots.forEach((lot) => {
           if (y > 260) { doc.addPage(); y = 20; }
-          if (idx % 2 === 0) {
+          if (rowIdx % 2 === 0) {
             doc.setFillColor(248, 248, 248);
             doc.rect(m, y - 4, cw, 7, 'F');
           }
@@ -321,18 +324,19 @@ export async function generateDispatchPDF(
           doc.setFont('helvetica', 'normal');
           doc.setTextColor(80, 80, 80);
           doc.text(lot.isMixed ? 'MIXTA' : 'REFUNDIDA', m + 3, y + 1);
-          doc.text(`${lot.name}`, m + 3 + lotColsW[0], y + 1);
-          doc.text(formatWeight(Number(lot.grossWeight ?? lot.recovered ?? 0)), m + 3 + lotColsW[0] + lotColsW[1], y + 1);
-          doc.text(formatWeight(Number(lot.recovered ?? lot.grossWeight ?? 0)), m + 3 + lotColsW[0] + lotColsW[1] + lotColsW[2], y + 1);
-          doc.text((Number(lot.purity) || 0).toFixed(2).replace('.', ','), m + 3 + lotColsW[0] + lotColsW[1] + lotColsW[2] + lotColsW[3], y + 1);
+          doc.text(`${lot.name}`, m + 3 + colsW[0], y + 1);
+          doc.text(formatWeight(Number(lot.grossWeight ?? lot.recovered ?? 0)), m + 3 + colsW[0] + colsW[1], y + 1);
+          doc.text(formatWeight(Number(lot.recovered ?? lot.grossWeight ?? 0)), m + 3 + colsW[0] + colsW[1] + colsW[2], y + 1);
+          doc.text((Number(lot.purity) || 0).toFixed(2).replace('.', ','), m + 3 + colsW[0] + colsW[1] + colsW[2] + colsW[3], y + 1);
           const lotProvider = lot.provider || '—';
           doc.text(
             lotProvider.length > 26 ? `${lotProvider.slice(0, 26)}…` : lotProvider,
-            m + 3 + lotColsW[0] + lotColsW[1] + lotColsW[2] + lotColsW[3] + lotColsW[4],
+            m + 3 + colsW[0] + colsW[1] + colsW[2] + colsW[3] + colsW[4],
             y + 1,
           );
           doc.text(formatWeight(Number(lot.fineWeight ?? 0)), pw - m - 2, y + 1, { align: 'right' });
           y += 7;
+          rowIdx++;
 
           if (lot.inputBars && lot.inputBars.length > 0) {
             lot.inputBars.forEach((bar) => {
@@ -344,14 +348,14 @@ export async function generateDispatchPDF(
               doc.setTextColor(19, 145, 105);
               doc.text('↳', m + 3, y + 0.5);
               doc.setTextColor(80, 80, 80);
-              doc.text(bar.barNumber, m + 3 + lotColsW[0], y + 0.5);
-              doc.text(formatWeight(bar.grossWeight), m + 3 + lotColsW[0] + lotColsW[1], y + 0.5);
-              doc.text('—', m + 3 + lotColsW[0] + lotColsW[1] + lotColsW[2], y + 0.5);
-              doc.text((Number(bar.purity) || 0).toFixed(2).replace('.', ','), m + 3 + lotColsW[0] + lotColsW[1] + lotColsW[2] + lotColsW[3], y + 0.5);
+              doc.text(bar.barNumber, m + 3 + colsW[0], y + 0.5);
+              doc.text(formatWeight(bar.grossWeight), m + 3 + colsW[0] + colsW[1], y + 0.5);
+              doc.text('—', m + 3 + colsW[0] + colsW[1] + colsW[2], y + 0.5);
+              doc.text((Number(bar.purity) || 0).toFixed(2).replace('.', ','), m + 3 + colsW[0] + colsW[1] + colsW[2] + colsW[3], y + 0.5);
               const barProvider = bar.provider || '—';
               doc.text(
                 barProvider.length > 26 ? `${barProvider.slice(0, 26)}…` : barProvider,
-                m + 3 + lotColsW[0] + lotColsW[1] + lotColsW[2] + lotColsW[3] + lotColsW[4],
+                m + 3 + colsW[0] + colsW[1] + colsW[2] + colsW[3] + colsW[4],
                 y + 0.5,
               );
               doc.text(formatWeight(bar.fineWeight), pw - m - 2, y + 0.5, { align: 'right' });
@@ -359,27 +363,10 @@ export async function generateDispatchPDF(
             });
           }
         });
-      }
 
-      if (providerBars.length > 0) {
-        if (y > 255) { doc.addPage(); y = 20; }
-        doc.setFillColor(19, 145, 105);
-        doc.rect(m, y - 4, cw, 7, 'F');
-        doc.setTextColor(255, 255, 255);
-        doc.setFontSize(6);
-        doc.setFont('helvetica', 'bold');
-        const barColsW = [18, 28, 28, 28, 22, cw - 124];
-        doc.text('TIPO', m + 3, y + 1);
-        doc.text('CÓDIGO', m + 3 + barColsW[0], y + 1);
-        doc.text('PESO BRUTO (g)', m + 3 + barColsW[0] + barColsW[1], y + 1);
-        doc.text('PESO BALANZA (g)', m + 3 + barColsW[0] + barColsW[1] + barColsW[2], y + 1);
-        doc.text('LEY AU (‰)', m + 3 + barColsW[0] + barColsW[1] + barColsW[2] + barColsW[3], y + 1);
-        doc.text('PESO FINO (g)', pw - m - 2, y + 1, { align: 'right' });
-        y += 7;
-
-        providerBars.forEach((bar, idx) => {
+        providerBars.forEach((bar) => {
           if (y > 260) { doc.addPage(); y = 20; }
-          if (idx % 2 === 0) {
+          if (rowIdx % 2 === 0) {
             doc.setFillColor(248, 248, 248);
             doc.rect(m, y - 4, cw, 7, 'F');
           }
@@ -389,12 +376,13 @@ export async function generateDispatchPDF(
           doc.setTextColor(19, 145, 105);
           doc.text('SIN REF.', m + 3, y + 1);
           doc.setTextColor(80, 80, 80);
-          doc.text(bar.barNumber, m + 3 + barColsW[0], y + 1);
-          doc.text(formatWeight(bar.grossWeight), m + 3 + barColsW[0] + barColsW[1], y + 1);
-          doc.text('—', m + 3 + barColsW[0] + barColsW[1] + barColsW[2], y + 1);
-          doc.text((Number(bar.purity) || 0).toFixed(2).replace('.', ','), m + 3 + barColsW[0] + barColsW[1] + barColsW[2] + barColsW[3], y + 1);
+          doc.text(bar.barNumber, m + 3 + colsW[0], y + 1);
+          doc.text(formatWeight(bar.grossWeight), m + 3 + colsW[0] + colsW[1], y + 1);
+          doc.text('—', m + 3 + colsW[0] + colsW[1] + colsW[2], y + 1);
+          doc.text((Number(bar.purity) || 0).toFixed(2).replace('.', ','), m + 3 + colsW[0] + colsW[1] + colsW[2] + colsW[3], y + 1);
           doc.text(formatWeight(bar.fineWeight), pw - m - 2, y + 1, { align: 'right' });
           y += 7;
+          rowIdx++;
         });
       }
 
