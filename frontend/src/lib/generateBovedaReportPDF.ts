@@ -13,7 +13,6 @@ export interface BovedaLotData {
   name: string;
   processName: string;
   clientName: string;
-  operator?: string;
   recovered?: number;
   grossWeight?: number;
   bars?: LotBar[];
@@ -36,6 +35,16 @@ export interface BovedaReportData {
   generatedAt?: string;
 }
 
+interface ProviderSummary {
+  name: string;
+  lotCount: number;
+  barCount: number;
+  looseCount: number;
+  brutoRefundido: number;
+  brutoSinRefundir: number;
+  brutoTotal: number;
+}
+
 export function generateBovedaReportPDF(data: BovedaReportData) {
   const doc = new jsPDF({ unit: 'mm', format: 'letter' });
   const pw = doc.internal.pageSize.getWidth();
@@ -47,24 +56,6 @@ export function generateBovedaReportPDF(data: BovedaReportData) {
 
   const checkPage = (needed: number) => {
     if (y + needed > ph - 20) { doc.addPage(); y = 20; }
-  };
-
-  const drawRow = (cols: { text: string; x: number; w: number; align?: 'left' | 'right' }[], options?: { bold?: boolean; fontSize?: number; textColor?: number[]; bgColor?: number[] }) => {
-    const fontSize = options?.fontSize ?? 7;
-    const tc = options?.textColor ?? [80, 80, 80];
-    const bold = options?.bold ?? false;
-    doc.setFontSize(fontSize);
-    doc.setFont('helvetica', bold ? 'bold' : 'normal');
-    doc.setTextColor(tc[0], tc[1], tc[2]);
-    if (options?.bgColor) {
-      const bg = options.bgColor;
-      doc.setFillColor(bg[0], bg[1], bg[2]);
-      doc.rect(m, y - 3.5, cw, 6, 'F');
-    }
-    for (const col of cols) {
-      doc.text(col.text, col.x, y, { align: col.align ?? 'left' });
-    }
-    y += 5;
   };
 
   // --- HEADER ---
@@ -108,7 +99,110 @@ export function generateBovedaReportPDF(data: BovedaReportData) {
   doc.text(`Generado: ${genDate}`, pw - m, y, { align: 'right' });
   y += 8;
 
-  // --- SECCIÓN 1: ORO REFUNDIDO ---
+  // ============================================================
+  //  RESUMEN CONSOLIDADO
+  // ============================================================
+  {
+    checkPage(20);
+    doc.setFillColor(234, 244, 240);
+    doc.rect(m, y - 4, cw, 7, 'F');
+    doc.setTextColor(19, 145, 105);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text('RESUMEN CONSOLIDADO POR PROVEEDOR', m + 2, y + 1);
+    y += 10;
+
+    const summaryMap = new Map<string, ProviderSummary>();
+    const ensure = (name: string): ProviderSummary => {
+      if (!summaryMap.has(name)) {
+        summaryMap.set(name, { name, lotCount: 0, barCount: 0, looseCount: 0, brutoRefundido: 0, brutoSinRefundir: 0, brutoTotal: 0 });
+      }
+      return summaryMap.get(name)!;
+    };
+
+    for (const lot of data.lots) {
+      const s = ensure(lot.clientName || 'DESCONOCIDO');
+      s.lotCount++;
+      s.barCount += lot.bars?.length ?? 0;
+      s.brutoRefundido += Number(lot.recovered ?? 0);
+    }
+    for (const bar of data.bars) {
+      const s = ensure(bar.clientName || 'DESCONOCIDO');
+      s.looseCount++;
+      s.barCount++;
+      s.brutoSinRefundir += bar.grossWeight;
+    }
+    for (const s of summaryMap.values()) {
+      s.brutoTotal = s.brutoRefundido + s.brutoSinRefundir;
+    }
+
+    const summaries = Array.from(summaryMap.values()).sort((a, b) => b.brutoTotal - a.brutoTotal);
+
+    const sColsW = [42, 18, 20, 20, 26, 26, cw - 152];
+    const sX = (col: number) => {
+      let x = m + 3;
+      for (let i = 0; i < col; i++) x += sColsW[i];
+      return x;
+    };
+
+    checkPage(14);
+    doc.setFillColor(19, 145, 105);
+    doc.rect(m, y - 3.5, cw, 6, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(5);
+    doc.setFont('helvetica', 'bold');
+    doc.text('PROVEEDOR', sX(0), y);
+    doc.text('CANT. BARRAS', sX(1), y, { align: 'right' });
+    doc.text('REFUNDIDAS', sX(2), y, { align: 'right' });
+    doc.text('SIN REF.', sX(3), y, { align: 'right' });
+    doc.text('BRUTO REF. (g)', sX(4), y, { align: 'right' });
+    doc.text('BRUTO S/R (g)', sX(5), y, { align: 'right' });
+    doc.text('BRUTO TOTAL (g)', pw - m - 2, y, { align: 'right' });
+    y += 6;
+
+    let rowIdx = 0;
+    for (const s of summaries) {
+      checkPage(8);
+      if (rowIdx % 2 === 0) {
+        doc.setFillColor(248, 248, 248);
+        doc.rect(m, y - 3.5, cw, 6, 'F');
+      }
+      doc.setFontSize(6.5);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(80, 80, 80);
+      doc.text(s.name, sX(0), y);
+      doc.text(String(s.barCount), sX(1), y, { align: 'right' });
+      doc.text(String(s.lotCount), sX(2), y, { align: 'right' });
+      doc.text(String(s.looseCount), sX(3), y, { align: 'right' });
+      doc.text(formatWeight(s.brutoRefundido), sX(4), y, { align: 'right' });
+      doc.text(formatWeight(s.brutoSinRefundir), sX(5), y, { align: 'right' });
+      doc.setTextColor(19, 145, 105);
+      doc.text(formatWeight(s.brutoTotal), pw - m - 2, y, { align: 'right' });
+      y += 5;
+      rowIdx++;
+    }
+
+    if (summaries.length > 0) {
+      checkPage(8);
+      doc.setFillColor(234, 244, 240);
+      doc.rect(m, y - 3.5, cw, 6, 'F');
+      doc.setTextColor(19, 145, 105);
+      doc.setFontSize(6.5);
+      doc.setFont('helvetica', 'bold');
+      doc.text('TOTALES GENERALES', sX(0), y);
+      doc.text(String(summaries.reduce((a, s) => a + s.barCount, 0)), sX(1), y, { align: 'right' });
+      doc.text(String(summaries.reduce((a, s) => a + s.lotCount, 0)), sX(2), y, { align: 'right' });
+      doc.text(String(summaries.reduce((a, s) => a + s.looseCount, 0)), sX(3), y, { align: 'right' });
+      doc.text(formatWeight(summaries.reduce((a, s) => a + s.brutoRefundido, 0)), sX(4), y, { align: 'right' });
+      doc.text(formatWeight(summaries.reduce((a, s) => a + s.brutoSinRefundir, 0)), sX(5), y, { align: 'right' });
+      doc.text(formatWeight(summaries.reduce((a, s) => a + s.brutoTotal, 0)), pw - m - 2, y, { align: 'right' });
+      y += 8;
+    }
+  }
+
+  // ============================================================
+  //  DETALLE POR PROVEEDOR — ORO REFUNDIDO
+  // ============================================================
   if (data.lots.length > 0) {
     checkPage(20);
     doc.setFillColor(234, 244, 240);
@@ -116,16 +210,22 @@ export function generateBovedaReportPDF(data: BovedaReportData) {
     doc.setTextColor(19, 145, 105);
     doc.setFontSize(10);
     doc.setFont('helvetica', 'bold');
-    doc.text(`ORO REFUNDIDO — ${data.lots.length} lote(s)`, m + 2, y + 1);
+    doc.text(`DETALLE — ORO REFUNDIDO — ${data.lots.length} lote(s)`, m + 2, y + 1);
     y += 10;
 
-    // Agrupar por proveedor
     const byProvider = new Map<string, BovedaLotData[]>();
     for (const lot of data.lots) {
       const key = lot.clientName || 'DESCONOCIDO';
       if (!byProvider.has(key)) byProvider.set(key, []);
       byProvider.get(key)!.push(lot);
     }
+
+    const lotColsW = [24, 42, 28, 30, cw - 124];
+    const lotX = (col: number) => {
+      let x = m + 3;
+      for (let i = 0; i < col; i++) x += lotColsW[i];
+      return x;
+    };
 
     for (const [providerName, providerLots] of byProvider) {
       checkPage(15);
@@ -138,25 +238,22 @@ export function generateBovedaReportPDF(data: BovedaReportData) {
       doc.text(`${providerName} — ${providerLots.length} lote(s) — ${formatWeight(providerTotal)}`, m + 2, y + 1);
       y += 10;
 
-      // Cabecera de columnas
       checkPage(14);
-      const colsW = [18, 35, 30, 30, 25, cw - 138];
       doc.setFillColor(234, 244, 240);
       doc.rect(m, y - 3.5, cw, 6, 'F');
       doc.setTextColor(19, 145, 105);
       doc.setFontSize(5.5);
       doc.setFont('helvetica', 'bold');
-      doc.text('CÓDIGO', m + 3, y);
-      doc.text('PROCESO', m + 3 + colsW[0], y);
-      doc.text('OPERADOR', m + 3 + colsW[0] + colsW[1], y);
-      doc.text('BRUTO (g)', m + 3 + colsW[0] + colsW[1] + colsW[2], y);
-      doc.text('FECHA', m + 3 + colsW[0] + colsW[1] + colsW[2] + colsW[3], y);
-      doc.text('PESO FINO (g)', pw - m - 2, y, { align: 'right' });
+      doc.text('CÓDIGO', lotX(0), y);
+      doc.text('PROCESO', lotX(1), y);
+      doc.text('BRUTO (g)', lotX(2), y, { align: 'right' });
+      doc.text('PESO FINO (g)', lotX(3), y, { align: 'right' });
+      doc.text('BARRAS', pw - m - 2, y, { align: 'right' });
       y += 6;
 
       let rowIdx = 0;
       for (const lot of providerLots) {
-        checkPage(12);
+        checkPage(10);
         if (rowIdx % 2 === 0) {
           doc.setFillColor(248, 248, 248);
           doc.rect(m, y - 3.5, cw, 6, 'F');
@@ -164,37 +261,35 @@ export function generateBovedaReportPDF(data: BovedaReportData) {
         doc.setFontSize(7);
         doc.setFont('helvetica', 'normal');
         doc.setTextColor(80, 80, 80);
-        doc.text(lot.name, m + 3, y);
-        doc.text(lot.processName, m + 3 + colsW[0], y);
-        doc.text(lot.operator ?? '—', m + 3 + colsW[0] + colsW[1], y);
-        doc.text(formatWeight(Number(lot.recovered ?? 0)), m + 3 + colsW[0] + colsW[1] + colsW[2], y);
-        const dateStr = '—';
-        doc.text(dateStr, m + 3 + colsW[0] + colsW[1] + colsW[2] + colsW[3], y);
+        doc.text(lot.name, lotX(0), y);
+        doc.text(lot.processName, lotX(1), y);
         doc.setTextColor(19, 145, 105);
-        doc.text(formatWeight(Number(lot.grossWeight ?? 0)), pw - m - 2, y, { align: 'right' });
+        doc.text(formatWeight(Number(lot.recovered ?? 0)), lotX(2), y, { align: 'right' });
+        doc.text(formatWeight(Number(lot.grossWeight ?? 0)), lotX(3), y, { align: 'right' });
+        doc.setTextColor(80, 80, 80);
+        doc.text(String(lot.bars?.length ?? 0), pw - m - 2, y, { align: 'right' });
         y += 6;
         rowIdx++;
 
-        // Desglose de barras
         if (lot.bars && lot.bars.length > 0) {
           for (const bar of lot.bars) {
-            checkPage(8);
+            checkPage(6);
             doc.setFillColor(242, 250, 247);
             doc.rect(m, y - 3, cw, 5, 'F');
             doc.setFontSize(6);
             doc.setFont('helvetica', 'normal');
             doc.setTextColor(19, 145, 105);
-            doc.text('↳', m + 3, y);
+            doc.text('\u21B3', m + 4, y);
             doc.setTextColor(80, 80, 80);
-            doc.text(bar.barNumber, m + 3 + colsW[0], y);
-            doc.text(bar.clientName ?? '—', m + 3 + colsW[0] + colsW[1], y);
-            doc.text(formatWeight(Number(bar.grossWeight ?? 0)), m + 3 + colsW[0] + colsW[1] + colsW[2], y);
+            doc.text(bar.barNumber, lotX(1), y);
+            doc.text(bar.clientName ?? '—', lotX(2) + 2, y);
+            doc.setTextColor(19, 145, 105);
+            doc.text(formatWeight(Number(bar.grossWeight ?? 0)), pw - m - 2, y, { align: 'right' });
             y += 4;
           }
         }
       }
 
-      // Subtotal del proveedor
       checkPage(8);
       doc.setFillColor(234, 244, 240);
       doc.rect(m, y - 3.5, cw, 6, 'F');
@@ -206,7 +301,9 @@ export function generateBovedaReportPDF(data: BovedaReportData) {
     }
   }
 
-  // --- SECCIÓN 2: ORO SIN REFUNDIR ---
+  // ============================================================
+  //  DETALLE POR PROVEEDOR — ORO SIN REFUNDIR
+  // ============================================================
   if (data.bars.length > 0) {
     checkPage(20);
     doc.setFillColor(234, 244, 240);
@@ -214,16 +311,22 @@ export function generateBovedaReportPDF(data: BovedaReportData) {
     doc.setTextColor(19, 145, 105);
     doc.setFontSize(10);
     doc.setFont('helvetica', 'bold');
-    doc.text(`ORO SIN REFUNDIR — ${data.bars.length} barra(s)`, m + 2, y + 1);
+    doc.text(`DETALLE — ORO SIN REFUNDIR — ${data.bars.length} barra(s)`, m + 2, y + 1);
     y += 10;
 
-    // Agrupar por proveedor
     const barsByProvider = new Map<string, BovedaBarData[]>();
     for (const bar of data.bars) {
       const key = bar.clientName || 'DESCONOCIDO';
       if (!barsByProvider.has(key)) barsByProvider.set(key, []);
       barsByProvider.get(key)!.push(bar);
     }
+
+    const barColsW = [22, 40, 30, 28, cw - 120];
+    const barX = (col: number) => {
+      let x = m + 3;
+      for (let i = 0; i < col; i++) x += barColsW[i];
+      return x;
+    };
 
     for (const [providerName, providerBars] of barsByProvider) {
       checkPage(15);
@@ -237,18 +340,16 @@ export function generateBovedaReportPDF(data: BovedaReportData) {
       doc.text(`${providerName} — ${providerBars.length} barra(s) — Bruto: ${formatWeight(provGross)} / Fino: ${formatWeight(provFine)}`, m + 2, y + 1);
       y += 10;
 
-      // Cabecera de columnas
       checkPage(14);
-      const barColsW = [20, 40, 30, 30, cw - 120];
       doc.setFillColor(234, 244, 240);
       doc.rect(m, y - 3.5, cw, 6, 'F');
       doc.setTextColor(19, 145, 105);
       doc.setFontSize(5.5);
       doc.setFont('helvetica', 'bold');
-      doc.text('CÓDIGO', m + 3, y);
-      doc.text('PROVEEDOR', m + 3 + barColsW[0], y);
-      doc.text('LEY AU (‰)', m + 3 + barColsW[0] + barColsW[1], y);
-      doc.text('BRUTO (g)', m + 3 + barColsW[0] + barColsW[1] + barColsW[2], y);
+      doc.text('CÓDIGO', barX(0), y);
+      doc.text('PROVEEDOR', barX(1), y);
+      doc.text('LEY AU (\u2030)', barX(2), y, { align: 'right' });
+      doc.text('BRUTO (g)', barX(3), y, { align: 'right' });
       doc.text('PESO FINO (g)', pw - m - 2, y, { align: 'right' });
       y += 6;
 
@@ -262,17 +363,16 @@ export function generateBovedaReportPDF(data: BovedaReportData) {
         doc.setFontSize(7);
         doc.setFont('helvetica', 'normal');
         doc.setTextColor(80, 80, 80);
-        doc.text(bar.barNumber, m + 3, y);
-        doc.text(bar.clientName, m + 3 + barColsW[0], y);
-        doc.text(formatLey(bar.purity), m + 3 + barColsW[0] + barColsW[1], y);
-        doc.text(formatWeight(bar.grossWeight), m + 3 + barColsW[0] + barColsW[1] + barColsW[2], y);
+        doc.text(bar.barNumber, barX(0), y);
+        doc.text(bar.clientName, barX(1), y);
+        doc.text(formatLey(bar.purity), barX(2), y, { align: 'right' });
+        doc.text(formatWeight(bar.grossWeight), barX(3), y, { align: 'right' });
         doc.setTextColor(19, 145, 105);
         doc.text(formatWeight(bar.fineWeight), pw - m - 2, y, { align: 'right' });
         y += 6;
         rowIdx++;
       }
 
-      // Subtotal del proveedor
       checkPage(8);
       doc.setFillColor(234, 244, 240);
       doc.rect(m, y - 3.5, cw, 6, 'F');
@@ -312,7 +412,7 @@ export function generateBovedaReportPDF(data: BovedaReportData) {
   doc.setTextColor(19, 145, 105);
   doc.setFontSize(10);
   doc.setFont('helvetica', 'bold');
-  doc.text(`GRAN TOTAL EN BÓVEDA: ${formatWeight(grandTotal)} Bruto / ${formatWeight(grandFine)} Fino`, m + 2, y + 1);
+  doc.text(`GRAN TOTAL EN BOVEDA: ${formatWeight(grandTotal)} Bruto / ${formatWeight(grandFine)} Fino`, m + 2, y + 1);
   y += 10;
 
   // --- PIE ---
@@ -331,7 +431,7 @@ export function generateBovedaReportPDF(data: BovedaReportData) {
   doc.setFontSize(7);
   doc.setTextColor(140, 140, 140);
   doc.text('Elaborado por: Sistema de Trazabilidad Bandes', m, y); y += 4;
-  doc.text(`Fecha generación: ${new Date().toLocaleString('es-ES')}`, m, y);
+  doc.text(`Fecha generacion: ${new Date().toLocaleString('es-ES')}`, m, y);
 
   doc.save(`Boveda_Oro_${new Date().toISOString().slice(0, 10)}.pdf`);
 }

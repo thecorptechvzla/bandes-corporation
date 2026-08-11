@@ -128,7 +128,6 @@ export function BovedaModal({ isOpen, lots, bars, allBars, clients, lotGrossWeig
       name: l.name,
       processName: l.process?.name ?? '—',
       clientName: l.client?.name ?? l.process?.client?.name ?? 'Desconocido',
-      operator: l.operator,
       recovered: Number(l.recovered ?? 0),
       grossWeight: lotGrossWeight?.[l.id] ?? 0,
       bars: (allBars ?? l.bars ?? []).filter(b => b.lotId === l.id).map(b => ({
