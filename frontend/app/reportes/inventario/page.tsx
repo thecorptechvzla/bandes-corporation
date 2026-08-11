@@ -278,7 +278,7 @@ export default function BovedaReportPage() {
             className="w-full rounded-md px-3 py-2 text-[12px] border"
             style={{
               backgroundColor: 'var(--report-input-bg)',
-              color: 'var(--report-text)',
+              color: 'var(--report-text-main)',
               borderColor: 'var(--report-border-color)',
             }}
           >
@@ -302,7 +302,7 @@ export default function BovedaReportPage() {
             className="w-full rounded-md px-3 py-2 text-[12px] border"
             style={{
               backgroundColor: 'var(--report-input-bg)',
-              color: 'var(--report-text)',
+              color: 'var(--report-text-main)',
               borderColor: 'var(--report-border-color)',
             }}
           >
@@ -325,7 +325,7 @@ export default function BovedaReportPage() {
             className="w-full rounded-md px-3 py-2 text-[12px] border"
             style={{
               backgroundColor: 'var(--report-input-bg)',
-              color: 'var(--report-text)',
+              color: 'var(--report-text-main)',
               borderColor: 'var(--report-border-color)',
             }}
           />
@@ -345,7 +345,7 @@ export default function BovedaReportPage() {
             className="w-full rounded-md px-3 py-2 text-[12px] border"
             style={{
               backgroundColor: 'var(--report-input-bg)',
-              color: 'var(--report-text)',
+              color: 'var(--report-text-main)',
               borderColor: 'var(--report-border-color)',
             }}
           />
