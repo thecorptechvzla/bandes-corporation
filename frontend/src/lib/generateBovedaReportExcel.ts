@@ -217,18 +217,20 @@ export async function generateBovedaReportExcel(params: GenerateBovedaReportExce
       row.getCell(1).font = { size: 10 };
       row.getCell(2).value = r.codigo;
       row.getCell(2).font = { bold: true, size: 10, color: { argb: greenARGB } };
+      row.getCell(2).alignment = { horizontal: 'left', vertical: 'middle', wrapText: true };
       row.getCell(3).value = r.estado;
       row.getCell(3).font = { size: 10, color: { argb: greenARGB } };
-      row.getCell(3).alignment = { horizontal: 'right' };
+      row.getCell(3).alignment = { horizontal: 'right', vertical: 'middle' };
       row.getCell(4).value = r.condicion;
       row.getCell(4).font = { size: 10 };
-      row.getCell(4).alignment = { horizontal: 'right' };
+      row.getCell(4).alignment = { horizontal: 'right', vertical: 'middle' };
       row.getCell(5).value = r.origen;
       row.getCell(5).font = { size: 10 };
+      row.getCell(5).alignment = { horizontal: 'left', vertical: 'middle', wrapText: true };
       row.getCell(6).value = r.pesoBruto;
       row.getCell(6).font = { bold: true, size: 10, color: { argb: greenARGB } };
       row.getCell(6).numFmt = '#,##0.00';
-      row.getCell(6).alignment = { horizontal: 'right' };
+      row.getCell(6).alignment = { horizontal: 'right', vertical: 'middle' };
 
       if (idx % 2 === 1) {
         for (let c = 1; c <= 6; c++) {
@@ -260,8 +262,14 @@ export async function generateBovedaReportExcel(params: GenerateBovedaReportExce
   }
 
   // Column widths
-  sheet.columns.forEach((col) => {
-    if (col) col.width = col.width && col.width < 14 ? 14 : col.width;
+  const widthMap =
+    reportType === 'DETALLADO'
+      ? // Proveedor | Código | Estado | Condición | Origen | Peso Bruto
+        [26, 24, 12, 16, 60, 16]
+      : // Proveedor | Cant. | Ref. | S/R | Bruto Ref. | Bruto S/R | Bruto Total
+        [30, 12, 12, 12, 16, 16, 16];
+  sheet.columns.forEach((col, i) => {
+    if (col) col.width = widthMap[i] ?? 16;
   });
 
   const buffer = await workbook.xlsx.writeBuffer();

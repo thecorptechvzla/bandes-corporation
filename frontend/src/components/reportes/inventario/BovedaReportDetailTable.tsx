@@ -84,7 +84,15 @@ export default function BovedaReportDetailTable({ lots, bars }: BovedaReportDeta
       }}
     >
       <div className="overflow-x-auto">
-        <table className="w-full border-collapse text-left">
+        <table className="w-full border-collapse text-left table-fixed" style={{ minWidth: '960px' }}>
+          <colgroup>
+            <col style={{ width: '17%' }} />
+            <col style={{ width: '19%' }} />
+            <col style={{ width: '8%' }} />
+            <col style={{ width: '10%' }} />
+            <col style={{ width: '34%' }} />
+            <col style={{ width: '12%' }} />
+          </colgroup>
           <thead>
             <tr>
               {[
@@ -118,38 +126,38 @@ export default function BovedaReportDetailTable({ lots, bars }: BovedaReportDeta
                   borderBottom: '1px solid rgba(255,255,255,0.03)',
                 }}
               >
-                <td className="px-4 py-3">
+                <td className="px-4 py-3 align-top">
                   <span
                     className="text-[12px] font-semibold"
-                    style={{ color: 'var(--report-text-table)' }}
+                    style={{ color: 'var(--report-text-table)', wordBreak: 'break-word', lineHeight: '1.4' }}
                   >
                     {row.proveedor}
                   </span>
                 </td>
-                <td className="px-4 py-3">
+                <td className="px-4 py-3 align-top">
                   <span
                     className="font-mono text-[11px] font-semibold"
-                    style={{ color: 'var(--report-color-primary)' }}
+                    style={{ color: 'var(--report-color-primary)', wordBreak: 'break-all', lineHeight: '1.4' }}
                   >
                     {row.codigo}
                   </span>
                 </td>
                 <td
-                  className="px-4 py-3 text-right text-[12px] font-medium"
+                  className="px-4 py-3 text-right text-[12px] font-medium align-top"
                   style={{ color: 'var(--report-text-main)' }}
                 >
                   {row.estado}
                 </td>
                 <td
-                  className="px-4 py-3 text-right text-[12px] font-medium"
+                  className="px-4 py-3 text-right text-[12px] font-medium align-top"
                   style={{ color: 'var(--report-text-main)' }}
                 >
                   {row.condicion}
                 </td>
-                <td className="px-4 py-3">
+                <td className="px-4 py-3 align-top">
                   <span
                     className="text-[12px]"
-                    style={{ color: 'var(--report-text-main)' }}
+                    style={{ color: 'var(--report-text-main)', wordBreak: 'break-word', lineHeight: '1.4' }}
                   >
                     {row.origen}
                   </span>

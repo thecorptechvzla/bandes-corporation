@@ -258,12 +258,22 @@ export function generateBovedaReportPDF(data: BovedaReportData, type: BovedaRepo
     y += 10;
 
     // Column widths: Proveedor | Código | Estado | Condición | Origen | Peso Bruto (g)
-    const dColsW = [34, 28, 18, 22, cw - 124];
+    // Reserve ~28mm for the right-aligned weight column; Código and Origen get
+    // generous widths and wrap onto multiple lines as needed.
+    const dLeftW = cw - 28;
+    const dColsW = [30, 42, 16, 22, dLeftW - 110];
     const dX = (col: number) => {
       let x = m + 3;
       for (let i = 0; i < col; i++) x += dColsW[i];
       return x;
     };
+
+    const wrapLines = (text: string, maxW: number): string[] => {
+      const lines = doc.splitTextToSize(text, maxW);
+      return Array.isArray(lines) ? lines : [lines];
+    };
+
+    const lineW = 4.5;
 
     // Header row
     checkPage(14);
@@ -283,33 +293,43 @@ export function generateBovedaReportPDF(data: BovedaReportData, type: BovedaRepo
     // Data rows
     let rowIdx = 0;
     for (const r of rows) {
-      checkPage(8);
+      const maxW = (col: number) => dColsW[col] - 1;
+
+      const provLines = wrapLines(r.proveedor, maxW(0));
+      const codeLines = wrapLines(r.codigo, maxW(1));
+      const origenLines = wrapLines(r.origen, maxW(4));
+      const codeCols = Math.max(codeLines.length, Math.max(provLines.length, origenLines.length));
+      const rowH = codeCols * lineW + 1;
+
+      checkPage(rowH + 2);
       if (rowIdx % 2 === 0) {
         doc.setFillColor(248, 248, 248);
-        doc.rect(m, y - 3.5, cw, 6, 'F');
+        doc.rect(m, y - 3.5, cw, rowH, 'F');
       }
       doc.setFontSize(6.5);
       doc.setFont('helvetica', 'normal');
       doc.setTextColor(80, 80, 80);
-      doc.text(r.proveedor, dX(0), y);
-      doc.text(r.codigo, dX(1), y);
-      // Estado badge (green)
+
+      const drawLines = (lines: string[], x: number, opts?: { align?: 'right' }) => {
+        (lines.length ? lines : ['']).forEach((ln, i) => {
+          doc.text(ln, x, y + i * lineW, opts);
+        });
+      };
+
+      drawLines(provLines, dX(0));
+      drawLines(codeLines, dX(1));
+      // Estado (green)
       doc.setTextColor(19, 145, 105);
-      doc.text(r.estado, dX(2), y, { align: 'right' });
+      drawLines(wrapLines(r.estado, maxW(2)), dX(2), { align: 'right' });
       // Condición
       doc.setTextColor(80, 80, 80);
-      doc.text(r.condicion, dX(3), y, { align: 'right' });
-      // Origen (truncate if too long)
-      const maxOrigenW = dColsW[4] - 2;
-      let origenText = r.origen;
-      while (doc.getTextWidth(origenText) > maxOrigenW && origenText.length > 3) {
-        origenText = origenText.slice(0, -4) + '...';
-      }
-      doc.text(origenText, dX(4), y);
+      drawLines(wrapLines(r.condicion, maxW(3)), dX(3), { align: 'right' });
+      // Origen — wraps so every child bar remains readable
+      drawLines(origenLines, dX(4));
       // Peso bruto
       doc.setTextColor(19, 145, 105);
       doc.text(formatWeight(r.pesoBruto), pw - m - 2, y, { align: 'right' });
-      y += 5;
+      y += rowH;
       rowIdx++;
     }
 
