@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Warehouse, X, ChevronDown, ChevronLeft, ChevronRight, Building2, Download } from 'lucide-react';
 import { formatNumber } from '@/lib/format';
-import { generateBovedaReportPDF, type BovedaLotData, type BovedaBarData } from '@/lib/generateBovedaReportPDF';
+import { generateBovedaReportPDF, type BovedaLotData, type BovedaBarData, type BovedaReportType } from '@/lib/generateBovedaReportPDF';
 import { SupplierDirectory } from '@/components/SupplierDirectory';
 import { BarDetailModal } from '@/components/packing/BarDetailModal';
 import { LotDetailModal } from '@/components/egresos/LotDetailModal';
@@ -66,7 +66,20 @@ export function BovedaModal({ isOpen, lots, bars, allBars, clients, lotGrossWeig
   const [fundidoLotPages, setFundidoLotPages] = useState<Record<string, number>>({});
   const [selectedBarForModal, setSelectedBarForModal] = useState<Bar | null>(null);
   const [selectedLotForModal, setSelectedLotForModal] = useState<{ lot: AvailableLot; bars: Bar[] } | null>(null);
+  const [showDownloadMenu, setShowDownloadMenu] = useState(false);
+  const downloadMenuRef = useRef<HTMLDivElement>(null);
   useBodyScrollLock(isOpen);
+
+  useEffect(() => {
+    if (!showDownloadMenu) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (downloadMenuRef.current && !downloadMenuRef.current.contains(e.target as Node)) {
+        setShowDownloadMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showDownloadMenu]);
 
   const LOTS_PER_PAGE = 10;
 
@@ -122,7 +135,8 @@ export function BovedaModal({ isOpen, lots, bars, allBars, clients, lotGrossWeig
   const grandTotalBruto = tab === 'fundido' ? totalFundidoBruto : totalGrossWeight;
   const grandTotalFino = tab === 'fundido' ? totalFundidoFino : totalFineWeight;
 
-  const handleDownloadPDF = () => {
+  const handleDownloadPDF = (type: BovedaReportType) => {
+    setShowDownloadMenu(false);
     const mappedLots: BovedaLotData[] = lots.map(l => ({
       id: l.id,
       name: l.name,
@@ -151,7 +165,7 @@ export function BovedaModal({ isOpen, lots, bars, allBars, clients, lotGrossWeig
       totalRecovered,
       totalGrossWeight: totalFundidoBrutoOriginal,
       totalFineWeight,
-    });
+    }, type);
   };
 
   const tabDefs: { key: Tab; label: string; count: number }[] = [
@@ -190,13 +204,35 @@ export function BovedaModal({ isOpen, lots, bars, allBars, clients, lotGrossWeig
                 </h2>
               </div>
               <div className="flex items-center gap-2">
-                <button
-                  onClick={handleDownloadPDF}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-mono font-bold uppercase tracking-wider text-[var(--hud-accent-gold)] bg-[var(--hud-accent-gold)]/10 border border-[var(--hud-accent-gold)]/25 hover:bg-[var(--hud-accent-gold)]/20 transition-all"
-                >
-                  <Download className="w-3 h-3" />
-                  Descargar Reporte
-                </button>
+                <div className="relative" ref={downloadMenuRef}>
+                  <button
+                    onClick={() => setShowDownloadMenu(prev => !prev)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-mono font-bold uppercase tracking-wider text-[var(--hud-accent-gold)] bg-[var(--hud-accent-gold)]/10 border border-[var(--hud-accent-gold)]/25 hover:bg-[var(--hud-accent-gold)]/20 transition-all"
+                  >
+                    <Download className="w-3 h-3" />
+                    Descargar Reporte
+                    <ChevronDown className={`w-3 h-3 transition-transform ${showDownloadMenu ? 'rotate-180' : ''}`} />
+                  </button>
+                  {showDownloadMenu && (
+                    <div className="absolute right-0 top-full mt-1 z-50 w-52 rounded-lg border border-[var(--hud-border)] bg-[var(--hud-bg-card)] shadow-lg overflow-hidden">
+                      <button
+                        onClick={() => handleDownloadPDF('RESUMEN')}
+                        className="w-full flex items-center gap-2 px-3 py-2.5 text-left text-[11px] font-mono text-[var(--hud-text-primary)] hover:bg-[var(--hud-accent-gold)]/10 transition-colors"
+                      >
+                        <span className="text-sm">&#x1F4C4;</span>
+                        Reporte Resumido
+                      </button>
+                      <div className="border-t border-[var(--hud-border)]" />
+                      <button
+                        onClick={() => handleDownloadPDF('DETALLADO')}
+                        className="w-full flex items-center gap-2 px-3 py-2.5 text-left text-[11px] font-mono text-[var(--hud-text-primary)] hover:bg-[var(--hud-accent-gold)]/10 transition-colors"
+                      >
+                        <span className="text-sm">&#x1F4C4;</span>
+                        Reporte Detallado
+                      </button>
+                    </div>
+                  )}
+                </div>
                 <button
                   onClick={onClose}
                   className="w-7 h-7 rounded-lg bg-[var(--hud-bg-deepest)]/50 border border-[var(--hud-border)] flex items-center justify-center text-[var(--hud-text-dim)] hover:text-[var(--hud-text-primary)] transition-all"
